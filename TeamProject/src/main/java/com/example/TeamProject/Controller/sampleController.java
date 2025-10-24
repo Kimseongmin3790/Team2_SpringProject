@@ -18,4 +18,10 @@ public class sampleController {
 
         return "/login/login"; 
     }
+	
+	@RequestMapping("/customerService.do") 
+    public String customerService(Model model) throws Exception{
+
+        return "/views/common/customerService"; 
+    }
 }
