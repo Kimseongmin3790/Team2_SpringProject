@@ -5,17 +5,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-public class sampleController {
-	 
+public class MainController {
+	
 	@RequestMapping("/default.do")
     public String home(Model model) throws Exception{
 
         return "default";
-    }
-	
-	@RequestMapping("/login.do") 
-    public String login(Model model) throws Exception{
-
-        return "/login/login"; 
     }
 }

@@ -30,7 +30,7 @@
                     </c:when>
                     <c:otherwise>
                         <button class="btn-login" onclick="location.href='${path}/login.do'">로그인</button>
-                        <button class="btn-join" onclick="location.href='${path}/join'">회원가입</button>
+                        <button class="btn-join" onclick="location.href='${path}/chooseJoin.do'">회원가입</button>
                     </c:otherwise>
                 </c:choose>
             </div>
@@ -56,10 +56,10 @@
                 <i class="fa fa-bars"></i> 카테고리
             </button>
             <ul class="dropdown-menu" id="dropdownMenu">
-                <li><a href="${path}/category/fruits">과일</a></li>
-                <li><a href="${path}/category/vegetables">채소</a></li>
+                <li><a href="${path}/category/fruits">농산물</a></li>
+                <li><a href="${path}/category/vegetables">수산물</a></li>
                 <li><a href="${path}/category/meat">축산물</a></li>
-                <li><a href="${path}/category/seafood">수산물</a></li>
+                <li><a href="${path}/category/seafood">가공식품</a></li>
                 <li><a href="${path}/category/others">기타</a></li>
             </ul>
         </div>

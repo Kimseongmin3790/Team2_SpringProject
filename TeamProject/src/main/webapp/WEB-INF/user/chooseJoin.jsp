@@ -13,6 +13,7 @@
             <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
+            <c:set var="path" value="${pageContext.request.contextPath}" />
             <style>
                 html,
                 body {
@@ -33,13 +34,18 @@
         </head>
 
         <body>
+
             <div id="app">
                 <!-- 공통 헤더 -->
                 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                     <main class="content">
-                        <h3>신선한 농수산물을 직접 거래하세요!</h3>
-                        <p>생산자와 소비자가 1:1로 연결되는 새로운 직거래 플랫폼입니다.</p>
+                        <div>
+                            <a href="${path}/join.do"><button>일반 회원가입</button></a>
+                        </div>
+                        <div>
+                            <button>판매자 회원가입</button>
+                        </div>
                     </main>
 
                 <!-- 공통 푸터 -->
