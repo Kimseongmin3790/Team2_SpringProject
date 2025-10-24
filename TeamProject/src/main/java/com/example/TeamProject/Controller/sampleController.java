@@ -12,4 +12,10 @@ public class sampleController {
 
         return "index"; 
     }
+	
+	@RequestMapping("/login.do") 
+    public String login(Model model) throws Exception{
+
+        return "/login/login"; 
+    }
 }
