@@ -1,0 +1,151 @@
+.header {
+    background-color: #f3ebd3;
+    padding: 10px 30px;
+    font-family: "Noto Sans KR", sans-serif;
+	width: 100%;
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* 상단 */
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+	width: 100%;
+	padding: 10px 40px;
+	box-sizing: border-box;
+}
+
+/* 로고 */
+.logo {
+    display: flex;
+    align-items: center;
+}
+.logo-img {
+    width: 100px;
+    height: auto;
+}
+.logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a5d1a;
+}
+
+/* 검색창 */
+.search-bar {
+    display: flex;
+    align-items: center;
+    background: #4caf50;
+    border-radius: 25px;
+    padding: 5px 15px;
+    width: 350px;
+}
+.search-bar i {
+    color: white;
+    margin-right: 8px;
+}
+.search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: white;
+    font-size: 14px;
+}
+
+/* 오른쪽 버튼 */
+.header-right {
+    display: flex;
+	flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.btn-login, .btn-join, .btn-logout {
+    background: #5dbb63;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.btn-login:hover, .btn-join:hover, .btn-logout:hover {
+    background: #4ba954;
+}
+.user-name {
+    color: #333;
+    font-weight: 500;
+}
+.icon-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+.icon {
+    font-size: 18px;
+    color: #333;
+    cursor: pointer;
+}
+.icon:hover {
+    color: #1a5d1a;
+}
+
+/* 하단 메뉴 */
+.header-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 40px;
+    margin-top: 10px;
+    border-top: 1px solid #ddd;
+    padding: 10px 40px;
+    box-sizing: border-box;
+}
+.btn-category {
+    background: #5dbb63;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+	font-weight: 600;
+}
+.nav-menu {
+    display: flex;
+    gap: 60px; /* ✅ 메뉴 항목 간 간격 조정 (기본 60px로 넓게) */
+}
+.nav-menu a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 16px;
+    letter-spacing: 1px; /* ✅ 글자 사이 약간 띄움 */
+    position: relative;
+    padding-bottom: 3px;
+	transition: color 0.3s;
+}
+/* hover 시 밑줄 효과 */
+.nav-menu a::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #1a5d1a;
+    transition: 0.3s;
+}
+.nav-menu a:hover::after {
+    width: 100%;
+}
+.nav-menu a:hover {
+    color: #1a5d1a;
+}

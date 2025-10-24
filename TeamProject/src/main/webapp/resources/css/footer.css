@@ -1,0 +1,105 @@
+.footer {
+    background-color: #f5efd8;
+    color: #2e5d2e;
+    padding: 40px 60px;
+    font-family: "Noto Sans KR", sans-serif;
+    border-top: 1px solid #ddd;
+}
+
+/* 상단 메인 영역 */
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+/* 왼쪽 로고 + 설명 */
+.footer-left {
+    flex: 1 1 250px;
+}
+.footer-logo {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #1a5d1a;
+}
+.footer-desc {
+    font-size: 14px;
+    color: #3a3a3a;
+    line-height: 1.6;
+}
+
+/* 중앙 컬럼 그룹 */
+.footer-center {
+    display: flex;
+    flex: 2 1 600px;
+    justify-content: space-between;
+    gap: 50px;
+}
+.footer-column {
+    flex: 1;
+}
+.footer-column h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #1a5d1a;
+}
+.footer-column ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.footer-column ul li {
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+.footer-column ul li a {
+    text-decoration: none;
+    color: #333;
+    transition: 0.2s;
+}
+.footer-column ul li a:hover {
+    color: #1a5d1a;
+}
+
+/* 오른쪽 SNS 아이콘 */
+.footer-right {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.footer-right img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+.footer-right img:hover {
+    transform: scale(1.05);
+}
+
+/* 하단 정보 */
+.footer-info {
+    margin-top: 30px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.8;
+}
+.footer-info a {
+    color: #1a5d1a;
+    text-decoration: none;
+}
+.footer-info a:hover {
+    text-decoration: underline;
+}
+.footer-info .copyright {
+    margin-top: 10px;
+    text-align: center;
+    color: #1a5d1a;
+    font-weight: 500;
+}
