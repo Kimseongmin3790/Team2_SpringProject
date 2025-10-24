@@ -80,7 +80,7 @@ $(document).ready(function () {
 
     // 로고 클릭 → 홈으로 이동
     $("#logoClick").on("click", function () {
-        location.href = path + "/";
+        location.href = path + "/default.do";
     });
 
     // 검색
