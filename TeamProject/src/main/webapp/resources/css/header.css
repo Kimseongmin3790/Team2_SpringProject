@@ -103,20 +103,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
+    gap: 20px;
 }
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 40px;  /* Preferred icon size */
-  display: inline-block;
-  line-height: 1;
-  text-transform: none;
-  letter-spacing: normal;
-  word-wrap: normal;
-  white-space: nowrap;
-  direction: ltr;
+
+.icon-group i {
+    font-size: 28px;           /* 아이콘 크기 */
+    color: #1a5d1a;            /* 기본 색상 */
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+.icon-group i:hover {
+    color: #5dbb63;            /* hover 색상 */
+    transform: scale(1.1);     /* 살짝 커지는 효과 */
 }
 
 /* 하단 메뉴 */

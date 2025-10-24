@@ -9,23 +9,20 @@
         <script src="https://code.jquery.com/jquery-3.7.1.js"
             integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
         <style>
-            table,
-            tr,
-            td,
-            th {
-                border: 1px solid black;
-                border-collapse: collapse;
-                padding: 5px 10px;
-                text-align: center;
+            html, body {
+                height: 100%;
+                margin: 0;
             }
-
-            th {
-                background-color: beige;
+            #app {
+                min-height: 100vh;      /* 화면 높이 채우기 */
+                display: flex;
+                flex-direction: column;
             }
-
-            tr:nth-child(even) {
-                background-color: azure;
+            .content {
+                flex: 1;
             }
         </style>
     </head>
@@ -35,12 +32,15 @@
             <!-- html 코드는 id가 app인 태그 안에서 작업 -->
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-            <div>
-                아이디 : <input type="text">
-            </div>
-            <div>
-                비밀번호 : <input type="password">
-            </div>
+            <main class="content">
+                <h2>로그인</h2>
+                <div>
+                    아이디 : <input type="text">
+                </div>
+                <div>
+                    비밀번호 : <input type="password">
+                </div>
+            </main>
 
             <%@ include file="/WEB-INF/views/common/footer.jsp" %>   
         </div>

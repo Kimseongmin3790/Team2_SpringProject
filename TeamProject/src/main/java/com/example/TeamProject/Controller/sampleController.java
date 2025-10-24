@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class sampleController {
 	 
-	@RequestMapping("/index.do") 
+	@RequestMapping("/default.do") 
     public String home(Model model) throws Exception{
 
-        return "index"; 
+        return "default"; 
     }
 	
 	@RequestMapping("/login.do") 

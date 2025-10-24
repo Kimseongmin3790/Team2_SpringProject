@@ -1,9 +1,12 @@
+
 .footer {
-    background-color: #f5efd8;
+	background-color: #f5efd8;
     color: #2e5d2e;
     padding: 40px 60px;
     font-family: "Noto Sans KR", sans-serif;
     border-top: 1px solid #ddd;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* 상단 메인 영역 */
