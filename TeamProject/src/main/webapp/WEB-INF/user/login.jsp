@@ -5,7 +5,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
+        <title>agricola 로그인</title>
         <script src="https://code.jquery.com/jquery-3.7.1.js"
             integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -172,19 +172,17 @@
                 <main class="content">
                     <div class="login-container">
                         <h2 class="login-title">로그인</h2>
-
-                        <form id="loginForm" method="post" action="${pageContext.request.contextPath}/loginProcess.do">
                             <div class="input-group">
                                 <label for="userId">아이디</label>
-                                <input type="text" id="userId" name="userId" placeholder="아이디를 입력하세요" required>
+                                <input type="text" id="userId" v-model="userId" placeholder="아이디를 입력하세요" required>
                             </div>
 
                             <div class="input-group">
-                                <label for="userPw">비밀번호</label>
-                                <input type="password" id="userPw" name="userPw" placeholder="비밀번호를 입력하세요" required>
+                                <label for="userPwd">비밀번호</label>
+                                <input type="password" id="userPwd" v-model="userPwd" placeholder="비밀번호를 입력하세요" required>
                             </div>
 
-                            <button type="submit" class="btn-login2">로그인</button>
+                            <button class="btn-login2" @click="fnLogin">로그인</button>
 
                             <!-- ✅ 소셜 로그인 -->
                             <div class="social-login">
@@ -208,11 +206,10 @@
                             </div>
 
                             <div class="login-links">
-                                <a href="${pageContext.request.contextPath}/join">회원가입</a> |
+                                <a href="${pageContext.request.contextPath}/chooseJoin.do">회원가입</a> |
                                 <a href="${pageContext.request.contextPath}/findId">아이디 찾기</a> |
                                 <a href="${pageContext.request.contextPath}/findPw">비밀번호 찾기</a>
                             </div>
-                        </form>
                     </div>
                 </main>
 
@@ -227,20 +224,29 @@
             data() {
                 return {
                     // 변수 - (key : value)
+                    userId: "",
+                    userPwd: ""
                 };
             },
             methods: {
                 // 함수(메소드) - (key : function())
-                fnList: function () {
+                fnLogin: function () {
                     let self = this;
-                    let param = {};
+                    if (!self.userId || !self.userPwd) {
+                        alert("아이디와 비밀번호를 입력해주세요.");
+                        return;
+                    }
+                    let param = {
+                        userId: self.userId,
+                        userPwd: self.userPwd
+                    };
                     $.ajax({
-                        url: "",
+                        url: "/login.dox",
                         dataType: "json",
                         type: "POST",
                         data: param,
                         success: function (data) {
-
+                            
                         }
                     });
                 }
