@@ -18,4 +18,32 @@ public class sampleController {
 
         return "/login/login"; 
     }
+	
+	
+	// Product Category
+	@RequestMapping("/category/agriculture.do") 
+    public String aProduct(Model model) throws Exception{
+
+        return "/category/agriculture"; 
+    }	
+	
+	@RequestMapping("/category/animal.do") 
+    public String a1Product(Model model) throws Exception{
+
+        return "/category/animal"; 
+    }
+		
+	@RequestMapping("/category/forestry.do") 
+    public String fProduct(Model model) throws Exception{
+
+        return "/category/forestry"; 
+    }
+		
+	@RequestMapping("/category/marine.do") 
+    public String mProduct(Model model) throws Exception{
+
+        return "/category/marine"; 
+    }
+	
+	
 }

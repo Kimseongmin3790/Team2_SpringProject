@@ -4,6 +4,11 @@
 
 <c:set var="path" value="${pageContext.request.contextPath}" />
 
+<!DOCTYPE html>
+<html lang="en">
+<head>  
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
 
 <header class="header">
     <div class="header-top">
@@ -51,26 +56,26 @@
     </div>
 
     <!-- 하단 메뉴 -->
-    <div class="header-bottom">       
+    <div class="header-bottom">
+   
    
         <div class="category-container">
             <button class="btn-category" id="btnCategory">
                 <i class="fa fa-bars"></i> 카테고리
-            </button>            
-                
+            </button>
+            
             <ul class="dropdown-menu" id="dropdownMenu">
-                <li><a href="${path}/category/agriculture">농산물</a></li>
-                    <ul class="dropdown-menu" >
-                       <li><a href="/category/agriculture/crops">잡곡류</a></li>
-                       <li><a href="/category/agriculture/beans">콩</a></li>
-                       <li><a href="/category/agriculture/vegetables">채소류</a></li>
-                    </ul>                        
-                <li><a href="${path}/category/animal">축산물</a></li>
-                <li><a href="${path}/category/forestry">임산물</a></li>
-                <li><a href="${path}/category/marine">수산물</a></li>
-                <!-- <li><a href="${path}/category/others">기타</a></li> -->
+                <li v-for="item1 in categoryList1" :key="item1">
+                    <a :href="`/category/` + item1">{{item1}}</a>
+                    <ul class="dropdown-menu" id="dropdownMenu" >
+                        <li v-for="item2 in categoryList2" :key="item2">
+                            <a :href="`/category/`+ item1 + item2">{{item2}}</a>
+                        </li>
+                    </ul>    
+                </li>
             </ul>
-        </div>    
+            
+        </div>      
 
         <nav class="nav-menu">
             <a href="${path}/">홈</a>
@@ -124,6 +129,16 @@ $(document).ready(function () {
             $("#dropdownMenu").removeClass("show");
         }
     });
-});    
+});
+
+    // category list
+    const app = Vue.createApp({
+        data(){
+            return{
+                categoryList1:['농산물', '축산물', '임산물', '수산물'],
+                categoryList2:['잡곡류', '콩류', '채소류'] 
+            };
+        }
+    }).mount('#app')
 
 </script>
