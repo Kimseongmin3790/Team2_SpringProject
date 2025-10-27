@@ -207,8 +207,8 @@
 
                             <div class="login-links">
                                 <a href="${pageContext.request.contextPath}/chooseJoin.do">회원가입</a> |
-                                <a href="${pageContext.request.contextPath}/findId">아이디 찾기</a> |
-                                <a href="${pageContext.request.contextPath}/findPw">비밀번호 찾기</a>
+                                <a href="${pageContext.request.contextPath}/findId.do">아이디 찾기</a> |
+                                <a href="${pageContext.request.contextPath}/findPwd.do">비밀번호 찾기</a>
                             </div>
                     </div>
                 </main>
@@ -246,7 +246,13 @@
                         type: "POST",
                         data: param,
                         success: function (data) {
-                            
+                            if (data.result == "success") {
+                                alert(data.msg);
+                                location.href='${path}/default.do';
+                            } else {
+                                alert(data.msg);
+                                return;
+                            }
                         }
                     });
                 }
