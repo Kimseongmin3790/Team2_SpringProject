@@ -22,19 +22,19 @@ public class UserController {
 	@RequestMapping("/login.do") 
     public String login(Model model) throws Exception{
 
-        return "/user/login"; 
+        return "user/login"; 
     }
 	
 	@RequestMapping("/chooseJoin.do") 
     public String chooseJoin(Model model) throws Exception{
 
-        return "/user/chooseJoin"; 
+        return "user/chooseJoin"; 
     }
 	
 	@RequestMapping("/join.do") 
     public String join(Model model) throws Exception{
 
-        return "/user/join"; 
+        return "user/join"; 
     }
 	
 	@RequestMapping(value = "/join.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
