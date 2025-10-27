@@ -29,7 +29,7 @@
                         <span class="user-name">${sessionScope.userName}님</span>
                     </c:when>
                     <c:otherwise>
-                        <button class="btn-login" onclick="location.href='${path}/login.do'">로그인</button>
+                        <button class="btn-login" onclick="location.href='${path}/userlogin.do'">로그인</button>
                         <button class="btn-join" onclick="location.href='${path}/chooseJoin.do'">회원가입</button>
                     </c:otherwise>
                 </c:choose>
