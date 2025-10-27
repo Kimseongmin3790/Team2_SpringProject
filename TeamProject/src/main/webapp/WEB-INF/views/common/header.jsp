@@ -24,9 +24,18 @@
         <div class="header-right">
             <div class="login-group">
                 <c:choose>
-                    <c:when test="${not empty sessionScope.loginId}">
+                    <c:when test="${not empty sessionScope.loginId}"> 
                         <button class="btn-logout" id="btnLogout">로그아웃</button>
-                        <span class="user-name">${sessionScope.userName}님</span>
+                        <div class="user-menu-container">
+                            <button class="user-name-btn">${sessionScope.userName}님</button> 
+                            <ul class="user-dropdown-menu">
+                                <li><a href="${path}/mypage/consumer">소비자 마이페이지</a></li>
+                                
+                                <c:if test="${sessionScope.userType eq 'SELLER'}">
+                                    <li><a href="${path}/mypage/seller">판매자 마이페이지</a></li>
+                                </c:if>
+                            </ul>
+                        </div>
                     </c:when>
                     <c:otherwise>
                         <button class="btn-login" onclick="location.href='${path}/userlogin.do'">로그인</button>
@@ -56,11 +65,6 @@
                 <i class="fa fa-bars"></i> 카테고리
             </button>
             <ul class="dropdown-menu" id="dropdownMenu">
-                <li><a href="${path}/category/fruits">농산물</a></li>
-                <li><a href="${path}/category/vegetables">수산물</a></li>
-                <li><a href="${path}/category/meat">축산물</a></li>
-                <li><a href="${path}/category/seafood">가공식품</a></li>
-                <li><a href="${path}/category/others">기타</a></li>
             </ul>
         </div>
 
@@ -73,10 +77,40 @@
         </nav>
     </div>
 </header>
-
 <script>
 $(document).ready(function () {
     const path = "${pageContext.request.contextPath}";
+
+    $.ajax({
+        url:"/categoryList.dox",
+        type: "POST",
+        dataType: "json",
+        success: function (res) {
+            if (res.list && res.list.length > 0) {
+                const menu = $("#dropdownMenu");
+                menu.empty(); 
+
+                res.list.forEach(item => {
+                    const li = $("<li>");
+                    const a = $("<a>")
+                        .attr("href", path + item.categoryUrl)
+                        .text(item.categoryName);
+
+                    li.append(a);
+                    menu.append(li);
+                });
+            } else {
+                $("#dropdownMenu").append("<li><span>카테고리가 없습니다.</span></li>");
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("카테고리 불러오기 실패:", error);
+            $("#dropdownMenu").append("<li><span>불러오기 실패</span></li>");
+        }
+    });
+
+
+
 
     // 로고 클릭 → 홈으로 이동
     $("#logoClick").on("click", function () {
@@ -105,8 +139,9 @@ $(document).ready(function () {
     $("#btnFavorite").on("click", () => location.href = path + "/favorite");
     $("#btnCart").on("click", () => location.href = path + "/cart");
 
-    // 카테고리 토글
+    // 카테고리 버튼 클릭은 토글 기능만 수행
     $("#btnCategory").on("click", function () {
+        // 이미 데이터가 채워진 상태이므로 토글 기능만 남깁니다.
         $("#dropdownMenu").toggleClass("show");
     });
 
