@@ -94,7 +94,7 @@
                     font-size: 14px;
                 }
 
-                .btn-join {
+                .btn-join2 {
                     width: 100%;
                     height: 50px;
                     margin-top: 25px;
@@ -108,7 +108,7 @@
                     transition: 0.25s;
                 }
 
-                .btn-join:hover {
+                .btn-join2:hover {
                     background-color: #4ca857;
                 }
 
@@ -141,13 +141,14 @@
                             <!-- ✅ Vue 데이터 바인딩 -->
                             <div class="input-group">
                                 <label>아이디</label>
-                                <input type="text" v-model="userId" placeholder="아이디를 입력하세요">
+                                <input v-if="!check" v-model="userId" placeholder="영문+숫자 4~20자 사이만 입력 가능합니다">
+                                <input v-else v-model="userId" disabled>
                                 <button @click="fnCheck">중복확인</button>
                             </div>
 
                             <div class="input-group">
                                 <label>비밀번호</label>
-                                <input type="password" v-model="userPwd" placeholder="비밀번호를 입력하세요">
+                                <input type="password" v-model="userPwd" placeholder="소문자, 숫자, 특수문자가 각각 최소 1개 포함되어야 하며 길이는 8~16자 이내여야 합니다">
                             </div>
 
                             <div class="input-group">
@@ -157,7 +158,7 @@
 
                             <div class="input-group">
                                 <label>이름</label>
-                                <input type="text" v-model="userName" placeholder="이름을 입력하세요">
+                                <input type="text" v-model="userName" placeholder="이름은 한글 2~10자 이내만 가능합니다">
                             </div>
 
                             <div class="input-group">
@@ -167,12 +168,13 @@
 
                             <div class="input-group">
                                 <label>주소</label>
-                                <input type="text" v-model="userAddr" placeholder="주소를 입력하세요">
+                                <input v-model="userAddr" placeholder="주소 검색 버튼으로 입력해주세요" disabled><button
+                                    @click="fnAddr">주소 검색</button>
                             </div>
 
                             <div class="input-group">
                                 <label>휴대폰</label>
-                                <input type="text" v-model="userPhone" placeholder="휴대폰 번호를 입력하세요">
+                                <input type="text" v-model="userPhone" placeholder="예: 010-1234-5678 ">
                             </div>
 
                             <div class="input-group">
@@ -192,7 +194,7 @@
                                 <label>위 약관에 동의합니다.</label>
                             </div>
 
-                            <button class="btn-join" @click="fnJoin">회원가입</button>
+                            <button class="btn-join2" @click="fnJoin">회원가입</button>
 
                             <div class="link-login">
                                 이미 회원이신가요? <a :href="path + '/login.do'">로그인</a>
@@ -208,6 +210,12 @@
         </html>
 
         <script>
+            function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail, roadAddrPart2, engAddr, jibunAddr, zipNo, admCd, rnMgtSn, bdMgtSn, detBdNmList, bdNm, bdKdcd, siNm, sggNm, emdNm, liNm, rn, udrtYn, buldMnnm, buldSlno, mtYn, lnbrMnnm, lnbrSlno, emdNo) {
+                console.log(roadFullAddr);
+                console.log(addrDetail);
+                console.log(zipNo);
+                window.vueObj.fnResult(roadFullAddr, addrDetail, zipNo);
+            }
             const app = Vue.createApp({
                 data() {
                     return {
@@ -222,14 +230,21 @@
                         userPhone: "",
                         userRecommend: "",
                         agree: false,
-                        checkFlg: false
+                        checkFlg: false,
+                        role: "BUYER",
+                        check: false
 
                     };
                 },
                 methods: {
                     // 함수(메소드) - (key : function())
-                    fnCheck () {
+                    fnCheck() {
                         let self = this;
+                        const idRegex = /^[a-z][a-z0-9._]{3,19}$/;
+                        if (!idRegex.test(self.userId)) {
+                            alert("영문 + 숫자 4~20자 사이만 입력 가능합니다");
+                            return;
+                        }
                         let param = {
                             userId: self.userId
                         };
@@ -242,6 +257,7 @@
                                 if (data.result == "Y") {
                                     alert("사용 가능한 아이디입니다");
                                     self.checkFlg = true;
+                                    self.check = true;
                                 } else if (data.result == "N") {
                                     alert("중복된 아이디입니다");
                                     return;
@@ -263,6 +279,26 @@
                             alert("비밀번호가 일치하지 않습니다.");
                             return;
                         }
+                         const pwdRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+\[\]{};:'",.<>\/?\\|`~])(?!.*\s).{8,16}$/;
+                        if (!pwdRegex.test(self.userPwd)) {
+                            alert("비밀번호는 소문자, 숫자, 특수문자가 각각 최소 1개 포함되어야 하며 길이는 8~16자 이내여야 합니다");
+                            return;
+                        }
+                        const nameRegex = /^[가-힣]{2,10}$/;
+                        if (!nameRegex.test(self.userName)) {
+                            alert("이름은 한글 2~10자 이내만 가능합니다");
+                            return;
+                        }
+                        const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+                        if (!emailRegex.test(self.userEmail)) {
+                            alert("이메일 형식에 맞게 입력해주세요");
+                            return;
+                        }
+                        const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
+                        if (!phoneRegex.test(self.userPhone)) {
+                            alert("휴대폰 번호는 010-1234-5678 형태로 입력해주세요");
+                            return;
+                        }
                         if (!self.agree) {
                             alert("이용약관에 동의해야 합니다.");
                             return;
@@ -274,7 +310,8 @@
                             userEmail: self.userEmail,
                             userAddr: self.userAddr,
                             userPhone: self.userPhone,
-                            userRecommend: self.userRecommend
+                            userRecommend: self.userRecommend,
+                            userRole: self.role
                         };
                         $.ajax({
                             url: "/join.dox",
@@ -284,17 +321,25 @@
                             success: function (data) {
                                 if (data.result == "success") {
                                     alert("회원가입 되었습니다!");
-                                    location.href= self.path + "/login.do";
+                                    location.href = self.path + "/login.do";
                                 } else {
                                     alert("오류가 발생했습니다.");
                                 }
                             }
                         });
+                    },
+                    fnAddr: function () {
+                        window.open("/addr.do", "addr", "width=500, height=500");
+                    },
+                    fnResult: function (roadFullAddr, addrDetail, zipNo) {
+                        let self = this;
+                        self.userAddr = roadFullAddr;
                     }
                 }, // methods
                 mounted() {
                     // 처음 시작할 때 실행되는 부분
                     let self = this;
+                    window.vueObj = this;
                 }
             });
 

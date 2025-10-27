@@ -186,20 +186,17 @@
 
                             <!-- ✅ 소셜 로그인 -->
                             <div class="social-login">
-                                <button type="button" class="kakao"
-                                    onclick="location.href='${pageContext.request.contextPath}/oauth2/authorization/kakao'">
+                                <button type="button" class="kakao">
                                     <img src="${pageContext.request.contextPath}/resources/img/btn_login_kakao.png"
                                         alt="카카오 로그인">
                                 </button>
 
-                                <button type="button" class="naver"
-                                    onclick="location.href='${pageContext.request.contextPath}/oauth2/authorization/naver'">
+                                <button type="button" class="naver">
                                     <img src="${pageContext.request.contextPath}/resources/img/btn_login_naver.png"
                                         alt="네이버 로그인">
                                 </button>
 
-                                <button type="button" class="google"
-                                    onclick="location.href='${pageContext.request.contextPath}/oauth2/authorization/google'">
+                                <button type="button" class="google">
                                     <img src="${pageContext.request.contextPath}/resources/img/btn_login_google.png"
                                         alt="구글 로그인">
                                 </button>
@@ -207,8 +204,8 @@
 
                             <div class="login-links">
                                 <a href="${pageContext.request.contextPath}/chooseJoin.do">회원가입</a> |
-                                <a href="${pageContext.request.contextPath}/findId">아이디 찾기</a> |
-                                <a href="${pageContext.request.contextPath}/findPw">비밀번호 찾기</a>
+                                <a href="${pageContext.request.contextPath}/findId.do">아이디 찾기</a> |
+                                <a href="${pageContext.request.contextPath}/findPwd.do">비밀번호 찾기</a>
                             </div>
                     </div>
                 </main>
@@ -246,7 +243,13 @@
                         type: "POST",
                         data: param,
                         success: function (data) {
-                            
+                            if (data.result == "success") {
+                                alert(data.msg);
+                                location.href='${path}/default.do';
+                            } else {
+                                alert(data.msg);
+                                return;
+                            }
                         }
                     });
                 }
