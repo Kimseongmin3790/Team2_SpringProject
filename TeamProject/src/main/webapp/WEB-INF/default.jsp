@@ -55,7 +55,7 @@
                     return {
                         // 변수 - (key : value)
                     };
-                },
+                }, // 
                 methods: {
                     // 함수(메소드) - (key : function())
                     fnList: function () {
