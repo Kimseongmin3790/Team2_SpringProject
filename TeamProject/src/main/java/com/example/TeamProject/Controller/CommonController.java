@@ -26,12 +26,6 @@ public class CommonController {
         return "index"; 
     }
 	
-	@RequestMapping("/login.do") 
-    public String login(Model model) throws Exception{
-
-        return "/login/login"; 
-    }
-	
 	@RequestMapping("/customerService.do") 
     public String customerService(Model model) throws Exception{
 
