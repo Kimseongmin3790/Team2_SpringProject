@@ -299,7 +299,7 @@
                         },
                         fnSellerJoin: function () {
                             let self = this;
-                            if (!self.userId || !self.userPwd || !self.userPwdChk || !self.userName || !self.userEmail || !self.userAddr || !self.farmName || !self.certType || !self.bizNo || !self.account) {
+                            if (!self.userId || !self.userPwd || !self.userPwdChk || !self.userName || !self.userEmail || !self.userAddr) {
                                 alert("모든 항목을 입력해주세요.");
                                 return;
                             }
@@ -309,6 +309,26 @@
                             }
                             if (self.userPwd !== self.userPwdChk) {
                                 alert("비밀번호가 일치하지 않습니다.");
+                                return;
+                            }
+                            const pwdRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+\[\]{};:'",.<>\/?\\|`~])(?!.*\s).{8,16}$/;
+                            if (!pwdRegex.test(self.userPwd)) {
+                                alert("비밀번호는 소문자, 숫자, 특수문자가 각각 최소 1개 포함되어야 하며 길이는 8~16자 이내여야 합니다");
+                                return;
+                            }
+                            const nameRegex = /^[가-힣]{2,10}$/;
+                            if (!nameRegex.test(self.userName)) {
+                                alert("이름은 한글 2~10자 이내만 가능합니다");
+                                return;
+                            }
+                            const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+                            if (!emailRegex.test(self.userEmail)) {
+                                alert("이메일 형식에 맞게 입력해주세요");
+                                return;
+                            }
+                            const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
+                            if (!phoneRegex.test(self.userPhone)) {
+                                alert("휴대폰 번호는 010-1234-5678 형태로 입력해주세요");
                                 return;
                             }
                             if (!self.agree) {
@@ -356,7 +376,7 @@
                                 success: function (data) {
                                     if (data.result == "success") {
                                         alert("회원가입 되었습니다!");
-                                        location.href= self.path + "/login.do";
+                                        location.href = self.path + "/login.do";
                                     } else {
                                         alert("오류가 발생했습니다.");
                                     }

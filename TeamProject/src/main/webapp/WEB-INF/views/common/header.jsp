@@ -125,9 +125,9 @@
                     }
 
                     if (sessionStatus === "BUYER") {
-                        location.href = path + "/buyer.do"
+                        location.href = path + "/buyerMyPage.do"
                     } else if (sessionStatus === "SELLER") {
-                        location.href = path + "/seller.do";
+                        location.href = path + "/sellerMypage.do";
                     } else {
                         alert("잘못된 사용자 정보입니다.");
                     }
