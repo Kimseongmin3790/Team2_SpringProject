@@ -31,7 +31,7 @@ public class UserController {
         return "user/chooseJoin"; 
     }
 	
-	@RequestMapping("/join.do") 
+	@RequestMapping("/userjoin.do") 
     public String join(Model model) throws Exception{
 
         return "user/join"; 
