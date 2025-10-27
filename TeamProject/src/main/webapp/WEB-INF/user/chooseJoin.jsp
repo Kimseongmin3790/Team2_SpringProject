@@ -93,7 +93,7 @@
                         <h2>회원가입 유형을 선택해주세요</h2>
 
                         <div>
-                            <a href="${path}/join.do">
+                            <a href="${path}/userJoin.do">
                                 <button class="join-btn btn-buyer">👤 일반 회원가입</button>
                             </a>
                             <p class="desc">소비자로 가입하여 상품을 구매할 수 있습니다.</p>

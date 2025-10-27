@@ -31,10 +31,10 @@ public class UserController {
         return "user/chooseJoin"; 
     }
 	
-	@RequestMapping("/userjoin.do") 
+	@RequestMapping("/userJoin.do") 
     public String join(Model model) throws Exception{
 
-        return "user/join"; 
+        return "user/userJoin"; 
     }
 	
 	@RequestMapping("/sellerJoin.do") 
@@ -61,14 +61,14 @@ public class UserController {
         return "jusoPopup";
     }
 	
-	@RequestMapping("/buyer.do") 
-    public String buyer(Model model) throws Exception{
+	@RequestMapping("/buyerMyPage.do") 
+    public String buyerMyPage(Model model) throws Exception{
 
         return "user/buyerMypage";
     }
 	
-	@RequestMapping("/seller.do") 
-    public String seller(Model model) throws Exception{
+	@RequestMapping("/sellerMypage.do") 
+    public String sellerMypage(Model model) throws Exception{
 
         return "user/sellerMypage";
     }
