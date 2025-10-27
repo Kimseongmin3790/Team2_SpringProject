@@ -73,6 +73,12 @@ public class UserController {
         return "user/sellerMyPage";
     }
 	
+	@RequestMapping("/buyermypage.do") 
+    public String buyerMyPage(Model model) throws Exception{
+
+        return "user/buyerMyPage"; 
+    }
+	
 	@RequestMapping(value = "/join.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String join(Model model, @RequestParam HashMap<String, Object> map) throws Exception {

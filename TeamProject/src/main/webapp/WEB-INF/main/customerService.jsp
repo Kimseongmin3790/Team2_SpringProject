@@ -7,6 +7,8 @@
     <title>고객센터</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
     <style>
         body { 
             font-family: sans-serif; 
@@ -209,6 +211,19 @@
         .inquiry-form .submit-button:hover { 
             background-color: #047857; 
         }
+        .inquiry-form .form-check {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; 
+            margin-bottom: 1.5rem; 
+        }
+        .inquiry-form .form-check-input {
+            width: auto;
+            margin: 0;
+        }
+        .inquiry-form .form-check-label {
+            margin-bottom: 0; 
+        }
         /* 공지사항 리스트 스타일 */
         .notice-list { 
             display: flex; 
@@ -240,10 +255,10 @@
     <div id="app">
         <main class="container main-content">
             <div class="max-w-5xl mx-auto">
-                <h2 class="main-title">무엇을 도와드릴까요?</h2>
+                <h2 class="main-title">무엇을 도와드릴까요?</h2> <!-- 공지사항과 자주묻는 질문 테이블에서 검색가능-->
                 <div class="search-wrapper">
                     <div class="search-form">
-                        <input type="text" placeholder="궁금한 점을 검색해보세요" class="search-input">
+                        <input type="text" placeholder="궁금한 점을 검색해보세요" class="search-input" v-model="searchText">
                         <button class="search-button" aria-label="검색" @click="fnSearch"><span>🔍</span></button>
                     </div>
                 </div>
@@ -271,14 +286,25 @@
                     <h3 class="content-title">빠른 답변</h3>
                     <div class="faq-list">
                         <details>
-                            <summary class="faq-question"><span class="faq-question-text">배송은 얼마나걸리나요?</span><span class="faq-arrow">▼</span></summary>
+                            <summary class="faq-question"><span class="faq-question-text">[배송관련]배송은 얼마나걸리나요?</span><span class="faq-arrow">▼</span></summary>
                             <div class="faq-answer">주문 후 2-3일 이내에 배송됩니다. 신선 상품의 경우당일 또는 익일 배송이 가능합니다.</div>
                         </details>
                         <details>
-                            <summary class="faq-question"><span class="faq-question-text">결제 방법은어떤 것이 있나요?</span><span class="faq-arrow">▼</span></summary>
+                            <summary class="faq-question"><span class="faq-question-text">[주문결제]결제 방법은어떤 것이 있나요?</span><span class="faq-arrow">▼</span></summary>
                             <div class="faq-answer">신용카드, 계좌이체, 무통장입금, 간편결제(카카오페이,네이버페이) 등을 지원합니다.</div>
                         </details>
-                        <!-- 다른 질문들... -->
+                        <details>
+                            <summary class="faq-question"><span class="faq-question-text">[상품관련] 사진하고 달라요.</span><span class="faq-arrow">▼</span></summary>
+                            <div class="faq-answer">농산물의 경우 공산품처럼 상품이 항상 같을 수가 없습니다.이점 양해 부탁드립니다</div>
+                        </details>
+                        <details>
+                            <summary class="faq-question"><span class="faq-question-text">ㅇㅇ</span><span class="faq-arrow">▼</span></summary>
+                            <div class="faq-answer">ㅇㅇ</div>
+                        </details>
+                        <details>
+                            <summary class="faq-question"><span class="faq-question-text">ㅇㅇ</span><span class="faq-arrow">▼</span></summary>
+                            <div class="faq-answer">ㅇㅇ</div>
+                        </details>                    
                     </div>
                 </div>
 
@@ -287,7 +313,7 @@
                     <h3 class="content-title">1대1 문의하기</h3>
                     <div class="form-group">
                         <label for="inquiry-category">문의 유형</label>
-                        <select id="inquiry-category" class="form-select">
+                        <select id="inquiry-category" class="form-select" v-model="inquiryCategory">
                             <option>주문/결제</option>
                             <option>배송</option>
                             <option>취소/환불</option>
@@ -295,18 +321,32 @@
                             <option>기타</option>
                         </select>
                     </div>
+                    <div class="form-group" v-if="isOrderRelatedCategory">
+                        <label for="inquiry-order">주문 선택</label>
+                        <select id="inquiry-order" class="form-select" v-model="selectedOrderNo">
+                            <option :value="null">문의할 주문을 선택하세요</option>
+
+                            <option v-for="order in orderList" :key="order.ORDER_NO" :value="order.ORDER_NO">
+                                [{{ order.ORDERDATE }}] {{ order.PNAME }}
+                            </option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="inquiry-title">제목</label>
-                        <input type="text" id="inquiry-title" class="form-input" placeholder="제목을 입력하세요">
+                        <input type="text" id="inquiry-title" class="form-input" placeholder="제목을 입력하세요" v-model="inquiryTitle">
                     </div>
                     <div class="form-group">
                         <label for="inquiry-content">내용</label>
-                        <textarea id="inquiry-content" class="form-textarea" placeholder="문의하실 내용을 입력하세요"></textarea>
+                        <textarea id="inquiry-content" class="form-textarea" placeholder="문의하실 내용을 입력하세요" v-model="inquiryContent"></textarea>
                     </div>
-                    <button class="submit-button">문의 등록</button>
+                     <div class="form-group form-check">
+                        <input type="checkbox" id="inquiry-secret" class="form-check-input" v-model="isSecret">
+                        <label for="inquiry-secret" class="form-check-label">비밀글로 문의하기</label>
+                    </div>
+                    <button class="submit-button" @click="fnInquiry">문의 등록</button>
                 </div>
 
-                <!-- 공지사항 -->
+                <!-- 공지사항 추후 공지사항 게시판과 연동 예정-->
                 <div v-if="activeTab === 'notice'" class="content-section">
                     <h3 class="content-title">공지사항</h3>
                     <div class="notice-list">
@@ -335,13 +375,34 @@
         data() {
             return {
                 activeTab: 'faq', // 기본으로 보여줄 탭
-                list : [],
-                id : 'buyer01'
+                id : 'buyer01', // 임시로 아이디 넣어둠
+                
+                // 문의글
+                inquiryCategory: "",
+                isSecret : 'N',
+                inquiryTitle : "",
+                inquiryContent : "",
+                orderList: [],
+                selectedOrderNo: null,
+
+                // 검색기능
+                searchText: "",
+                noticeList : [],
+                filteredFaqList: [],
+                filteredNoticeList: [],
+
+
+
             };
         },
+        computed: { 
+            isOrderRelatedCategory() {
+                const orderCategories = ['주문/결제', '배송', '취소/환불'];
+                return orderCategories.includes(this.inquiryCategory);
+            }
+        },
         methods: {
-            // 필요 시 함수 추가
-            fnOrderInfo (){
+            fnOrderInfo (){ // 주문정보 가져오는 함수
                 let self = this;
                 let param = {
                     buyerId : self.id
@@ -352,7 +413,27 @@
                     type: "POST",
                     data: param,
                     success: function (data) {
-                        self.list = data.list;
+                        self.orderList = data.list;
+                    }
+                });    
+            },
+            fnInquiry(){ // 문의글 작성 함수
+                let self = this;
+                let param = {
+                    category: self.inquiryCategory,
+                    title: self.inquiryTitle,
+                    content: self.inquiryContent,
+                    isSecret: self.isSecret,
+                    orderNo: self.selectedOrderNo,
+                    userId : self.id
+                };
+                $.ajax({
+                    url: "/inquiry-add.dox",
+                    dataType: "json",
+                    type: "POST",
+                    data: param,
+                    success: function (data) {
+                        console.log(data);
                     }
                 });    
             }
@@ -361,6 +442,13 @@
         mounted() {
             let self = this;
             self.fnOrderInfo();
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabFromUrl = urlParams.get('tab'); 
+            const validTabs = ['faq', 'inquiry', 'notice'];
+
+            if (tabFromUrl && validTabs.includes(tabFromUrl)) {
+                self.activeTab = tabFromUrl;
+            }
         }
     });
     app.mount('#app');

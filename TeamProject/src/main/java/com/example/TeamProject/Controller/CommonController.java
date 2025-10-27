@@ -29,15 +29,36 @@ public class CommonController {
 	@RequestMapping("/customerService.do") 
     public String customerService(Model model) throws Exception{
 
-        return "/views/common/customerService"; 
+        return "main/customerService"; 
     }
 	
-	@RequestMapping(value = "orderList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@RequestMapping("/terms.do")
+	public String termsPage() {
+	    return "main/TermsOfService";
+	}
+	
+	@RequestMapping(value = "/orderList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public String tblList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+	public String orderList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = commonService.getOrdersByBuyerId(map);
 		
 		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/inquiry-add.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String inquiry(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = commonService.inquiryAdd(map);
+		
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/categoryList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String categoryList(@RequestParam HashMap<String, Object> map) throws Exception {
+	    HashMap<String, Object> resultMap = commonService.allCategory(map);
+	    return new Gson().toJson(resultMap);
 	}
 }
