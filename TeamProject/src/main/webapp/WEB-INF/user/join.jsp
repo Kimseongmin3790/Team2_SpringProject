@@ -94,7 +94,7 @@
                     font-size: 14px;
                 }
 
-                .btn-join {
+                .btn-join2 {
                     width: 100%;
                     height: 50px;
                     margin-top: 25px;
@@ -108,7 +108,7 @@
                     transition: 0.25s;
                 }
 
-                .btn-join:hover {
+                .btn-join2:hover {
                     background-color: #4ca857;
                 }
 
@@ -167,7 +167,8 @@
 
                             <div class="input-group">
                                 <label>주소</label>
-                                <input type="text" v-model="userAddr" placeholder="주소를 입력하세요">
+                                <input v-model="userAddr" placeholder="주소 검색 버튼으로 입력해주세요" disabled><button
+                                    @click="fnAddr">주소 검색</button>
                             </div>
 
                             <div class="input-group">
@@ -192,7 +193,7 @@
                                 <label>위 약관에 동의합니다.</label>
                             </div>
 
-                            <button class="btn-join" @click="fnJoin">회원가입</button>
+                            <button class="btn-join2" @click="fnJoin">회원가입</button>
 
                             <div class="link-login">
                                 이미 회원이신가요? <a :href="path + '/login.do'">로그인</a>
@@ -208,6 +209,12 @@
         </html>
 
         <script>
+            function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail, roadAddrPart2, engAddr, jibunAddr, zipNo, admCd, rnMgtSn, bdMgtSn, detBdNmList, bdNm, bdKdcd, siNm, sggNm, emdNm, liNm, rn, udrtYn, buldMnnm, buldSlno, mtYn, lnbrMnnm, lnbrSlno, emdNo) {
+                console.log(roadFullAddr);
+                console.log(addrDetail);
+                console.log(zipNo);
+                window.vueObj.fnResult(roadFullAddr, addrDetail, zipNo);
+            }
             const app = Vue.createApp({
                 data() {
                     return {
@@ -222,13 +229,14 @@
                         userPhone: "",
                         userRecommend: "",
                         agree: false,
-                        checkFlg: false
+                        checkFlg: false,
+                        role: "BUYER"
 
                     };
                 },
                 methods: {
                     // 함수(메소드) - (key : function())
-                    fnCheck () {
+                    fnCheck() {
                         let self = this;
                         let param = {
                             userId: self.userId
@@ -274,7 +282,8 @@
                             userEmail: self.userEmail,
                             userAddr: self.userAddr,
                             userPhone: self.userPhone,
-                            userRecommend: self.userRecommend
+                            userRecommend: self.userRecommend,
+                            userRole: self.role
                         };
                         $.ajax({
                             url: "/join.dox",
@@ -284,17 +293,25 @@
                             success: function (data) {
                                 if (data.result == "success") {
                                     alert("회원가입 되었습니다!");
-                                    location.href= self.path + "/login.do";
+                                    location.href = self.path + "/login.do";
                                 } else {
                                     alert("오류가 발생했습니다.");
                                 }
                             }
                         });
+                    },
+                    fnAddr: function () {
+                        window.open("/addr.do", "addr", "width=500, height=500");
+                    },
+                    fnResult: function (roadFullAddr, addrDetail, zipNo) {
+                        let self = this;
+                        self.userAddr = roadFullAddr;
                     }
                 }, // methods
                 mounted() {
                     // 처음 시작할 때 실행되는 부분
                     let self = this;
+                    window.vueObj = this;
                 }
             });
 
