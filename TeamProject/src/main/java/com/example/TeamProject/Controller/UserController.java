@@ -19,7 +19,7 @@ public class UserController {
 	@Autowired
 	UserService userService;
 	
-	@RequestMapping("/login.do") 
+	@RequestMapping("/userlogin.do") 
     public String login(Model model) throws Exception{
 
         return "/user/login"; 
@@ -31,7 +31,7 @@ public class UserController {
         return "/user/chooseJoin"; 
     }
 	
-	@RequestMapping("/join.do") 
+	@RequestMapping("/userjoin.do") 
     public String join(Model model) throws Exception{
 
         return "/user/join"; 
