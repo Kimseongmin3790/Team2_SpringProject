@@ -87,7 +87,7 @@
         </div>
 
         <nav class="nav-menu">
-            <a href="${path}/">홈</a>
+            <a href="${path}/main/do">홈</a>
             <a href="${path}/product/list">상품목록</a>
             <a href="${path}/product/new">신상품</a>
             <a href="${path}/review/list">상품후기</a>
@@ -132,7 +132,7 @@ $(document).ready(function () {
 
     // 로고 클릭 → 홈으로 이동
     $("#logoClick").on("click", function () {
-        location.href = path + "/default.do";
+        location.href = path + "/main/do";
     });
 
     // 검색
