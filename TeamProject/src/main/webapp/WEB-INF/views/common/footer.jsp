@@ -19,23 +19,22 @@
                 <ul>
                     <li><a href="${path}/brand">브랜드 스토리</a></li>
                     <li><a href="${path}/contact">입점/제휴 문의</a></li>
-                    <li><a href="${path}/notice">공지사항</a></li>
                 </ul>
             </div>
 
             <div class="footer-column">
                 <h3>고객센터</h3>
                 <ul>
-                    <li><a href="${path}/faq">자주 묻는 질문</a></li>
-                    <li><a href="${path}/qna">1:1 문의</a></li>
-                    <li><a href="${path}/exchange">교환/반품 안내</a></li>
+                    <li><a href="${path}/customerService.do?tab=faq">자주 묻는 질문</a></li>
+                    <li><a href="${path}/customerService.do?tab=inquiry">1:1 문의</a></li>
+                    <li><a href="${path}/customerService.do?tab=notice">공지 사항</a></li>
                 </ul>
             </div>
 
             <div class="footer-column">
                 <h3>이용안내</h3>
                 <ul>
-                    <li><a href="${path}/terms">이용약관</a></li>
+                    <li><a href="#" id="open-terms-link">이용약관</a></li>
                     <li><a href="${path}/privacy">개인정보처리방침</a></li>
                 </ul>
             </div>
@@ -67,4 +66,33 @@
         </p>
         <p class="copyright">© 2025 AGRICOLA. All rights reserved.</p>
     </div>
+    <div id="terms-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h2>이용약관</h2>
+            <div class="terms-text">
+            </div>
+        </div>
+    </div>
 </footer>
+<script>
+$(document).ready(function() {
+    // '이용약관' 링크 클릭 시
+    $('#open-terms-link').on('click', function(e) {
+        e.preventDefault();
+
+        $('#terms-modal .terms-text').load('${path}/terms.do', function() {
+            
+            $('#terms-modal').fadeIn();
+        });
+    });
+    // 닫기 버튼 또는 모달 바깥 영역 클릭 시
+    $('.modal-close-btn, .modal-overlay').on('click', function(e) {
+        if ($(e.target).closest('.modal-content').length > 0 && !$(e.target).hasClass('modal-close-btn'))
+        {
+            return;
+        }
+        $('#terms-modal').fadeOut();
+    });
+});
+</script>

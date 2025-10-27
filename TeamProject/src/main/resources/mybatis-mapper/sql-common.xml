@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.CommonMapper">
+	<!--구매 상품 찿기-->
+	<select id="selectOrdersByBuyerId" parameterType="hashmap" resultType="com.example.TeamProject.model.Order">
+		SELECT *
+			FROM ORDERS
+			WHERE BUYER_ID = #{buyerId}
+	</select>
+	
+	<!--문의글 등록-->
+	<insert id="inquiryInsert" parameterType="hashmap" useGeneratedKeys="true" keyColumn="INQUIRY_NO" keyProperty="inquiryNo">
+		INSERT INTO INQUIRY (
+		    INQUIRY_NO,
+		    USER_ID,
+		    CATEGORY,
+		    TITLE,
+		    CONTENT,
+		    STATUS,
+		    IS_SECRET,
+		    CDATETIME,
+		    UDATETIME,
+		    ORDER_NO
+		) VALUES (
+		    INQUIRY_SEQ.NEXTVAL,
+		    #{userId},
+		    #{category},
+		    #{title},
+		    #{content},
+		    '대기',
+		    #{isSecret},
+		    SYSDATE,
+		    SYSDATE,
+		    #{orderNo}
+		)
+	</insert>
+	
+	<!--상품 카테고리 목록 가져오기-->
+	<select id="getAllCategory" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
+		SELECT *
+		FROM PRODUCT_CATEGORY
+		WHERE PARENT_CATEGORY_NO IS NULL	
+	</select>
+
+</mapper>
+
+
+
+

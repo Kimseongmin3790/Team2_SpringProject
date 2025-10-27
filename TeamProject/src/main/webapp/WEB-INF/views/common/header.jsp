@@ -1,50 +1,77 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+            crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-<c:set var="path" value="${pageContext.request.contextPath}" />
+        <c:set var="path" value="${pageContext.request.contextPath}" />
 
-<header class="header">
-    <div class="header-top">
-        <!-- 로고 -->
-        <div class="logo" id="logoClick" style="cursor:pointer;">
-            <img src="${path}/resources/img/logo.png" alt="로고" class="logo-img">
-        </div>
+        <header class="header">
+            <div class="header-top">
+                <!-- 로고 -->
+                <div class="logo" id="logoClick" style="cursor:pointer;">
+                    <img src="${path}/resources/img/logo.png" alt="로고" class="logo-img">
+                </div>
 
-        <!-- 검색창 -->
-        <div class="search-section">
-            <div class="search-bar">
-                <i class="fa fa-search"></i>
-                <input type="text" placeholder="검색창" id="searchInput">
+                <!-- 검색창 -->
+                <div class="search-section">
+                    <div class="search-bar">
+                        <i class="fa fa-search"></i>
+                        <input type="text" placeholder="검색창" id="searchInput">
+                    </div>
+                    <button class="btn-search" id="btnSearch">검색</button>
+                </div>
+
+                <!-- 오른쪽 메뉴 -->
+                <div class="header-right">
+                    <div class="login-group">
+                        <c:choose>
+                            <c:when test="${not empty sessionId}">
+                                <button class="btn-logout" id="btnLogout">로그아웃</button>
+                                <span class="user-name">${{sessionId}}님</span>
+                            </c:when>
+                            <c:otherwise>
+                                <button class="btn-login" onclick="location.href='${path}/login.do'">로그인</button>
+                                <button class="btn-join" onclick="location.href='${path}/chooseJoin.do'">회원가입</button>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
+                    <div class="icon-group">
+                        <a href="javascript:;" id="btnMyPage" title="마이페이지">
+                            <i class="fa-solid fa-user"></i>
+                        </a>
+                        <a href="javascript:;" id="btnFavorite" title="찜한상품">
+                            <i class="fa-solid fa-heart"></i>
+                        </a>
+                        <a href="javascript:;" id="btnCart" title="장바구니">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
-            <button class="btn-search" id="btnSearch">검색</button>
-        </div>
 
-        <!-- 오른쪽 메뉴 -->
-        <div class="header-right">
-            <div class="login-group">
-                <c:choose>
-                    <c:when test="${not empty sessionScope.loginId}">
-                        <button class="btn-logout" id="btnLogout">로그아웃</button>
-                        <span class="user-name">${sessionScope.userName}님</span>
-                    </c:when>
-                    <c:otherwise>
-                        <button class="btn-login" onclick="location.href='${path}/login.do'">로그인</button>
-                        <button class="btn-join" onclick="location.href='${path}/join'">회원가입</button>
-                    </c:otherwise>
-                </c:choose>
-            </div>
+            <!-- 하단 메뉴 -->
+            <div class="header-bottom">
+                <div class="category-container">
+                    <button class="btn-category" id="btnCategory">
+                        <i class="fa fa-bars"></i> 카테고리
+                    </button>
+                    <ul class="dropdown-menu" id="dropdownMenu">
+                        <li><a href="${path}/category/fruits">농산물</a></li>
+                        <li><a href="${path}/category/vegetables">수산물</a></li>
+                        <li><a href="${path}/category/meat">축산물</a></li>
+                        <li><a href="${path}/category/seafood">가공식품</a></li>
+                        <li><a href="${path}/category/others">기타</a></li>
+                    </ul>
+                </div>
 
-            <div class="icon-group">
-                <a href="javascript:;" id="btnMyPage" title="마이페이지">
-                    <i class="fa-solid fa-user"></i>
-                </a>
-                <a href="javascript:;" id="btnFavorite" title="찜한상품">
-                    <i class="fa-solid fa-heart"></i>
-                </a>
-                <a href="javascript:;" id="btnCart" title="장바구니">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                </a>
+                <nav class="nav-menu">
+                    <a href="${path}/">홈</a>
+                    <a href="${path}/product/list">상품목록</a>
+                    <a href="${path}/product/new">신상품</a>
+                    <a href="${path}/review/list">상품후기</a>
+                    <a href="${path}/event">번쩍장터</a>
+                </nav>
             </div>
         </div>
     </div>
@@ -56,11 +83,6 @@
                 <i class="fa fa-bars"></i> 카테고리
             </button>
             <ul class="dropdown-menu" id="dropdownMenu">
-                <li><a href="${path}/category/fruits">과일</a></li>
-                <li><a href="${path}/category/vegetables">채소</a></li>
-                <li><a href="${path}/category/meat">축산물</a></li>
-                <li><a href="${path}/category/seafood">수산물</a></li>
-                <li><a href="${path}/category/others">기타</a></li>
             </ul>
         </div>
 
@@ -73,10 +95,40 @@
         </nav>
     </div>
 </header>
-
 <script>
 $(document).ready(function () {
     const path = "${pageContext.request.contextPath}";
+
+    $.ajax({
+        url:"/categoryList.dox",
+        type: "POST",
+        dataType: "json",
+        success: function (res) {
+            if (res.list && res.list.length > 0) {
+                const menu = $("#dropdownMenu");
+                menu.empty(); 
+
+                res.list.forEach(item => {
+                    const li = $("<li>");
+                    const a = $("<a>")
+                        .attr("href", path + item.categoryUrl)
+                        .text(item.categoryName);
+
+                    li.append(a);
+                    menu.append(li);
+                });
+            } else {
+                $("#dropdownMenu").append("<li><span>카테고리가 없습니다.</span></li>");
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("카테고리 불러오기 실패:", error);
+            $("#dropdownMenu").append("<li><span>불러오기 실패</span></li>");
+        }
+    });
+
+
+
 
     // 로고 클릭 → 홈으로 이동
     $("#logoClick").on("click", function () {
@@ -105,8 +157,9 @@ $(document).ready(function () {
     $("#btnFavorite").on("click", () => location.href = path + "/favorite");
     $("#btnCart").on("click", () => location.href = path + "/cart");
 
-    // 카테고리 토글
+    // 카테고리 버튼 클릭은 토글 기능만 수행
     $("#btnCategory").on("click", function () {
+        // 이미 데이터가 채워진 상태이므로 토글 기능만 남깁니다.
         $("#dropdownMenu").toggleClass("show");
     });
 

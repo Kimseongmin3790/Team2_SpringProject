@@ -6,11 +6,10 @@
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Document</title>
+            <title>판매자 마이페이지 | AGRICOLA</title>
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-            <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <style>
@@ -28,22 +27,66 @@
 
                 .content {
                     flex: 1;
+                    max-width: 1000px;
+                    margin: 40px auto;
+                    font-family: "Noto Sans KR", sans-serif;
+                }
+
+                .section {
+                    background: #fff;
+                    border: 1px solid #ddd;
+                    border-radius: 10px;
+                    padding: 20px;
+                    margin-bottom: 30px;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                }
+
+                h2 {
+                    color: #1a5d1a;
+                    margin-bottom: 15px;
                 }
             </style>
         </head>
 
         <body>
             <div id="app">
-                <!-- 공통 헤더 -->
                 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                     <main class="content">
-                        <h3>신선한 농수산물을 직접 거래하세요!</h3>
-                        <p>생산자와 소비자가 1:1로 연결되는 새로운 직거래 플랫폼입니다.</p>
+                        <h1>판매자 마이페이지</h1>
+
+                        <div class="section" id="sectionPosts">
+                            <h2>📢 내 글 목록</h2>
+                            <div id="postList">데이터를 불러오는 중...</div>
+                        </div>
+
+                        <div class="section" id="sectionOrders">
+                            <h2>🧾 주문 관리</h2>
+                            <div id="orderList">데이터를 불러오는 중...</div>
+                        </div>
+
+                        <div class="section" id="sectionReviews">
+                            <h2>⭐ 후기 확인</h2>
+                            <div id="reviewList">데이터를 불러오는 중...</div>
+                        </div>
+
+                        <div class="section" id="sectionInfo">
+                            <h2>🏪 내 정보 / 가게 정보</h2>
+                            <div id="sellerInfo">데이터를 불러오는 중...</div>
+                        </div>
+
+                        <div class="section" id="sectionSettlement">
+                            <h2>💰 정산 관리</h2>
+                            <div id="settlementList">데이터를 불러오는 중...</div>
+                        </div>
+
+                        <div class="section" id="sectionWithdraw">
+                            <h2>🚫 회원탈퇴</h2>
+                            <button id="btnWithdraw">회원 탈퇴</button>
+                        </div>
                     </main>
 
-                <!-- 공통 푸터 -->
-                <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+                    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
             </div>
         </body>
 
@@ -54,9 +97,8 @@
                 data() {
                     return {
                         // 변수 - (key : value)
-                        sessionId: "${sessionId}"
                     };
-                }, // 
+                },
                 methods: {
                     // 함수(메소드) - (key : function())
                     fnList: function () {

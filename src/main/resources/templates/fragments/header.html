@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <header th:fragment="headerFragment" class="header">
+        <div class="header-inner">
+            <div class="header-left">
+                <a href="/" class="logo">
+                    <!-- 로고 이미지 또는 텍스트 -->
+                    <span>신선마켓</span>
+                </a>
+            </div>
+            <div class="header-center">
+                <div class="search-bar">
+                    <input type="text" placeholder="찾으시는 제철 상품이 있나요?">
+                    <button type="submit">검색</button>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="/login">로그인</a>
+                <a href="/register">회원가입</a>
+                <a href="/mypage">마이페이지</a>
+                <a href="/cart">장바구니</a>
+            </div>
+        </div>
+        <nav class="gnb">
+            <ul>
+                <li><a href="#">전체 카테고리</a></li>
+                <li><a href="#">제철상품</a></li>
+                <li><a href="#">반짝특가</a></li>
+                <li><a href="#">생산자 이야기</a></li>
+                <li><a href="#">레시피</a></li>
+            </ul>
+        </nav>
+    </header>
+</body>
+</html>
