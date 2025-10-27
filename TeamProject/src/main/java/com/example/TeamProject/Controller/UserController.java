@@ -19,7 +19,7 @@ public class UserController {
 	@Autowired
 	UserService userService;
 	
-	@RequestMapping("/userlogin.do") 
+	@RequestMapping("/login.do") 
     public String login(Model model) throws Exception{
 
         return "/user/login"; 
