@@ -17,5 +17,6 @@ public interface CommonMapper {
 	int inquiryInsert(HashMap<String, Object> map);
 	// 최상위 카테고리 목록 가져오기
 	List<ProductCategory> getAllCategory(HashMap<String, Object> map);
-	
+	// 입점 등록
+	int insertSellerInfo(HashMap<String, Object> map);
 }

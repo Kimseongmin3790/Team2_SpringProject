@@ -43,6 +43,27 @@
 		FROM PRODUCT_CATEGORY
 		WHERE PARENT_CATEGORY_NO IS NULL	
 	</select>
+	
+	<!--입점 등록-->
+	 <insert id="insertSellerInfo" parameterType="hashmap">
+     INSERT INTO SELLER_INFO (
+	         USER_ID,
+	         BUSINESS_NAME,
+	         BUSINESS_NUMBER,
+	         BANKNAME,
+	         ACCOUNT,
+	         BUSINESS_LI,
+	         VERIFIED
+	     ) VALUES (
+	         #{userId},
+	         #{businessName},
+	         #{businessNumber},
+	         #{bankName},
+	         #{account},
+	         #{businessLi},
+	         'N'
+	     )
+	 </insert>
 
 </mapper>
 
