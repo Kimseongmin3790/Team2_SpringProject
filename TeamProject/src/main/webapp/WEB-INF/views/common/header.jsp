@@ -35,6 +35,14 @@
                             </c:otherwise>
                         </c:choose>
                     </div>
+                    <!-- 관리자 버튼 (ADMIN 전용) -->
+                    <c:if test="${sessionScope.sessionStatus eq 'ADMIN'}">
+                        <div class="admin-group">
+                            <button class="btn-admin" onclick="location.href='${path}/dashboard.do'">
+                                관리자페이지
+                            </button>
+                        </div>
+                    </c:if>
 
                     <div class="icon-group">
                         <a href="javascript:;" id="btnMyPage" title="마이페이지">
@@ -56,12 +64,8 @@
                     <button class="btn-category" id="btnCategory">
                         <i class="fa fa-bars"></i> 카테고리
                     </button>
-                    <ul class="dropdown-menu" id="dropdownMenu">
-                        <li><a href="${path}/category/fruits">농산물</a></li>
-                        <li><a href="${path}/category/vegetables">수산물</a></li>
-                        <li><a href="${path}/category/meat">축산물</a></li>
-                        <li><a href="${path}/category/seafood">가공식품</a></li>
-                        <li><a href="${path}/category/others">기타</a></li>
+                    <ul class="category-menu" id="dropdownMenu">
+                        <!-- AJAX로 대분류, 중분류, 소분류가 자동 생성됨 -->
                     </ul>
                 </div>
 
@@ -80,26 +84,51 @@
                 const path = "${pageContext.request.contextPath}";
 
                 $.ajax({
-                    url: "/categoryList.dox",
+                    url: path + "/categoryList.dox",
                     type: "POST",
                     dataType: "json",
                     success: function (res) {
-                        if (res.list && res.list.length > 0) {
-                            const menu = $("#dropdownMenu");
-                            menu.empty();
+                        const menu = $("#dropdownMenu");
+                        menu.empty();
 
-                            res.list.forEach(item => {
-                                const li = $("<li>");
-                                const a = $("<a>")
-                                    .attr("href", path + item.categoryUrl)
-                                    .text(item.categoryName);
+                        // ✅ 1단계: 대분류 분리
+                        const topLevel = res.list.filter(c => !c.parentCategoryNo);
+                        const children = res.list.filter(c => c.parentCategoryNo);
 
-                                li.append(a);
-                                menu.append(li);
-                            });
-                        } else {
-                            $("#dropdownMenu").append("<li><span>카테고리가 없습니다.</span></li>");
-                        }
+                        topLevel.forEach(top => {
+                            const liTop = $("<li>");
+                            const aTop = $("<a>").text(top.categoryName).attr("href", path + "/category/" + top.categoryNo);
+                            liTop.append(aTop);
+
+                            // ✅ 2단계: 중분류 생성
+                            const midList = children.filter(m => m.parentCategoryNo === top.categoryNo);
+                            if (midList.length > 0) {
+                                const ulMid = $("<ul>");
+                                midList.forEach(mid => {
+                                    const liMid = $("<li>");
+                                    const aMid = $("<a>").text(mid.categoryName).attr("href", path + "/category/" + mid.categoryNo);
+
+                                    // ✅ 3단계: 소분류 생성
+                                    const lowList = children.filter(s => s.parentCategoryNo === mid.categoryNo);
+                                    if (lowList.length > 0) {
+                                        const ulLow = $("<ul>");
+                                        lowList.forEach(low => {
+                                            const liLow = $("<li>");
+                                            const aLow = $("<a>").text(low.categoryName).attr("href", path + "/category/" + low.categoryNo);
+                                            liLow.append(aLow);
+                                            ulLow.append(liLow);
+                                        });
+                                        liMid.append(ulLow);
+                                    }
+
+                                    liMid.append(aMid);
+                                    ulMid.append(liMid);
+                                });
+                                liTop.append(ulMid);
+                            }
+
+                            menu.append(liTop);
+                        });
                     },
                     error: function (xhr, status, error) {
                         console.error("카테고리 불러오기 실패:", error);

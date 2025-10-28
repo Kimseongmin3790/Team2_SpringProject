@@ -179,7 +179,7 @@
 
                             <div class="input-group">
                                 <label for="userPwd">비밀번호</label>
-                                <input type="password" id="userPwd" v-model="userPwd" placeholder="비밀번호를 입력하세요" required>
+                                <input type="password" id="userPwd" v-model="userPwd" placeholder="비밀번호를 입력하세요" required @keyup.enter="fnLogin">
                             </div>
 
                             <button class="btn-login2" @click="fnLogin">로그인</button>
