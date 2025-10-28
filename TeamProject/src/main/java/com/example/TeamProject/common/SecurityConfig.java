@@ -1,32 +1,47 @@
 package com.example.TeamProject.common;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.example.TeamProject.dao.CustomOAuth2UserService;
+
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
+
+    
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();  // 비밀번호 해싱 기능만 사용
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll() // 모든 요청 허용 (로그인 필요 없음)
+                .requestMatchers("/**").permitAll() 
+                .anyRequest().authenticated()
             )
-            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (필요 시 설정 가능)
-            .formLogin(form -> form.disable()) // 기본 로그인 페이지 비활성화
-            .httpBasic(basic -> basic.disable()) // HTTP Basic 인증 비활성화
-            .headers(headers -> headers.cacheControl(cache -> cache.disable()))
-            ;
-        
+            
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/login.do") // 인증이 필요할 때 보낼 기본 페이지
+                .defaultSuccessUrl("/main.do", true) // 로그인 성공 시 리다이렉트할 페이지
+                .failureUrl("/login.do?error=true") // 로그인 실패 시 리다이렉트할 페이지
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService) // 로그인 성공 후 사용자 정보를 처리할 서비스 지정
+                )
+            );
+
         return http.build();
-    }    
+    }
 }
