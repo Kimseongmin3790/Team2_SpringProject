@@ -41,7 +41,6 @@
 	<select id="getAllCategory" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
 		SELECT *
 		FROM PRODUCT_CATEGORY
-		WHERE PARENT_CATEGORY_NO IS NULL	
 	</select>
 
 </mapper>
