@@ -13,4 +13,9 @@ public class MainController {
 
         return "main/home"; 
     }
+	
+	@RequestMapping("/default.do")
+    public String defaultPage() {
+        return "index";  // → /WEB-INF/views/index.jsp
+    }
 }
