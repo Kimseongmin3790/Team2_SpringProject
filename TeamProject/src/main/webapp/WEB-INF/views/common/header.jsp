@@ -73,101 +73,80 @@
                     <a href="${path}/event">번쩍장터</a>
                 </nav>
             </div>
-        </div>
-    </div>
 
-    <!-- 하단 메뉴 -->
-    <div class="header-bottom">
-        <div class="category-container">
-            <button class="btn-category" id="btnCategory">
-                <i class="fa fa-bars"></i> 카테고리
-            </button>
-            <ul class="dropdown-menu" id="dropdownMenu">
-            </ul>
-        </div>
+        </header>
+        <script>
+            $(document).ready(function () {
+                const path = "${pageContext.request.contextPath}";
 
-        <nav class="nav-menu">
-            <a href="${path}/main/do">홈</a>
-            <a href="${path}/product/list">상품목록</a>
-            <a href="${path}/product/new">신상품</a>
-            <a href="${path}/review/list">상품후기</a>
-            <a href="${path}/event">번쩍장터</a>
-        </nav>
-    </div>
-</header>
-<script>
-$(document).ready(function () {
-    const path = "${pageContext.request.contextPath}";
+                $.ajax({
+                    url: "/categoryList.dox",
+                    type: "POST",
+                    dataType: "json",
+                    success: function (res) {
+                        if (res.list && res.list.length > 0) {
+                            const menu = $("#dropdownMenu");
+                            menu.empty();
 
-    $.ajax({
-        url:"/categoryList.dox",
-        type: "POST",
-        dataType: "json",
-        success: function (res) {
-            if (res.list && res.list.length > 0) {
-                const menu = $("#dropdownMenu");
-                menu.empty(); 
+                            res.list.forEach(item => {
+                                const li = $("<li>");
+                                const a = $("<a>")
+                                    .attr("href", path + item.categoryUrl)
+                                    .text(item.categoryName);
 
-                res.list.forEach(item => {
-                    const li = $("<li>");
-                    const a = $("<a>")
-                        .attr("href", path + item.categoryUrl)
-                        .text(item.categoryName);
-
-                    li.append(a);
-                    menu.append(li);
+                                li.append(a);
+                                menu.append(li);
+                            });
+                        } else {
+                            $("#dropdownMenu").append("<li><span>카테고리가 없습니다.</span></li>");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("카테고리 불러오기 실패:", error);
+                        $("#dropdownMenu").append("<li><span>불러오기 실패</span></li>");
+                    }
                 });
-            } else {
-                $("#dropdownMenu").append("<li><span>카테고리가 없습니다.</span></li>");
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error("카테고리 불러오기 실패:", error);
-            $("#dropdownMenu").append("<li><span>불러오기 실패</span></li>");
-        }
-    });
 
 
 
+                // 로고 클릭 → 홈으로 이동
+                $("#logoClick").on("click", function () {
+                    location.href = path + "/main.do";
+                });
 
-    // 로고 클릭 → 홈으로 이동
-    $("#logoClick").on("click", function () {
-        location.href = path + "/main/do";
-    });
+                // 검색
+                $("#btnSearch").on("click", function () {
+                    const keyword = $("#searchInput").val().trim();
+                    if (keyword === "") {
+                        alert("검색어를 입력하세요!");
+                        return;
+                    }
+                    location.href = path + "/search?keyword=" + encodeURIComponent(keyword);
+                });
 
-    // 검색
-    $("#btnSearch").on("click", function () {
-        const keyword = $("#searchInput").val().trim();
-        if (keyword === "") {
-            alert("검색어를 입력하세요!");
-            return;
-        }
-        location.href = path + "/search?keyword=" + encodeURIComponent(keyword);
-    });
+                // 로그아웃
+                $("#btnLogout").on("click", function () {
+                    if (confirm("로그아웃 하시겠습니까?")) {
+                        location.href = path + "/logout";
+                    }
+                });
 
-    // 로그아웃
-    $("#btnLogout").on("click", function () {
-        if (confirm("로그아웃 하시겠습니까?")) {
-            location.href = path + "/logout";
-        }
-    });
+                // 아이콘 클릭
+                $("#btnMyPage").on("click", () => location.href = path + "/mypage");
+                $("#btnFavorite").on("click", () => location.href = path + "/favorite");
+                $("#btnCart").on("click", () => location.href = path + "/cart");
 
-    // 아이콘 클릭
-    $("#btnMyPage").on("click", () => location.href = path + "/mypage");
-    $("#btnFavorite").on("click", () => location.href = path + "/favorite");
-    $("#btnCart").on("click", () => location.href = path + "/cart");
+                // 카테고리 버튼 클릭은 토글 기능만 수행
+                $("#btnCategory").on("click", function () {
+                    // 이미 데이터가 채워진 상태이므로 토글 기능만 남깁니다.
+                    $("#dropdownMenu").toggleClass("show");
+                });
 
-    // 카테고리 버튼 클릭은 토글 기능만 수행
-    $("#btnCategory").on("click", function () {
-        // 이미 데이터가 채워진 상태이므로 토글 기능만 남깁니다.
-        $("#dropdownMenu").toggleClass("show");
-    });
-
-    // 외부 클릭 시 닫기
-    $(document).on("click", function (e) {
-        if (!$(e.target).closest(".category-container").length) {
-            $("#dropdownMenu").removeClass("show");
-        }
-    });
-});
-</script>
+                // 외부 클릭 시 닫기
+                $(document).on("click", function (e) {
+                    if (!$(e.target).closest(".category-container").length) {
+                        $("#dropdownMenu").removeClass("show");
+                    }
+                });
+            });
+        </script>
