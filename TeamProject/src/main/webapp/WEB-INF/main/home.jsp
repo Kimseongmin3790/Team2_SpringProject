@@ -29,7 +29,6 @@
 
         .content {
             flex: 1;
-            padding: 0;
         }
         
         /* 메인 콘텐츠 스타일링 시작 */
