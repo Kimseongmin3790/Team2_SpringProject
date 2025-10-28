@@ -127,12 +127,39 @@
                 // 로그아웃
                 $("#btnLogout").on("click", function () {
                     if (confirm("로그아웃 하시겠습니까?")) {
-                        location.href = path + "/logout";
+                        $.ajax({
+                            url: path + "/logout.dox",
+                            type: "POST",
+                            success: function (res) {
+                                if (res.result === "success") {
+                                    alert("로그아웃 되었습니다.");
+                                    location.href = path + "/login.do";
+                                }
+                            },
+                            error: function () {
+                                alert("로그아웃 중 오류가 발생했습니다.");
+                            }
+                        });
                     }
                 });
 
                 // 아이콘 클릭
-                $("#btnMyPage").on("click", () => location.href = path + "/mypage");
+                $("#btnMyPage").on("click", function () {
+                    const sessionStatus = "${sessionScope.sessionStatus}";
+                    const path = "${pageContext.request.contextPath}";
+                    if (!sessionStatus) {
+                        alert("로그인이 필요합니다.");
+                        location.href = path + "/login.do";
+                        return;
+                    }
+                    if (sessionStatus === "BUYER") {
+                        location.href = path + "/buyerMyPage.do"
+                    } else if (sessionStatus === "SELLER") {
+                        location.href = path + "/sellerMypage.do";
+                    } else {
+                        alert("잘못된 사용자 정보입니다.");
+                    }
+                });
                 $("#btnFavorite").on("click", () => location.href = path + "/favorite");
                 $("#btnCart").on("click", () => location.href = path + "/cart");
 

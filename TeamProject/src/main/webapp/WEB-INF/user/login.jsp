@@ -245,7 +245,7 @@
                         success: function (data) {
                             if (data.result == "success") {
                                 alert(data.msg);
-                                location.href='${path}/default.do';
+                                location.href='${path}/main.do';
                             } else {
                                 alert(data.msg);
                                 return;
