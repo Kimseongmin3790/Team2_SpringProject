@@ -399,3 +399,7 @@
             // 🌟 Vue 앱이 마운트된 직후, 베스트 상품 API 호출 함수 실행 🌟
             this.fnGetBestProducts();
         }
+    });
+
+    app.mount('#app');
+</script>
