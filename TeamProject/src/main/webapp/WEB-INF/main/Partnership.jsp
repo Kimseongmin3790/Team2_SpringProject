@@ -332,10 +332,8 @@
         </style>
     </head>
     <body>
-        <div id="app">
-            <!-- 공통 헤더 -->
-            <%@ include file="/WEB-INF/views/common/header.jsp" %>
-
+        <%@ include file="/WEB-INF/views/common/header.jsp" %>
+        <div id="app">            
             <main class="content main-content">
                 <div class="max-w-3xl mx-auto">
                     <!-- Progress Steps -->
@@ -476,10 +474,9 @@
                         </form>
                     </div>
                 </div>
-            </main>
-            <!-- 공통 푸터 -->
-            <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+            </main>                        
         </div>
+        <%@ include file="/WEB-INF/views/common/footer.jsp" %>
     </body>
 </html>
 

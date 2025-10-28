@@ -216,8 +216,8 @@
 </head>
 
 <body>
-    <div id="app">
-        <%@ include file="/WEB-INF/views/common/header.jsp" %>
+    <%@ include file="/WEB-INF/views/common/header.jsp" %>
+    <div id="app">        
 
         <main class="content">
             
@@ -297,9 +297,8 @@
                 </button>
             </div>
         </main>
-
-        <%@ include file="/WEB-INF/views/common/footer.jsp" %>
     </div>
+    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 </body>
 
 </html>

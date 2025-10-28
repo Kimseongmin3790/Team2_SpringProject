@@ -84,11 +84,8 @@
         </head>
 
         <body>
-
-            <div id="app">
-                <!-- 공통 헤더 -->
-                <%@ include file="/WEB-INF/views/common/header.jsp" %>
-
+            <%@ include file="/WEB-INF/views/common/header.jsp" %>
+                <div id="app">
                     <main class="content">
                         <h2>회원가입 유형을 선택해주세요</h2>
 
@@ -106,10 +103,8 @@
                             <p class="desc">판매자로 가입하여 상품을 등록하고 판매할 수 있습니다.</p>
                         </div>
                     </main>
-
-                <!-- 공통 푸터 -->
-                <%@ include file="/WEB-INF/views/common/footer.jsp" %>
-            </div>
+                </div>
+            <%@ include file="/WEB-INF/views/common/footer.jsp" %>
         </body>
 
         </html>

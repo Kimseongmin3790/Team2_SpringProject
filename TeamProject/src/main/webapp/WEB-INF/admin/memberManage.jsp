@@ -166,9 +166,8 @@
         </head>
 
         <body>
-            <div id="app">
-                <%@ include file="/WEB-INF/views/common/header.jsp" %>
-
+            <%@ include file="/WEB-INF/views/common/header.jsp" %>
+                <div id="app">
                     <div class="admin-container">
                         <h2 class="admin-title">회원관리</h2>
 
@@ -222,104 +221,102 @@
                             </table>
                         </div>
                     </div>
+                </div>
+                <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+                    <script>
+                        const app = Vue.createApp({
+                            data() {
+                                return {
+                                    keyword: "",
+                                    userList: [],
+                                };
+                            },
+                            computed: {
+                                filteredList() {
+                                    // keyword나 userList 중 하나라도 변경되면 자동으로 다시 계산
+                                    if (this.keyword.trim() === "") return this.userList;
 
-                    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
-            </div>
-
-            <script>
-                const app = Vue.createApp({
-                    data() {
-                        return {
-                            keyword: "",
-                            userList: [],
-                        };
-                    },
-                    computed: {
-                        filteredList() {
-                            // keyword나 userList 중 하나라도 변경되면 자동으로 다시 계산
-                            if (this.keyword.trim() === "") return this.userList;
-
-                            const k = this.keyword.toLowerCase();
-                            return this.userList.filter(
-                                (m) =>
-                                    m.userId.toLowerCase().includes(k) ||
-                                    m.name.toLowerCase().includes(k)
-                            );
-                        },
-                    },
-                    methods: {
-                        fnUserList: function () {
-                            let self = this;
-                            let param = {};
-                            $.ajax({
-                                url: "/userList.dox",
-                                dataType: "json",
-                                type: "POST",
-                                data: param,
-                                success: function (data) {
-                                    if (data.result == "success") {
-                                        self.userList = data.list;
-                                    } else {
-                                        alert("오류가 발생했습니다.");
-                                    }
-                                }
-                            });
-                        },
-
-                        fnSearch() {
-                            // computed로 자동 반영
-                        },
-
-                        // 🔹 판매자 승인
-                        fnApprove(userId) {
-                            if (!confirm(userId + " 판매자 승인하시겠습니까?")) return;
-                            let self = this;
-                            let param = {
-                                userId: userId
-                            };
-                            $.ajax({
-                                url: "/approveSeller.dox",
-                                dataType: "json",
-                                type: "POST",
-                                data: param,
-                                success: function (data) {
-                                    alert("승인 완료");
-                                    self.fnUserList();
+                                    const k = this.keyword.toLowerCase();
+                                    return this.userList.filter(
+                                        (m) =>
+                                            m.userId.toLowerCase().includes(k) ||
+                                            m.name.toLowerCase().includes(k)
+                                    );
                                 },
-                                error: function () {
-                                    alert("승인 처리 중 오류가 발생했습니다.");
+                            },
+                            methods: {
+                                fnUserList: function () {
+                                    let self = this;
+                                    let param = {};
+                                    $.ajax({
+                                        url: "/userList.dox",
+                                        dataType: "json",
+                                        type: "POST",
+                                        data: param,
+                                        success: function (data) {
+                                            if (data.result == "success") {
+                                                self.userList = data.list;
+                                            } else {
+                                                alert("오류가 발생했습니다.");
+                                            }
+                                        }
+                                    });
                                 },
-                            });
-                        },
 
-                        // 🔹 판매자 거절
-                        fnReject(userId) {
-                            if (!confirm(userId + " 판매자 승인 요청을 거절하시겠습니까?")) return;
-                            const self = this;
-                            $.ajax({
-                                url: "${pageContext.request.contextPath}/admin/rejectSeller.dox",
-                                type: "POST",
-                                data: { userId },
-                                success: function (res) {
-                                    alert(res.message || "거절 완료");
-                                    self.fnUserList();
+                                fnSearch() {
+                                    // computed로 자동 반영
                                 },
-                                error: function () {
-                                    alert("거절 처리 중 오류가 발생했습니다.");
+
+                                // 🔹 판매자 승인
+                                fnApprove(userId) {
+                                    if (!confirm(userId + " 판매자 승인하시겠습니까?")) return;
+                                    let self = this;
+                                    let param = {
+                                        userId: userId
+                                    };
+                                    $.ajax({
+                                        url: "/approveSeller.dox",
+                                        dataType: "json",
+                                        type: "POST",
+                                        data: param,
+                                        success: function (data) {
+                                            alert("승인 완료");
+                                            self.fnUserList();
+                                        },
+                                        error: function () {
+                                            alert("승인 처리 중 오류가 발생했습니다.");
+                                        },
+                                    });
                                 },
-                            });
-                        },
 
-                        // 신고 해제
-                    },
-                    mounted() {
-                        let self = this;
-                        self.fnUserList();
-                    },
-                });
+                                // 🔹 판매자 거절
+                                fnReject(userId) {
+                                    if (!confirm(userId + " 판매자 승인 요청을 거절하시겠습니까?")) return;
+                                    const self = this;
+                                    $.ajax({
+                                        url: "${pageContext.request.contextPath}/admin/rejectSeller.dox",
+                                        type: "POST",
+                                        data: { userId },
+                                        success: function (res) {
+                                            alert(res.message || "거절 완료");
+                                            self.fnUserList();
+                                        },
+                                        error: function () {
+                                            alert("거절 처리 중 오류가 발생했습니다.");
+                                        },
+                                    });
+                                },
 
-                app.mount("#app");
-            </script>
+                                // 신고 해제
+                            },
+                            mounted() {
+                                let self = this;
+                                self.fnUserList();
+                            },
+                        });
+
+                        app.mount("#app");
+                    </script>
         </body>
 
         </html>
