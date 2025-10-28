@@ -18,7 +18,7 @@
                 <h3>회사소개</h3>
                 <ul>
                     <li><a href="${path}/brand">브랜드 스토리</a></li>
-                    <li><a href="${path}/contact">입점/제휴 문의</a></li>
+                    <li><a href="${path}/partnership.do">입점/제휴 문의</a></li>
                 </ul>
             </div>
 
@@ -35,7 +35,7 @@
                 <h3>이용안내</h3>
                 <ul>
                     <li><a href="#" id="open-terms-link">이용약관</a></li>
-                    <li><a href="${path}/privacy">개인정보처리방침</a></li>
+                    <li><a href="#" id="open-privacy-link">개인정보처리방침</a></li>
                 </ul>
             </div>
 
@@ -74,6 +74,14 @@
             </div>
         </div>
     </div>
+    <div id="privacy-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h2>개인정보처리방침</h2>
+            <div class="terms-text">
+            </div>
+        </div>
+    </div>
 </footer>
 <script>
 $(document).ready(function() {
@@ -86,6 +94,16 @@ $(document).ready(function() {
             $('#terms-modal').fadeIn();
         });
     });
+
+     // 개인정보처리방침 클릭 시
+    $('#open-privacy-link').on('click', function(e) {
+        e.preventDefault();
+
+        $('#privacy-modal .terms-text').load('${path}/privacy.do', function() {
+            $('#privacy-modal').fadeIn();
+        });
+    });
+
     // 닫기 버튼 또는 모달 바깥 영역 클릭 시
     $('.modal-close-btn, .modal-overlay').on('click', function(e) {
         if ($(e.target).closest('.modal-content').length > 0 && !$(e.target).hasClass('modal-close-btn'))
@@ -93,6 +111,9 @@ $(document).ready(function() {
             return;
         }
         $('#terms-modal').fadeOut();
+        $('#privacy-modal').fadeOut();
     });
+
+    
 });
 </script>
