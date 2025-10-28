@@ -26,8 +26,8 @@
                     <div class="login-group">
                         <c:choose>
                             <c:when test="${not empty sessionId}">
-                                <button class="btn-logout" id="btnLogout">로그아웃</button>
                                 <span class="user-name">${{sessionId}}님</span>
+                                <button class="btn-logout" id="btnLogout">로그아웃</button>
                             </c:when>
                             <c:otherwise>
                                 <button class="btn-login" onclick="location.href='${path}/login.do'">로그인</button>
