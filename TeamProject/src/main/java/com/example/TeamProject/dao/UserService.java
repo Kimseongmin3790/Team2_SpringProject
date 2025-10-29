@@ -187,7 +187,7 @@ public class UserService {
 	    
 		try {
 			boolean isValid = mailService.verifyAuthCode(email, authCode);
-			if (isValid) {
+			if (isValid) {		
 				String hashPwd = passwordEncoder.encode((String)map.get("newPwd"));
 				map.put("hashPwd", hashPwd);
 				userMapper.resetPwd(map);

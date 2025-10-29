@@ -108,7 +108,8 @@
                 margin-top: 15px;
             }
 
-            .social-login button {
+            .social-login a {
+                display: block;
                 width: 100%;
                 height: 52px;
                 border: none;
@@ -121,10 +122,19 @@
                 overflow: hidden;
             }
 
-            .social-login button:hover {
-                transform: scale(1.02);
-                opacity: 0.95;
-            }
+            .social-login button {
+            width: 100%;
+            padding: 8px 12px; 
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: 0.25s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
 
             .social-login img {
                 width: auto;
@@ -145,17 +155,21 @@
                 font-weight: 500;
             }
 
-            .login-links a:hover {
-                text-decoration: underline;
-            }
+        .login-links {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
 
-            .social-login button.kakao {
-                background-color: #FEE500;
-            }
+        .login-links a {
+            color: #1a5d1a;
+            text-decoration: none;
+            margin: 0 6px;
+        }
 
-            .social-login button.naver {
-                background-color: #03C75A;
-            }
+        .login-links a:hover {
+            text-decoration: underline;
+        }
 
             .social-login button.google {
                 background-color: #fff;

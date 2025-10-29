@@ -17,7 +17,7 @@
             <div class="footer-column">
                 <h3>회사소개</h3>
                 <ul>
-                    <li><a href="${path}/brand">브랜드 스토리</a></li>
+                    <li><a href="${path}/brandStory.do">브랜드 스토리</a></li>
                     <li><a href="${path}/partnership.do">입점/제휴 문의</a></li>
                 </ul>
             </div>
@@ -43,7 +43,7 @@
                 <h3>문의</h3>
                 <ul>
                     <li>고객센터 1234-5678</li>
-                    <li>평일 10:00~17:00 (점심 12:30~13:30)</li>
+                    <li>평일 10:00~17:00 <br>(점심 12:30~13:30)</li>
                     <li>이메일 test@gmail.com</li>
                 </ul>
             </div>
