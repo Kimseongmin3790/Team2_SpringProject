@@ -26,7 +26,7 @@
                     <div class="login-group">
                         <c:choose>
                             <c:when test="${not empty sessionId}">
-                                <span class="user-name">${{sessionName}}님</span>
+                                <span class="user-name">[${sessionName}님]</span>
                                 <button class="btn-logout" id="btnLogout">로그아웃</button>
                             </c:when>
                             <c:otherwise>
@@ -73,7 +73,7 @@
                 </div>
 
                 <nav class="nav-menu">
-                    <a href="${path}/">홈</a>
+                    <a href="${path}/main.do">홈</a>
                     <a href="${path}/product/list">상품목록</a>
                     <a href="${path}/product/new">신상품</a>
                     <a href="${path}/review/list">상품후기</a>
@@ -85,4 +85,5 @@
 
         </header>
 
+        
         <script src="${path}/resources/js/header.js"></script>

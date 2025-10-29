@@ -65,6 +65,7 @@ public class CommonController {
 	public String brandStory() {
 	    return "main/brandStory";
 	}
+
 	
 	
 	

@@ -41,7 +41,7 @@ userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().g
 
         httpSession.setAttribute("sessionId", user.getUserId());
         httpSession.setAttribute("sessionStatus", user.getUserRole());
-        httpSession.setAttribute("userName", user.getName());
+        httpSession.setAttribute("sessionName", user.getName());
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority(user.getUserRole())),

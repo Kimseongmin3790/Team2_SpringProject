@@ -16,8 +16,6 @@
             body {
                 height: 100%;
                 margin: 0;
-                font-family: "Noto Sans KR", sans-serif;
-                background-color: #faf8f0;
             }
 
             #app {
@@ -31,24 +29,20 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                background-color: #faf8f0;
                 padding: 50px 20px;
             }
 
             /* 로그인 박스 */
             .login-container {
-                background: linear-gradient(to bottom right, #f3ebd3, #f9f6e9);
-                padding: 50px 60px;
-                border-radius: 16px;
-                box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+                background: #f3ebd3;
+                padding: 40px 50px;
+                border-radius: 12px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
                 width: 100%;
-                max-width: 420px;
+                max-width: 400px;
                 text-align: center;
-                transition: 0.3s;
-            }
-
-            .login-container:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+                font-family: "Noto Sans KR", sans-serif;
             }
 
             .login-title {
@@ -68,12 +62,11 @@
                 font-size: 14px;
                 margin-bottom: 5px;
                 color: #333;
-                font-weight: 500;
             }
 
             .input-group input {
                 width: 100%;
-                padding: 12px;
+                padding: 10px 12px;
                 border: 1px solid #ccc;
                 border-radius: 6px;
                 font-size: 14px;
@@ -82,44 +75,34 @@
 
             .btn-login2 {
                 width: 100%;
-                height: 52px;
+                padding: 12px;
                 background-color: #5dbb63;
                 color: white;
                 border: none;
-                border-radius: 10px;
+                border-radius: 8px;
                 font-size: 16px;
                 font-weight: 600;
                 cursor: pointer;
-                transition: all 0.25s ease;
-                margin-bottom: 18px;
+                transition: 0.25s;
+                margin-bottom: 10px;
             }
 
-            .btn-login2:hover {
+            .btn-login:hover {
                 background-color: #4ca857;
-                transform: translateY(-1px);
-                box-shadow: 0 4px 8px rgba(77, 167, 84, 0.3);
             }
 
             /* ✅ 소셜 로그인 이미지 버튼 */
             .social-login {
                 display: flex;
                 flex-direction: column;
+                align-items: center;
                 gap: 10px;
-                margin-top: 15px;
             }
 
             .social-login a {
                 display: block;
                 width: 100%;
-                height: 52px;
-                border: none;
-                border-radius: 10px;
-                cursor: pointer;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                transition: 0.2s ease;
-                overflow: hidden;
+                text-decoration: none;
             }
 
             .social-login button {
@@ -136,24 +119,17 @@
             box-sizing: border-box;
         }
 
-            .social-login img {
-                width: auto;
-                height: 70%;
-                object-fit: contain;
-            }
+        .social-login img {
+            height: 32px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
 
-            .login-links {
-                margin-top: 25px;
-                font-size: 14px;
-                color: #555;
-            }
-
-            .login-links a {
-                color: #1a5d1a;
-                text-decoration: none;
-                margin: 0 6px;
-                font-weight: 500;
-            }
+        .social-login button:hover {
+            transform: scale(1.02);
+            opacity: 0.95;
+        }
 
         .login-links {
             margin-top: 20px;
@@ -171,69 +147,71 @@
             text-decoration: underline;
         }
 
-            .social-login button.google {
-                background-color: #fff;
-                border: 1px solid #ddd;
-            }
+        .social-login button.kakao {
+            background-color: #FEE500;
+        }
 
-            .social-login button:hover {
-                transform: scale(1.02);
-                opacity: 0.9;
-            }
-        </style>
+        .social-login button.naver {
+            background-color: #03C75A;
+        }
+
+         .social-login button.google {
+            background-color: #fff;
+            border: none; 
+            box-shadow: 0 0 0 1px #ddd inset;
+        }
+    </style>
     </head>
 
     <body>
-        <%@ include file="/WEB-INF/views/common/header.jsp" %>
-            <div id="app">
+        <div id="app">
+            <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+            <%@ include file="/WEB-INF/views/common/header.jsp" %>
+
                 <main class="content">
                     <div class="login-container">
                         <h2 class="login-title">로그인</h2>
-                        
-                        <div class="input-group">
-                            <label for="userId">아이디</label>
-                            <input type="text" id="userId" v-model="userId" placeholder="아이디를 입력하세요" required>
-                        </div>
+                            <div class="input-group">
+                                <label for="userId">아이디</label>
+                                <input type="text" id="userId" v-model="userId" placeholder="아이디를 입력하세요" required>
+                            </div>
 
-                        <div class="input-group">
-                            <label for="userPwd">비밀번호</label>
-                            <input type="password" id="userPwd" v-model="userPwd" placeholder="비밀번호를 입력하세요" required
-                                @keyup.enter="fnLogin">
-                        </div>
+                            <div class="input-group">
+                                <label for="userPwd">비밀번호</label>
+                                <input type="password" id="userPwd" v-model="userPwd" placeholder="비밀번호를 입력하세요" required @keyup.enter="fnLogin">
+                            </div>
 
-                        <button class="btn-login2" @click="fnLogin">로그인</button>
+                            <button class="btn-login2" @click="fnLogin">로그인</button>
 
-                        <!-- ✅ 소셜 로그인 -->
-                        <div class="social-login">
-                            <a href="/oauth2/authorization/kakao">
-                                <button type="button" class="kakao">
-                                    <img src="${pageContext.request.contextPath}/resources/img/btn_login_kakao.png"
-                                        alt="카카오 로그인">
-                                </button>
-                            </a>
-                            <a href="/oauth2/authorization/naver">
-                                <button type="button" class="naver">
-                                    <img src="${pageContext.request.contextPath}/resources/img/btn_login_naver.png"
-                                        alt="네이버 로그인">
-                                </button>
-                            </a>
-                            <a href="/oauth2/authorization/google">
-                                <button type="button" class="google">
-                                    <img src="${pageContext.request.contextPath}/resources/img/btn_login_google.png"
-                                        alt="구글 로그인">
-                                </button>
-                            </a>
-                        </div>
+                            <!-- ✅ 소셜 로그인 -->
+                            <div class="social-login">
+                                <a href="/oauth2/authorization/kakao">
+                                    <button type="button" class="kakao">
+                                        <img src="${pageContext.request.contextPath}/resources/img/btn_login_kakao.png" alt="카카오 로그인">
+                                    </button>
+                                </a>
+                                <a href="/oauth2/authorization/naver">
+                                    <button type="button" class="naver">
+                                        <img src="${pageContext.request.contextPath}/resources/img/btn_login_naver.png" alt="네이버 로그인">
+                                    </button>
+                                </a>
+                                <a href="/oauth2/authorization/google">
+                                    <button type="button" class="google">
+                                        <img src="${pageContext.request.contextPath}/resources/img/btn_login_google.png" alt="구글 로그인">
+                                    </button>
+                                </a>
+                            </div>
 
-                        <div class="login-links">
-                            <a href="${pageContext.request.contextPath}/chooseJoin.do">회원가입</a> |
-                            <a href="${pageContext.request.contextPath}/findId.do">아이디 찾기</a> |
-                            <a href="${pageContext.request.contextPath}/findPwd.do">비밀번호 찾기</a>
-                        </div>
+                            <div class="login-links">
+                                <a href="${pageContext.request.contextPath}/chooseJoin.do">회원가입</a> |
+                                <a href="${pageContext.request.contextPath}/findId.do">아이디 찾기</a> |
+                                <a href="${pageContext.request.contextPath}/findPwd.do">비밀번호 찾기</a>
+                            </div>
                     </div>
                 </main>
-            </div>
-            <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+
+                <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+        </div>
     </body>
 
     </html>
@@ -267,7 +245,7 @@
                         success: function (data) {
                             if (data.result == "success") {
                                 alert(data.msg);
-                                location.href = '${path}/main.do';
+                                location.href='${path}/main.do';
                             } else {
                                 alert(data.msg);
                                 return;
