@@ -60,6 +60,13 @@ public class CommonController {
 	public String partnership() {
 	    return "main/Partnership";
 	}
+	// 브랜드 스토리
+	@RequestMapping("/brandStory.do")
+	public String brandStory() {
+	    return "main/brandStory";
+	}
+	
+	
 	
 	
 	@RequestMapping(value = "/orderList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
@@ -107,7 +114,7 @@ public class CommonController {
 	    if (userId == null || userId.isEmpty()) {
 	  
 	        response.put("status", "fail");
-	        response.put("message", "로그인이 필요합니다.");
+//	        response.put("message", "로그인이 필요합니다."); 프론트부분에 경고창이 나와 삭제해도될듯?
 	        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
 	    }
 
