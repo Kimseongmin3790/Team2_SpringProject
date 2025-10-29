@@ -1,20 +1,16 @@
-package com.example.TeamProject.mapper;
+package com.example.TeamProject.mapper; 
 
 import java.util.List;
-import java.util.Map;
-
 import org.apache.ibatis.annotations.Mapper;
+import com.example.TeamProject.model.Main; // 단일 Model 파일 import
 
-@Mapper
+@Mapper 
 public interface MainMapper {
-	
-	// 베스트 상품 목록 반환 타입: List<Map>
-    List<Map<String, Object>> selectBestProducts();
+    
+    // Main.java 내의 중첩 클래스를 반환 타입으로 지정
+    List<Main.MainBannerVO> selectMainBanners();
 
-    // 메인 슬라이드 배너 목록 반환 타입: List<Map>
-    List<Map<String, Object>> selectMainBanners();
+    List<Main.ProducerVO> selectProducers();
 
-    // 입점 업체 목록 반환 타입: List<Map>
-    List<Map<String, Object>> selectProducers();
-
+    List<Main.BestProductVO> selectBestProducts();
 }

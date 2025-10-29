@@ -95,6 +95,9 @@
         }
 
         /* 혜택 아이콘 섹션 */
+        /* ... (기존 CSS 유지) ... */
+
+        /* 혜택 아이콘 섹션 */
         .benefits-section {
             display: flex;
             justify-content: center;
@@ -105,17 +108,22 @@
 
         .benefit-item {
             text-align: center;
+            width: 200px; /* 아이템 너비 조정 */
         }
 
+        /* 🌟 benefit-icon 클래스 수정: 이미지를 직접 표시하도록 변경 🌟 */
         .benefit-icon {
             width: 60px;
             height: 60px;
-            border-radius: 50%;
-                
             margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            /* 기존 스타일 제거: border-radius, display: flex 등 */
+        }
+
+        /* 🌟 새로 추가: 이미지 태그에 적용될 스타일 🌟 */
+        .benefit-icon img {
+            width: 100%; /* 부모 div(benefit-icon)에 꽉 차도록 설정 */
+            height: 100%;
+            object-fit: contain; /* 이미지 비율 유지 */
         }
 
         .benefit-item p {
@@ -123,13 +131,15 @@
             color: #777;
             margin: 5px 0 0;
         }
-        
+
         .benefit-item strong {
             display: block;
             font-size: 1.1em;
             color: #333;
             margin-top: 5px;
         }
+
+        /* ... (나머지 기존 CSS 유지) ... */
 
         /* 베스트 상품 섹션 */
         .best-product-section {
@@ -257,6 +267,8 @@
             font-size: 0.9em;
             color: #999;
         }
+
+        
     </style>
 </head>
 
@@ -292,17 +304,23 @@
             
             <section class="benefits-section">
                 <div class="benefit-item">
-                    <div class="benefit-icon"></div>
+                    <div class="benefit-icon">
+                        <img :src="path + '/img/delivery.png'" alt="당일 배송 아이콘">
+                    </div>
                     <strong>당일 배송</strong>
                     <p>오전 주문 시 당일 배송</p>
                 </div>
                 <div class="benefit-item">
-                    <div class="benefit-icon"></div>
+                    <div class="benefit-icon">
+                        <img :src="path + '/img/fresh.png'" alt="신선 보장 아이콘">
+                    </div>
                     <strong>신선 보장</strong>
                     <p>100% 신선도 보장</p>
                 </div>
                 <div class="benefit-item">
-                    <div class="benefit-icon"></div>
+                    <div class="benefit-icon">
+                        <img :src="path + '/img/deal.png'" alt="직거래 아이콘">
+                    </div>
                     <strong>직거래</strong>
                     <p>생산자 직거래 시스템</p>
                 </div>
