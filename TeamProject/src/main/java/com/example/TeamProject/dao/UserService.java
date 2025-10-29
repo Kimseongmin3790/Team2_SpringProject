@@ -1,13 +1,20 @@
 package com.example.TeamProject.dao;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.example.TeamProject.Controller.CommonController;
+
 import com.example.TeamProject.mapper.UserMapper;
 import com.example.TeamProject.model.User;
 
@@ -15,6 +22,9 @@ import jakarta.servlet.http.HttpSession;
 
 @Service
 public class UserService {
+	
+	@Value("${kakao.api.key}")
+	private String kakaoApiKey;
 
 	@Autowired
 	UserMapper userMapper;
@@ -219,4 +229,35 @@ public class UserService {
 		}		
 		return resultMap;
 	}
+	
+	// ✅ 주소를 좌표로 변환
+    public double[] getCoordinatesFromAddress(String address) {
+        double[] result = new double[2]; // [lat, lng]
+        try {
+            String query = URLEncoder.encode(address, "UTF-8");
+            String apiUrl = "https://dapi.kakao.com/v2/local/search/address.json?query=" + query;
+
+            URL url = new URL(apiUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "KakaoAK " + kakaoApiKey);
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) sb.append(line);
+            br.close();
+
+            JSONObject json = new JSONObject(sb.toString());
+            if (json.getJSONArray("documents").length() > 0) {
+                JSONObject addr = json.getJSONArray("documents").getJSONObject(0);
+                JSONObject addressObj = addr.getJSONObject("address");
+                result[0] = addressObj.getDouble("y"); // lat
+                result[1] = addressObj.getDouble("x"); // lng
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

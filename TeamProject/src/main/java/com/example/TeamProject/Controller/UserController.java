@@ -86,6 +86,16 @@ public class UserController {
 	@ResponseBody
 	public String join(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		
+		// 주소 → 좌표 변환
+	    String addr = (String) map.get("userAddr");
+	    double[] coords = userService.getCoordinatesFromAddress(addr);
+	    double lat = coords[0];
+	    double lng = coords[1];
+
+	    map.put("lat", lat);
+	    map.put("lng", lng);
+		
 		resultMap = userService.addUser(map);
 		
 		return new Gson().toJson(resultMap);
