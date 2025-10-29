@@ -49,9 +49,8 @@
         </head>
 
         <body>
-            <div id="app">
-                <%@ include file="/WEB-INF/views/common/header.jsp" %>
-
+            <%@ include file="/WEB-INF/views/common/header.jsp" %>
+                <div id="app">
                     <main class="content">
                         <h1>소비자 마이페이지</h1>
 
@@ -80,9 +79,8 @@
                             <button id="btnWithdraw">회원 탈퇴</button>
                         </div>
                     </main>
-
-                    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
-            </div>
+                </div>
+                <%@ include file="/WEB-INF/views/common/footer.jsp" %>
         </body>
 
         </html>

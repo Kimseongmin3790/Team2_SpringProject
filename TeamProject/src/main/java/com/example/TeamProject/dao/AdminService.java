@@ -91,4 +91,21 @@ public class AdminService {
 		return resultMap;
 	}
 	
+	public HashMap<String, Object> getCategoryList(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			List<ProductCategory> list = adminMapper.selectCategoryList(map);
+			
+			resultMap.put("list", list);
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		
+		return resultMap;
+	}
+	
 }

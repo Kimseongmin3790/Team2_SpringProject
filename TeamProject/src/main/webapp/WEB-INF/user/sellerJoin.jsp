@@ -8,23 +8,24 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>판매자 회원가입 | AGRICOLA</title>
 
-            <!-- ✅ jQuery -->
+            <!-- ✅ 외부 라이브러리 -->
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-
-            <!-- ✅ Vue -->
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+                crossorigin="anonymous" referrerpolicy="no-referrer" />
 
             <!-- ✅ 공통 CSS -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
-            <!-- ✅ 페이지 전용 스타일 -->
             <style>
                 html,
                 body {
                     height: 100%;
                     margin: 0;
+                    font-family: "Noto Sans KR", sans-serif;
                 }
 
                 #app {
@@ -33,65 +34,130 @@
                     flex-direction: column;
                 }
 
+                /* ✅ 전체 배경 */
                 .content {
                     flex: 1;
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    background-color: #faf8f0;
+                    background: linear-gradient(to bottom right, #faf8f0, #f3ebd3);
                     padding: 50px 20px;
                 }
 
+                /* ✅ 회원가입 폼 */
                 .join-container {
-                    background: #f3ebd3;
+                    background: linear-gradient(135deg, #f7f3e6, #f3ebd3);
                     padding: 40px 50px;
-                    border-radius: 12px;
-                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                    border-radius: 16px;
+                    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
                     width: 100%;
                     max-width: 550px;
-                    font-family: "Noto Sans KR", sans-serif;
                 }
 
                 .join-title {
-                    font-size: 24px;
+                    font-size: 26px;
                     font-weight: 700;
                     text-align: center;
                     color: #1a5d1a;
                     margin-bottom: 30px;
                 }
 
+                /* ✅ input 그룹 */
                 .input-group {
-                    margin-bottom: 18px;
+                    margin-bottom: 20px;
                 }
 
                 .input-group label {
                     display: block;
+                    font-weight: 600;
+                    color: #1a5d1a;
+                    margin-bottom: 6px;
                     font-size: 14px;
-                    margin-bottom: 5px;
-                    color: #333;
                 }
 
-                .input-group input,
-                .input-group select {
-                    width: 100%;
+                .input-group label i {
+                    margin-right: 5px;
+                    color: #5dbb63;
+                }
+
+                .input-wrapper {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .input-wrapper input,
+                .input-wrapper select {
+                    flex: 1;
                     padding: 10px 12px;
                     border: 1px solid #ccc;
-                    border-radius: 6px;
+                    border-radius: 8px;
                     font-size: 14px;
-                    box-sizing: border-box;
+                    transition: 0.3s;
                 }
 
+                .input-wrapper input:focus,
+                .input-wrapper select:focus {
+                    border-color: #5dbb63;
+                    box-shadow: 0 0 5px rgba(93, 187, 99, 0.4);
+                    outline: none;
+                }
+
+                .input-wrapper button {
+                    background-color: #5dbb63;
+                    border: none;
+                    color: white;
+                    padding: 8px 14px;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    margin-left: 8px;
+                    cursor: pointer;
+                    transition: 0.3s;
+                }
+
+                .input-wrapper button:hover {
+                    background-color: #4ba954;
+                    transform: translateY(-2px);
+                    box-shadow: 0 3px 8px rgba(76, 169, 84, 0.3);
+                }
+
+                /* ✅ 판매자 전용 구분선 */
+                .seller-section {
+                    margin-top: 30px;
+                    padding-top: 25px;
+                    border-top: 2px solid #d9d0b6;
+                }
+
+                .seller-section-title {
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: #1a5d1a;
+                    margin-bottom: 15px;
+                    text-align: center;
+                }
+
+                /* ✅ 약관 */
                 .terms {
                     margin-top: 20px;
                     padding: 15px;
-                    background: #f7f7f7;
+                    background: #fff;
                     border: 1px solid #ddd;
-                    border-radius: 6px;
+                    border-radius: 8px;
                     font-size: 13px;
                     line-height: 1.6;
                     color: #555;
                     max-height: 120px;
                     overflow-y: auto;
+                    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.1);
+                }
+
+                .terms::-webkit-scrollbar {
+                    width: 6px;
+                }
+
+                .terms::-webkit-scrollbar-thumb {
+                    background-color: #5dbb63;
+                    border-radius: 3px;
                 }
 
                 .check-terms {
@@ -102,37 +168,82 @@
                     font-size: 14px;
                 }
 
+                /* ✅ 회원가입 버튼 */
                 .btn-join2 {
                     width: 100%;
                     height: 50px;
                     margin-top: 25px;
-                    background-color: #5dbb63;
+                    background: linear-gradient(90deg, #4caf50, #5dbb63);
                     color: white;
                     border: none;
-                    border-radius: 8px;
+                    border-radius: 10px;
                     font-size: 16px;
                     font-weight: 600;
                     cursor: pointer;
-                    transition: 0.25s;
+                    transition: 0.3s;
+                    box-shadow: 0 4px 10px rgba(93, 187, 99, 0.3);
                 }
 
-                .btn-join:hover {
-                    background-color: #4ca857;
+                .btn-join2:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 12px rgba(76, 169, 84, 0.4);
                 }
 
+                /* ✅ 로그인 링크 */
                 .link-login {
                     text-align: center;
-                    margin-top: 15px;
+                    margin-top: 18px;
                     font-size: 14px;
                 }
 
                 .link-login a {
                     color: #1a5d1a;
                     text-decoration: none;
+                    font-weight: 600;
                 }
 
                 .link-login a:hover {
                     text-decoration: underline;
+                }
+
+                /* ✅ 파일 업로드 영역 */
+                .file-upload {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    position: relative;
+                }
+
+                .file-upload input[type="file"] {
+                    display: none;
+                }
+
+                .file-label {
+                    background-color: #5dbb63;
+                    color: white;
+                    padding: 8px 14px;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    white-space: nowrap;
+                }
+
+                .file-label:hover {
+                    background-color: #4ba954;
+                    transform: translateY(-2px);
+                    box-shadow: 0 3px 8px rgba(76, 169, 84, 0.3);
+                }
+
+                .file-name {
+                    font-size: 14px;
+                    color: #333;
+                    font-weight: 500;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    max-width: 250px;
                 }
             </style>
         </head>
@@ -145,97 +256,119 @@
                         <div class="join-container">
                             <h2 class="join-title">판매자 회원가입</h2>
 
-                            <!-- ✅ Vue 데이터 바인딩 -->
+                            <!-- 기본 정보 -->
                             <div class="input-group">
-                                <label>아이디</label>
-                                <input type="text" v-model="userId" placeholder="아이디를 입력하세요">
-                                <button @click="fnCheck">중복확인</button>
+                                <label><i class="fa-solid fa-user"></i> 아이디</label>
+                                <div class="input-wrapper">
+                                    <input type="text" v-model="userId" placeholder="영문+숫자 4~20자 사이만 입력 가능합니다">
+                                    <button @click="fnCheck">중복확인</button>
+                                </div>
                             </div>
 
                             <div class="input-group">
-                                <label>비밀번호</label>
-                                <input type="password" v-model="userPwd" placeholder="비밀번호를 입력하세요">
+                                <label><i class="fa-solid fa-lock"></i> 비밀번호</label>
+                                <div class="input-wrapper">
+                                    <input type="password" v-model="userPwd"
+                                        placeholder="소문자, 숫자, 특수문자 포함 8~16자 이내로 입력해주세요">
+                                </div>
                             </div>
 
                             <div class="input-group">
-                                <label>비밀번호 확인</label>
-                                <input type="password" v-model="userPwdChk" placeholder="비밀번호를 다시 입력하세요">
+                                <label><i class="fa-solid fa-lock"></i> 비밀번호 확인</label>
+                                <div class="input-wrapper">
+                                    <input type="password" v-model="userPwdChk" placeholder="비밀번호를 다시 입력하세요">
+                                </div>
                             </div>
 
                             <div class="input-group">
-                                <label>이름</label>
-                                <input type="text" v-model="userName" placeholder="이름을 입력하세요">
+                                <label><i class="fa-solid fa-id-card"></i> 이름</label>
+                                <div class="input-wrapper">
+                                    <input type="text" v-model="userName" placeholder="이름은 한글 2~10자 이내만 가능합니다">
+                                </div>
                             </div>
 
                             <div class="input-group">
-                                <label>이메일</label>
-                                <input type="email" v-model="userEmail" placeholder="이메일 주소를 입력하세요">
+                                <label><i class="fa-solid fa-envelope"></i> 이메일</label>
+                                <div class="input-wrapper">
+                                    <input type="email" v-model="userEmail" placeholder="이메일 주소를 입력하세요">
+                                </div>
                             </div>
 
                             <div class="input-group">
-                                <label>주소</label>
-                                <input type="text" v-model="userAddr" placeholder="주소를 입력하세요">
+                                <label><i class="fa-solid fa-location-dot"></i> 주소</label>
+                                <div class="input-wrapper">
+                                    <input v-model="userAddr" placeholder="주소 검색 버튼으로 입력해주세요" disabled>
+                                    <button @click="fnAddr">주소검색</button>
+                                </div>
                             </div>
 
                             <div class="input-group">
-                                <label>휴대폰</label>
-                                <input type="text" v-model="userPhone" placeholder="휴대폰 번호를 입력하세요">
+                                <label><i class="fa-solid fa-mobile-screen"></i> 휴대폰</label>
+                                <div class="input-wrapper">
+                                    <input type="text" v-model="userPhone" placeholder="예: 010-1234-5678">
+                                </div>
                             </div>
 
-                            <!-- ✅ 판매자 전용 항목 -->
-                            <div class="input-group">
-                                <label>농가명</label>
-                                <input type="text" v-model="farmName" placeholder="농가명을 입력하세요">
-                            </div>
+                            <!-- 판매자 전용 -->
+                            <div class="seller-section">
+                                <h3 class="seller-section-title">판매자 정보</h3>
 
-                            <div class="input-group">
-                                <label>농가 인증유형</label>
-                                <select v-model="certType">
-                                    <option value="">선택하세요</option>
-                                    <option value="GAP">GAP 인증</option>
-                                    <option value="유기농">유기농 인증</option>
-                                    <option value="무농약">무농약 인증</option>
-                                    <option value="유기가공식품">유기가공식품 인증</option>
-                                    <option value="인증 없음">인증 없음</option>
-                                </select>
-                            </div>
+                                <div class="input-group">
+                                    <label><i class="fa-solid fa-leaf"></i> 상호명 (농가명) </label>
+                                    <div class="input-wrapper">
+                                        <input type="text" v-model="farmName" placeholder="상호명 (농가명)을 입력하세요">
+                                    </div>
+                                </div>
 
-                            <div class="input-group">
-                                <label>사업자등록번호</label>
-                                <input type="text" v-model="bizNo" placeholder="예: 123-45-67890">
-                            </div>
+                                <div class="input-group">
+                                    <label><i class="fa-solid fa-briefcase"></i> 사업자등록번호</label>
+                                    <div class="input-wrapper">
+                                        <input type="text" v-model="bizNo" placeholder="'-'없이 숫자 10자리">
+                                    </div>
+                                </div>
 
-                            <div class="input-group">
-                                <label>정산 계좌정보</label>
-                                <div class="account-group">
-                                    <select v-model="bankName">
-                                        <option value="">은행 선택</option>
-                                        <option value="KB국민은행">국민은행</option>
-                                        <option value="신한은행">신한은행</option>
-                                        <option value="우리은행">우리은행</option>
-                                        <option value="하나은행">하나은행</option>
-                                        <option value="농협은행">농협은행</option>
-                                        <option value="IBK기업은행">기업은행</option>
-                                        <option value="SC제일은행">SC제일은행</option>
-                                        <option value="부산은행">부산은행</option>
-                                        <option value="대구은행">대구은행</option>
-                                        <option value="카카오뱅크">카카오뱅크</option>
-                                        <option value="토스뱅크">토스뱅크</option>
-                                    </select>
-                                    <input type="text" v-model="account" placeholder="계좌번호 입력">
+                                <div class="input-group">
+                                    <label><i class="fa-solid fa-file-arrow-up"></i> 인증서 / 사업자등록증 업로드</label>
+                                    <div class="input-wrapper file-upload">
+                                        <input type="file" id="fileUpload" @change="fnFileChange"
+                                            accept=".jpg,.jpeg,.png,.pdf">
+                                        <label for="fileUpload" class="file-label">파일 선택</label>
+                                        <span class="file-name" v-if="fileName">{{ fileName }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label><i class="fa-solid fa-building-columns"></i> 정산 계좌정보</label>
+                                    <div class="input-wrapper">
+                                        <select v-model="bankName">
+                                            <option value="">은행 선택</option>
+                                            <option>국민은행</option>
+                                            <option>신한은행</option>
+                                            <option>우리은행</option>
+                                            <option>하나은행</option>
+                                            <option>농협은행</option>
+                                            <option>기업은행</option>
+                                            <option>SC제일은행</option>
+                                            <option>부산은행</option>
+                                            <option>대구은행</option>
+                                            <option>카카오뱅크</option>
+                                            <option>토스뱅크</option>
+                                        </select>
+                                        <input type="text" v-model="account" placeholder="계좌번호 입력">
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="terms">
-                                판매자 회원 약관<br><br>
+                                <strong>판매자 회원 약관</strong><br><br>
                                 1. 판매자는 관련 법규에 따라 올바른 상품을 판매해야 합니다.<br>
                                 2. 사업자 정보 및 정산 계좌는 정확히 기입해야 합니다.<br>
                                 3. 인증유형이 허위로 판명될 경우, 계정이 제한될 수 있습니다.
                             </div>
 
                             <div class="check-terms">
-                                <input type="checkbox" v-model="agree">
-                                <label>위 약관에 동의합니다.</label>
+                                <input type="checkbox" v-model="agree" id="agree">
+                                <label for="agree">위 약관에 동의합니다.</label>
                             </div>
 
                             <button class="btn-join2" @click="fnSellerJoin">판매자 회원가입</button>
@@ -250,10 +383,14 @@
             </div>
 
             <script>
+                function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail, roadAddrPart2, engAddr, jibunAddr, zipNo, admCd, rnMgtSn, bdMgtSn, detBdNmList, bdNm, bdKdcd, siNm, sggNm, emdNm, liNm, rn, udrtYn, buldMnnm, buldSlno, mtYn, lnbrMnnm, lnbrSlno, emdNo) {
+                    window.vueObj.fnResult(roadFullAddr, addrDetail, zipNo);
+                }
                 const app = Vue.createApp({
                     data() {
                         return {
                             path: "${pageContext.request.contextPath}",
+                            // 일반 회원가입 정보
                             userId: "",
                             userPwd: "",
                             userPwdChk: "",
@@ -261,128 +398,186 @@
                             userEmail: "",
                             userAddr: "",
                             userPhone: "",
+                            role: "SELLER",
+
+                            // 판매자 회원가입 정보
                             farmName: "",
-                            certType: "",
                             bizNo: "",
                             bankName: "",
                             account: "",
                             agree: false,
-                            checkFlg: false,
-                            role: "SELLER"
+                            checkFlg: false,                            
+                            file: null,
+                            fileName: ""
                         };
                     },
                     methods: {
                         fnCheck() {
                             let self = this;
                             if (!self.userId) {
-                                alert("빈값은 입력할 수 없습니다");
+                                Swal.fire('⚠️', '아이디를 입력해주세요.', 'warning');
                                 return;
                             }
-                            let param = {
-                                userId: self.userId
-                            };
                             $.ajax({
-                                url: "/check.dox",
-                                dataType: "json",
-                                type: "POST",
-                                data: param,
+                                url: "/check.dox", type: "POST", dataType: "json", data: { userId: self.userId },
                                 success: function (data) {
                                     if (data.result == "Y") {
-                                        alert("사용 가능한 아이디입니다");
+                                        Swal.fire('✅', '사용 가능한 아이디입니다.', 'success');
                                         self.checkFlg = true;
-                                    } else if (data.result == "N") {
-                                        alert("중복된 아이디입니다");
-                                        return;
+                                    } else {
+                                        Swal.fire('❌', '이미 사용 중인 아이디입니다.', 'error');
                                     }
                                 }
                             });
                         },
-                        fnSellerJoin: function () {
+                        fnSellerJoin() {
                             let self = this;
                             if (!self.userId || !self.userPwd || !self.userPwdChk || !self.userName || !self.userEmail || !self.userAddr) {
-                                alert("모든 항목을 입력해주세요.");
+                                Swal.fire('⚠️', '모든 항목을 입력해주세요.', 'warning');
                                 return;
                             }
                             if (!self.checkFlg) {
-                                alert("중복 체크 후 가입해주세요");
+                                Swal.fire('⚠️', '아이디 중복확인을 해주세요.', 'warning');
                                 return;
                             }
                             if (self.userPwd !== self.userPwdChk) {
-                                alert("비밀번호가 일치하지 않습니다.");
+                                Swal.fire('❌', '비밀번호가 일치하지 않습니다.', 'error');
                                 return;
                             }
                             const pwdRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+\[\]{};:'",.<>\/?\\|`~])(?!.*\s).{8,16}$/;
                             if (!pwdRegex.test(self.userPwd)) {
-                                alert("비밀번호는 소문자, 숫자, 특수문자가 각각 최소 1개 포함되어야 하며 길이는 8~16자 이내여야 합니다");
+                                Swal.fire('⚠️', '비밀번호는 소문자, 숫자, 특수문자 포함 8~16자 이내여야 합니다.', 'warning');
                                 return;
                             }
                             const nameRegex = /^[가-힣]{2,10}$/;
                             if (!nameRegex.test(self.userName)) {
-                                alert("이름은 한글 2~10자 이내만 가능합니다");
+                                Swal.fire('⚠️', '이름은 한글 2~10자 이내만 가능합니다.', 'warning');
                                 return;
                             }
                             const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
                             if (!emailRegex.test(self.userEmail)) {
-                                alert("이메일 형식에 맞게 입력해주세요");
+                                Swal.fire('⚠️', '이메일 형식에 맞게 입력해주세요.', 'warning');
                                 return;
                             }
                             const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
                             if (!phoneRegex.test(self.userPhone)) {
-                                alert("휴대폰 번호는 010-1234-5678 형태로 입력해주세요");
+                                Swal.fire('⚠️', '휴대폰 번호는 010-1234-5678 형태로 입력해주세요.', 'warning');
                                 return;
                             }
-                            if (!self.agree) {
-                                alert("이용약관에 동의해야 합니다.");
-                                return;
-                            }
-                            let param = {
-                                userId: self.userId,
-                                userPwd: self.userPwd,
-                                userName: self.userName,
-                                userEmail: self.userEmail,
-                                userAddr: self.userAddr,
-                                userPhone: self.userPhone,
-                                userRole: self.role
-                            };
+
                             $.ajax({
                                 url: "/join.dox",
-                                dataType: "json",
                                 type: "POST",
-                                data: param,
+                                dataType: "json",
+                                data: {
+                                    userId: self.userId,
+                                    userPwd: self.userPwd,
+                                    userName: self.userName,
+                                    userEmail: self.userEmail,
+                                    userAddr: self.userAddr,
+                                    userPhone: self.userPhone,
+                                    userRole: self.role
+                                },
                                 success: function (data) {
                                     if (data.result == "success") {
                                         self.fnAddSeller();
                                     } else {
-                                        alert("오류가 발생했습니다.");
+                                        alert("오류 발생");
                                     }
                                 }
                             });
+                            
                         },
                         fnAddSeller() {
                             let self = this;
-                            let param = {
-                                userId: self.userId,
-                                farmName: self.farmName,
-                                certType: self.certType,
-                                bizNo: self.bizNo,
-                                bankName: self.bankName,
-                                account: self.account
-                            };
+
+                            if (!self.farmName) {
+                                Swal.fire('⚠️', '상호명(농가명)을 입력해주세요.', 'warning');
+                                return;
+                            }
+
+                            if (!self.bizNo) {
+                                Swal.fire('⚠️', '사업자등록번호를 입력해주세요.', 'warning');
+                                return;
+                            } else {
+                                const bizNoRegex = /^\d{10}$/;
+                                if (!bizNoRegex.test(self.bizNo)) {
+                                    Swal.fire('⚠️', '사업자등록번호는 10자리 숫자로 정확히 입력해주세요.', 'warning');
+                                    return;
+                                }
+                            }
+
+                            if (!self.file) {
+                                Swal.fire('⚠️', '사업자 등록증을 첨부해주세요.', 'warning');
+                                return;
+                            }
+
+                            if (!self.bankName) {
+                                Swal.fire('⚠️', '은행명을 선택해주세요.', 'warning');
+                                return;
+                            }
+
+                            if (!self.account) {
+                                Swal.fire('⚠️', '계좌번호를 입력해주세요.', 'warning');
+                                return;
+                            } else {
+                                const accountRegex = /^[0-9]+$/;
+                                if (!accountRegex.test(self.account)) {
+                                    Swal.fire('⚠️', '계좌번호는 숫자만 입력해주세요.', 'warning');
+                                    return;
+                                }
+                            }
+                            if (!self.agree) {
+                                Swal.fire('⚠️', '모든 약관에 동의해주세요.', 'warning');
+                                return;
+                            }
+
+                            let formData = new FormData();
+
+                            formData.append("userId", self.userId);
+                            formData.append("farmName", self.farmName);
+                            formData.append("bizNo", self.bizNo);
+                            formData.append("bankName", self.bankName);
+                            formData.append("account", self.account);
+                            if (self.file) formData.append("bizLicense", self.file);
+
                             $.ajax({
-                                url: "/sellerJoin.dox",
-                                dataType: "json",
+                                url: "fileUpload.dox",
                                 type: "POST",
-                                data: param,
+                                dataType: "json",
+                                data: formData,
+                                processData: false,
+                                contentType: false,
                                 success: function (data) {
-                                    if (data.result == "success") {
-                                        alert("회원가입 되었습니다!");
-                                        location.href = self.path + "/login.do";
-                                    } else {
-                                        alert("오류가 발생했습니다.");
-                                    }
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: '판매자 회원가입 완료!',
+                                        text: 'AGRICOLA와 함께 성장하세요 🌾',
+                                        confirmButtonColor: '#5dbb63'
+                                    }).then(() => location.href = self.path + "/login.do");                                
+                                },
+                                error: function (jqXHR, textStatus, errorThrown) {
+                                    console.error("신청 실패:", textStatus, errorThrown);
+                                    Swal.fire('❌', '회원가입 중 오류가 발생했습니다.', 'error');
                                 }
                             });
+                        },
+                        fnAddr() {
+                            window.open("/addr.do", "addr", "width=500, height=500");
+                        },
+                        fnResult(roadFullAddr) {
+                            this.userAddr = roadFullAddr;
+                        },
+                        fnFileChange(event) {
+                            const file = event.target.files[0];
+                            if (file) {
+                                this.file = file;
+                                this.fileName = file.name;
+                            }
                         }
+                    },
+                    mounted() {
+                        window.vueObj = this;
                     }
                 });
                 app.mount('#app');

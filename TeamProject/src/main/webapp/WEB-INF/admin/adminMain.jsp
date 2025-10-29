@@ -121,8 +121,8 @@
         </head>
 
         <body>
-            <div id="app">
-                <%@ include file="/WEB-INF/views/common/header.jsp" %>
+            <%@ include file="/WEB-INF/views/common/header.jsp" %>
+            <div id="app">                
 
                     <!-- ↓↓ 관리자 콘텐츠 래퍼 ↓↓ -->
                     <div class="admin-container">
@@ -176,10 +176,9 @@
                         </div>
 
                         <div class="admin-bottom-space"></div>
-                    </div>
-
-                    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+                    </div>                
             </div>
+            <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
             <script>
                 const app = Vue.createApp({
