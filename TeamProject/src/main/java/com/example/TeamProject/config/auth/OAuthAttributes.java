@@ -63,7 +63,7 @@ public class OAuthAttributes {
 	    user.setName(name);
 	    user.setEmail(email);
 	    user.setPhone(phone);
-	    user.setUserRole("SELLER"); // 소셜 로그인 시 기본 권한
+	    user.setUserRole("BUYER"); // 소셜 로그인 시 기본 권한
 	    // 소셜 로그인 사용자는 일반 비밀번호가 없으므로 password 필드는 null로 둡니다.
 	    return user;
 	}

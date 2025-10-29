@@ -99,69 +99,69 @@
                 gap: 10px;
             }
 
-            .social-login button {
-                width: 100%;
-                height: 50px;
-                /* ✅ 로그인 버튼과 동일 높이 */
-                border: none;
-                background: none;
-                padding: 0;
-                cursor: pointer;
-                border-radius: 8px;
-                /* 동일한 모서리 라운드 */
-                overflow: hidden;
-                /* 이미지가 버튼 내부에 딱 맞게 */
-                transition: 0.25s;
-                background-color: #fff;
-                /* ✅ 이미지 여백용 배경 */
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-
-            .social-login button:hover {
-                transform: scale(1.02);
-                opacity: 0.95;
-            }
-
-            .social-login img {
-                width: auto;
-                height: 80%;
-                /* ✅ 버튼 높이에 맞춤 */
-                object-fit: contain;
-                /* 이미지 비율 유지하며 꽉 채움 */
+            .social-login a {
                 display: block;
-            }
-
-            .login-links {
-                margin-top: 20px;
-                font-size: 14px;
-                color: #555;
-            }
-
-            .login-links a {
-                color: #1a5d1a;
+                width: 100%;
                 text-decoration: none;
-                margin: 0 6px;
             }
 
-            .login-links a:hover {
-                text-decoration: underline;
-            }
+            .social-login button {
+            width: 100%;
+            padding: 8px 12px; 
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: 0.25s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
 
-            .social-login button.kakao {
-                background-color: #FEE500;
-            }
+        .social-login img {
+            height: 24px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
 
-            .social-login button.naver {
-                background-color: #03C75A;
-            }
+        .social-login button:hover {
+            transform: scale(1.02);
+            opacity: 0.95;
+        }
 
-            .social-login button.google {
-                background-color: #fff;
-                border: 1px solid #ddd;
-            }
-        </style>
+            
+
+        .login-links {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .login-links a {
+            color: #1a5d1a;
+            text-decoration: none;
+            margin: 0 6px;
+        }
+
+        .login-links a:hover {
+            text-decoration: underline;
+        }
+
+        .social-login button.kakao {
+            background-color: #FEE500;
+        }
+
+        .social-login button.naver {
+            background-color: #03C75A;
+        }
+
+        .social-login button.google {
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+    </style>
     </head>
 
     <body>

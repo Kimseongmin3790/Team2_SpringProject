@@ -68,7 +68,7 @@
 	        #{name},
 	        #{userRole},
 	        'social_user_password', <!-- 소셜 로그인 사용자는 비밀번호가 없으므로 임의의 값 지정 -->
-	        #{phone},
+	        NVL(#{phone, jdbcType=VARCHAR}, 'NONE'),
 	        '소셜 로그인 사용자',    
 	        SYSDATE,
 	        SYSDATE
@@ -78,12 +78,15 @@
 	<!-- 소셜 로그인 시 사용자 이름 등을 업데이트하는 쿼리 -->
 	<update id="updateUser" parameterType="com.example.TeamProject.model.User">
 	    UPDATE USERS
-	    SET
-	        NAME = #{name},
-	        PHONE = #{phone},
-	        UDATETIME = SYSDATE
-	    WHERE
-	        EMAIL = #{email}
+		<set>
+		    NAME = #{name},
+		    <if test="phone != null">
+		        PHONE = #{phone, jdbcType=VARCHAR},
+		    </if>
+		    UDATETIME = SYSDATE
+		</set>
+		WHERE
+   			EMAIL = #{email}
 	</update>
 	
 </mapper>
