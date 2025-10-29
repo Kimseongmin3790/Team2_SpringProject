@@ -7,6 +7,7 @@
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Document</title>
+
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -17,9 +18,10 @@
                 }
             </script>
 
-            <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
+            <!-- 공통 헤더/푸터 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
+
             <style>
                 html,
                 body {
@@ -72,22 +74,12 @@
                 }
 
                 #delivery {
-                    margin: 10px 0px;
-                    border: 2px solid rgba(0, 0, 0, 0.03);
-                    background: rgba(0, 0, 0, 0.03);
+                    margin: 10px 0;
+                    border: 2px solid rgba(0, 0, 0, .03);
+                    background: rgba(0, 0, 0, .03);
                 }
 
-                #choice select {
-                    width: 500px;
-                    height: 50px;
-                }
-
-                #choice select option {
-                    width: 500px;
-                    height: 50px;
-                }
-
-                /* [추가] 아주 간단한 커스텀 드롭다운 스타일 (select 대체) */
+                /* 커스텀 드롭다운 */
                 .dd {
                     position: relative;
                     width: 500px;
@@ -153,24 +145,8 @@
                     gap: 8px;
                 }
 
-                .share-naver {
-                    height: 32px;
-                    padding: 0 10px;
-                    border: 0;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    background: #03c75a;
-                    color: #fff;
-                    font-weight: 600;
-                    font-size: 14px;
-                }
-
-                .share-naver:hover {
-                    filter: brightness(0.95);
-                }
-
                 .share-wrap {
-                    position: relative
+                    position: relative;
                 }
 
                 .share-icon-btn {
@@ -207,11 +183,11 @@
                     border: 0;
                     background: #fff;
                     cursor: pointer;
-                    border-radius: 8px
+                    border-radius: 8px;
                 }
 
                 .share-item:hover {
-                    background: #f7f7f7
+                    background: #f7f7f7;
                 }
 
                 .share-badge {
@@ -222,36 +198,85 @@
                     align-items: center;
                     justify-content: center;
                     color: #fff;
-                    font-weight: 700
+                    font-weight: 700;
                 }
 
                 .naver-badge {
-                    background: #03c75a
+                    background: #03c75a;
                 }
 
                 .kakao-badge {
                     background: #fee500;
-                    color: #000
+                    color: #000;
                 }
 
                 .link-badge {
-                    background: #888
+                    background: #888;
                 }
 
                 .selection-summary {
-                    margin: 10px 0px;
-                    border: 2px solid rgba(0, 0, 0, 0.03);
-                    background: rgba(0, 0, 0, 0.03);
+                    margin: 10px 0;
+                    border: 2px solid rgba(0, 0, 0, .03);
+                    background: rgba(0, 0, 0, .03);
                 }
 
+                /* 탭 바: 스크롤 시 상단 고정 */
                 .irq {
+                    position: sticky;
+                    top: 0;
+                    z-index: 50;
+                    background: #fff;
+                    border-bottom: 1px solid #eee;
                     clear: both;
                 }
 
-                #information,
-                #review,
-                #qeustion {
+                .tab {
                     float: left;
+                    width: 350px;
+                    text-align: center;
+                    cursor: pointer;
+                    padding: 5px 10px;
+                    box-sizing: border-box;
+                }
+
+                .tab a {
+                    display: block;
+                    text-decoration: none;
+                    font-weight: 700;
+                    padding: 6px 0;
+                    background: #f5f5f5;
+                    color: #111;
+                    border: 1px solid #e5e5e5;
+                    border-radius: 8px;
+                }
+
+                /* 섹션 앵커 위치 보정(탭 높이만큼) */
+                #in,
+                #re,
+                #qa {
+                    scroll-margin-top: 64px;
+                }
+
+                /* 활성 색상 토큰 */
+                :root {
+                    --active-bg: #4caf50;
+                    --active-color: #fff;
+                }
+
+                /* 해시가 없을 때(초기/새로고침) → 상세정보(#in) 활성 */
+                :root:not(:has(:target)) .irq .tab a[href="#in"] {
+                    background: var(--active-bg);
+                    color: var(--active-color);
+                    border-color: var(--active-bg);
+                }
+
+                /* 해시가 있을 때 → 해당 탭 활성 */
+                :root:has(#in:target) .irq .tab a[href="#in"],
+                :root:has(#re:target) .irq .tab a[href="#re"],
+                :root:has(#qa:target) .irq .tab a[href="#qa"] {
+                    background: var(--active-bg);
+                    color: var(--active-color);
+                    border-color: var(--active-bg);
                 }
 
                 table,
@@ -264,33 +289,135 @@
                 }
 
                 th {
-                    background-color: rgba(0, 0, 0, 0.03);
+                    background-color: rgba(0, 0, 0, .03);
+                }
+
+                /* 버튼 공통 */
+                .btn {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    min-width: 240px;
+                    height: 50px;
+                    padding: 0 16px;
+                    border-radius: 10px;
+                    font-family: "Noto Sans KR", sans-serif;
+                    font-size: 15px;
+                    font-weight: 700;
+                    border: 1px solid transparent;
+                    cursor: pointer;
+                    transition: transform .06s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+                }
+
+                .btn:active {
+                    transform: translateY(1px);
+                }
+
+                :root {
+                    --green-700: #1a5d1a;
+                    --green-500: #5dbb63;
+                    --green-500-d: #4ba954;
+                    --beige-100: #f5efd8;
+                    --beige-150: #f3ebd3;
+                    --text-900: #1f1f1f;
+                    --text-700: #3a3a3a;
+                    --line: #dddddd;
+                }
+
+                .btn-primary {
+                    background: var(--green-500);
+                    color: #fff;
+                    box-shadow: 0 6px 14px rgba(26, 93, 26, .18);
+                }
+
+                .btn-primary:hover {
+                    background: var(--green-500-d);
+                }
+
+                .btn-outline {
+                    background: #fff;
+                    color: var(--green-700);
+                    border-color: var(--green-700);
+                }
+
+                .btn-outline:hover {
+                    background: var(--beige-150);
+                }
+
+                .btn-ghost {
+                    background: var(--beige-100);
+                    color: var(--green-700);
+                    border-color: var(--line);
+                }
+
+                .btn-ghost:hover {
+                    background: #fff;
+                    border-color: var(--green-700);
+                }
+
+                .btn-like {
+                    background: #fff;
+                    color: var(--text-900);
+                    border-color: var(--line);
+                }
+
+                .btn-like:hover {
+                    background: var(--beige-100);
+                    border-color: var(--green-700);
+                    color: var(--green-700);
+                }
+
+                #container>div button.btn {
+                    margin-right: 8px;
+                }
+
+                #container>div+div button.btn {
+                    margin-top: 8px;
+                }
+
+                #img2 {
+                    clear: both;
+                }
+
+                /* 클릭 가능한 아이콘처럼 보이게 */
+                .heart-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    /* 하트 색 (currentColor) */
+                }
+
+                .heart-btn:focus {
+                    outline-offset: 2px;
+                }
+
+                .heart-btn:hover {
+                    filter: brightness(0.95);
                 }
             </style>
         </head>
 
         <body>
             <div id="app">
-                <!-- 공통 헤더 -->
                 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                     <main class="content">
                         <div id="img">
-                            <!-- [수정] px 단위 보정 -->
                             <img src="/resources/img/snowCrab.png" style="width: 480px; margin: 5px 5px;">
                         </div>
+
                         <div id="container">
                             <div id="store">윤자네 수산</div>
                             <div id="title">[경북 포항 김지윤] 구룡포 연지홍게 홍게제철 실속 가성비 3kg(10~12미)</div>
+
                             <div class="badge-row">
                                 <img src="/resources/img/sale.png" style="width: 62px;">
-
-                                <!-- ▼ v-model 바인딩 (숨김) -->
                                 <input v-model="shareUrl" type="hidden">
                                 <input v-model="shareTitle" type="hidden">
 
-                                <!-- ▼ 공유 아이콘 + 팝오버 -->
-                                <div class="share-wrap">
+                                <div class="share-wrap" style="margin-left: 350px;">
                                     <button type="button" class="share-icon-btn" @click.stop="shareOpen = !shareOpen"
                                         aria-label="공유">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -301,6 +428,25 @@
                                                 stroke-width="1.5" />
                                         </svg>
                                     </button>
+                                    <!-- 하트 토글 아이콘 (버튼 태그 없음) -->
+                                    <span class="heart-btn" @click="liked = !liked"
+                                        @keydown.space.prevent="liked = !liked" @keydown.enter.prevent="liked = !liked"
+                                        role="button" :aria-pressed="liked" tabindex="0" aria-label="찜">
+                                        <!-- 채워진 하트 -->
+                                        <svg v-if="liked" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path
+                                                d="M12.1 21.35l-.1.1-.1-.1C7.14 17.24 4 14.36 4 10.9 4 8.5 5.9 6.6 8.3 6.6c1.4 0 2.75.65 3.7 1.68C12.95 7.25 14.3 6.6 15.7 6.6 18.1 6.6 20 8.5 20 10.9c0 3.46-3.14 6.34-7.9 10.45Z"
+                                                fill="currentColor" />
+                                        </svg>
+
+                                        <!-- 테두리 하트 -->
+                                        <svg v-else width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path
+                                                d="M12.1 21.35l-.1.1-.1-.1C7.14 17.24 4 14.36 4 10.9 4 8.5 5.9 6.6 8.3 6.6c1.4 0 2.75.65 3.7 1.68C12.95 7.25 14.3 6.6 15.7 6.6 18.1 6.6 20 8.5 20 10.9c0 3.46-3.14 6.34-7.9 10.45Z"
+                                                fill="none" stroke="currentColor" stroke-width="1.5" />
+                                        </svg>
+                                    </span>
+
 
                                     <div class="share-pop" v-if="shareOpen" @click.stop>
                                         <button type="button" class="share-item" @click="shareNaver">
@@ -316,37 +462,25 @@
                                 </div>
                             </div>
 
-                            <div id="price">
-                                15,900원
-                            </div>
+                            <div id="price">15,900원</div>
                             <hr>
                             <div id="sub">
                                 <p>타 홍게류 보다 크기는 작지만 장맛이 일품인 연지홍게입니다</p>
                                 <p>가정에서 실속 가성비로 저렴하게 드셔보세요!</p>
                                 <p>모든 홍게는 고압스팀기 자숙 후 배송해드립니다</p>
                             </div>
+
                             <div v-if="fulfillment == 'delivery'">
-                                <div>
-                                    <span style="font-weight: bold;">원산지</span> 국산(구룡포)
-                                </div>
-                                <div>
-                                    <span style="font-weight: bold;">구매혜택</span> 318 포인트 적립예정
-                                </div>
-                                <div>
-                                    <span style="font-weight: bold;">배송비</span> 3,000원 | 도서산간 배송비 추가
-                                </div>
-                                <div>
-                                    <span style="font-weight: bold;">배송 안내</span> 배송비 3,000원
-                                </div>
+                                <div><span style="font-weight: bold;">원산지</span> 국산(구룡포)</div>
+                                <div><span style="font-weight: bold;">구매혜택</span> 318 포인트 적립예정</div>
+                                <div><span style="font-weight: bold;">배송비</span> 3,000원 | 도서산간 배송비 추가</div>
+                                <div><span style="font-weight: bold;">배송 안내</span> 배송비 3,000원</div>
                             </div>
                             <div v-else>
-                                <div>
-                                    <span style="font-weight: bold;">원산지</span> 국산(구룡포)
-                                </div>
-                                <div>
-                                    <span style="font-weight: bold;">구매혜택</span> 318 포인트 적립예정
-                                </div>
+                                <div><span style="font-weight: bold;">원산지</span> 국산(구룡포)</div>
+                                <div><span style="font-weight: bold;">구매혜택</span> 318 포인트 적립예정</div>
                             </div>
+
                             <!-- 수령방법 드롭다운 -->
                             <div class="dd">
                                 <button type="button" class="dd-btn" @click.stop="ddOpen1=!ddOpen1">
@@ -364,13 +498,13 @@
 
                             <div id="delivery">
                                 <p>오늘출발 상품</p>
-                                <p v-if="week && before">오늘 발송됩니다. (평일 15:00까지)</p>
+                                <p v-if="week && before"><span style="color:#ff4100;">당일 15:00까지 결제</span>시 당일 바로 발송됩니다.
+                                </p>
                                 <p v-else>오늘출발 마감되었습니다. (평일 15:00까지)</p>
                             </div>
 
                             <div>
                                 수율 상세페이지 참조 *
-                                <!-- [변경] 기존 select → 드롭다운 (상품 옵션) -->
                                 <div class="dd" style="margin-top:8px;">
                                     <button type="button" class="dd-btn" @click.stop="ddOpen2=!ddOpen2">
                                         <span class="l1">수율 상세페이지 참조 (필수)</span>
@@ -383,44 +517,56 @@
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="selection-summary" v-if="selections.length" style="margin-top:12px">
                                     <div v-for="(it, i) in selections" :key="it.sku"
                                         style="padding:8px 0;border-top:1px solid #eee">
-                                        <div>{{ it.name }}</div>
+                                        <div>
+                                            {{ it.name }}
+                                            <button @click="removeExtra(i)" style="margin-left:270px">삭제</button>
+                                        </div>
+                                        <hr
+                                            style="border-width:1px 0 0 0; border-style:dashed; border-color:#9d9c9c; width: 480px;">
                                         <div
                                             style="font-size:18px;font-weight:700; display:flex; align-items:center; gap:8px; margin-top:6px">
-                                            <button @click="fnMinus(i)">-</button>
-                                            <input v-model.number="it.qty" @input="recomputeTotal">
-                                            <button @click="fnPlus(i)">+</button>
-                                            <span>{{ (it.price * it.qty).toLocaleString() }}원</span>
-                                            <button @click="removeExtra(i)" style="margin-left:auto">삭제</button>
+                                            <button @click="fnMinus(i)" style="width: 30px; height: 30px;">-</button>
+                                            <input v-model.number="it.qty" @input="recomputeTotal"
+                                                style="width: 50px; text-align: center; height: 24px; margin: 5px -9px;">
+                                            <button @click="fnPlus(i)" style="width: 30px; height: 30px;">+</button>
+                                            <span style="margin-left: auto;">{{ (it.price *
+                                                it.qty).toLocaleString()}}원</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div style="margin-top:12px; text-align:right; font-size:20px; font-weight:800;">
-                                    합계: {{ totalSum.toLocaleString() }}원
+
+                                <div v-if="selections.length"
+                                    style="margin-top:12px; text-align: right; font-size:20px; font-weight:800;">
+                                    총 상품금액({{ totalQty }}개) {{ totalSum.toLocaleString() }}원
+                                </div>
+
+                                <div>
+                                    <button @click="fnPurchase" class="btn btn-primary">구매하기</button>
+                                    <button @click="fnBasket" class="btn btn-outline">장바구니</button>
                                 </div>
                                 <div>
-                                    <button @click="fnPurchase">구매하기</button>
-                                    <button @click="fnBasket">장바구니</button>
-                                    <button @click="fnWish">찜</button>
+                                    <button @click="fnChat" class="btn btn-ghost">실시간 문의</button>
+                                    <button @click="fnWish" class="btn btn-like">찜</button>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 탭: 단순 앵커 -->
                         <div class="irq">
-                            <div id="information">
-                                <a href="javascript:;">상세정보</a>
-                            </div>
-                            <div id="review">
-                                <a href="javascript:;">구매평</a>
-                            </div>
-                            <div id="question">
-                                <a href="javascript:;">Q&A</a>
-                            </div>
+                            <div class="tab"><a href="#in">상세정보</a></div>
+                            <div class="tab"><a href="#re">구매평</a></div>
+                            <div class="tab"><a href="#qa">Q&amp;A</a></div>
                         </div>
-                        <div>
-                            <img src="/resources/img/class.png">
-                        </div>
+
+                        <!-- 섹션: 항상 표시, 클릭 시 해당 위치로 스크롤 -->
+                        <section id="in">
+                            <div id="img2"><img src="/resources/img/class.png" style="width: 100%;"></div>
+                        </section>
+
                         <div v-if="!showDetail" style="margin:16px 0; text-align:center;">
                             <button @click="openDetail"
                                 style="padding:10px 16px; border:1px solid #ddd; border-radius:8px; background:#fff; cursor:pointer;">
@@ -839,38 +985,42 @@
                                 </button>
                             </div>
                         </div>
-                        <div>
-                            리뷰
+                        <section id="re">
                             <div>
-                                <a href="javascript:;">추천순</a>
-                                <a href="javascript:;">최신순</a>
-                                <a href="javascript:;">평점 높은순</a>
-                                <a href="javascript:;">평점 낮은순</a>
+                                리뷰
+                                <div>
+                                    <a href="javascript:;">추천순</a>
+                                    <a href="javascript:;">최신순</a>
+                                    <a href="javascript:;">평점 높은순</a>
+                                    <a href="javascript:;">평점 낮은순</a>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            Q&A
+                        </section>
+                        <section id="qa">
                             <div>
-                                <button>상품문의</button>
-                                <button>실시간 문의</button>
+                                Q&amp;A
+                                <div>
+                                    <button>상품문의</button>
+                                    <button>실시간 문의</button>
+                                </div>
+                                <div>
+                                    <table>
+                                        <tr>
+                                            <th>상태</th>
+                                            <th>제목</th>
+                                            <th>작성자</th>
+                                            <th>등록일</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
-                            <div>
-                                <table>
-                                    <tr>
-                                        <th>상태</th>
-                                        <th>제목</th>
-                                        <th>작성자</th>
-                                        <th>등록일</th>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
+                        </section>
                     </main>
 
                     <!-- 공통 푸터 -->
@@ -884,7 +1034,6 @@
             const app = Vue.createApp({
                 data() {
                     return {
-                        // 기존 필드들...
                         ddOpen1: false, ddOpen2: false,
                         fulfillment: 'delivery',
                         sku: '',
@@ -897,8 +1046,6 @@
                             { value: 'b6', l1: '가성비 B급 6kg (20~24미)', l2: 29900 },
                             { value: 'a3', l1: '가성비 A급 3kg (10~12미)', l2: 27900 }
                         ],
-
-                        // ▼ v-model로 연결될 공유 값
                         shareOpen: false,
                         shareUrl: window.location.href,
                         shareTitle: '',
@@ -906,188 +1053,78 @@
                         totalSum: 0,
                         showDetail: false,
                         week: false,
-                        befor: false
+                        before: false,
+                        liked: false
                     }
                 },
                 computed: {
-                    fulfillmentSel() {
-                        return this.deliveryOptions.find(o => o.value === this.fulfillment) || null;
-                    },
-                    skuSel() {
-                        return this.skuOptions.find(o => o.value === this.sku) || null;
-                    }
+                    fulfillmentSel() { return this.deliveryOptions.find(o => o.value === this.fulfillment) || null; },
+                    skuSel() { return this.skuOptions.find(o => o.value === this.sku) || null; },
+                    totalQty() { return this.selections.reduce((n, it) => n + (it.qty || 0), 0); }
                 },
                 methods: {
-                    alreadyAdded: function (opt) {
-                        for (var i = 0; i < this.selections.length; i++) {
-                            if (this.selections[i].sku == opt.value) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    },
-
-                    pickFulfillment(opt) {
-                        let self = this;
-                        self.fulfillment = opt.value;
-                        self.ddOpen1 = false;
-                    },
-
+                    alreadyAdded(opt) { return this.selections.some(s => s.sku === opt.value); },
+                    pickFulfillment(opt) { this.fulfillment = opt.value; this.ddOpen1 = false; },
                     pickSku(opt) {
-                        let self = this;
-                        if (self.alreadyAdded(opt)) {
-                            alert("이미 추가한 옵션입니다.");
-                            self.ddOpen2 = false;
-                            return;
-                        }
-                        self.selections.push({
-                            sku: opt.value,
-                            name: opt.l1,
-                            price: opt.l2,
-                            qty: 1
-                        });
-                        self.sku = opt.value;
-                        self.ddOpen2 = false;
-                        self.recomputeTotal();
+                        if (this.alreadyAdded(opt)) { alert("이미 추가한 옵션입니다."); this.ddOpen2 = false; return; }
+                        this.selections.push({ sku: opt.value, name: opt.l1, price: opt.l2, qty: 1 });
+                        this.sku = opt.value; this.ddOpen2 = false; this.recomputeTotal();
                     },
-
-                    // ▼ 네이버 공유: v-model 값 사용
                     shareNaver() {
-                        if (!this.shareUrl || !this.shareTitle) {
-                            alert('공유할 URL/제목이 비었습니다.');
-                            return;
-                        }
+                        if (!this.shareUrl || !this.shareTitle) { alert('공유할 URL/제목이 비었습니다.'); return; }
                         let encUrl = encodeURI(encodeURIComponent(this.shareUrl));
                         let encTitle = encodeURI(this.shareTitle);
-                        let shareURL = "https://share.naver.com/web/shareView?url=" + encUrl + "&title=" + encTitle;
-                        window.open(shareURL, "_blank");
+                        window.open("https://share.naver.com/web/shareView?url=" + encUrl + "&title=" + encTitle, "_blank");
                         this.shareOpen = false;
                     },
-
-                    // ▼ 카카오 공유(앱키 및 SDK 초기화 필요)
                     shareKakao() {
-                        // SDK/도메인 설정 체크
                         if (!(window.Kakao && window.Kakao.isInitialized && window.Kakao.isInitialized())) {
-                            alert('카카오 SDK가 초기화되지 않았습니다.');
-                            return;
+                            alert('카카오 SDK가 초기화되지 않았습니다.'); return;
                         }
-                        // v2 API 사용: Kakao.Share.sendDefault
                         window.Kakao.Share.sendDefault({
                             objectType: 'feed',
                             content: {
                                 title: this.shareTitle || document.title,
                                 description: '상품을 공유합니다',
-                                imageUrl: location.origin + '/resources/img/snowCrab.png', // 절대URL 권장
-                                link: {
-                                    webUrl: this.shareUrl || window.location.href,
-                                    mobileWebUrl: this.shareUrl || window.location.href
-                                }
+                                imageUrl: location.origin + '/resources/img/snowCrab.png',
+                                link: { webUrl: this.shareUrl || location.href, mobileWebUrl: this.shareUrl || location.href }
                             },
-                            buttons: [
-                                {
-                                    title: '바로 보기',
-                                    link: {
-                                        webUrl: this.shareUrl || window.location.href,
-                                        mobileWebUrl: this.shareUrl || window.location.href
-                                    }
-                                }
-                            ]
+                            buttons: [{ title: '바로 보기', link: { webUrl: this.shareUrl || location.href, mobileWebUrl: this.shareUrl || location.href } }]
                         });
                         this.shareOpen = false;
-                    }
-                    ,
-
-                    // ▼ 링크 복사
+                    },
                     shareCopy() {
-                        let link = this.shareUrl || window.location.href;
-                        (navigator.clipboard
-                            ? navigator.clipboard.writeText(link)
-                            : new Promise((res) => { var ta = document.createElement('textarea'); ta.value = link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); res(); })
+                        let link = this.shareUrl || location.href;
+                        (navigator.clipboard ? navigator.clipboard.writeText(link)
+                            : new Promise(res => {
+                                var ta = document.createElement('textarea'); ta.value = link; document.body.appendChild(ta);
+                                ta.select(); document.execCommand('copy'); document.body.removeChild(ta); res();
+                            })
                         ).then(() => alert('링크가 복사되었습니다.'));
                         this.shareOpen = false;
                     },
-
-
-
-                    fnMinus(i) {
-                        let self = this;
-                        let it = self.selections[i];
-                        if (!it) {
-                            return;
-                        }
-                        if (it.qty > 1) {
-                            it.qty--;
-                            this.recomputeTotal();
-                        }
-                    },
-
-                    fnPlus(i) {
-                        let self = this;
-                        let it = self.selections[i];
-                        if (!it) {
-                            return;
-                        }
-                        it.qty++;
-                        this.recomputeTotal();
-                    },
-
-                    removeExtra(i) {
-                        this.selections.splice(i, 1);
-                        this.recomputeTotal();
-                    },
-
-                    recomputeTotal() {
-                        let sum = 0;
-                        for (let i = 0; i < this.selections.length; i++) {
-                            sum += this.selections[i].price * this.selections[i].qty;
-                        }
-                        this.totalSum = sum;
-                    },
-
-                    openDetail() {
-                        let self = this;
-                        self.showDetail = true;
-                    },
-
-                    closeDetail() {
-                        let self = this;
-                        self.showDetail = false;
-                    },
-                    
-                    fnPurchase : function(){
-
-                    },
-
-                    fnBasket : function(){
-
-                    },
-
-                    fnWish : function (){
-
-                    }
-
+                    fnMinus(i) { const it = this.selections[i]; if (it && it.qty > 1) { it.qty--; this.recomputeTotal(); } },
+                    fnPlus(i) { const it = this.selections[i]; if (it) { it.qty++; this.recomputeTotal(); } },
+                    removeExtra(i) { this.selections.splice(i, 1); this.recomputeTotal(); },
+                    recomputeTotal() { this.totalSum = this.selections.reduce((s, it) => s + it.price * it.qty, 0); },
+                    openDetail() { this.showDetail = true; },
+                    closeDetail() { this.showDetail = false; },
+                    fnPurchase() { }, fnBasket() { }, fnWish() { }
                 },
                 mounted() {
-                    let self = this;
-                    // 기본 제목을 화면의 #title에서 가져와 v-model에 주입
-                    var t = document.getElementById('title');
-                    self.shareTitle = t ? t.textContent.trim() : document.title;
-
-                    // 바깥 클릭 시 팝오버/드롭다운 닫기
-                    self._docHandler = () => {
-                        self.ddOpen1 = false;
-                        self.ddOpen2 = false;
-                        self.shareOpen = false;
-                    };
-                    document.addEventListener('click', self._docHandler);
-                    const now = new Date();
-                    const day = now.getDay(); // 0=일,6=토
-                    self.week = day >= 1 && day <= 5;
-                    self.before = now.getHours() < 15;
+                    this.shareTitle = (document.getElementById('title')?.textContent || document.title).trim();
+                    this._docHandler = () => { this.ddOpen1 = false; this.ddOpen2 = false; this.shareOpen = false; };
+                    document.addEventListener('click', this._docHandler);
+                    const now = new Date(), day = now.getDay(); this.week = day >= 1 && day <= 5; this.before = now.getHours() < 15;
+                    if (location.hash) {
+                        history.replaceState(null, '', location.pathname + location.search);
+                        // window.scrollTo(0, 0);
+                    }
+                    window.addEventListener('pageshow', (e) => {
+                        if (e.persisted) window.location.reload();
+                    });
                 },
-                beforeUnmount() {
-                    document.removeEventListener('click', self._docHandler);
-                }
+                beforeUnmount() { document.removeEventListener('click', this._docHandler); }
             });
             app.mount('#app');
         </script>
