@@ -26,7 +26,7 @@
                     <div class="login-group">
                         <c:choose>
                             <c:when test="${not empty sessionId}">
-                                <span class="user-name">${{sessionId}}님</span>
+                                <span class="user-name">${{sessionName}}님</span>
                                 <button class="btn-logout" id="btnLogout">로그아웃</button>
                             </c:when>
                             <c:otherwise>
@@ -45,7 +45,10 @@
                     </c:if>
 
                     <div class="icon-group">
-                        <a href="javascript:;" id="btnMyPage" title="마이페이지">
+                        <a href="javascript:;" 
+                        id="btnMyPage" 
+                        title="마이페이지"
+                        data-status="${sessionScope.sessionStatus}">
                             <i class="fa-solid fa-user"></i>
                         </a>
                         <a href="javascript:;" id="btnFavorite" title="찜한상품">
@@ -74,7 +77,9 @@
                     <a href="${path}/product/list">상품목록</a>
                     <a href="${path}/product/new">신상품</a>
                     <a href="${path}/review/list">상품후기</a>
-                    <a href="${path}/event">번쩍장터</a>
+                    <a href="${path}/bunjjukEvent">번쩍장터</a>
+                    <a href="${path}/notice">공지사항</a>
+                    <a href="${path}/event">이벤트</a>
                 </nav>
             </div>
 

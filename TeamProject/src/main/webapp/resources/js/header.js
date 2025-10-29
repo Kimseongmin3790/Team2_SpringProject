@@ -84,6 +84,7 @@ $(document).ready(function () {
 
     $("#btnMyPage").on("click", function () {
         const sessionStatus = $("#btnMyPage").data("status");
+		console.log(sessionStatus);
         if (!sessionStatus) {
             alert("로그인이 필요합니다.");
             location.href = path + "/login.do";
@@ -92,7 +93,7 @@ $(document).ready(function () {
         if (sessionStatus === "BUYER") {
             location.href = path + "/buyerMyPage.do";
         } else if (sessionStatus === "SELLER") {
-            location.href = path + "/sellerMypage.do";
+            location.href = path + "/sellerMyPage.do";
         } else {
             alert("잘못된 사용자 정보입니다.");
         }

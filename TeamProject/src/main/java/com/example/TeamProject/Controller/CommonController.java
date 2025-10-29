@@ -96,14 +96,18 @@ public class CommonController {
 	    @RequestParam("bankName") String bankName,
 	    @RequestParam("account") String account,
 	    @RequestParam("bizLicense") MultipartFile bizLicense,
+	    @RequestParam(value="userId", required=false) String userId,
 	    HttpSession session,
 	    HttpServletRequest request) {
-
+		
 	    
 	    Map<String, Object> response = new HashMap<>();
-
-	    String userId = (String) session.getAttribute("sessionId");
-
+	    
+	    String sessionUserId = (String) session.getAttribute("sessionId");
+	    if (sessionUserId != null) {
+	        userId = sessionUserId;
+	    }
+	    System.out.println(userId);
 	    if (userId == null || userId.isEmpty()) {
 	  
 	        response.put("status", "fail");

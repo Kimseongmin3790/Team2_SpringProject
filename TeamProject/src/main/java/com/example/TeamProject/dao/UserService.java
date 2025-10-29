@@ -94,6 +94,7 @@ public class UserService {
 					result = "success";
 					session.setAttribute("sessionId", user.getUserId());
 					session.setAttribute("sessionStatus", user.getUserRole());
+					session.setAttribute("sessionName", user.getName());
 				} else {
 					message = "비밀번호가 일치하지 않습니다";
 					result = "fail";
