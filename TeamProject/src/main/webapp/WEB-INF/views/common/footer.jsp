@@ -84,4 +84,8 @@
     </div>
 </footer>
 
+<script>
+    const CONTEXT_PATH = '${pageContext.request.contextPath}';
+</script>
+
 <script src="${path}/resources/js/footer.js"></script>
