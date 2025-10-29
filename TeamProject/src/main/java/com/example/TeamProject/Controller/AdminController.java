@@ -37,6 +37,13 @@ public class AdminController {
         return "admin/productManage"; 
     }
 	
+	@RequestMapping("/locationMap.do") 
+    public String locationMap(Model model) throws Exception{
+
+        return "admin/locationMap"; 
+    }
+	
+	
 	@RequestMapping(value = "/userList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String userList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
@@ -78,6 +85,18 @@ public class AdminController {
 	public String allCategoryList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = adminService.getCategoryList(map);
+		
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/nearestSellers.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String nearestSellers(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
+		double userLat = Double.parseDouble(map.get("userLat").toString());
+	    double userLng = Double.parseDouble(map.get("userLng").toString());
+	    
+		resultMap = adminService.findNearestSellers(userLat, userLng);
 		
 		return new Gson().toJson(resultMap);
 	}

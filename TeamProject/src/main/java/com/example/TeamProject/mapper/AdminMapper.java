@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.ProductCategory;
+import com.example.TeamProject.model.SellerVO;
 import com.example.TeamProject.model.User;
 
 @Mapper
@@ -27,4 +28,6 @@ public interface AdminMapper {
 	List<Product> selectProductList(HashMap<String, Object> map);
 	// 카테고리 목록
 	List<ProductCategory> selectCategoryList(HashMap<String, Object> map);
+	// 소비자기준 가장 가까운 판매자 3명 거리계산
+	List<SellerVO> selectNearestSellers(HashMap<String, Object> map);
 }
