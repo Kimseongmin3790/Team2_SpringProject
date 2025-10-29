@@ -203,4 +203,20 @@ public class UserService {
 		
 		return resultMap;
 	}
+	
+	// 로그인 유저 정보 가져오기
+	public HashMap<String, Object> userInfo(HashMap<String, Object> map) {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		
+		try {
+			User info = userMapper.loginUser(map);	
+			
+			resultMap.put("info", info);
+			resultMap.put("result","success");
+			
+		} catch (Exception e) {
+			resultMap.put("result","fail");
+		}		
+		return resultMap;
+	}
 }

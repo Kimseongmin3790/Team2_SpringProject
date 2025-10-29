@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.TeamProject.dao.UserService;
+import com.example.TeamProject.model.User;
 import com.google.gson.Gson;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class UserController {
@@ -153,4 +156,34 @@ public class UserController {
 		
 		return new Gson().toJson(resultMap);
 	}
+	
+	// 로그인 유저 정보 가져오기
+	@RequestMapping(value = "/userInfo.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+		@ResponseBody
+		public String getUserProfile(HttpSession session) throws Exception {
+			// 1. 세션에서 현재 로그인된 사용자 ID를 안전하게 가져옵니다.
+			String userId = (String) session.getAttribute("sessionId");
+
+			if (userId == null) {
+				// 로그인되어 있지 않은 경우 에러를 반환합니다.
+			    HashMap<String, String> errorResult = new HashMap<>();
+			    errorResult.put("status", "error");
+			    errorResult.put("message", "Not logged in");
+			    return new Gson().toJson(errorResult);
+			}
+
+			// 2. 서비스에 userId를 전달하기 위해 map을 만듭니다.
+			HashMap<String, Object> paramMap = new HashMap<>();
+			paramMap.put("userId", userId);
+
+			// 3. 이전에 작성하신 userInfo 서비스 메소드를 호출합니다.
+			HashMap<String, Object> serviceResult = userService.userInfo(paramMap);
+
+			// 4. 서비스 결과에서 사용자 정보('info')만 추출합니다.
+			User userProfile = (User) serviceResult.get("info");
+
+			// 5. 최종적으로 사용자 정보 객체만 JSON으로 변환하여 반환합니다.
+			return new Gson().toJson(userProfile);
+		}
+	
 }

@@ -298,8 +298,8 @@
                             <div class="faq-answer">농산물의 경우 공산품처럼 상품이 항상 같을 수가 없습니다.이점 양해 부탁드립니다</div>
                         </details>
                         <details>
-                            <summary class="faq-question"><span class="faq-question-text">ㅇㅇ</span><span class="faq-arrow">▼</span></summary>
-                            <div class="faq-answer">ㅇㅇ</div>
+                            <summary class="faq-question"><span class="faq-question-text">[계정관련] 탈퇴는 어떻게 하나요?</span><span class="faq-arrow">▼</span></summary>
+                            <div class="faq-answer">못합니다.</div>
                         </details>
                         <details>
                             <summary class="faq-question"><span class="faq-question-text">ㅇㅇ</span><span class="faq-arrow">▼</span></summary>
@@ -326,8 +326,8 @@
                         <select id="inquiry-order" class="form-select" v-model="selectedOrderNo">
                             <option :value="null">문의할 주문을 선택하세요</option>
 
-                            <option v-for="order in orderList" :key="order.ORDER_NO" :value="order.ORDER_NO">
-                                [{{ order.ORDERDATE }}] {{ order.PNAME }}
+                            <option v-for="order in orderList" :key="order.orderNo" :value="order.orderNo">
+                                주문날짜 : [{{ order.orderDate.split(' ')[0] }}]  , 주문번호 : [{{ order.orderNo }}]
                             </option>
                         </select>
                     </div>
@@ -338,10 +338,6 @@
                     <div class="form-group">
                         <label for="inquiry-content">내용</label>
                         <textarea id="inquiry-content" class="form-textarea" placeholder="문의하실 내용을 입력하세요" v-model="inquiryContent"></textarea>
-                    </div>
-                     <div class="form-group form-check">
-                        <input type="checkbox" id="inquiry-secret" class="form-check-input" v-model="isSecret">
-                        <label for="inquiry-secret" class="form-check-label">비밀글로 문의하기</label>
                     </div>
                     <button class="submit-button" @click="fnInquiry">문의 등록</button>
                 </div>
@@ -375,11 +371,10 @@
         data() {
             return {
                 activeTab: 'faq', // 기본으로 보여줄 탭
-                id : 'buyer01', // 임시로 아이디 넣어둠
+                id : '${sessionId}', // 임시로 아이디 넣어둠
                 
                 // 문의글
                 inquiryCategory: "",
-                isSecret : 'N',
                 inquiryTitle : "",
                 inquiryContent : "",
                 orderList: [],
@@ -413,6 +408,7 @@
                     type: "POST",
                     data: param,
                     success: function (data) {
+                        console.log(data);
                         self.orderList = data.list;
                     }
                 });    
@@ -423,7 +419,7 @@
                     category: self.inquiryCategory,
                     title: self.inquiryTitle,
                     content: self.inquiryContent,
-                    isSecret: self.isSecret,
+                    isSecret: 'Y',
                     orderNo: self.selectedOrderNo,
                     userId : self.id
                 };
@@ -433,7 +429,23 @@
                     type: "POST",
                     data: param,
                     success: function (data) {
-                        console.log(data);
+                        if (data.result === "success") {
+                            alert("문의가 성공적으로 등록되었습니다.");
+
+                            // 폼 내용 초기화
+                            self.inquiryCategory = "";
+                            self.inquiryTitle = "";
+                            self.inquiryContent = "";
+                            self.selectedOrderNo = null;
+
+                                
+                            self.activeTab = 'faq';
+                        } else {
+                            alert("문의 등록에 실패했습니다. 다시 시도해주세요.");
+                        }
+                    },
+                    error: function() {
+                        alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
                     }
                 });    
             }

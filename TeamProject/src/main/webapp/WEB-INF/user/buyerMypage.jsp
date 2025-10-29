@@ -6,21 +6,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>소비자 마이페이지 | AGRICOLA</title>
-
-    <!-- ✅ 외부 라이브러리 -->
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <title>마이페이지 - 농수산물 직거래 장터</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script type="text/javascript"
-        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=78c3fbd5be4327cf3319a04cf0a379c4&libraries=services"></script>
-
+    <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
-
     <style>
-        html, body {
-            height: 100%;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
+            background-color: #f9fafb;
         }
 
         #app {
@@ -31,160 +36,673 @@
 
         .content {
             flex: 1;
-            max-width: 1000px;
-            margin: 40px auto;
-            font-family: "Noto Sans KR", sans-serif;
+            padding: 2rem 1rem;
         }
 
-        .section {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        h1 {
-            color: #1a5d1a;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        #map {
-            width: 100%;
-            height: 400px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        .seller-list {
-            margin-top: 20px;
-        }
-
-        .seller-card {
-            border: 1px solid #ddd;
+        /* 사용자 정보 배너 */
+        .user-banner {
+            background: linear-gradient(to right, #f0fdf4, #d1fae5);
             border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-            transition: 0.2s;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        .seller-card:hover {
-            background: #f8f8f8;
-            cursor: pointer;
-        }
-
-        .distance {
-            color: #555;
-            font-size: 14px;
-        }
-
-        button {
-            background: #5dbb63;
+        .user-avatar {
+            width: 64px;
+            height: 64px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-info h2 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-info p {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        /* 탭 */
+        .tabs-list {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background-color: #f3f4f6;
+            padding: 0.25rem;
+            border-radius: 8px;
+        }
+
+        .tab-trigger {
+            padding: 0.75rem 1rem;
+            background-color: transparent;
             border: none;
-            padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
-            transition: 0.2s;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            transition: all 0.2s;
         }
 
-        button:hover {
-            background: #4ba954;
+        .tab-trigger:hover {
+            background-color: #e5e7eb;
+        }
+
+        .tab-trigger.active {
+            background-color: white;
+            color: #22c55e;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 카드 */
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 카드 정보 */
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-info h3 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .cart-item-info p {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-item-price {
+            font-weight: bold;
+            color: #22c55e;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #e5e7eb;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .quantity-btn:hover {
+            background-color: #f9fafb;
+        }
+
+        .quantity-value {
+            width: 32px;
+            text-align: center;
+        }
+
+        /* 버튼 */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #22c55e;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #16a34a;
+        }
+
+        .btn-outline {
+            background-color: white;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn-outline:hover {
+            background-color: #f9fafb;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8125rem;
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        /* 주문 요약 */
+        .order-summary {
+            max-width: 320px;
+            margin-left: auto;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .summary-total {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+
+        .summary-total .price {
+            color: #22c55e;
+        }
+
+        /* 배지 */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background-color: #22c55e;
+            color: white;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* 주문 정보 */
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .order-date {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .order-number {
+            font-weight: 600;
+        }
+
+        .order-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* 리뷰 */
+        .review-item {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .review-content {
+            flex: 1;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .review-header h3 {
+            font-weight: 600;
+        }
+
+        .stars {
+            color: #fbbf24;
+        }
+
+        .review-date {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .review-text {
+            font-size: 0.875rem;
+        }
+
+        /* 양식 */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .form-actions .btn {
+            flex: 1;
+        }
+
+        /* 프로필 양식 */
+        .profile-form {
+            max-width: 672px;
+            margin: 0 auto;
+        }
+
+        /* 탈퇴 영역 */
+        .danger-zone {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid #fee2e2;
+        }
+
+        .danger-zone-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .danger-zone-title {
+            color: #dc2626;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .danger-zone-content {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .danger-zone-desc {
+            color: #991b1b;
+            margin-bottom: 1rem;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .tabs-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .cart-item {
+                flex-wrap: wrap;
+            }
+
+            .order-summary {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 
 <body>
-    <%@ include file="/WEB-INF/views/common/header.jsp" %>
-
     <div id="app">
+        <!-- 공통 헤더 -->
+        <%@ include file="/WEB-INF/views/common/header.jsp" %>
+
         <main class="content">
-            <h1>소비자 마이페이지</h1>
-
-            <div class="section">
-                <h2>📍 내 위치 기준 가까운 판매자 3곳</h2>
-                <button @click="fnFindNearest">판매자 조회</button>
-
-                <div id="map"></div>
-
-                <div class="seller-list" v-if="sellers.length > 0">
-                    <div class="seller-card" v-for="s in sellers" @click="fnFocusMarker(s)">
-                        <strong>{{ s.businessName }}</strong>
-                        <div class="distance">거리: {{ s.distance.toFixed(2) }} km</div>
+            <div class="container">
+                <!-- 유저 정보 -->
+                <div class="user-banner">
+                    <div class="user-avatar">홍</div>
+                    <div class="user-info">
+                        <h2>{{ userName }}님</h2>
+                        <p>{{ userEmail }}</p>
                     </div>
                 </div>
 
-                <p v-else style="margin-top:15px;">주변 판매자를 찾을 수 없습니다 🚜</p>
+                <!-- 탭 -->
+                <div class="tabs-list">
+                    <button class="tab-trigger" :class="{ active: activeTab === 'cart' }" @click="activeTab = 'cart'">
+                        장바구니
+                    </button>
+                    <button class="tab-trigger" :class="{ active: activeTab === 'orders' }" @click="activeTab = 'orders'">
+                        주문내역
+                    </button>
+                    <button class="tab-trigger" :class="{ active: activeTab === 'reviews' }" @click="activeTab = 'reviews'">
+                        리뷰 관리
+                    </button>
+                    <button class="tab-trigger" :class="{ active: activeTab === 'profile' }" @click="activeTab = 'profile'">
+                        회원정보
+                    </button>
+                </div>
+
+                <!-- 카트 탭 -->
+                <div class="tab-content" :class="{ active: activeTab === 'cart' }">
+                    <div class="card" v-for="item in cartItems" :key="item.id">
+                        <div class="cart-item">
+                            <div class="cart-item-image"></div>
+                            <div class="cart-item-info">
+                                <h3>{{ item.name }}</h3>
+                                <p>{{ item.description }}</p>
+                                <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p>
+                            </div>
+                            <div class="quantity-control">
+                                <button class="quantity-btn" @click="decreaseQuantity(item)">-</button>
+                                <span class="quantity-value">{{ item.quantity }}</span>
+                                <button class="quantity-btn" @click="increaseQuantity(item)">+</button>
+                            </div>
+                            <button class="btn btn-danger btn-sm" @click="removeFromCart(item)">삭제</button>
+                        </div>
+                    </div>
+                    <div class="order-summary">
+                        <div class="card">
+                            <div class="summary-row">
+                                <span>상품금액</span>
+                                <span>{{ totalPrice.toLocaleString() }}원</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>배송비</span>
+                                <span>{{ shippingFee.toLocaleString() }}원</span>
+                            </div>
+                            <div class="summary-total">
+                                <span>총 결제금액</span>
+                                <span class="price">{{ (totalPrice + shippingFee).toLocaleString() }}원</span>
+                            </div>
+                            <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1rem;">주문하기</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 주문 탭 -->
+                <div class="tab-content" :class="{ active: activeTab === 'orders' }">
+                    <div class="card" v-for="order in orders" :key="order.id">
+                        <div class="order-header">
+                            <div>
+                                <p class="order-date">{{ order.date }}</p>
+                                <p class="order-number">주문번호: {{ order.orderNumber }}</p>
+                            </div>
+                            <span class="badge">{{ order.status }}</span>
+                        </div>
+                        <div class="cart-item">
+                            <div class="cart-item-image"></div>
+                            <div class="cart-item-info">
+                                <h3>{{ order.productName }}</h3>
+                                <p>수량: {{ order.quantity }}개</p>
+                                <p class="cart-item-price">{{ order.price.toLocaleString() }}원</p>
+                            </div>
+                            <div class="order-actions">
+                                <button class="btn btn-outline btn-sm">배송조회</button>
+                                <button class="btn btn-outline btn-sm">리뷰작성</button>
+                                <button class="btn btn-outline btn-sm" style="color: #ef4444;">환불신청</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 리뷰 탭 -->
+                <div class="tab-content" :class="{ active: activeTab === 'reviews' }">
+                    <div class="card" v-for="review in reviews" :key="review.id">
+                        <div class="review-item">
+                            <div class="cart-item-image"></div>
+                            <div class="review-content">
+                                <div class="review-header">
+                                    <h3>{{ review.productName }}</h3>
+                                    <div class="stars">★★★★★</div>
+                                </div>
+                                <p class="review-date">{{ review.date }}</p>
+                                <p class="review-text">{{ review.content }}</p>
+                            </div>
+                            <div class="order-actions">
+                                <button class="btn btn-outline btn-sm">수정</button>
+                                <button class="btn btn-outline btn-sm" style="color: #ef4444;">삭제</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 정보 탭 -->
+                <div class="tab-content" :class="{ active: activeTab === 'profile' }">
+                    <div class="card profile-form">
+                        <div class="form-group">
+                            <label class="form-label">이름</label>
+                            <input type="text" class="form-input" v-model="profile.name" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">이메일</label>
+                            <input type="email" class="form-input" v-model="profile.email">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">전화번호</label>
+                            <input type="tel" class="form-input" v-model="profile.phone">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">주소</label>
+                            <input type="text" class="form-input" v-model="profile.address">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">비밀번호 변경</label>
+                            <input type="password" class="form-input" placeholder="새 비밀번호" v-model="profile.newPassword">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">비밀번호 확인</label>
+                            <input type="password" class="form-input" placeholder="새 비밀번호 확인" v-model="profile.confirmPassword">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" @click="saveProfile">저장하기</button>
+                            <button class="btn btn-outline">취소</button>
+                        </div>
+                    </div>
+                    <!-- 탈퇴 기능 -->
+                    <div class="danger-zone">
+                        <div class="danger-zone-header">
+                            <span style="font-size: 1.5rem;">⚠️</span>
+                            <h3 class="danger-zone-title">탈퇴 기능</h3>
+                        </div>
+                        <div class="danger-zone-content">
+                            <p class="danger-zone-desc">
+                                계정을 탈퇴하면 모든 계정 정보가 삭제됩니다. 
+                                이 작업은 되돌릴 수 없습니다.
+                            </p>
+                            <button class="btn btn-danger" @click="confirmWithdrawal">계정 탈퇴</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
+
+        <!-- 공통 푸터 -->
+        <%@ include file="/WEB-INF/views/common/footer.jsp" %>
     </div>
+</body>
 
-    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+</html>
 
-    <script>
-        const app = Vue.createApp({
-            data() {
-                return {
-                    sessionLat: parseFloat("${sessionScope.sessionLat}"),
-                    sessionLng: parseFloat("${sessionScope.sessionLng}"),
-                    sellers: [],
-                    map: null,
-                    markers: []
-                };
-            },
-            methods: {
-                // ✅ 지도 초기화
-                fnInitMap(lat, lng) {
-                    if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
-                        console.warn("좌표가 유효하지 않아 기본 좌표로 설정합니다.");
-                        lat = 37.498095;
-                        lng = 127.02761;
-                    }
-
-                    console.log("[fnInitMap] lat:", lat, "lng:", lng);
-                    const container = document.getElementById("map");
-                    const options = { center: new kakao.maps.LatLng(lat, lng), level: 6 };
-                    this.map = new kakao.maps.Map(container, options);
-
-                    // ✅ 내 위치 마커 표시
-                    const myMarker = new kakao.maps.Marker({
-                        map: this.map,
-                        position: new kakao.maps.LatLng(lat, lng),
-                        title: "내 위치"
-                    });
-                    const infowindow = new kakao.maps.InfoWindow({
-                        content: '<div style="padding:5px;">내 위치</div>'
-                    });
-                    infowindow.open(this.map, myMarker);
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                userId: "${sessionId}",
+                activeTab: 'cart',
+                userName: "",
+                userEmail: "",
+                cartItems: [
+                    { id: 1, name: '제주 감귤 5kg', description: '신선한 제주 감귤', price: 25000, quantity: 1 },
+                    { id: 2, name: '유기농 사과 3kg', description: '무농약 유기농 사과', price: 30000, quantity: 1 },
+                    { id: 3, name: '제철 딸기 2kg', description: '달콤한 제철 딸기', price: 20000, quantity: 1 }
+                ],
+                shippingFee: 3000,
+                orders: [
+                    { id: 1, date: '2024.01.15', orderNumber: '20240115-001', status: '배송완료', productName: '제주 감귤 5kg', quantity: 1, price: 25000 },
+                    { id: 2, date: '2024.01.10', orderNumber: '20240110-001', status: '배송중', productName: '유기농 사과 3kg', quantity: 1, price: 30000 },
+                    { id: 3, date: '2024.01.05', orderNumber: '20240105-001', status: '배송완료', productName: '제철 딸기 2kg', quantity: 1, price: 20000 }
+                ],
+                reviews: [
+                    { id: 1, productName: '제주 감귤 5kg', date: '2024.01.20', content: '정말 신선하고 맛있어요! 다음에도 구매할게요.' },
+                    { id: 2, productName: '유기농 사과 3kg', date: '2024.01.18', content: '아이들이 너무 좋아해요. 무농약이라 안심하고 먹을 수 있어요.' }
+                ],
+                 profile: {
+                    name: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    newPassword: '',
+                    confirmPassword: ''
                 },
+                userInfo : []
+            };
+        },
+        computed: {
+            totalPrice() {
+                return this.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            }
+        },
+        methods: {
+            increaseQuantity(item) {
+                item.quantity++;
+            },
+            decreaseQuantity(item) {
+                if (item.quantity > 1) {
+                    item.quantity--;
+                }
+            },
+            removeFromCart(item) {
+                const index = this.cartItems.indexOf(item);
+                if (index > -1) {
+                    this.cartItems.splice(index, 1);
+                }
+            },
+            // 로그인한 사용자 정보 불러오는 로직
+            fnUserInfo(){
+                let self = this;
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/userInfo.dox",
+                    dataType: "json",
+                    type: "GET",
+                     success: function (data) {
+                        if (data.status === 'error') {
+                            alert(data.message);
+                            location.href = '${pageContext.request.contextPath}/login.do';
+                            return;
+                        }
 
-                // ✅ 가까운 판매자 조회
-                fnFindNearest() {
-                    const self = this;
-                    console.log("[fnFindNearest] lat:", self.sessionLat, "lng:", self.sessionLng);
+                        self.profile = data;
+                        self.profile.newPassword = ''; // 비밀번호 필드는 비워둠
+                        self.profile.confirmPassword = ''; // 비밀번호 필드는 비워둠
 
-                    if (!self.sessionLat || !self.sessionLng || isNaN(self.sessionLat) || isNaN(self.sessionLng)) {
-                        alert("위치 정보가 올바르지 않습니다. 다시 시도해주세요.");
-                        return;
+                        self.userName = data.name;
+                        self.userEmail = data.email;
+                    },
+                    error: function (xhr, status, error) {
+                        // 서버에서 HTML 에러 페이지를 반환하는 경우 등을 처리
+                        alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
+                        console.error("Error:", error);
                     }
+                });    
+            },
 
-                    $.ajax({
-                        url: "/nearestSellers.dox",
-                        type: "POST",
-                        dataType: "json",
-                        data: {
-                            userLat: self.sessionLat,
-                            userLng: self.sessionLng
-                        },
-                        success: function (res) {
-                            console.log("[AJAX Response]", res);
-                            if (res.list && res.list.length > 0) {
-                                self.sellers = res.list;
-                                self.fnDrawMarkers();
-                            } else {
-                                alert("주변 판매자를 찾을 수 없습니다.");
+            saveProfile() {
+                // 프로필 저장 로직
+                alert('프로필이 저장되었습니다.');
+            },
+            
+            // 계정 탈퇴 로직
+            confirmWithdrawal: function() {
+                if (confirm('정말로 계정을 탈퇴하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 상품과 주문 정보가 삭제됩니다.')) {
+                    let finalConfirm = prompt('탈퇴를 진행하려면 "탈퇴"를 입력하세요:');
+                    if (finalConfirm === '탈퇴') {
+                        let self = this;
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/seller/withdrawal",
+                            dataType: "json",
+                            type: "POST",
+                            data: {},
+                            success: function(data) {
+                                alert('판매자 계정이 탈퇴되었습니다.');
+                                location.href = '${pageContext.request.contextPath}/';
+                            },
+                            error: function() {
+                                alert('계정 탈퇴 중 오류가 발생했습니다.');
                             }
                         },
                         error: function (xhr, status, err) {
@@ -205,41 +723,16 @@
                             position: pos,
                             map: self.map
                         });
-
-                        const info = new kakao.maps.InfoWindow({
-                            content: `<div style="padding:5px;">${s.businessName}<br>${s.distance.toFixed(2)} km</div>`
-                        });
-
-                        kakao.maps.event.addListener(marker, 'click', function () {
-                            info.open(self.map, marker);
-                        });
-
-                        self.markers.push(marker);
-                    });
-                },
-
-                // ✅ 판매자 리스트 클릭 시 해당 마커로 이동
-                fnFocusMarker(seller) {
-                    const move = new kakao.maps.LatLng(seller.lat, seller.lng);
-                    this.map.panTo(move);
+                    }
                 }
-            },
-            mounted() {
-                console.log("[mounted] sessionLat:", this.sessionLat, "sessionLng:", this.sessionLng);
-
-                if (isNaN(this.sessionLat) || isNaN(this.sessionLng)) {
-                    console.warn("세션 좌표가 없거나 유효하지 않아 기본 좌표로 설정합니다.");
-                    this.sessionLat = 37.498095;
-                    this.sessionLng = 127.02761;
-                }
-
-                this.fnInitMap(this.sessionLat, this.sessionLng);
             }
-        });
+        },
+        mounted() {
+            let self = this;
+            // 초기 데이터 로드 등
+            self.fnUserInfo();
+        }
+    });
 
-        // ✅ Vue 인스턴스 전역 등록
-        const vm = app.mount('#app');
-        window.vueObj = vm; // 콘솔에서 vueObj.sessionLat 접근 가능
-    </script>
-</body>
-</html>
+    app.mount('#app');
+</script>
