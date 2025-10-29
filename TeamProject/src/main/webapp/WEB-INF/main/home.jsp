@@ -95,6 +95,9 @@
         }
 
         /* 혜택 아이콘 섹션 */
+        /* ... (기존 CSS 유지) ... */
+
+        /* 혜택 아이콘 섹션 */
         .benefits-section {
             display: flex;
             justify-content: center;
@@ -105,17 +108,22 @@
 
         .benefit-item {
             text-align: center;
+            width: 200px; /* 아이템 너비 조정 */
         }
 
+        /* 🌟 benefit-icon 클래스 수정: 이미지를 직접 표시하도록 변경 🌟 */
         .benefit-icon {
             width: 60px;
             height: 60px;
-            border-radius: 50%;
-                
             margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            /* 기존 스타일 제거: border-radius, display: flex 등 */
+        }
+
+        /* 🌟 새로 추가: 이미지 태그에 적용될 스타일 🌟 */
+        .benefit-icon img {
+            width: 100%; /* 부모 div(benefit-icon)에 꽉 차도록 설정 */
+            height: 100%;
+            object-fit: contain; /* 이미지 비율 유지 */
         }
 
         .benefit-item p {
@@ -123,13 +131,15 @@
             color: #777;
             margin: 5px 0 0;
         }
-        
+
         .benefit-item strong {
             display: block;
             font-size: 1.1em;
             color: #333;
             margin-top: 5px;
         }
+
+        /* ... (나머지 기존 CSS 유지) ... */
 
         /* 베스트 상품 섹션 */
         .best-product-section {
@@ -212,12 +222,59 @@
         .quick-remote button:hover {
             background-color: #2f855a; /* hover 시 색상 변경 */
         }
+
+        /* 입점 업체 섹션 */
+        .producer-section {
+            padding: 60px 20px;
+            text-align: center;
+            background-color: #ffffff;
+        }
+        .producer-section h3 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        .producer-section p {
+            color: #777;
+            margin-bottom: 40px;
+        }
+        .producer-list {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap; /* 업체가 많을 경우 줄 바꿈 */
+        }
+        .producer-card {
+            width: 180px;
+            text-align: center;
+        }
+        .producer-logo {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #eee;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            background-size: cover; /* 로고 이미지가 원 안에 꽉 차도록 */
+            background-position: center;
+        }
+        .producer-card strong {
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        .producer-card p {
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        
     </style>
 </head>
 
 <body>
-    <%@ include file="/WEB-INF/views/common/header.jsp" %>
-    <div id="app">        
+    <div id="app">
+        <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
         <main class="content">
             
@@ -247,19 +304,50 @@
             
             <section class="benefits-section">
                 <div class="benefit-item">
-                    <div class="benefit-icon"></div>
+                    <div class="benefit-icon">
+                        <img :src="path + '/resources/img/main/delivery.png'" alt="당일 배송 아이콘">
+                    </div>
                     <strong>당일 배송</strong>
                     <p>오전 주문 시 당일 배송</p>
                 </div>
                 <div class="benefit-item">
-                    <div class="benefit-icon"></div>
+                    <div class="benefit-icon">
+                        <img :src="path + '/resources/img/main/fresh.png'" alt="신선 보장 아이콘">
+                    </div>
                     <strong>신선 보장</strong>
                     <p>100% 신선도 보장</p>
                 </div>
                 <div class="benefit-item">
-                    <div class="benefit-icon"></div>
+                    <div class="benefit-icon">
+                        <img :src="path + '/resources/img/main/deal.png'" alt="직거래 아이콘">
+                    </div>
                     <strong>직거래</strong>
                     <p>생산자 직거래 시스템</p>
+                </div>
+            </section>
+
+            <section class="producer-section">
+                <h3>아그리콜라 입점업체</h3>
+                <p>당신과 바로 이어지는 아그리콜라 입점 업체를 소개합니다.</p>
+                
+                <div v-if="loadingProducers">
+                    <p>입점 업체 목록을 불러오는 중입니다...</p>
+                </div>
+                <div v-else-if="errorProducers">
+                    <p style="color: red;">{{ errorProducers }}</p>
+                </div>
+
+                <div v-else class="producer-list">
+                    <div class="producer-card" v-for="producer in producers" :key="producer.id" @click="location.href=producer.linkUrl" style="cursor:pointer;">
+                        <div class="producer-logo" :style="{ backgroundImage: 'url(' + path + producer.logoUrl + ')' }">
+                            </div>
+                        <strong>{{ producer.name }}</strong>
+                        <p>{{ producer.description }}</p>
+                    </div>
+                    
+                    <div v-if="producers.length === 0">
+                        <p>등록된 입점 업체가 없습니다.</p>
+                    </div>
                 </div>
             </section>
 
@@ -297,8 +385,9 @@
                 </button>
             </div>
         </main>
+
+        <%@ include file="/WEB-INF/views/common/footer.jsp" %>
     </div>
-    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 </body>
 
 </html>
@@ -317,6 +406,12 @@
 
                 loadingBest: true, // 베스트 상품 로딩 상태
                 errorBest: null,   // 베스트 상품 오류 메시지
+
+                // 🌟 입점 업체 데이터 변수 추가 🌟
+                producers: [], // 입점 업체(생산자) 데이터를 담을 배열
+                loadingProducers: true, // 입점 업체 로딩 상태
+                errorProducers: null,  // 입점 업체 오류 메시지
+
                 sessionId : "${sessionId}",
                 status : "${sessionStatus}"
             };
@@ -381,7 +476,32 @@
                     },
                     complete: function() {
                         // 4. 완료 시: 로딩 상태 해제
-                        self.loadingBest = false;
+                        self.loadingBest = false;   
+                    }
+                });
+            },
+
+            // 🌟 새로 추가: 입점 업체 데이터를 불러오는 함수 🌟
+            fnGetProducers: function() {
+                let self = this;
+                self.loadingProducers = true;
+                self.errorProducers = null;
+
+                $.ajax({
+                    // API 주소: /api/main/producers (예시)
+                    url: self.path + "/api/main/producers", 
+                    dataType: "json",
+                    type: "GET",
+                    success: function (data) {
+                        self.producers = data; 
+                        console.log("입점 업체 로드 완료:", data);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("입점 업체 로드 중 오류 발생:", status, error);
+                        self.errorProducers = "입점 업체 정보를 불러오는 데 실패했습니다.";
+                    },
+                    complete: function() {
+                        self.loadingProducers = false;
                     }
                 });
             }
@@ -392,6 +512,9 @@
         mounted() {
             // 처음 시작할 때 실행되는 부분
             
+            // 🌟 Vue 앱이 마운트된 직후, 입점 업체 API 호출 함수 추가 🌟
+            this.fnGetProducers();
+
             // 🌟 배너 API 호출 함수 추가 🌟
             this.fnGetMainBanners();
             

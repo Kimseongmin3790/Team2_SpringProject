@@ -187,17 +187,17 @@
                             <div class="social-login">
                                 <a href="/oauth2/authorization/kakao">
                                     <button type="button" class="kakao">
-                                        <img src="${pageContext.request.contextPath}/resources/img/btn_login_kakao.png" alt="카카오 로그인">
+                                        <img src="${pageContext.request.contextPath}/resources/img/login-img/btn_login_kakao.png" alt="카카오 로그인">
                                     </button>
                                 </a>
                                 <a href="/oauth2/authorization/naver">
                                     <button type="button" class="naver">
-                                        <img src="${pageContext.request.contextPath}/resources/img/btn_login_naver.png" alt="네이버 로그인">
+                                        <img src="${pageContext.request.contextPath}/resources/img/login-img/btn_login_naver.png" alt="네이버 로그인">
                                     </button>
                                 </a>
                                 <a href="/oauth2/authorization/google">
                                     <button type="button" class="google">
-                                        <img src="${pageContext.request.contextPath}/resources/img/btn_login_google.png" alt="구글 로그인">
+                                        <img src="${pageContext.request.contextPath}/resources/img/login-img/btn_login_google.png" alt="구글 로그인">
                                     </button>
                                 </a>
                             </div>

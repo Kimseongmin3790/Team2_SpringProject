@@ -1,212 +1,217 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AGRICOLA 지역 기반 매장검색</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가까운 판매자 | AGRICOLA</title>
 
-  <!-- ✅ 외부 라이브러리 -->
-  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script type="text/javascript"
-    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=78c3fbd5be4327cf3319a04cf0a379c4&libraries=services"></script>
+    <!-- ✅ 외부 라이브러리 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script type="text/javascript"
+        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=여기에 자바스크립트키 입력&libraries=services"></script>
 
-  <!-- ✅ 간단한 스타일 -->
-  <style>
-    body { margin: 0; font-family: 'Noto Sans KR', sans-serif; }
-    #app { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-    #map { width: 100%; max-width: 900px; height: 450px; border-radius: 10px; }
-    .filter-box { display: flex; gap: 10px; margin-bottom: 10px; }
-    .store-list { width: 100%; max-width: 900px; margin-top: 15px; border-collapse: collapse; }
-    .store-list th, .store-list td {
-      border: 1px solid #ddd;
-      padding: 8px 10px;
-      text-align: center;
-    }
-    .store-list th { background-color: #f3ebd3; color: #1a5d1a; }
-    .store-list tr:hover { background-color: #f7f7f7; cursor: pointer; }
-  </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        #app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1000px;
+            margin: 40px auto;
+            font-family: "Noto Sans KR", sans-serif;
+        }
+
+        .section {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: #1a5d1a;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            color: #1a5d1a;
+            margin-bottom: 15px;
+        }
+
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .seller-list {
+            margin-top: 20px;
+        }
+
+        .seller-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            transition: 0.2s;
+        }
+
+        .seller-card:hover {
+            background: #f8f8f8;
+            cursor: pointer;
+        }
+
+        .distance {
+            color: #555;
+            font-size: 14px;
+        }
+    </style>
 </head>
 
 <body>
-<div id="app">
-  <h2 style="color:#1a5d1a;">📍 지역 기반 농가 매장 검색</h2>
+    <%@ include file="/WEB-INF/views/common/header.jsp" %>
+    <div id="app">
+        <main class="content">
+            <h1>가까운 판매자</h1>
 
-  <!-- ✅ 지역 / 거리 필터 -->
-  <div class="filter-box">
-    <select v-model="selectedRegion" @change="fnMoveRegion">
-      <option value="">지역 선택</option>
-      <option v-for="region in regionList" :value="region">{{ region }}</option>
-    </select>
-    <select v-model="distanceFilter" @change="fnFilterByDistance">
-      <option value="">거리 필터</option>
-      <option value="5">5km 이내</option>
-      <option value="10">10km 이내</option>
-      <option value="20">20km 이내</option>
-    </select>
-    <button @click="fnSortByDistance">거리순 정렬</button>
-  </div>
+            <div class="section">
+                <h2>📍 내 위치 기준 가까운 판매자 3곳</h2>
+                <button @click="fnFindNearest" style="background:#5dbb63;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">판매자 조회</button>
 
-  <!-- ✅ 지도 -->
-  <div id="map"></div>
+                <div id="map"></div>
 
-  <!-- ✅ 매장 리스트 -->
-  <table class="store-list" v-if="filteredStores.length > 0">
-    <thead>
-      <tr><th>매장명</th><th>주소</th><th>거리(km)</th></tr>
-    </thead>
-    <tbody>
-      <tr v-for="store in filteredStores" @click="fnFocusMarker(store)">
-        <td>{{ store.name }}</td>
-        <td>{{ store.addr }}</td>
-        <td>{{ store.distance.toFixed(2) }}</td>
-      </tr>
-    </tbody>
-  </table>
-  <div v-else style="margin-top:20px; color:#666;">검색된 매장이 없습니다.</div>
-</div>
+                <div class="seller-list" v-if="sellers.length > 0">
+                    <div class="seller-card" v-for="s in sellers" @click="fnFocusMarker(s)">
+                        <strong>{{ s.businessName }}</strong>
+                        <div class="distance">거리: {{ s.distance.toFixed(2) }} km</div>
+                    </div>
+                </div>
+                <p v-else style="margin-top:15px;">주변 판매자 정보를 불러오세요 🚜</p>
+            </div>
+        </main>
+    </div>
+    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+</body>
+
+</html>
 
 <script>
 const app = Vue.createApp({
-  data() {
-    return {
-      map: null,
-      userMarker: null,
-      userPos: null,
-      markers: [],
-      geocoder: null,
-      selectedRegion: "",
-      distanceFilter: "",
-      regionList: ["서울 강남구", "서울 종로구", "부산 해운대구", "대전 중구"],
-      stores: [
-        { name: "강남농가", lat: 37.498, lng: 127.028, addr: "서울 강남구 테헤란로 123" },
-        { name: "종로한우", lat: 37.573, lng: 126.978, addr: "서울 종로구 세종로 50" },
-        { name: "부산수산", lat: 35.160, lng: 129.162, addr: "부산 해운대구 우동 123" },
-        { name: "대전청과", lat: 36.327, lng: 127.423, addr: "대전 중구 문화동 45" },
-      ],
-      filteredStores: [],
-    };
-  },
-  methods: {
-    // ✅ 1. 지도 초기화
-    fnInitMap() {
-      const container = document.getElementById("map");
-      const options = { center: new kakao.maps.LatLng(37.5665, 126.9780), level: 5 };
-      this.map = new kakao.maps.Map(container, options);
-      this.geocoder = new kakao.maps.services.Geocoder();
-
-      // ✅ 사용자 위치 표시
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          this.userPos = new kakao.maps.LatLng(lat, lng);
-          this.map.setCenter(this.userPos);
-
-          this.userMarker = new kakao.maps.Marker({
-            position: this.userPos,
-            map: this.map,
-            title: "현재 위치"
-          });
-
-          this.fnDrawMarkers();
-        });
-      } else {
-        alert("현재 위치를 불러올 수 없습니다.");
-        this.fnDrawMarkers();
-      }
+    data() {
+        return {
+            sessionId: "${sessionId}",
+            sessionLat: parseFloat("${sessionLat}"),
+            sessionLng: parseFloat("${sessionLng}"),
+            sellers: [],
+            map: null,
+            markers: []
+        };
     },
+    methods: {
+        // ✅ 지도 초기화
+        fnInitMap(lat, lng) {
+            const container = document.getElementById("map");
+            const options = { center: new kakao.maps.LatLng(lat, lng), level: 6 };
+            this.map = new kakao.maps.Map(container, options);
 
-    // ✅ 2. 매장 마커 표시
-    fnDrawMarkers() {
-      // 기존 마커 제거
-      this.markers.forEach(m => m.setMap(null));
-      this.markers = [];
+            // 내 위치 마커 표시
+            const myMarker = new kakao.maps.Marker({
+                map: this.map,
+                position: new kakao.maps.LatLng(lat, lng),
+                title: "내 위치"
+            });
+        },
 
-      this.stores.forEach(store => {
-        const marker = new kakao.maps.Marker({
-          map: this.map,
-          position: new kakao.maps.LatLng(store.lat, store.lng),
-          title: store.name
-        });
+        // ✅ 가까운 판매자 조회
+        fnFindNearest() {
+            const self = this;
+            if (!self.sessionLat || !self.sessionLng) {
+                alert("위치 정보가 없습니다. 다시 로그인해주세요.");
+                return;
+            }
 
-        const infowindow = new kakao.maps.InfoWindow({
-          content: `<div style="padding:5px;">${store.name}<br>${store.addr}</div>`
-        });
+            self.fnInitMap(self.sessionLat, self.sessionLng);
 
-        kakao.maps.event.addListener(marker, 'click', () => {
-          infowindow.open(this.map, marker);
-        });
+            $.ajax({
+                url: "/nearestSellers.dox",
+                type: "POST",
+                dataType: "json",
+                data: {
+                    userLat: self.sessionLat,
+                    userLng: self.sessionLng
+                },
+                success: function (res) {
+                    if (res.list && res.list.length > 0) {
+                        self.sellers = res.list;
+                        self.fnDrawMarkers();
+                    } else {
+                        alert("주변 판매자를 찾을 수 없습니다.");
+                    }
+                },
+                error: function (xhr, status, err) {
+                    console.error("에러:", err);
+                }
+            });
+        },
 
-        this.markers.push(marker);
-      });
+        // ✅ 판매자 마커 표시
+        fnDrawMarkers() {
+            const self = this;
+            self.markers.forEach(m => m.setMap(null));
+            self.markers = [];
 
-      this.fnCalculateDistances();
-    },
+            self.sellers.forEach((s, idx) => {
+                const pos = new kakao.maps.LatLng(s.lat, s.lng);
+                const marker = new kakao.maps.Marker({
+                    position: pos,
+                    map: self.map
+                });
 
-    // ✅ 3. 거리 계산 (Haversine)
-    fnCalculateDistances() {
-      if (!this.userPos) return;
-      const userLat = this.userPos.getLat();
-      const userLng = this.userPos.getLng();
+                const info = new kakao.maps.InfoWindow({
+                    content: `<div style="padding:5px;">${s.businessName}<br>${s.distance.toFixed(2)} km</div>`
+                });
 
-      this.stores.forEach(s => {
-        s.distance = this.fnGetDistance(userLat, userLng, s.lat, s.lng);
-      });
-      this.filteredStores = [...this.stores];
-    },
+                kakao.maps.event.addListener(marker, 'click', function () {
+                    info.open(self.map, marker);
+                });
 
-    fnGetDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371; // km
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2)**2 +
-        Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
-        Math.sin(dLon/2)**2;
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    },
+                self.markers.push(marker);
+            });
+        },
 
-    // ✅ 4. 지역 이동
-    fnMoveRegion() {
-      if (!this.selectedRegion) return;
-      this.geocoder.addressSearch(this.selectedRegion, (result, status) => {
-        if (status === kakao.maps.services.Status.OK) {
-          const center = new kakao.maps.LatLng(result[0].y, result[0].x);
-          this.map.setCenter(center);
+        // ✅ 판매자 리스트 클릭 시 해당 마커로 이동
+        fnFocusMarker(seller) {
+            const move = new kakao.maps.LatLng(seller.lat, seller.lng);
+            this.map.panTo(move);
         }
-      });
     },
-
-    // ✅ 5. 거리 필터
-    fnFilterByDistance() {
-      if (!this.distanceFilter) {
-        this.filteredStores = [...this.stores];
-        return;
-      }
-      const limit = parseFloat(this.distanceFilter);
-      this.filteredStores = this.stores.filter(s => s.distance <= limit);
-    },
-
-    // ✅ 6. 거리순 정렬
-    fnSortByDistance() {
-      this.filteredStores.sort((a, b) => a.distance - b.distance);
-    },
-
-    // ✅ 7. 리스트 클릭 시 해당 마커 포커스
-    fnFocusMarker(store) {
-      const moveLatLon = new kakao.maps.LatLng(store.lat, store.lng);
-      this.map.panTo(moveLatLon);
-    },
-  },
-  mounted() {
-    this.fnInitMap();
-  }
+    mounted() {        
+        // 페이지 로드 시 지도 먼저 표시
+        if (this.sessionLat && this.sessionLng) {
+            this.fnInitMap(this.sessionLat, this.sessionLng);
+        }
+    }
 });
 
-app.mount("#app");
+app.mount('#app');
 </script>
-</body>
-</html>
