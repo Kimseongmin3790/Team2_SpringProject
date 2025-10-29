@@ -54,7 +54,10 @@
                         <a href="javascript:;" id="btnFavorite" title="찜한상품">
                             <i class="fa-solid fa-heart"></i>
                         </a>
-                        <a href="javascript:;" id="btnCart" title="장바구니">
+                        <a href="javascript:;" 
+                        id="btnCart" 
+                        title="장바구니"
+                        data-status="${sessionScope.sessionStatus}">
                             <i class="fa-solid fa-cart-shopping"></i>
                         </a>
                     </div>

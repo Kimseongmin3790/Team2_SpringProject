@@ -49,5 +49,30 @@
 		FROM PRODUCT_CATEGORY
 	</select>
 	
+	<select id="selectNearestSellers" parameterType="hashmap" resultType="com.example.TeamProject.model.SellerVO">
+	  	SELECT *
+		FROM (
+		  SELECT
+		    S.USER_ID AS userId,
+		    S.BUSINESS_NAME AS businessName,
+		    S.LAT AS lat,
+		    S.LNG AS lng,
+		    ROUND(
+		      (6371 * ACOS(
+		        LEAST(1, GREATEST(-1,
+		          COS((#{lat} * 3.141592653589793)/180)
+		        * COS((S.LAT * 3.141592653589793)/180)
+		        * COS((S.LNG * 3.141592653589793)/180 - (#{lng} * 3.141592653589793)/180)
+		        + SIN((#{lat} * 3.141592653589793)/180)
+		        * SIN((S.LAT * 3.141592653589793)/180)
+		        ))
+		      )), 3
+		    ) AS distance
+		  FROM SELLER_INFO S
+		  WHERE S.LAT IS NOT NULL AND S.LNG IS NOT NULL
+		  ORDER BY distance ASC
+		)
+	</select>
+	
 	
 </mapper>

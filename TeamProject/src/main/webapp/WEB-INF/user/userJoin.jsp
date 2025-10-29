@@ -13,6 +13,7 @@
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
                 crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -114,6 +115,12 @@
                     box-shadow: 0 3px 8px rgba(76, 169, 84, 0.3);
                 }
 
+                .timer-label-inline {
+                    color: #e74c3c;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+
                 /* ======================= 약관 섹션 ======================= */
                 .terms {
                     margin-top: 20px;
@@ -198,7 +205,7 @@
 
         <body>
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
-            <div id="app">                
+                <div id="app">
 
                     <main class="content">
                         <div class="join-container">
@@ -257,9 +264,22 @@
 
                             <!-- 휴대폰 -->
                             <div class="input-group">
-                                <label><i class="fa-solid fa-mobile-screen"></i> 휴대폰</label>
+                                <label>휴대폰 인증</label>
                                 <div class="input-wrapper">
-                                    <input type="text" v-model="userPhone" placeholder="예: 010-1234-5678">
+                                    <input type="text" v-model="userPhone" placeholder="010-1234-5678">
+                                    <button @click="fnSendCode">인증번호 전송</button>
+                                </div>
+                            </div>
+
+                            <div class="input-group" v-if="smsFlg">
+                                <label>인증번호</label>
+                                <div class="input-wrapper" style="display:flex; align-items:center; gap:10px;">
+                                    <input type="text" v-model="verifyCode" placeholder="인증번호 입력">
+                                    <button @click="fnVerifyCode">확인</button>
+
+                                    <span v-if="count > 0" class="timer-label-inline">
+                                        {{ timer }}
+                                    </span>
                                 </div>
                             </div>
 
@@ -291,126 +311,199 @@
                             </div>
                         </div>
                     </main>
-                    
-            </div>
-            <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
-            <script>
-                function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail, roadAddrPart2, engAddr, jibunAddr, zipNo, admCd, rnMgtSn, bdMgtSn, detBdNmList, bdNm, bdKdcd, siNm, sggNm, emdNm, liNm, rn, udrtYn, buldMnnm, buldSlno, mtYn, lnbrMnnm, lnbrSlno, emdNo) {
-                    window.vueObj.fnResult(roadFullAddr, addrDetail, zipNo);
-                }
+                </div>
+                <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
-                const app = Vue.createApp({
-                    data() {
-                        return {
-                            path: "${pageContext.request.contextPath}",
-                            userId: "", 
-                            userPwd: "", 
-                            userPwdChk: "", 
-                            userName: "",
-                            userEmail: "", 
-                            userAddr: "", 
-                            userPhone: "", 
-                            userRecommend: "",
-                            agree: false, 
-                            checkFlg: false, 
-                            role: "BUYER", 
-                            check: false
-                        };
-                    },
-                    methods: {
-                        fnCheck() {
-                            let self = this;
-                            const idRegex = /^[a-z][a-z0-9._]{3,19}$/;
-                            if (!idRegex.test(self.userId)) {
-                                Swal.fire('⚠️', '영문 + 숫자 4~20자 사이만 입력 가능합니다.', 'warning');
-                                return;
-                            }
-                            $.ajax({
-                                url: "/check.dox", type: "POST", dataType: "json", data: { userId: self.userId },
-                                success: function (data) {
-                                    if (data.result == "Y") {
-                                        Swal.fire('✅', '사용 가능한 아이디입니다.', 'success');
-                                        self.checkFlg = true; self.check = true;
-                                    } else {
-                                        Swal.fire('❌', '이미 사용 중인 아이디입니다.', 'error');
-                                    }
-                                }
-                            });
-                        },
-                        fnJoin() {
-                            let self = this;
-                            if (!self.userId || !self.userPwd || !self.userPwdChk || !self.userName || !self.userEmail || !self.userAddr) {
-                                Swal.fire('⚠️', '모든 항목을 입력해주세요.', 'warning');
-                                return;
-                            }
-                            if (!self.checkFlg) {
-                                Swal.fire('⚠️', '아이디 중복확인을 해주세요.', 'warning');
-                                return;
-                            }
-                            if (self.userPwd !== self.userPwdChk) {
-                                Swal.fire('❌', '비밀번호가 일치하지 않습니다.', 'error');
-                                return;
-                            }
-                            const pwdRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+\[\]{};:'",.<>\/?\\|`~])(?!.*\s).{8,16}$/;
-                            if (!pwdRegex.test(self.userPwd)) {
-                                Swal.fire('⚠️', '비밀번호는 소문자, 숫자, 특수문자 포함 8~16자 이내여야 합니다.', 'warning');
-                                return;
-                            }
-                            const nameRegex = /^[가-힣]{2,10}$/;
-                            if (!nameRegex.test(self.userName)) {
-                                Swal.fire('⚠️', '이름은 한글 2~10자 이내만 가능합니다.', 'warning');
-                                return;
-                            }
-                            const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-                            if (!emailRegex.test(self.userEmail)) {
-                                Swal.fire('⚠️', '이메일 형식에 맞게 입력해주세요.', 'warning');
-                                return;
-                            }
-                            const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
-                            if (!phoneRegex.test(self.userPhone)) {
-                                Swal.fire('⚠️', '휴대폰 번호는 010-1234-5678 형태로 입력해주세요.', 'warning');
-                                return;
-                            }
-                            if (!self.agree) {
-                                Swal.fire('⚠️', '이용약관에 동의해야 합니다.', 'warning');
-                                return;
-                            }
-                            $.ajax({
-                                url: "/join.dox", type: "POST", dataType: "json",
-                                data: {
-                                    userId: self.userId, userPwd: self.userPwd, userName: self.userName,
-                                    userEmail: self.userEmail, userAddr: self.userAddr, userPhone: self.userPhone,
-                                    userRecommend: self.userRecommend, userRole: self.role
-                                },
-                                success: function (data) {
-                                    if (data.result == "success") {
-                                        Swal.fire({
-                                            icon: 'success',
-                                            title: '회원가입 완료!',
-                                            text: 'AGRICOLA에 오신 것을 환영합니다 🌾',
-                                            confirmButtonColor: '#5dbb63'
-                                        }).then(() => location.href = self.path + "/login.do");
-                                    } else {
-                                        Swal.fire('❌', '회원가입 중 오류가 발생했습니다.', 'error');
-                                    }
-                                }
-                            });
-                        },
-                        fnAddr() {
-                            window.open("/addr.do", "addr", "width=500, height=500");
-                        },
-                        fnResult(roadFullAddr) {
-                            this.userAddr = roadFullAddr;
+                    <script>
+                        function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail, roadAddrPart2, engAddr, jibunAddr, zipNo, admCd, rnMgtSn, bdMgtSn, detBdNmList, bdNm, bdKdcd, siNm, sggNm, emdNm, liNm, rn, udrtYn, buldMnnm, buldSlno, mtYn, lnbrMnnm, lnbrSlno, emdNo) {
+                            window.vueObj.fnResult(roadFullAddr, addrDetail, zipNo);
                         }
-                    },
-                    mounted() { 
-                        window.vueObj = this; 
-                    }
-                });
 
-                app.mount('#app');
-            </script>
+                        const app = Vue.createApp({
+                            data() {
+                                return {
+                                    path: "${pageContext.request.contextPath}",
+                                    userId: "",
+                                    userPwd: "",
+                                    userPwdChk: "",
+                                    userName: "",
+                                    userEmail: "",
+                                    userAddr: "",
+                                    userPhone: "",
+                                    userRecommend: "",
+                                    agree: false,
+                                    checkFlg: false,
+                                    role: "BUYER",
+                                    check: false,
+
+                                    // 핸드폰번호 인증 관련
+                                    ranStr: "", //  서버에서 보낸 인증번호
+                                    smsFlg: false, // 문자인증 성공 여부
+                                    joinFlg: false, // 회원가입할 시 문자인증 여부
+                                    count: 180, // 180초 타이머 설정
+                                    timer: "", // 3:00으로 보이도록 하는 값
+                                    verifyCode: "", // 인증번호 입력받은 값
+                                    timerInterval: null // 타이머 값
+                                };
+                            },
+                            methods: {
+                                fnCheck() {
+                                    let self = this;
+                                    const idRegex = /^[a-z][a-z0-9._]{3,19}$/;
+                                    if (!idRegex.test(self.userId)) {
+                                        Swal.fire('⚠️', '영문 + 숫자 4~20자 사이만 입력 가능합니다.', 'warning');
+                                        return;
+                                    }
+                                    $.ajax({
+                                        url: "/check.dox", type: "POST", dataType: "json", data: { userId: self.userId },
+                                        success: function (data) {
+                                            if (data.result == "Y") {
+                                                Swal.fire('✅', '사용 가능한 아이디입니다.', 'success');
+                                                self.checkFlg = true; self.check = true;
+                                            } else {
+                                                Swal.fire('❌', '이미 사용 중인 아이디입니다.', 'error');
+                                            }
+                                        }
+                                    });
+                                },
+                                fnJoin() {
+                                    let self = this;
+                                    if (!self.userId || !self.userPwd || !self.userPwdChk || !self.userName || !self.userEmail || !self.userAddr) {
+                                        Swal.fire('⚠️', '모든 항목을 입력해주세요.', 'warning');
+                                        return;
+                                    }
+                                    if (!self.checkFlg) {
+                                        Swal.fire('⚠️', '아이디 중복확인을 해주세요.', 'warning');
+                                        return;
+                                    }
+                                    if (self.userPwd !== self.userPwdChk) {
+                                        Swal.fire('❌', '비밀번호가 일치하지 않습니다.', 'error');
+                                        return;
+                                    }
+                                    const pwdRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+\[\]{};:'",.<>\/?\\|`~])(?!.*\s).{8,16}$/;
+                                    if (!pwdRegex.test(self.userPwd)) {
+                                        Swal.fire('⚠️', '비밀번호는 소문자, 숫자, 특수문자 포함 8~16자 이내여야 합니다.', 'warning');
+                                        return;
+                                    }
+                                    const nameRegex = /^[가-힣]{2,10}$/;
+                                    if (!nameRegex.test(self.userName)) {
+                                        Swal.fire('⚠️', '이름은 한글 2~10자 이내만 가능합니다.', 'warning');
+                                        return;
+                                    }
+                                    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+                                    if (!emailRegex.test(self.userEmail)) {
+                                        Swal.fire('⚠️', '이메일 형식에 맞게 입력해주세요.', 'warning');
+                                        return;
+                                    }
+                                    const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
+                                    if (!phoneRegex.test(self.userPhone)) {
+                                        Swal.fire('⚠️', '휴대폰 번호는 010-1234-5678 형태로 입력해주세요.', 'warning');
+                                        return;
+                                    }
+                                    if (!self.agree) {
+                                        Swal.fire('⚠️', '이용약관에 동의해야 합니다.', 'warning');
+                                        return;
+                                    }
+                                    if (!self.joinFlg) {
+                                        Swal.fire('⚠️', '휴대폰 인증을 진행해주세요.', 'warning');
+                                        return;
+                                    }
+                                    $.ajax({
+                                        url: "/join.dox", type: "POST", dataType: "json",
+                                        data: {
+                                            userId: self.userId, userPwd: self.userPwd, userName: self.userName,
+                                            userEmail: self.userEmail, userAddr: self.userAddr, userPhone: self.userPhone,
+                                            userRecommend: self.userRecommend, userRole: self.role
+                                        },
+                                        success: function (data) {
+                                            if (data.result == "success") {
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: '회원가입 완료!',
+                                                    text: 'AGRICOLA에 오신 것을 환영합니다 🌾',
+                                                    confirmButtonColor: '#5dbb63'
+                                                }).then(() => location.href = self.path + "/login.do");
+                                            } else {
+                                                Swal.fire('❌', '회원가입 중 오류가 발생했습니다.', 'error');
+                                            }
+                                        }
+                                    });
+                                },
+                                fnAddr() {
+                                    window.open("/addr.do", "addr", "width=500, height=500");
+                                },
+                                fnResult(roadFullAddr) {
+                                    this.userAddr = roadFullAddr;
+                                },
+                                fnSendCode() {
+                                    let self = this;
+                                    let param = {
+                                        // userPhone: self.userPhone;
+                                    };
+                                    // $.ajax({
+                                    //     url: "/send-one",
+                                    //     dataType: "json",
+                                    //     type: "POST",
+                                    //     data: param,
+                                    //     success: function (data) {
+                                    //         console.log(data);
+                                    //         if (data.res.statusCode == "2000") {
+                                    alert("문자 전송 완료");
+                                    self.ranStr = 123456; // data.ranStr;
+
+                                    self.smsFlg = true;
+                                    self.fnTimer();
+                                    //         } else {
+                                    //             alert("잠시 후 다시 시도해주세요.");
+                                    //         }
+                                    //     }
+                                    // });                                    
+                                },
+                                fnTimer: function () {
+                                    let self = this;
+
+                                    self.count = 180;
+
+                                    self.timerInterval = setInterval(function () {
+                                        if (self.count <= 0) {
+                                            clearInterval(self.timerInterval);
+                                            this.timer = "00 : 00";
+                                            Swal.fire("⏰", "시간이 만료되었습니다.", "warning");                                            
+                                        } else {
+                                            let min = parseInt(self.count / 60);
+                                            let sec = self.count % 60;
+                                            min = min < 10 ? "0" + min : min;
+                                            sec = sec < 10 ? "0" + sec : sec;
+                                            self.timer = min + " : " + sec;
+
+                                            self.count--;
+                                        }
+                                    }, 1000);
+                                },
+                                fnVerifyCode: function () {
+                                    let self = this;
+                                    if (self.ranStr == self.verifyCode) {
+                                        alert("문자인증이 완료되었습니다.");
+                                        self.joinFlg = true;
+
+                                        if (this.timerInterval) {
+                                            clearInterval(this.timerInterval);
+                                            this.timer = "";   // 표시 제거
+                                        }
+
+                                    } else {
+                                        alert("문자인증에 실패했습니다.");
+                                    }
+                                }
+                            },
+                            mounted() {
+                                window.vueObj = this;
+                            }
+                        });
+
+                        app.mount('#app');
+                    </script>
         </body>
 
         </html>

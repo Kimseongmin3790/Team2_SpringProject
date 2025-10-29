@@ -7,7 +7,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import com.example.TeamProject.Controller.CommonController;
 import com.example.TeamProject.mapper.UserMapper;
 import com.example.TeamProject.model.User;
 
@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpSession;
 
 @Service
 public class UserService {
-	
+
 	@Autowired
 	UserMapper userMapper;
 	
@@ -95,6 +95,8 @@ public class UserService {
 					session.setAttribute("sessionId", user.getUserId());
 					session.setAttribute("sessionStatus", user.getUserRole());
 					session.setAttribute("sessionName", user.getName());
+					session.setAttribute("sessionLat", user.getLat());
+					session.setAttribute("sessionLng", user.getLng());
 				} else {
 					message = "비밀번호가 일치하지 않습니다";
 					result = "fail";
@@ -154,13 +156,12 @@ public class UserService {
 				resultMap.put("result", "success");
 			} else {
 				resultMap.put("result", "fail");
-			}
-			
+			}			
 		} catch (Exception e) {
 			// TODO: handle exception
 			resultMap.put("result", "fail");
-		}
-		
+			System.out.println(e.getMessage());
+		}		
 		return resultMap;
 	}
 	

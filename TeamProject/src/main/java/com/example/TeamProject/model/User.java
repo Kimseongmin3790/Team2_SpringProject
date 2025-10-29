@@ -14,4 +14,6 @@ public class User {
 	private String cdatetime;
 	private String totalPoint;
 	private String verified;
+	private String lat;
+	private String lng;
 }

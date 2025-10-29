@@ -100,7 +100,18 @@ $(document).ready(function () {
     });
 
     $("#btnFavorite").on("click", () => location.href = path + "/favorite");
-    $("#btnCart").on("click", () => location.href = path + "/cart");
+    $("#btnCart").on("click", function () {
+	        const sessionStatus = $("#btnCart").data("status");
+			console.log(sessionStatus);
+	        if (!sessionStatus) {
+	            alert("로그인이 필요합니다.");
+	            location.href = path + "/login.do";
+	            return;
+	        } else {
+				location.href = path + "/cart.do";
+			}
+				        
+	    });
 
     $("#btnCategory").on("click", function () {
         $("#dropdownMenu").toggleClass("show");

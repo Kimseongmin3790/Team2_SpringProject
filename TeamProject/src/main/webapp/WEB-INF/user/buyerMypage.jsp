@@ -704,6 +704,24 @@
                             error: function() {
                                 alert('계정 탈퇴 중 오류가 발생했습니다.');
                             }
+                        },
+                        error: function (xhr, status, err) {
+                            console.error("에러:", err);
+                        }
+                    });
+                },
+
+                // ✅ 판매자 마커 표시
+                fnDrawMarkers() {
+                    const self = this;
+                    self.markers.forEach(m => m.setMap(null));
+                    self.markers = [];
+
+                    self.sellers.forEach((s, idx) => {
+                        const pos = new kakao.maps.LatLng(s.lat, s.lng);
+                        const marker = new kakao.maps.Marker({
+                            position: pos,
+                            map: self.map
                         });
                     }
                 }

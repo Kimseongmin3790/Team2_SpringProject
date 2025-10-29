@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.example.TeamProject.mapper.AdminMapper;
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.ProductCategory;
+import com.example.TeamProject.model.SellerVO;
 import com.example.TeamProject.model.User;
 
 @Service
@@ -105,6 +106,19 @@ public class AdminService {
 			System.out.println(e.getMessage());
 		}
 		
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> findNearestSellers(double userLat, double userLng) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();			
+		
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("lat", userLat);
+		map.put("lng", userLng);
+		
+		List<SellerVO> list = adminMapper.selectNearestSellers(map);		
+		resultMap.put("list", list);
 		return resultMap;
 	}
 	
