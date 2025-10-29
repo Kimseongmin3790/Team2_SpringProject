@@ -22,5 +22,11 @@ public interface UserMapper {
 	User findPwd(HashMap<String, Object> map);
 	// 새 비밀번호 등록
 	int resetPwd(HashMap<String, Object> map);
+	// 이메일로 사용자 정보를 가져오는 메서드
+	User findByEmail(String email);
+	// 소셜 로그인 사용자를 새로 저장하는 메서드
+	void insertSocialUser(User user);
+	// 기존 사용자의 정보를 업데이트하는 메서드 (이름 등)
+	void updateUser(User user);
 	
 }
