@@ -16,4 +16,6 @@ public class User {
 	private String verified;
 	private String lat;
 	private String lng;
+	private String status;
+	
 }

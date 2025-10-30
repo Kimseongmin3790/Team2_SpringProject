@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -169,31 +170,41 @@ public class UserController {
 	
 	// 로그인 유저 정보 가져오기
 	@RequestMapping(value = "/userInfo.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
-		@ResponseBody
+	@ResponseBody
 		public String getUserProfile(HttpSession session) throws Exception {
-			// 1. 세션에서 현재 로그인된 사용자 ID를 안전하게 가져옵니다.
 			String userId = (String) session.getAttribute("sessionId");
-
-			if (userId == null) {
-				// 로그인되어 있지 않은 경우 에러를 반환합니다.
-			    HashMap<String, String> errorResult = new HashMap<>();
-			    errorResult.put("status", "error");
-			    errorResult.put("message", "Not logged in");
-			    return new Gson().toJson(errorResult);
+			HashMap<String, Object> resultMap = userService.getUserProfile(userId);
+			
+			return new Gson().toJson(resultMap);
 			}
-
-			// 2. 서비스에 userId를 전달하기 위해 map을 만듭니다.
-			HashMap<String, Object> paramMap = new HashMap<>();
-			paramMap.put("userId", userId);
-
-			// 3. 이전에 작성하신 userInfo 서비스 메소드를 호출합니다.
-			HashMap<String, Object> serviceResult = userService.userInfo(paramMap);
-
-			// 4. 서비스 결과에서 사용자 정보('info')만 추출합니다.
-			User userProfile = (User) serviceResult.get("info");
-
-			// 5. 최종적으로 사용자 정보 객체만 JSON으로 변환하여 반환합니다.
-			return new Gson().toJson(userProfile);
-		}
+	
+	// 회원 정보 수정
+	@RequestMapping(value = "/updateProfile.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String updateProfile(@RequestBody HashMap<String, Object> map, HttpSession session) throws Exception {
+		String userId = (String) session.getAttribute("sessionId");
+		map.put("userId", userId);
+		HashMap<String, Object> resultMap = userService.updateProfile(map);
+		
+		return new Gson().toJson(resultMap);
+	}
+	
+	// 회원 탈퇴 로직
+	@RequestMapping(value = "/user/withdrawal.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String withdrawUser(@RequestBody HashMap<String, Object> map, HttpSession session) throws Exception {
+		
+		HashMap<String, Object> resultMap = userService.withdrawUser(map, session); 
+		
+		return new Gson().toJson(resultMap);
+	}
+	
+	// 계정 복구
+	@RequestMapping(value = "/user/recover.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String recoverUser(@RequestBody HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = userService.recoverUser(map);
+		return new Gson().toJson(resultMap);
+	}
 	
 }

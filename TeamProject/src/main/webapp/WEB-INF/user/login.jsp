@@ -220,13 +220,11 @@
         const app = Vue.createApp({
             data() {
                 return {
-                    // 변수 - (key : value)
                     userId: "",
                     userPwd: ""
                 };
             },
             methods: {
-                // 함수(메소드) - (key : function())
                 fnLogin: function () {
                     let self = this;
                     if (!self.userId || !self.userPwd) {
@@ -245,14 +243,41 @@
                         success: function (data) {
                             if (data.result == "success") {
                                 alert(data.msg);
-                                location.href='${path}/main.do';
-                            } else {
+                                location.href='${pageContext.request.contextPath}/main.do';
+                            } else if (data.result == "WITHDRAWN_CAN_RECOVER") {
+                                if (confirm(data.msg + "\n지금 계정을 복구하시겠습니까?")) {
+                                    $.ajax({
+                                        url: "/user/recover.dox", 
+                                        dataType: "json",
+                                        type: "POST",
+                                        contentType: "application/json; charset=utf-8",
+                                        data: JSON.stringify({ userId: self.userId }), 
+                                        success: function(recoverResponse) {
+                                            if (recoverResponse.result == "success") {
+                                                alert("계정이 성공적으로 복구되었습니다. 다시 로그인해주세요.");
+                                                location.reload();
+                                            } else {
+                                                alert(recoverResponse.msg || "계정 복구 중 오류가 발생했습니다.");
+                                            }
+                                        }, 
+                                        error: function() {
+                                            alert("계정 복구 서버와 통신 중 오류가 발생했습니다.");
+                                        }
+                                    });
+                                } else { 
+                                    alert("계정 복구를 취소했습니다.");
+                                }
+                            }
+                            else { // 'fail' 메시지
                                 alert(data.msg);
                                 return;
                             }
+                        },
+                        error: function() { // AJAX 통신 자체의 에러
+                            alert("로그인 서버와 통신 중 오류가 발생했습니다.");
                         }
                     });
-                }
+                },
             }, // methods
             mounted() {
                 // 처음 시작할 때 실행되는 부분
