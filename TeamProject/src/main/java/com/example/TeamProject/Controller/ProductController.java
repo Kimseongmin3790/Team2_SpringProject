@@ -34,6 +34,11 @@ public class ProductController {
         return "product/productAdd"; 
     }
 	
+	@RequestMapping("/productInfo.do")
+    public String home(Model model) throws Exception{
+
+        return "product/productInfo";
+    }
 	
 	@RequestMapping("productUpload.dox")
 	@ResponseBody
