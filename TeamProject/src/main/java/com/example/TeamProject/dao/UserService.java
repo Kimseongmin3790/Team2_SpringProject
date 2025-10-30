@@ -98,6 +98,16 @@ public class UserService {
 			String result = "";
 			
 			if (user != null) {
+				
+				// 탈퇴 여부 확인
+				if ("WITHDRAWN".equals(user.getStatus())) {
+				    message = "탈퇴 처리된 계정입니다. 계정을 복구하시겠습니까?";
+				    result = "WITHDRAWN_CAN_RECOVER";
+				    resultMap.put("msg", message);
+				    resultMap.put("result", result);
+				    return resultMap;
+				}
+				
 				boolean loginFlg = passwordEncoder.matches((String)map.get("userPwd"), user.getPassword());
 				if (loginFlg) {
 					message = "로그인 성공";
@@ -214,20 +224,93 @@ public class UserService {
 		return resultMap;
 	}
 	
-	// 로그인 유저 정보 가져오기
-	public HashMap<String, Object> userInfo(HashMap<String, Object> map) {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		
-		try {
-			User info = userMapper.loginUser(map);	
-			
-			resultMap.put("info", info);
-			resultMap.put("result","success");
-			
-		} catch (Exception e) {
-			resultMap.put("result","fail");
-		}		
-		return resultMap;
+	// 프로필 유저 정보 가져오기
+	public HashMap<String, Object> getUserProfile(String userId) {
+	    HashMap<String, Object> resultMap = new HashMap<>();
+
+	    try {
+	        if (userId == null || userId.isEmpty()) {
+	            resultMap.put("status", "error");
+	            resultMap.put("message", "Not logged in");
+	            return resultMap;
+	        }
+
+	        HashMap<String, Object> paramMap = new HashMap<>();
+	        paramMap.put("userId", userId);
+	        User userProfile = userMapper.loginUser(paramMap);
+
+	        if (userProfile == null) {
+	            resultMap.put("status", "error");
+	            resultMap.put("message", "User not found");
+	            return resultMap;
+	        }
+
+	        // 비밀번호 값으로 로그인 유형 결정
+	        String password = userProfile.getPassword();
+	        String loginType = (password == null || password.equals("social_user_password"))
+	                           ? "SOCIAL"
+	                           : "NORMAL";
+
+	        // 프론트엔드로 보낼 최종 데이터 조립
+	        resultMap.put("name", userProfile.getName());
+	        resultMap.put("email", userProfile.getEmail());
+	        resultMap.put("phone", userProfile.getPhone());
+	        resultMap.put("address", userProfile.getAddress());
+	        resultMap.put("loginType", loginType);
+
+	    } catch (Exception e) {
+	        resultMap.put("status", "error");
+	        resultMap.put("message", "사용자 정보 조회 중 오류가 발생했습니다.");
+	        e.printStackTrace();
+	    }
+
+	    return resultMap;
+	}
+	
+	// 프로필 정보 수정
+	public HashMap<String, Object> updateProfile(HashMap<String, Object> map) {
+		HashMap<String, Object> resultMap = new HashMap<>();
+
+	    try {
+	        // 1. 전화번호 유효성 검사 및 하이픈 제거
+	        if (map.containsKey("phone")) {
+	            String phone = (String) map.get("phone");
+	            String rawPhone = phone.replaceAll("-", ""); // 하이픈 제거
+
+	            // 정규식: 10~11자리의 숫자
+	            if (!rawPhone.matches("^\\d{10,11}$")) {
+	                resultMap.put("result", "fail");
+	                resultMap.put("message", "올바른 전화번호 형식이 아닙니다. (예: 01012345678)");
+	                return resultMap;
+	            }
+	            map.put("phone", rawPhone); // 정제된 데이터로 교체
+	        }
+
+	        // 2. 비밀번호 유효성 검사 및 암호화
+	        if (map.containsKey("password") && map.get("password") != null && !((String)map.get("password")).isEmpty()) {
+	            String password = (String) map.get("password");
+
+	            String pwdRegex = "^(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()\\-_=+\\[\\]{};:'\\\",.<>\\/?\\\\|`~])(?!.*\\s).{8,16}$";
+	            if (!password.matches(pwdRegex)) {
+	                resultMap.put("result", "fail");
+	                resultMap.put("message", "비밀번호는 소문자, 숫자, 특수문자를 포함하여 8~16자 이내여야 합니다.");
+	                return resultMap;
+	            }
+
+	            String hashPwd = passwordEncoder.encode(password);
+	            map.put("hashPwd", hashPwd);
+	        }
+
+	        userMapper.updateProfile(map);
+	        resultMap.put("result", "success");
+
+	    } catch (Exception e) {
+	        resultMap.put("result", "fail");
+	        resultMap.put("message", "회원정보 수정 중 오류가 발생했습니다.");
+	        e.printStackTrace();
+	    }
+
+	    return resultMap;
 	}
 	
 	// ✅ 주소를 좌표로 변환
@@ -260,4 +343,100 @@ public class UserService {
         }
         return result;
     }
+    
+    // 회원 탈퇴 
+    public HashMap<String, Object> withdrawUser(HashMap<String, Object> map, HttpSession session) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+
+        try {
+            String userId = (String) session.getAttribute("sessionId");
+            if (userId == null) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "로그인이 필요합니다.");
+                return resultMap;
+            }
+            map.put("userId", userId);
+
+            // 1. 사용자 정보 조회 (비밀번호 및 로그인 타입 확인용)
+            HashMap<String, Object> paramMap = new HashMap<>();
+            paramMap.put("userId", userId);
+            User userProfile = userMapper.loginUser(paramMap);
+
+            if (userProfile == null) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "사용자 정보를 찾을 수 없습니다.");
+                return resultMap;
+            }
+
+            String loginType = (userProfile.getPassword() == null || "social_user_password".equals(userProfile.getPassword()))
+                               ? "SOCIAL"
+                               : "NORMAL";
+
+            // 2. 로그인 타입에 따른 비밀번호 확인
+            if (loginType.equals("NORMAL")) {
+                String inputPassword = (String) map.get("password");
+                if (inputPassword == null || inputPassword.isEmpty()) {
+                    resultMap.put("result", "fail");
+                    resultMap.put("message", "비밀번호를 입력해주세요.");
+                    return resultMap;
+                }
+                if (!passwordEncoder.matches(inputPassword, userProfile.getPassword())) {
+                    resultMap.put("result", "fail");
+                    resultMap.put("message", "비밀번호가 일치하지 않습니다.");
+                    return resultMap;
+                }
+            }
+            // 소셜 로그인 사용자는 비밀번호 확인을 건너뜁니다.
+
+            // 3. 사용자 정보 변경
+            userMapper.updateUserStatus(userId, "WITHDRAWN");
+
+            // 4. 세션 무효화
+            session.invalidate();
+
+            resultMap.put("result", "success");
+            resultMap.put("message", "회원 탈퇴가 성공적으로 처리되었습니다.");
+
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+            resultMap.put("message", "회원 탈퇴 중 오류가 발생했습니다.");
+            e.printStackTrace();
+        }
+
+        return resultMap;
+    }  
+    
+    
+    // 계정 복구
+    public HashMap<String, Object> recoverUser(HashMap<String, Object> map) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+
+        try {
+            String userId = (String) map.get("userId");
+            if (userId == null || userId.isEmpty()) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "사용자 ID가 누락되었습니다.");
+                return resultMap;
+            }
+
+            // 사용자 상태를 'ACTIVE'로 업데이트
+            int updatedRows = userMapper.updateUserStatus(userId, "ACTIVE");
+
+            if (updatedRows > 0) {
+                resultMap.put("result", "success");
+                resultMap.put("message", "계정이 성공적으로 복구되었습니다.");
+            } else {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "계정 복구에 실패했습니다. 사용자 ID를 확인해주세요.");
+            }
+
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+            resultMap.put("message", "계정 복구 중 오류가 발생했습니다.");
+            e.printStackTrace();
+        }
+
+        return resultMap;
+    }
+    
 }

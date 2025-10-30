@@ -3,6 +3,7 @@ package com.example.TeamProject.mapper;
 import java.util.HashMap;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.example.TeamProject.model.User;
 
@@ -28,5 +29,9 @@ public interface UserMapper {
 	void insertSocialUser(User user);
 	// 기존 사용자의 정보를 업데이트하는 메서드 (이름 등)
 	void updateUser(User user);
+	// 프로필 수정 
+	void updateProfile(HashMap<String, Object> map);
+	// 사용자 계정 탈퇴
+	int updateUserStatus(@Param("userId") String userId, @Param("status") String status);
 	
 }

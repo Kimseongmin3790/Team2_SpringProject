@@ -370,6 +370,11 @@
                     flex: 1;
                 }
 
+                .form-input.readonly-input {
+                    background-color: #f2f2f2;
+                    cursor: not-allowed;
+                }
+
                 /* 프로필 양식 */
                 .profile-form {
                     max-width: 672px;
@@ -422,9 +427,15 @@
                         max-width: 100%;
                     }
                 }
+                /* 에러 메시지 */
+                .error-message {
+                    color: #dc2626;
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                    margin-top: 0.25rem;
+                }
             </style>
         </head>
-
         <body>
             <div id="app">
                 <!-- 공통 헤더 -->
@@ -552,29 +563,30 @@
                                 <div class="card profile-form">
                                     <div class="form-group">
                                         <label class="form-label">이름</label>
-                                        <input type="text" class="form-input" v-model="profile.name" disabled>
+                                        <input type="text" class="form-input readonly-input" v-model="profile.name" disabled>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group" v-if="loginType === 'NORMAL'">
                                         <label class="form-label">이메일</label>
                                         <input type="email" class="form-input" v-model="profile.email">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">전화번호</label>
-                                        <input type="tel" class="form-input" v-model="profile.phone">
+                                        <label class="form-label">전화번호 ('-' 없이 숫자만 입력)</label>
+                                        <input type="tel" class="form-input" v-model="profile.phone" placeholder="'-' 없이 숫자만 입력">
+                                        <div v-if="errors.phone" class="error-message">{{ errors.phone }}</div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">주소</label>
-                                        <input type="text" class="form-input" v-model="profile.address">
+                                        <label class="form-label">주소 : <button @click="fnAddr">주소검색</button></label>
+                                        <input type="text" class="form-input" v-model="profile.address" placeholder="주소 검색 버튼으로 입력해주세요" disabled>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group" v-if="loginType === 'NORMAL'">
                                         <label class="form-label">비밀번호 변경</label>
-                                        <input type="password" class="form-input" placeholder="새 비밀번호"
-                                            v-model="profile.newPassword">
+                                        <input type="password" class="form-input" placeholder="새 비밀번호" v-model="profile.newPassword">
+                                        <div v-if="errors.newPassword" class="error-message">{{ errors.newPassword }}</div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group" v-if="loginType === 'NORMAL'">
                                         <label class="form-label">비밀번호 확인</label>
-                                        <input type="password" class="form-input" placeholder="새 비밀번호 확인"
-                                            v-model="profile.confirmPassword">
+                                        <input type="password" class="form-input" placeholder="새 비밀번호 확인" v-model="profile.confirmPassword">
+                                        <div v-if="errors.confirmPassword" class="error-message">{{ errors.confirmPassword }}</div>
                                     </div>
                                     <div class="form-actions">
                                         <button class="btn btn-primary" @click="saveProfile">저장하기</button>
@@ -607,6 +619,10 @@
         </html>
 
         <script>
+            function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail, roadAddrPart2, engAddr, jibunAddr, zipNo, admCd, rnMgtSn, bdMgtSn, detBdNmList, bdNm, bdKdcd, siNm, sggNm, emdNm, liNm, rn, udrtYn, buldMnnm, buldSlno, mtYn, lnbrMnnm, lnbrSlno, emdNo) {
+                window.vueObj.fnResult(roadFullAddr, addrDetail, zipNo);
+            }
+
             const app = Vue.createApp({
                 data() {
                     return {
@@ -637,7 +653,13 @@
                             newPassword: '',
                             confirmPassword: ''
                         },
-                        userInfo: []
+                        loginType: '',
+                        
+                        errors: { 
+                            phone: '',
+                            newPassword: '',
+                            confirmPassword: ''
+                        },
                     };
                 },
                 computed: {
@@ -675,6 +697,7 @@
                                 }
 
                                 self.profile = data;
+                                self.loginType = data.loginType;
                                 self.profile.newPassword = ''; // 비밀번호 필드는 비워둠
                                 self.profile.confirmPassword = ''; // 비밀번호 필드는 비워둠
 
@@ -682,38 +705,136 @@
                                 self.userEmail = data.email;
                             },
                             error: function (xhr, status, error) {
-                                // 서버에서 HTML 에러 페이지를 반환하는 경우 등을 처리
                                 alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
                                 console.error("Error:", error);
                             }
                         });
                     },
-
+                    // 프로필 저장 로직
                     saveProfile() {
-                        // 프로필 저장 로직
-                        alert('프로필이 저장되었습니다.');
+                        let self = this;
+                        let isValid = true;
+
+                        self.errors = { phone: '', newPassword: '', confirmPassword: '' };
+
+                        if (self.profile.phone) {
+                            const phoneRegex = /^\d{10,11}$/;
+                            const rawPhone = self.profile.phone.replaceAll('-', '');
+                            if (!phoneRegex.test(rawPhone)) {
+                                self.errors.phone = "올바른 전화번호 형식이 아닙니다. (10~11자리 숫자)";
+                                isValid = false;
+                            }
+                        }
+
+                        if (self.profile.newPassword) {
+                            const pwdRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+\[\]{};:'",.<>\/?\\|`~])(?!.*\s).{8,16}$/;
+                            if (!pwdRegex.test(self.profile.newPassword)) {
+                                self.errors.newPassword = "비밀번호는 소문자, 숫자, 특수문자를 포함하여 8~16자 이내여야 합니다.";
+                                isValid = false;
+                            }
+                            if (self.profile.newPassword !== self.profile.confirmPassword) {
+                                self.errors.confirmPassword = "새 비밀번호가 일치하지 않습니다.";
+                                isValid = false;
+                            }
+                        }
+
+                        if (!isValid) {
+                            return;
+                        }
+
+                        const profileData = {
+                            phone: self.profile.phone.replaceAll('-', ''),
+                            address: self.profile.address,
+                            email: self.profile.email
+                        };
+
+                        if (self.profile.newPassword) {
+                            profileData.password = self.profile.newPassword;
+                        }
+
+                         $.ajax({
+                            url: "${pageContext.request.contextPath}/updateProfile.dox",
+                            type: "POST",
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            data: JSON.stringify(profileData),
+                            success: function(response) {
+                                if (response.result === 'success') {
+                                    alert('회원정보가 성공적으로 수정되었습니다.');
+                                } else {
+                                    alert('정보 수정에 실패했습니다.');
+                                }
+                            },
+                            error: function() {
+                                alert('회원정보 수정 중 오류가 발생했습니다.');
+                            }
+                        });
+                    },
+                    fnAddr() {
+                        window.open("/addr.do", "addr", "width=500, height=500");
+                    },
+                    fnResult(roadFullAddr, addrDetail, zipNo) {
+                        let self = this;
+                        self.profile.address = roadFullAddr;
                     },
 
                     // 계정 탈퇴 로직
                     confirmWithdrawal: function () {
+                        let self = this;
                         if (confirm('정말로 계정을 탈퇴하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 상품과 주문 정보가 삭제됩니다.')) {
-                            let finalConfirm = prompt('탈퇴를 진행하려면 "탈퇴"를 입력하세요:');
-                            if (finalConfirm === '탈퇴') {
-                                let self = this;
+                            
+                            let withdrawalData = {};
+                            let proceedWithdrawal = false;
+                            
+                            if (self.loginType === 'NORMAL') { // 일반 로그인 사용자
+                            let passwordConfirm = prompt('탈퇴를 진행하려면 현재 비밀번호를 입력하세요:');
+                            if (passwordConfirm) {
+                                withdrawalData.password = passwordConfirm;
+                                proceedWithdrawal = true;
+                            } else if (passwordConfirm === null) {
+                                alert('탈퇴가 취소되었습니다.');
+                                return; 
+                            } else {
+                                alert('비밀번호를 입력해야 탈퇴할 수 있습니다.');
+                                return; 
+                            }
+
+                            } else if (self.loginType === 'SOCIAL') { // 소셜 로그인 사용자
+                                let finalConfirm = prompt('소셜 로그인 계정입니다. 탈퇴를 진행하려면 "탈퇴"를 입력하세요:');
+                                if (finalConfirm === '탈퇴') {
+                                    proceedWithdrawal = true;
+                                } else if (finalConfirm === null) {
+                                    alert('탈퇴가 취소되었습니다.');
+                                    return; // 사용자가 취소
+                                } else {
+                                    alert('정확히 "탈퇴"를 입력해야 합니다.');
+                                    return; // 잘못 입력
+                                }
+                            } else { // 로그인 유형을 알 수 없는 경우 (예외 처리)
+                                alert('로그인 유형을 알 수 없어 탈퇴를 진행할 수 없습니다.');
+                                return;
+                            }
+
+                            if (proceedWithdrawal) {
                                 $.ajax({
-                                    url: "${pageContext.request.contextPath}/seller/withdrawal",
+                                    url: "${pageContext.request.contextPath}/user/withdrawal.dox", // 일반 사용자 탈퇴 URL
                                     dataType: "json",
                                     type: "POST",
-                                    data: {},
-                                    success: function (data) {
-                                        alert('판매자 계정이 탈퇴되었습니다.');
-                                        location.href = '${pageContext.request.contextPath}/';
+                                    contentType: "application/json; charset=utf-8",
+                                    data: JSON.stringify(withdrawalData), 
+                                    success: function (response) {
+                                        if (response.result === 'success') {
+                                            alert('회원 계정이 성공적으로 탈퇴되었습니다.');
+                                            location.href = '${pageContext.request.contextPath}/'; // 메인 페이지로 이동
+                                        } else {
+                                            alert(response.message || '계정 탈퇴 중 오류가 발생했습니다.');
+                                        }
                                     },
                                     error: function () {
-                                        alert('계정 탈퇴 중 오류가 발생했습니다.');
+                                        alert('서버와 통신 중 오류가 발생했습니다.');
                                     }
                                 });
-                            }
+                            }    
                         }
                     },
 
@@ -736,7 +857,9 @@
                     let self = this;
                     // 초기 데이터 로드 등
                     self.fnUserInfo();
+                   
                 }
             })
-            app.mount('#app');
+            window.vueObj = app.mount('#app');
+            
         </script>

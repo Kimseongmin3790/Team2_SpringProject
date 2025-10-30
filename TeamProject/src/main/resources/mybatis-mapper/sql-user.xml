@@ -67,7 +67,7 @@
 	        #{email},
 	        #{name},
 	        #{userRole},
-	        'social_user_password', <!-- 소셜 로그인 사용자는 비밀번호가 없으므로 임의의 값 지정 -->
+	        NULL, <!-- 소셜 로그인 사용자는 비밀번호가 없으므로 임의의 값 지정 -->
 	        NVL(#{phone, jdbcType=VARCHAR}, 'NONE'),
 	        '소셜 로그인 사용자',    
 	        SYSDATE,
@@ -75,7 +75,7 @@
 	    )
 	</insert>
 	
-	<!-- 소셜 로그인 시 사용자 이름 등을 업데이트하는 쿼리 -->
+	<!-- 소셜 로그인 시 사용자 이름 등을 업데이트 -->
 	<update id="updateUser" parameterType="com.example.TeamProject.model.User">
 	    UPDATE USERS
 		<set>
@@ -87,6 +87,29 @@
 		</set>
 		WHERE
    			EMAIL = #{email}
+	</update>
+	
+	<!--유저 프로필 업데이트 -->
+	<update id="updateProfile" parameterType="hashmap">
+	    UPDATE USERS
+	    <set>
+	    	EMAIL = #{email},
+	        PHONE = #{phone},
+	        ADDRESS = #{address},
+	        UDATETIME = SYSDATE
+	        <if test="hashPwd != null and hashPwd != ''">
+	            , PASSWORD = #{hashPwd}
+	        </if>
+	    </set>
+	    WHERE USER_ID = #{userId}
+	</update>
+	
+	<!--계정 삭제 -->
+	<update id="updateUserStatus" parameterType="map">
+	    UPDATE USERS
+	    SET STATUS = #{status},
+	        UDATETIME = SYSDATE
+	    WHERE USER_ID = #{userId}
 	</update>
 	
 </mapper>
