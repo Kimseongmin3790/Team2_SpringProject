@@ -282,6 +282,16 @@
             mounted() {
                 // 처음 시작할 때 실행되는 부분
                 let self = this;
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('error') && urlParams.get('error') === 'true') {
+                    const errorMessage = urlParams.get('message');
+                    console.log('Error message from URL:', errorMessage);
+                    if (errorMessage) {
+                        alert(decodeURIComponent(errorMessage));
+                    } else {
+                        alert("로그인에 실패했습니다.");
+                    }
+                }
             }
         });
 

@@ -4,9 +4,55 @@
 
 <mapper namespace="com.example.TeamProject.mapper.BoardMapper">
 	
-	<select id="selectNoticeList" parameterType="hashmap" resultType="com.example.TeamProject.model.Board">
-		SELECT NOTICE_NO, TITLE, USER_ID, TO_CHAR(CDATETIME, 'YYYY-MM-DD') AS REG_DATE, CNT
-		FROM NOTICE
-		ORDER BY NOTICE_NO DESC
+	<!-- 검색 조건에 맞는 전체 게시물 수 조회 -->
+	<select id="selectNoticeCount" parameterType="hashmap" resultType="int">
+	    SELECT COUNT(*)
+	    FROM NOTICE
+	    <where>
+	        <if test="keyword != null and !keyword.equals('')">
+	            <choose>
+	                <when test="searchType.equals('title')">
+	                    TITLE LIKE '%' || #{keyword} || '%'
+	                </when>
+	                <when test="searchType.equals('content')">
+	                    CONTENTS LIKE '%' || #{keyword} || '%'
+	                </when>
+	                <when test="searchType.equals('writer')">
+	                    USER_ID LIKE '%' || #{keyword} || '%'
+	                </when>
+	            </choose>
+	        </if>
+	    </where>
 	</select>
+	
+	<!-- 한 페이지에 보여줄 게시물 목록 조회 -->
+    <select id="selectNoticeList" parameterType="hashmap" resultType="com.example.TeamProject.model.Board">
+        SELECT *
+        FROM (
+            SELECT ROWNUM AS RNUM, A.*
+            FROM (
+                SELECT NOTICE_NO, TITLE, USER_ID, TO_CHAR(CDATETIME, 'YYYY-MM-DD') AS REG_DATE, CNT
+                FROM NOTICE
+                <where>
+                    <if test="keyword != null and !keyword.equals('')">
+                        <choose>
+                            <when test="searchType.equals('title')">
+                                TITLE LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="searchType.equals('content')">
+                                CONTENTS LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="searchType.equals('writer')">
+                                USER_ID LIKE '%' || #{keyword} || '%'
+                            </when>
+                        </choose>
+                    </if>
+                </where>
+                ORDER BY NOTICE_NO DESC
+            ) A
+            WHERE ROWNUM &lt;= #{endRow}
+        )
+        WHERE RNUM &gt;= #{startRow}
+    </select>
+	
 </mapper>
