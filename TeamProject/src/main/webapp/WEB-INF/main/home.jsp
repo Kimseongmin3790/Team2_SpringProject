@@ -305,6 +305,7 @@
             <section class="benefits-section">
                 <div class="benefit-item">
                     <div class="benefit-icon">
+                        <!-- <img :src="path + '/img/delivery.png'" alt="당일 배송 아이콘"> -->
                         <img :src="path + '/resources/img/main/delivery.png'" alt="당일 배송 아이콘">
                     </div>
                     <strong>당일 배송</strong>
@@ -312,6 +313,7 @@
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon">
+                        <!-- <img :src="path + '/img/fresh.png'" alt="신선 보장 아이콘"> -->
                         <img :src="path + '/resources/img/main/fresh.png'" alt="신선 보장 아이콘">
                     </div>
                     <strong>신선 보장</strong>
@@ -319,6 +321,7 @@
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon">
+                        <!-- <img :src="path + '/img/deal.png'" alt="직거래 아이콘"> -->
                         <img :src="path + '/resources/img/main/deal.png'" alt="직거래 아이콘">
                     </div>
                     <strong>직거래</strong>
@@ -435,7 +438,7 @@
                 self.errorBanner = null;
 
                 $.ajax({
-                    url: self.path + "/api/main/banners", // 새로 만든 배너 API 주소
+                    url: self.path + "/main/data/banners", // 새로 만든 배너 API 주소
                     dataType: "json",
                     type: "GET",
                     success: function (data) {
@@ -459,7 +462,7 @@
 
                 $.ajax({
                     // 💡 Spring Boot에서 베스트 상품을 조회하는 API 주소 (예시: /api/main/best)
-                    url: self.path + "/api/main/best", 
+                    url: self.path + "/main/data/best", 
                     dataType: "json",
                     type: "GET", // 조회는 GET 방식을 사용하는 것이 일반적입니다.
                     // data: {}, // 베스트 상품은 보통 별도의 파라미터가 필요 없습니다.
@@ -489,7 +492,7 @@
 
                 $.ajax({
                     // API 주소: /api/main/producers (예시)
-                    url: self.path + "/api/main/producers", 
+                    url: self.path + "/main/data/producers", 
                     dataType: "json",
                     type: "GET",
                     success: function (data) {
