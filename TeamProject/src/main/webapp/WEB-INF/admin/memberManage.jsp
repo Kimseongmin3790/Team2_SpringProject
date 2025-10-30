@@ -189,8 +189,9 @@
                                         <th>전화번호</th>
                                         <th>유형</th>
                                         <th>포인트</th>
-                                        <th>승인</th>
-                                        <th>승인관리</th>
+                                        <th>판매자승인상태</th>
+                                        <th>판매자승인관리</th>
+                                        <th>유저상태</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -212,7 +213,8 @@
                                                     @click="fnReject(item.userId)">거절</button>
                                             </template>
                                             <!-- 신고된 회원만 신고 해제 -->
-                                        </td>
+                                        </td>                                        
+                                        <td>{{ item.status }}</td>
                                     </tr>
                                     <tr v-if="userList.length === 0">
                                         <td colspan="6" class="no-data">회원 정보가 없습니다.</td>
