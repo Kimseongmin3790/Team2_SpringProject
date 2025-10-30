@@ -1,8 +1,8 @@
 .header {
-    background-color: #f3ebd3;
+    background-color: #f5efd7;
     padding: 10px 30px;
     font-family: "Noto Sans KR", sans-serif;
-	width: 100%;
+    width: 100%;
     box-sizing: border-box;
 }
 body {
@@ -15,9 +15,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-	width: 100%;
-	padding: 10px 40px;
-	box-sizing: border-box;
+    width: 100%;
+    padding: 15px 60px;
+    box-sizing: border-box;
 }
 
 /* 로고 */
@@ -26,7 +26,7 @@ body {
     align-items: center;
 }
 .logo-img {
-    width: 100px;
+    width: 146px;
     height: auto;
 }
 .logo-text {
@@ -39,7 +39,10 @@ body {
 .search-section {
     display: flex;
     align-items: center;
-    gap: 10px; /* ✅ 검색창과 버튼 간격 */
+	justify-content: center;
+    gap: 8px; /* ✅ 검색창과 버튼 간격 */
+	flex: 1;
+	max-width: 500px;
 }
 /* 검색창 */
 .search-bar {
@@ -47,8 +50,8 @@ body {
     align-items: center;
     background: #4caf50;
     border-radius: 25px;
-    padding: 5px 15px;
-    width: 350px;
+    padding: 6px 15px;
+    width: 100%;
 }
 .search-bar i {
     color: white;
@@ -66,10 +69,17 @@ body {
     background: #5dbb63;
     border: none;
     color: white;
-    padding: 6px 14px;
-    border-radius: 5px;
+    padding: 8px 18px;
+    border-radius: 25px;
+	font-size: 14px;
     cursor: pointer;
-    font-weight: 500;
+	transition: 0.3s;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	white-space: nowrap;
+	line-height: 1;
 }
 .btn-search:hover {
     background: #4ba954;
@@ -78,22 +88,37 @@ body {
 /* 오른쪽 버튼 */
 .header-right {
     display: flex;
-	flex-direction: column;
+    flex-direction: column;
     align-items: center;
     gap: 10px;
 }
-.btn-login, .btn-join, .btn-logout {
+.btn-login, .btn-join, .btn-logout, .btn-admin {
     background: #5dbb63;
     border: none;
     color: white;
-    padding: 5px 10px;
+    padding: 6px 12px;
     border-radius: 5px;
     font-size: 13px;
     cursor: pointer;
-	margin-left: 10px;
+    transition: 0.3s;
 }
-.btn-login:hover, .btn-join:hover, .btn-logout:hover {
+.btn-login:hover, .btn-join:hover, .btn-logout:hover, .btn-admin:hover{
     background: #4ba954;
+}
+/* 로그인 / 로그아웃 / 회원가입 영역 */
+.login-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;  /* ✅ 버튼 사이 여백 추가 */
+}
+.admin-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.btn-admin {
+  font-weight: 600;
+  margin-top: 3px; /* ✅ 위쪽 버튼들과 균형 맞춤 */
 }
 .user-name {
     color: #333;
@@ -104,6 +129,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 20px;
+	padding: 10px;
 }
 
 .icon-group i {
@@ -118,16 +144,30 @@ body {
     transform: scale(1.1);     /* 살짝 커지는 효과 */
 }
 
+.btn-admin {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-admin:hover {
+    background-color: #45a049;
+}
+
 /* 하단 메뉴 */
 .header-bottom {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 40px;
-    margin-top: 10px;
+    justify-content: center;        
     border-top: 1px solid #ddd;
-    padding: 10px 40px;
+    padding: 10px 60px;
     box-sizing: border-box;
+	gap: 60px;
 }
 .btn-category {
     background: #5dbb63;
@@ -139,21 +179,22 @@ body {
     display: flex;
     align-items: center;
     gap: 5px;
-	font-weight: 600;
+    font-weight: 600;
 }
 .nav-menu {
     display: flex;
     gap: 60px; /* ✅ 메뉴 항목 간 간격 조정 (기본 60px로 넓게) */
+	justify-content: center;
+	flex-grow: 1;
 }
 .nav-menu a {
     text-decoration: none;
     color: #333;
     font-weight: 500;
-    font-size: 16px;
-    letter-spacing: 1px; /* ✅ 글자 사이 약간 띄움 */
+    font-size: 16px; 
     position: relative;
     padding-bottom: 3px;
-	transition: color 0.3s;
+    transition: color 0.3s;
 }
 /* hover 시 밑줄 효과 */
 .nav-menu a::after {
@@ -173,43 +214,74 @@ body {
     color: #1a5d1a;
 }
 
-/* 카테고리 드롭다운 */
+/* ========== 3단 hover 드롭다운 ========== */
 .category-container {
-    position: relative;
+  position: relative;
+  margin-right: auto;
 }
 
-.dropdown-menu {
-    position: absolute;
-    top: 38px;
-    left: 0;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    list-style: none;
-    padding: 10px 0;
-    margin: 0;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    z-index: 100;
-    width: 160px;
-	display: none; /* 기본적으로 숨김 */
+.category-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 200px;
+  display: none;
+  z-index: 1000;
 }
 
-.dropdown-menu.show {
-    display: block; /* 버튼 클릭 시 표시 */
+.category-container:hover .category-menu {
+  display: block;
 }
 
-.dropdown-menu li {
-    padding: 8px 15px;
+/* 1단: 대분류 */
+.category-menu > li {
+  position: relative;
+}
+.category-menu > li > a {
+  display: block;
+  padding: 10px 15px;
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+}
+.category-menu > li:hover > a {
+  background: #5dbb63;
+  color: white;
 }
 
-.dropdown-menu li a {
-    text-decoration: none;
-    color: #333;
-    display: block;
-    transition: 0.2s;
+/* 2단: 중분류 */
+.category-menu li ul {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid #ccc;
+  z-index: 1100;
+}
+.category-menu li:hover > ul {
+  display: block;
 }
 
-.dropdown-menu li a:hover {
-    background-color: #f3ebd3;
-    color: #1a5d1a;
+/* 3단: 소분류 */
+.category-menu li ul li ul {
+  left: 100%;
+  top: 0;
+}
+.category-menu li ul a {
+  padding: 8px 15px;
+  color: #333;
+  display: block;
+  text-decoration: none;
+}
+.category-menu li ul li:hover > a {
+  background: #4caf50;
+  color: #fff;
+  text-decoration: none;
 }

@@ -17,26 +17,25 @@
             <div class="footer-column">
                 <h3>회사소개</h3>
                 <ul>
-                    <li><a href="${path}/brand">브랜드 스토리</a></li>
-                    <li><a href="${path}/contact">입점/제휴 문의</a></li>
-                    <li><a href="${path}/notice">공지사항</a></li>
+                    <li><a href="${path}/brandStory.do">브랜드 스토리</a></li>
+                    <li><a href="${path}/partnership.do">입점/제휴 문의</a></li>
                 </ul>
             </div>
 
             <div class="footer-column">
                 <h3>고객센터</h3>
                 <ul>
-                    <li><a href="${path}/faq">자주 묻는 질문</a></li>
-                    <li><a href="${path}/qna">1:1 문의</a></li>
-                    <li><a href="${path}/exchange">교환/반품 안내</a></li>
+                    <li><a href="${path}/customerService.do?tab=faq">자주 묻는 질문</a></li>
+                    <li><a href="${path}/customerService.do?tab=inquiry">1:1 문의</a></li>
+                    <li><a href="${path}/customerService.do?tab=notice">공지 사항</a></li>
                 </ul>
             </div>
 
             <div class="footer-column">
                 <h3>이용안내</h3>
                 <ul>
-                    <li><a href="${path}/terms">이용약관</a></li>
-                    <li><a href="${path}/privacy">개인정보처리방침</a></li>
+                    <li><a href="#" id="open-terms-link">이용약관</a></li>
+                    <li><a href="#" id="open-privacy-link">개인정보처리방침</a></li>
                 </ul>
             </div>
 
@@ -44,15 +43,15 @@
                 <h3>문의</h3>
                 <ul>
                     <li>고객센터 1234-5678</li>
-                    <li>평일 10:00~17:00 (점심 12:30~13:30)</li>
+                    <li>평일 10:00~17:00 <br>(점심 12:30~13:30)</li>
                     <li>이메일 test@gmail.com</li>
                 </ul>
             </div>
         </div>
 
         <div class="footer-right">
-            <a href="#"><img src="${path}/resources/img/naver.png" alt="naver"></a>
-            <a href="#"><img src="${path}/resources/img/instagram.webp" alt="instagram"></a>
+            <a href="${path}/locationMap.do"><img src="${path}/resources/img/footer-icon/naver.png" alt="naver"></a>
+            <a href="#"><img src="${path}/resources/img/footer-icon/instagram.webp" alt="instagram"></a>
         </div>
     </div>
 
@@ -67,4 +66,26 @@
         </p>
         <p class="copyright">© 2025 AGRICOLA. All rights reserved.</p>
     </div>
+    <div id="terms-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h2>이용약관</h2>
+            <div class="terms-text">
+            </div>
+        </div>
+    </div>
+    <div id="privacy-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h2>개인정보처리방침</h2>
+            <div class="terms-text">
+            </div>
+        </div>
+    </div>
 </footer>
+
+<script>
+    const CONTEXT_PATH = '${pageContext.request.contextPath}';
+</script>
+
+<script src="${path}/resources/js/footer.js"></script>

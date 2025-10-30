@@ -5,17 +5,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-public class sampleController {
-	 
-	@RequestMapping("/default.do") 
+public class productInfoController {
+
+	@RequestMapping("/productInfo.do")
     public String home(Model model) throws Exception{
 
-        return "default"; 
+        return "productInfo";
     }
 	
-	@RequestMapping("/login.do") 
-    public String login(Model model) throws Exception{
-
-        return "/login/login"; 
-    }
 }
