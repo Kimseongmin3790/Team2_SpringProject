@@ -33,18 +33,16 @@
         </head>
 
         <body>
-            <div id="app">
-                <!-- 공통 헤더 -->
-                <%@ include file="/WEB-INF/views/common/header.jsp" %>
-
-                    <main class="content">
-                        <h3>신선한 농수산물을 직접 거래하세요!</h3>
-                        <p>생산자와 소비자가 1:1로 연결되는 새로운 직거래 플랫폼입니다.</p>
-                    </main>
-
-                <!-- 공통 푸터 -->
-                <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+            <!-- 공통 헤더 -->
+            <%@ include file="/WEB-INF/views/common/header.jsp" %>
+            <div id="app">                     
+                <main class="content">
+                    <h3>신선한 농수산물을 직접 거래하세요!</h3>
+                    <p>생산자와 소비자가 1:1로 연결되는 새로운 직거래 플랫폼입니다.</p>
+                </main>                
             </div>
+            <!-- 공통 푸터 -->
+            <%@ include file="/WEB-INF/views/common/footer.jsp" %>
         </body>
 
         </html>

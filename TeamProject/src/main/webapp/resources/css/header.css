@@ -20,6 +20,11 @@ body {
     box-sizing: border-box;
 }
 
+/* ✅ PC에서는 모바일 버튼 안보이게 */
+.mobile-buttons {
+  display: none;
+}
+
 /* 로고 */
 .logo {
     display: flex;
@@ -284,4 +289,237 @@ body {
   background: #4caf50;
   color: #fff;
   text-decoration: none;
+}
+
+/* ========================================= */
+/* 📱 반응형 Header 영역 */
+@media (max-width: 1200px) {
+  .header-top {
+    flex-wrap: wrap;
+    padding: 10px 30px;
+  }
+
+  .search-section {
+    max-width: 400px;
+  }
+
+  .icon-group i {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 992px) {
+  .header-top {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .search-section {
+    width: 90%;
+    max-width: none;
+    order: 3; /* 검색창 아래로 이동 */
+  }
+
+  .header-right {
+    flex-direction: row;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .login-group {
+    gap: 8px;
+  }
+
+  .btn-login, .btn-join, .btn-logout, .btn-admin {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .icon-group {
+    gap: 15px;
+  }
+
+  .logo-img {
+    width: 120px;
+  }
+
+  /* 하단 메뉴 줄이기 */
+  .header-bottom {
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px 20px;
+  }
+
+  .nav-menu {
+    gap: 25px;
+    flex-wrap: wrap;
+  }
+}
+
+/* ✅ 모바일 (≤767px) */
+@media (max-width: 767px) {
+  .header {
+    padding: 10px 15px;
+  }
+
+  .header-top {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* 로고 중앙 */
+  .logo {
+    justify-content: center;
+  }
+
+  /* 검색창 숨기기 (토글로 열기 가능하게 대비) */
+  .search-section {
+    display: none;
+  }
+
+  /* 햄버거 버튼 추가 스타일 (btn-category 활용) */
+  .btn-category {
+    background: transparent;
+    border: none;
+    color: #1a5d1a;
+    font-size: 20px;
+    padding: 4px;
+  }
+
+  /* nav 메뉴 숨기기 */
+  .nav-menu {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    background: #f5efd7;
+    padding: 20px 0;
+    border-top: 1px solid #ddd;
+  }
+
+  /* ✅ 햄버거 클릭 시 표시되게 JS에서 toggle() 처리 */
+  .nav-menu.active {
+    display: flex;
+  }
+
+  .nav-menu a {
+    font-size: 15px;
+  }
+
+  .icon-group i {
+    font-size: 22px;
+  }
+}
+
+/* 📱 320~425px 초소형 모바일 대응 */
+@media (max-width: 425px) {
+
+  /* 전체 여백 최소화 */
+  .header {
+    padding: 6px 10px;
+  }
+
+  .header-top {
+	flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* 로고 */
+  .logo-img {
+    width: 100px;
+  }
+  
+  /* ✅ 모바일 버튼 그룹 (햄버거 + 돋보기) */
+	.mobile-buttons {
+	  display: flex;
+	  gap: 10px;
+	}
+	
+	.mobile-buttons button {
+	  background: none;
+	  border: none;
+	  color: #1a5d1a;
+	  font-size: 22px;
+	  cursor: pointer;
+	}
+
+  /* 로그인 / 회원가입 버튼 */
+  .btn-login, .btn-join, .btn-logout, .btn-admin {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .header-right {
+    gap: 6px;
+  }
+
+  /* 아이콘 크기 조정 */
+  .icon-group {
+    gap: 10px;
+  }
+
+  .icon-group i {
+    font-size: 20px;
+  }
+
+  /* 검색창 완전 숨기기 (나중에 토글 버튼으로 열 수 있도록 대비) */
+  .search-section {
+      display: none;
+      width: 100%;
+      padding: 10px 0;
+    }
+/* 검색창 활성화 시 표시 */
+  .search-section.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .search-bar {
+      width: 90%;
+    }
+
+  /* 하단 메뉴 최소화 */
+  .header-bottom {
+    flex-direction: column;
+    padding: 8px 0;
+    gap: 10px;
+  }
+
+  .nav-menu {
+	display: none;
+    flex-direction: column;
+    align-items: center;
+    background: #f5efd7;
+    border-top: 1px solid #ddd;
+    padding: 15px 0;
+    gap: 12px;
+  }
+  .nav-menu.active {
+      display: flex;
+    }
+
+  .nav-menu a {
+    font-size: 13px;
+    padding: 5px 0;
+  }
+  
+  .icon-group i {
+      font-size: 20px;
+    }
+
+  /* 카테고리 버튼 */
+  .btn-category {
+    font-size: 14px;
+    padding: 4px 8px;
+  }
+
+  /* hover 효과 줄이기 (터치 최적화) */
+  .nav-menu a:hover::after {
+    width: 0;
+  }
 }

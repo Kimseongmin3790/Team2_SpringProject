@@ -122,4 +122,16 @@ $(document).ready(function () {
             $("#dropdownMenu").removeClass("show");
         }
     });
+	
+	// 메뉴 토글
+	$("#btnHamburger").on("click", function () {
+	    $(".nav-menu").stop(true, true).toggleClass("active");
+	    $(".search-section").removeClass("active");
+	  });
+
+	  // 검색창 토글
+	  $("#btnSearchToggle").on("click", function () {
+	    $(".search-section").stop(true, true).toggleClass("active");
+	    $(".nav-menu").removeClass("active");
+	  });
 });

@@ -12,7 +12,17 @@
                     <img src="${path}/resources/img/logo.png" alt="로고" class="logo-img">
                 </div>
 
-                <!-- 검색창 -->
+                <!-- ✅ 모바일 전용 토글 버튼 영역 -->
+                <div class="mobile-buttons">
+                    <button class="btn-hamburger" id="btnHamburger">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <button class="btn-search-toggle" id="btnSearchToggle">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+
+                <!-- PC용 검색창 -->
                 <div class="search-section">
                     <div class="search-bar">
                         <i class="fa fa-search"></i>
@@ -45,19 +55,13 @@
                     </c:if>
 
                     <div class="icon-group">
-                        <a href="javascript:;" 
-                        id="btnMyPage" 
-                        title="마이페이지"
-                        data-status="${sessionScope.sessionStatus}">
+                        <a href="javascript:;" id="btnMyPage" title="마이페이지" data-status="${sessionScope.sessionStatus}">
                             <i class="fa-solid fa-user"></i>
                         </a>
                         <a href="javascript:;" id="btnFavorite" title="찜한상품">
                             <i class="fa-solid fa-heart"></i>
                         </a>
-                        <a href="javascript:;" 
-                        id="btnCart" 
-                        title="장바구니"
-                        data-status="${sessionScope.sessionStatus}">
+                        <a href="javascript:;" id="btnCart" title="장바구니" data-status="${sessionScope.sessionStatus}">
                             <i class="fa-solid fa-cart-shopping"></i>
                         </a>
                     </div>
@@ -78,15 +82,15 @@
                 <nav class="nav-menu">
                     <a href="${path}/main.do">홈</a>
                     <a href="${path}/product/list">상품목록</a>
-                    <a href="${path}/product/new">신상품</a>
+                    <a href="${path}/product/add.do">신상품</a>
                     <a href="${path}/review/list">상품후기</a>
                     <a href="${path}/bunjjukEvent">번쩍장터</a>
-                    <a href="${path}/notice">공지사항</a>
+                    <a href="${path}/board.do">커뮤니티</a>
                     <a href="${path}/event">이벤트</a>
                 </nav>
             </div>
 
         </header>
 
-        
+
         <script src="${path}/resources/js/header.js"></script>
