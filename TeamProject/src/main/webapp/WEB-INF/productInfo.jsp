@@ -35,19 +35,58 @@
                     flex-direction: column;
                 }
 
+                /* 페이지 본문의 최대 폭을 정해 주세요 (원하는 값으로 조절) */
                 .content {
                     flex: 1;
                     margin: 20px auto;
+                    max-width: 1100px;
+                    /* <- 추가 */
+                    width: 100%;
                 }
 
-                #container,
-                #img {
-                    float: left;
+                .prod-wrap {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 32px;
+                    /* 칼럼 간격 */
+                    max-width: 1200px;
+                    /* 페이지 최대폭(원하면 조절) */
+                    margin: 20px auto;
+                    /* 가운데 정렬 */
                 }
 
-                #container {
-                    width: 500px;
-                    margin: 10px 30px;
+                /* 왼쪽 이미지 칼럼: 580px 고정폭(사이트 원본 느낌 유지) */
+                .prod-media {
+                    flex: 0 0 580px;
+                }
+
+                /* 오른쪽 정보 칼럼: 남는 공간 전부 */
+                .prod-info {
+                    flex: 1;
+                    min-width: 0;
+                    /* 긴 문자열 줄바꿈 안정화 */
+                }
+
+                /* 이미지가 칼럼을 넘지 않도록 */
+                .prod-media img {
+                    display: block;
+                    width: 100%;
+                    height: auto;
+                    max-width: 100%;
+                    /* 필요하면 여백은 여기서 처리 */
+                    /* margin: 5px 5px; */
+                }
+
+                /* 반응형: 화면 좁아지면 세로로 쌓기 */
+                @media (max-width: 900px) {
+                    .prod-wrap {
+                        flex-direction: column;
+                        gap: 16px;
+                    }
+
+                    .prod-media {
+                        flex-basis: auto;
+                    }
                 }
 
                 #title {
@@ -64,7 +103,7 @@
                 #sub {
                     font-size: 15px;
                     color: #000;
-                    margin-bottom: 24px;
+                    margin: 50px 0px;
                 }
 
                 #price {
@@ -89,6 +128,7 @@
                 .dd-btn {
                     width: 100%;
                     height: 50px;
+                    margin: 15px 0px;
                     padding: 6px 12px;
                     border: 1px solid #ddd;
                     border-radius: 8px;
@@ -227,14 +267,14 @@
                     z-index: 50;
                     background: #fff;
                     border-bottom: 1px solid #eee;
-                    clear: both;
+                    display: flex;
+                    gap: 12px;
+                    padding: 6px 0;
                 }
 
                 .tab {
-                    float: left;
-                    width: 350px;
+                    flex: 1;
                     text-align: center;
-                    cursor: pointer;
                     padding: 5px 10px;
                     box-sizing: border-box;
                 }
@@ -255,6 +295,10 @@
                 #re,
                 #qa {
                     scroll-margin-top: 64px;
+                }
+
+                #re {
+                    width: 100%;
                 }
 
                 /* 활성 색상 토큰 */
@@ -376,8 +420,12 @@
                     margin-top: 8px;
                 }
 
-                #img2 {
-                    clear: both;
+                /* 배너 쪽만 너무 커지지 않게 별도 제한(선택) */
+                #img2 img {
+                    width: auto;
+                    /* 인라인 width:100%를 쓰셨다면 제거/무시 */
+                    max-width: 100%;
+                    display: block;
                 }
 
                 /* 클릭 가능한 아이콘처럼 보이게 */
@@ -396,6 +444,104 @@
                 .heart-btn:hover {
                     filter: brightness(0.95);
                 }
+
+                #view {
+                    border: 1px solid rgba(0, 0, 0, .03);
+                    background: rgba(0, 0, 0, .03);
+                    border-radius: 5px;
+                    width: 300px;
+                    height: 100px;
+                }
+
+                .iconbtn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 4px 8px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    color: #666;
+                    cursor: pointer;
+                }
+
+                .iconbtn .count {
+                    font-style: normal;
+                    color: #9aa0a6;
+                }
+
+                /* 레이아웃을 flex로 */
+                .review-row {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 16px;
+                    margin: 12px 0;
+                }
+
+                /* 왼쪽 카드 고정폭, 기존 스타일 유지 */
+                #view.review-card {
+                    flex: 0 0 300px;
+                    /* 고정 300px */
+                    height: 100px;
+                    /* 필요시 auto로 */
+                    border: 1px solid rgba(0, 0, 0, .03);
+                    background: rgba(0, 0, 0, .03);
+                    border-radius: 5px;
+                }
+
+                /* 오른쪽 칼럼은 남은 공간 차지 */
+                .review-body {
+                    flex: 1;
+                    min-width: 0;
+                    padding: 0 8px;
+                }
+
+                /* 긴 텍스트/이모지 줄바꿈 안정화 */
+                .comment-text,
+                .comment-line {
+                    white-space: pre-wrap;
+                    /* 개행 유지 + 줄바꿈 허용 */
+                    word-break: keep-all;
+                    /* 한글은 자연 줄바꿈 */
+                    overflow-wrap: anywhere;
+                    /* 긴 연속문자/URL 강제 줄바꿈 */
+                }
+
+                .comments {
+                    margin-top: 6px;
+                    padding-left: 0;
+                }
+
+                .muted {
+                    color: #9aa0a6;
+                }
+
+                .review-sep {
+                    margin: 8px 0;
+                }
+
+                .iconbtn svg {
+                    width: 16px;
+                    height: 16px;
+                    flex: 0 0 auto;
+                }
+
+                .actions {
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 10px 12px;
+                    /* 위아래, 좌우 간격 */
+                    max-width: 500px;
+                    /* 내용 폭에 맞추고 싶으면 유지, 아니면 지워도 OK */
+                }
+
+                .actions .btn {
+                    min-width: 0;
+                    /* ← 기존 240px 무효화 */
+                    width: 100%;
+                    /* 그리드 칸을 꽉 채움 */
+                }
+
+                /* 기존 .iconbtn 그대로 사용 */
             </style>
         </head>
 
@@ -404,153 +550,159 @@
                 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                     <main class="content">
-                        <div id="img">
-                            <img src="/resources/img/snowCrab.png" style="width: 480px; margin: 5px 5px;">
-                        </div>
+                        <div class="prod-wrap">
+                            <div class="prod-media" id="img">
+                                <img src="/resources/img/snowCrab.png" alt="">
+                            </div>
 
-                        <div id="container">
-                            <div id="store">윤자네 수산</div>
-                            <div id="title">[경북 포항 김지윤] 구룡포 연지홍게 홍게제철 실속 가성비 3kg(10~12미)</div>
+                            <div class="prod-info" id="container">
+                                <div id="store">윤자네 수산</div>
+                                <div id="title">[경북 포항 김지윤] 구룡포 연지홍게 홍게제철 실속 가성비 3kg(10~12미)</div>
 
-                            <div class="badge-row">
-                                <img src="/resources/img/sale.png" style="width: 62px;">
-                                <input v-model="shareUrl" type="hidden">
-                                <input v-model="shareTitle" type="hidden">
+                                <div class="badge-row">
+                                    <img src="/resources/img/sale.png" style="width: 62px;">
+                                    <input v-model="shareUrl" type="hidden">
+                                    <input v-model="shareTitle" type="hidden">
 
-                                <div class="share-wrap" style="margin-left: 350px;">
-                                    <button type="button" class="share-icon-btn" @click.stop="shareOpen = !shareOpen"
-                                        aria-label="공유">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                            <path
-                                                d="M15 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                                                stroke="#333" stroke-width="1.5" />
-                                            <path d="M5.5 12.5 12.5 6M5.5 11.5 12.5 17" stroke="#333"
-                                                stroke-width="1.5" />
-                                        </svg>
-                                    </button>
-                                    <!-- 하트 토글 아이콘 (버튼 태그 없음) -->
-                                    <span class="heart-btn" @click="liked = !liked"
-                                        @keydown.space.prevent="liked = !liked" @keydown.enter.prevent="liked = !liked"
-                                        role="button" :aria-pressed="liked" tabindex="0" aria-label="찜">
-                                        <!-- 채워진 하트 -->
-                                        <svg v-if="liked" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path
-                                                d="M12.1 21.35l-.1.1-.1-.1C7.14 17.24 4 14.36 4 10.9 4 8.5 5.9 6.6 8.3 6.6c1.4 0 2.75.65 3.7 1.68C12.95 7.25 14.3 6.6 15.7 6.6 18.1 6.6 20 8.5 20 10.9c0 3.46-3.14 6.34-7.9 10.45Z"
-                                                fill="currentColor" />
-                                        </svg>
-
-                                        <!-- 테두리 하트 -->
-                                        <svg v-else width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path
-                                                d="M12.1 21.35l-.1.1-.1-.1C7.14 17.24 4 14.36 4 10.9 4 8.5 5.9 6.6 8.3 6.6c1.4 0 2.75.65 3.7 1.68C12.95 7.25 14.3 6.6 15.7 6.6 18.1 6.6 20 8.5 20 10.9c0 3.46-3.14 6.34-7.9 10.45Z"
-                                                fill="none" stroke="currentColor" stroke-width="1.5" />
-                                        </svg>
-                                    </span>
-
-
-                                    <div class="share-pop" v-if="shareOpen" @click.stop>
-                                        <button type="button" class="share-item" @click="shareNaver">
-                                            <span class="share-badge naver-badge">N</span><span>네이버로 공유</span>
+                                    <div class="share-wrap" style="margin-left: 350px;">
+                                        <button type="button" class="share-icon-btn"
+                                            @click.stop="shareOpen = !shareOpen" aria-label="공유">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                aria-hidden="true">
+                                                <path
+                                                    d="M15 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                                                    stroke="#333" stroke-width="1.5" />
+                                                <path d="M5.5 12.5 12.5 6M5.5 11.5 12.5 17" stroke="#333"
+                                                    stroke-width="1.5" />
+                                            </svg>
                                         </button>
-                                        <button type="button" class="share-item" @click="shareKakao">
-                                            <span class="share-badge kakao-badge">K</span><span>카카오로 공유</span>
-                                        </button>
-                                        <button type="button" class="share-item" @click="shareCopy">
-                                            <span class="share-badge link-badge">⧉</span><span>링크 복사</span>
-                                        </button>
+                                        <!-- 하트 토글 아이콘 (버튼 태그 없음) -->
+                                        <span class="heart-btn" @click="liked = !liked"
+                                            @keydown.space.prevent="liked = !liked"
+                                            @keydown.enter.prevent="liked = !liked" role="button" :aria-pressed="liked"
+                                            tabindex="0" aria-label="찜">
+                                            <!-- 채워진 하트 -->
+                                            <svg v-if="liked" width="20" height="20" viewBox="0 0 24 24"
+                                                aria-hidden="true">
+                                                <path
+                                                    d="M12.1 21.35l-.1.1-.1-.1C7.14 17.24 4 14.36 4 10.9 4 8.5 5.9 6.6 8.3 6.6c1.4 0 2.75.65 3.7 1.68C12.95 7.25 14.3 6.6 15.7 6.6 18.1 6.6 20 8.5 20 10.9c0 3.46-3.14 6.34-7.9 10.45Z"
+                                                    fill="currentColor" />
+                                            </svg>
+
+                                            <!-- 테두리 하트 -->
+                                            <svg v-else width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path
+                                                    d="M12.1 21.35l-.1.1-.1-.1C7.14 17.24 4 14.36 4 10.9 4 8.5 5.9 6.6 8.3 6.6c1.4 0 2.75.65 3.7 1.68C12.95 7.25 14.3 6.6 15.7 6.6 18.1 6.6 20 8.5 20 10.9c0 3.46-3.14 6.34-7.9 10.45Z"
+                                                    fill="none" stroke="currentColor" stroke-width="1.5" />
+                                            </svg>
+                                        </span>
+
+
+                                        <div class="share-pop" v-if="shareOpen" @click.stop>
+                                            <button type="button" class="share-item" @click="shareNaver">
+                                                <span class="share-badge naver-badge">N</span><span>네이버로 공유</span>
+                                            </button>
+                                            <button type="button" class="share-item" @click="shareKakao">
+                                                <span class="share-badge kakao-badge">K</span><span>카카오로 공유</span>
+                                            </button>
+                                            <button type="button" class="share-item" @click="shareCopy">
+                                                <span class="share-badge link-badge">⧉</span><span>링크 복사</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div id="price">15,900원</div>
-                            <hr>
-                            <div id="sub">
-                                <p>타 홍게류 보다 크기는 작지만 장맛이 일품인 연지홍게입니다</p>
-                                <p>가정에서 실속 가성비로 저렴하게 드셔보세요!</p>
-                                <p>모든 홍게는 고압스팀기 자숙 후 배송해드립니다</p>
-                            </div>
-
-                            <div v-if="fulfillment == 'delivery'">
-                                <div><span style="font-weight: bold;">원산지</span> 국산(구룡포)</div>
-                                <div><span style="font-weight: bold;">구매혜택</span> 318 포인트 적립예정</div>
-                                <div><span style="font-weight: bold;">배송비</span> 3,000원 | 도서산간 배송비 추가</div>
-                                <div><span style="font-weight: bold;">배송 안내</span> 배송비 3,000원</div>
-                            </div>
-                            <div v-else>
-                                <div><span style="font-weight: bold;">원산지</span> 국산(구룡포)</div>
-                                <div><span style="font-weight: bold;">구매혜택</span> 318 포인트 적립예정</div>
-                            </div>
-
-                            <!-- 수령방법 드롭다운 -->
-                            <div class="dd">
-                                <button type="button" class="dd-btn" @click.stop="ddOpen1=!ddOpen1">
-                                    <span class="l1">{{ fulfillmentSel?.l1 || '수령 방법 선택' }}</span>
-                                    <span class="l2" v-if="fulfillmentSel?.l2">{{ fulfillmentSel.l2 }}</span>
-                                </button>
-                                <div class="dd-list" v-if="ddOpen1" @click.stop>
-                                    <div class="dd-opt" v-for="opt in deliveryOptions" :key="opt.value"
-                                        @click="pickFulfillment(opt)">
-                                        <span class="l1">{{ opt.l1 }}</span>
-                                    </div>
+                                <div id="price">15,900원</div>
+                                <hr style="margin: 60px 0px;">
+                                <div id="sub">
+                                    <p style="line-height: 2px;">타 홍게류 보다 크기는 작지만 장맛이 일품인 연지홍게입니다</p>
+                                    <p style="line-height: 2px;">가정에서 실속 가성비로 저렴하게 드셔보세요!</p>
+                                    <p style="line-height: 2px;">모든 홍게는 고압스팀기 자숙 후 배송해드립니다</p>
                                 </div>
-                                <input type="hidden" name="fulfillment" :value="fulfillment">
-                            </div>
 
-                            <div id="delivery">
-                                <p>오늘출발 상품</p>
-                                <p v-if="week && before"><span style="color:#ff4100;">당일 15:00까지 결제</span>시 당일 바로 발송됩니다.
-                                </p>
-                                <p v-else>오늘출발 마감되었습니다. (평일 15:00까지)</p>
-                            </div>
+                                <div v-if="fulfillment == 'delivery'">
+                                    <div><span style="font-weight: bold;">원산지</span> 국산(구룡포)</div>
+                                    <div><span style="font-weight: bold;">구매혜택</span> 318 포인트 적립예정</div>
+                                    <div><span style="font-weight: bold;">배송비</span> 3,000원 | 도서산간 배송비 추가</div>
+                                    <div><span style="font-weight: bold;">배송 안내</span> 배송비 3,000원</div>
+                                </div>
+                                <div v-else>
+                                    <div><span style="font-weight: bold;">원산지</span> 국산(구룡포)</div>
+                                    <div><span style="font-weight: bold;">구매혜택</span> 318 포인트 적립예정</div>
+                                </div>
 
-                            <div>
-                                수율 상세페이지 참조 *
-                                <div class="dd" style="margin-top:8px;">
-                                    <button type="button" class="dd-btn" @click.stop="ddOpen2=!ddOpen2">
-                                        <span class="l1">수율 상세페이지 참조 (필수)</span>
+                                <!-- 수령방법 드롭다운 -->
+                                <div class="dd">
+                                    <button type="button" class="dd-btn" @click.stop="ddOpen1=!ddOpen1">
+                                        <span class="l1">{{ fulfillmentSel?.l1 || '수령 방법 선택' }}</span>
+                                        <span class="l2" v-if="fulfillmentSel?.l2">{{ fulfillmentSel.l2 }}</span>
                                     </button>
-                                    <div class="dd-list" v-if="ddOpen2" @click.stop>
-                                        <div class="dd-opt" v-for="opt in skuOptions" :key="opt.value"
-                                            @click="pickSku(opt)">
+                                    <div class="dd-list" v-if="ddOpen1" @click.stop>
+                                        <div class="dd-opt" v-for="opt in deliveryOptions" :key="opt.value"
+                                            @click="pickFulfillment(opt)">
                                             <span class="l1">{{ opt.l1 }}</span>
-                                            <span class="l2">{{ (opt.l2).toLocaleString() }}원</span>
                                         </div>
                                     </div>
+                                    <input type="hidden" name="fulfillment" :value="fulfillment">
                                 </div>
 
-                                <div class="selection-summary" v-if="selections.length" style="margin-top:12px">
-                                    <div v-for="(it, i) in selections" :key="it.sku"
-                                        style="padding:8px 0;border-top:1px solid #eee">
-                                        <div>
-                                            {{ it.name }}
-                                            <button @click="removeExtra(i)" style="margin-left:270px">삭제</button>
-                                        </div>
-                                        <hr
-                                            style="border-width:1px 0 0 0; border-style:dashed; border-color:#9d9c9c; width: 480px;">
-                                        <div
-                                            style="font-size:18px;font-weight:700; display:flex; align-items:center; gap:8px; margin-top:6px">
-                                            <button @click="fnMinus(i)" style="width: 30px; height: 30px;">-</button>
-                                            <input v-model.number="it.qty" @input="recomputeTotal"
-                                                style="width: 50px; text-align: center; height: 24px; margin: 5px -9px;">
-                                            <button @click="fnPlus(i)" style="width: 30px; height: 30px;">+</button>
-                                            <span style="margin-left: auto;">{{ (it.price *
-                                                it.qty).toLocaleString()}}원</span>
+                                <div id="delivery">
+                                    <p>오늘출발 상품</p>
+                                    <p v-if="week && before"><span style="color:#ff4100;">당일 15:00까지 결제</span>시 당일 바로
+                                        발송됩니다.
+                                    </p>
+                                    <p v-else>오늘출발 마감되었습니다. (평일 15:00까지)</p>
+                                </div>
+
+                                <div style="margin: 50px 0px;">
+                                    수율 상세페이지 참조 *
+                                    <div class="dd" style="margin-top:8px;">
+                                        <button type="button" class="dd-btn" @click.stop="ddOpen2=!ddOpen2">
+                                            <span class="l1">수율 상세페이지 참조 (필수)</span>
+                                        </button>
+                                        <div class="dd-list" v-if="ddOpen2" @click.stop>
+                                            <div class="dd-opt" v-for="opt in skuOptions" :key="opt.value"
+                                                @click="pickSku(opt)">
+                                                <span class="l1">{{ opt.l1 }}</span>
+                                                <span class="l2">{{ (opt.l2).toLocaleString() }}원</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div v-if="selections.length"
-                                    style="margin-top:12px; text-align: right; font-size:20px; font-weight:800;">
-                                    총 상품금액({{ totalQty }}개) {{ totalSum.toLocaleString() }}원
-                                </div>
+                                    <div class="selection-summary" v-if="selections.length" style="margin-top:12px">
+                                        <div v-for="(it, i) in selections" :key="it.sku"
+                                            style="padding:8px 0;border-top:1px solid #eee">
+                                            <div>
+                                                {{ it.name }}
+                                                <button @click="removeExtra(i)" style="margin-left:270px">삭제</button>
+                                            </div>
+                                            <hr
+                                                style="border-width:1px 0 0 0; border-style:dashed; border-color:#9d9c9c; width: 480px;">
+                                            <div
+                                                style="font-size:18px;font-weight:700; display:flex; align-items:center; gap:8px; margin-top:6px">
+                                                <button @click="fnMinus(i)"
+                                                    style="width: 30px; height: 30px;">-</button>
+                                                <input v-model.number="it.qty" @input="recomputeTotal"
+                                                    style="width: 50px; text-align: center; height: 24px; margin: 5px -9px;">
+                                                <button @click="fnPlus(i)" style="width: 30px; height: 30px;">+</button>
+                                                <span style="margin-left: auto;">{{ (it.price *
+                                                    it.qty).toLocaleString()}}원</span>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <div>
-                                    <button @click="fnPurchase" class="btn btn-primary">구매하기</button>
-                                    <button @click="fnBasket" class="btn btn-outline">장바구니</button>
-                                </div>
-                                <div>
-                                    <button @click="fnChat" class="btn btn-ghost">실시간 문의</button>
-                                    <button @click="fnWish" class="btn btn-like">찜</button>
+                                    <div v-if="selections.length"
+                                        style="margin-top:12px; text-align: right; font-size:20px; font-weight:800;">
+                                        총 상품금액({{ totalQty }}개) {{ totalSum.toLocaleString() }}원
+                                    </div>
+                                    <div style="margin: 65px 0px;">
+                                        <div class="actions">
+                                            <button @click="fnPurchase" class="btn btn-primary">구매하기</button>
+                                            <button @click="fnBasket" class="btn btn-outline">장바구니</button>
+                                            <button @click="fnChat" class="btn btn-ghost">실시간 문의</button>
+                                            <button @click="fnWish" class="btn btn-like">찜</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -988,11 +1140,59 @@
                         <section id="re">
                             <div>
                                 리뷰
+                                <div style="text-align:right;">
+                                    <a href="javascript:;" style="padding:0 8px; text-decoration: none;">추천순</a>
+                                    <span
+                                        style="display:inline-block; width:1px; height:12px; background:#ccc; vertical-align:middle;"></span>
+                                    <a href="javascript:;" style="padding:0 8px; text-decoration: none;">최신순</a>
+                                    <span
+                                        style="display:inline-block; width:1px; height:12px; background:#ccc; vertical-align:middle;"></span>
+                                    <a href="javascript:;" style="padding:0 8px; text-decoration: none;">별점 높은순</a>
+                                    <span
+                                        style="display:inline-block; width:1px; height:12px; background:#ccc; vertical-align:middle;"></span>
+                                    <a href="javascript:;" style="padding:0 8px; text-decoration: none;">별점 낮은순</a>
+                                </div>
+                                <hr>
                                 <div>
-                                    <a href="javascript:;">추천순</a>
-                                    <a href="javascript:;">최신순</a>
-                                    <a href="javascript:;">평점 높은순</a>
-                                    <a href="javascript:;">평점 낮은순</a>
+                                    <div class="review-row">
+                                        <div id="view" class="review-card">
+                                            <!-- 기존 카드 내용 그대로 -->
+                                            <div style="display:flex;justify-content:space-between;">
+                                                <div style="padding:15px 20px;">권혁준</div>
+                                                <div style="padding:15px 20px;">2025.09.30</div>
+                                            </div>
+                                            <div style="display:flex;">
+                                                <div style="padding:0 20px;">구매옵션</div>
+                                                <div>가성비 B급 3kg (10~12미)</div>
+                                            </div>
+                                        </div>
+                                        <div class="review-body">
+                                            <div style="padding:8px 0; letter-spacing:4px; white-space:nowrap;">
+                                                ★★★★★
+                                            </div>
+                                            <div class="comment-text">맛있네요</div>
+
+                                            <a href="#" class="iconbtn" @click.prevent="toggleComments"
+                                                :aria-expanded="commentOpen.toString()" aria-controls="cmt-1">
+                                                <span aria-hidden="true" style="margin-right:6px;">
+                                                    {{ commentOpen ? '▲' : '▼' }}
+                                                </span>
+                                                <span>댓글</span>
+                                                <em class="count">{{ commentCount }}</em>
+                                            </a>
+
+                                            <section id="cmt-1" v-show="commentOpen" class="comments">
+                                                <div v-if="comments.length === 0" class="muted">댓글이 없습니다.</div>
+                                                <div v-else>
+                                                    <div v-for="c in comments" :key="c.id" class="comment-line">{{
+                                                        c.text }}</div>
+                                                </div>
+                                            </section>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <hr class="review-sep">
                                 </div>
                             </div>
                         </section>
@@ -1054,7 +1254,10 @@
                         showDetail: false,
                         week: false,
                         before: false,
-                        liked: false
+                        liked: false,
+                        commentOpen: false,
+                        commentCount: 0,
+                        comments: []
                     }
                 },
                 computed: {
@@ -1109,7 +1312,22 @@
                     recomputeTotal() { this.totalSum = this.selections.reduce((s, it) => s + it.price * it.qty, 0); },
                     openDetail() { this.showDetail = true; },
                     closeDetail() { this.showDetail = false; },
-                    fnPurchase() { }, fnBasket() { }, fnWish() { }
+                    fnPurchase() { }, fnBasket() { }, fnWish() { },
+                    toggleComments() {
+                        this.commentOpen = !this.commentOpen;
+                        // 처음 펼칠 때만 로드(실서비스에선 AJAX로 대체)
+                        if (this.commentOpen && this.comments.length === 0) {
+                            this.loadCommentsOnce();
+                        }
+                    },
+                    loadCommentsOnce() {
+                        // TODO: 실제 API 연동으로 교체
+                        this.comments = [
+                            { id: 1, text: '고객님, [경북 포항 김지윤] 구룡포 연지홍게 홍게제철 실속 가성비 3kg(10~12미) 구매해주시고 소중한 리뷰 남겨주셔서 진심으로 감사드립니다. 달큰하고 싱싱하게 드셨다니 저희도 정말 기쁩니다! 앞으로도 저희 대한민국농수산 직거래마켓에 많은 관심 부탁드리며, 또 찾아주시길 바라겠습니다. 😊' },
+                            // 필요 시 더 추가
+                        ];
+                        this.commentCount = this.comments.length;
+                    }
                 },
                 mounted() {
                     this.shareTitle = (document.getElementById('title')?.textContent || document.title).trim();
