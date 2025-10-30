@@ -498,6 +498,37 @@
                             </tbody>
                         </table>
                     </c:if>
+
+                    <!-- ✅ 고객문의 (비밀번호 모달 적용) -->
+                    <c:if test="${param.tab eq 'inquiry'}">
+                        <h3>고객문의</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>번호</th>
+                                    <th>제목</th>
+                                    <th>작성자</th>
+                                    <th>작성일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="i" items="${inquiryList}">
+                                    <tr>
+                                        <td>${i.inquiryNo}</td>
+                                        <td>
+                                            <a href="javascript:void(0);"
+                                                @click="fnOpenInquiry(${i.inquiryNo}, '${i.secret}')">
+                                                ${i.title}
+                                                <c:if test="${i.secret eq 'Y'}"><span class="lock">🔒</span></c:if>
+                                            </a>
+                                        </td>
+                                        <td>${i.writer}</td>
+                                        <td>${i.regDate}</td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </c:if>
                 </div>
 
                 <!-- 비밀번호 확인 모달 -->
@@ -537,7 +568,7 @@
                                     });
                                 },
 
-                                // ✅ 비밀번호 확인 모달
+                                // ✅ 상품문의 비밀번호 확인
                                 fnOpenQna(qnaNo, secret) {
                                     if (secret !== 'Y') {
                                         location.href = "/qna/detail.do?qnaNo=" + qnaNo;
@@ -565,6 +596,42 @@
                                                     sessionStorage.setItem("auth_qna_" + qnaNo, "true");
                                                     $("#pwModal").fadeOut();
                                                     location.href = "/qna/detail.do?qnaNo=" + qnaNo;
+                                                } else {
+                                                    alert("비밀번호가 올바르지 않습니다.");
+                                                }
+                                            }
+                                        });
+                                    });
+                                },
+
+                                // ✅ 고객문의 비밀번호 확인
+                                fnOpenInquiry(inquiryNo, secret) {
+                                    if (secret !== 'Y') {
+                                        location.href = "/inquiry/detail.do?inquiryNo=" + inquiryNo;
+                                        return;
+                                    }
+                                    if (sessionStorage.getItem("auth_inquiry_" + inquiryNo) === "true") {
+                                        location.href = "/inquiry/detail.do?inquiryNo=" + inquiryNo;
+                                        return;
+                                    }
+
+                                    $("#pwModal").fadeIn();
+                                    $("#pwInput").val("").focus();
+
+                                    $("#btnPwCheck").off("click").on("click", function () {
+                                        const pw = $("#pwInput").val();
+                                        if (!pw) return alert("비밀번호를 입력해주세요.");
+
+                                        $.ajax({
+                                            url: "/inquiry/checkPw.dox",
+                                            type: "POST",
+                                            dataType: "json",
+                                            data: { inquiryNo, pw },
+                                            success(res) {
+                                                if (res.result === "success") {
+                                                    sessionStorage.setItem("auth_inquiry_" + inquiryNo, "true");
+                                                    $("#pwModal").fadeOut();
+                                                    location.href = "/inquiry/detail.do?inquiryNo=" + inquiryNo;
                                                 } else {
                                                     alert("비밀번호가 올바르지 않습니다.");
                                                 }
