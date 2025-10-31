@@ -91,6 +91,5 @@
             </div>
 
         </header>
-
-
+                
         <script src="${path}/resources/js/header.js"></script>
