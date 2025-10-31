@@ -458,6 +458,28 @@
                 .btn-write-notice:hover {
                     background: #154a15;
                 }
+
+                .btn-write-inquiry {
+                    position: fixed;
+                    bottom: 40px;
+                    right: 50px;
+                    background: #5dbb63;
+                    color: #fff;
+                    font-size: 15px;
+                    font-weight: 600;
+                    border: none;
+                    border-radius: 50px;
+                    padding: 14px 22px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                    cursor: pointer;
+                    z-index: 999;
+                    transition: all 0.3s ease;
+                }
+
+                .btn-write-inquiry:hover {
+                    background: #4ba954;
+                    transform: translateY(-2px);
+                }
             </style>
         </head>
 
@@ -641,6 +663,9 @@
                                 @click="fnChangeInquiryPage(inquiryPage + 1)">다음</button>
                         </div>
 
+                        <button class="btn-write-inquiry" @click="fnGoToInquiryWrite">
+                            ✏️ 문의글 작성
+                        </button>
                     </c:if>
                 </div>
 
@@ -767,14 +792,31 @@
                                 ✅ 고객문의 제목 클릭 시 동작
                                 ========================== */
                                 fnOpenInquiryDetail(id, isSecret) {
+                                    const self = this;
                                     // 공개글이면 바로 이동
                                     if (isSecret !== 'Y') {
                                         location.href = "/inquiry/detail.do?inquiryNo=" + id;
                                         return;
                                     }
 
-                                    // 이미 인증된 글이면 바로 이동
-                                    if (sessionStorage.getItem(`auth_inquiry_${id}`) === "true") {
+                                    // ✅ 로그인하지 않은 사용자는 접근 제한
+                                    if (!self.sessionId || self.sessionId.trim() === "") {
+                                        Swal.fire({
+                                            icon: "warning",
+                                            title: "로그인이 필요합니다",
+                                            text: "비공개 문의는 로그인 후 확인할 수 있습니다.",
+                                            confirmButtonColor: "#5dbb63"
+                                        }).then(() => {
+                                            location.href = "/login.do";
+                                        });
+                                        return;
+                                    }
+
+                                    // ✅ 로그인한 사용자별 인증 여부 체크
+                                    const authKey = `auth_inquiry_${self.sessionId}_${id}`;
+
+                                    if (sessionStorage.getItem(authKey) === "true") {
+                                        // 이미 인증된 글이면 바로 이동
                                         location.href = "/inquiry/detail.do?inquiryNo=" + id;
                                         return;
                                     }
@@ -848,6 +890,26 @@
                                             });
                                         }
                                     });
+                                },
+
+                                fnGoToInquiryWrite() {
+                                    const self = this;
+
+                                    // 로그인 여부 확인
+                                    if (!self.sessionId || self.sessionId.trim() === "") {
+                                        Swal.fire({
+                                            icon: "warning",
+                                            title: "로그인이 필요합니다",
+                                            text: "문의글 작성은 로그인 후 이용 가능합니다.",
+                                            confirmButtonColor: "#5dbb63"
+                                        }).then(() => {
+                                            location.href = "/login.do";
+                                        });
+                                        return;
+                                    }
+
+                                    // 문의글 작성 페이지로 이동
+                                    location.href = "/inquiry/write.do";
                                 }
 
                             },

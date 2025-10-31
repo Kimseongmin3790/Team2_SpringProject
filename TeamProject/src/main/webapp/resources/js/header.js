@@ -72,6 +72,7 @@ $(document).ready(function () {
                 success: function (res) {
                     if (res.result === "success") {
                         alert("로그아웃 되었습니다.");
+						sessionStorage.clear();
                         location.href = path + "/login.do";
                     }
                 },

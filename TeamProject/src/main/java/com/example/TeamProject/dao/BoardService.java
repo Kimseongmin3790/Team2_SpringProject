@@ -1,7 +1,9 @@
 package com.example.TeamProject.dao;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Service;
 import com.example.TeamProject.mapper.BoardMapper;
 import com.example.TeamProject.model.Answer;
 import com.example.TeamProject.model.Board;
+
+import jakarta.servlet.http.HttpSession;
 
 @Service
 public class BoardService {
@@ -49,11 +53,24 @@ public class BoardService {
 		return resultMap;
 	}
 	
-	public HashMap<String, Object> getInquiryInfo(Integer inquiryNo) {
+	public HashMap<String, Object> getInquiryInfo(Integer inquiryNo, HttpSession session) {
 		// TODO Auto-generated method stub
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		try {
-			boardMapper.updateInquiryCount(inquiryNo);
+			
+			@SuppressWarnings("unchecked")
+			Set<String> viewedInquiries = (Set<String>) session.getAttribute("VIEWED_INQUIRIES");
+			if (viewedInquiries == null) {
+	            viewedInquiries = new HashSet<>();
+	            session.setAttribute("VIEWED_INQUIRIES", viewedInquiries);
+	        }
+			
+			String key = String.valueOf(inquiryNo);
+			if (!viewedInquiries.contains(key)) {
+	            boardMapper.updateInquiryCount(inquiryNo);
+	            viewedInquiries.add(key);
+	        }
+			
 			Board info = boardMapper.selectInquiryDetail(inquiryNo);
 			
 			resultMap.put("info", info);
@@ -95,6 +112,50 @@ public class BoardService {
 	    } catch (Exception e) {
 	        System.out.println("❌ 답변 등록 중 오류 발생: " + e.getMessage());
 	    }
+	}
+	
+	public HashMap<String, Object> addInquiry(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
+		try {
+	        boardMapper.insertInquiry(map);
+	        
+	        resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> updateInquiry(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
+		try {
+	        boardMapper.updateInquiry(map);	        
+	        resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> deleteInquiry(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
+		try {
+			boardMapper.deleteInquiryAnswer(map);
+	        boardMapper.deleteInquiry(map);	        
+	        resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
 	}
 	
 	public boolean checkPassword(Integer inquiryNo, String pw) {		

@@ -33,6 +33,18 @@ public class BoardController {
         return "board/inquiryInfo"; 
     }
 	
+	@RequestMapping("/inquiry/write.do") 
+    public String write(Model model) throws Exception{
+
+        return "board/inquiryWrite";
+    }
+	
+	@RequestMapping("/inquiry/edit.do") 
+    public String edit(Model model) throws Exception{
+
+        return "board/inquiryEdit";
+    }
+	
 	@RequestMapping(value = "/inquiryList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String inquiryList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
@@ -44,9 +56,10 @@ public class BoardController {
 	
 	@RequestMapping(value = "/inquiryInfo.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public String inquiryInfo(Model model, @RequestParam int inquiryNo) throws Exception {
+	public String inquiryInfo(Model model, @RequestParam int inquiryNo, HttpSession session) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap = boardService.getInquiryInfo(inquiryNo);
+				
+		resultMap = boardService.getInquiryInfo(inquiryNo, session);
 		
 		return new Gson().toJson(resultMap);
 	}
@@ -85,6 +98,36 @@ public class BoardController {
 		}
 		
 		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/inquiryInsert.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String inquiryInsert(@RequestParam HashMap<String, Object> map) throws Exception {
+	    HashMap<String, Object> resultMap = new HashMap<>();
+
+	    resultMap = boardService.addInquiry(map);
+
+	    return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/inquiryUpdate.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String inquiryUpdate(@RequestParam HashMap<String, Object> map) throws Exception {
+	    HashMap<String, Object> resultMap = new HashMap<>();
+
+	    resultMap = boardService.updateInquiry(map);
+
+	    return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/inquiryDelete.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String inquiryDelete(@RequestParam HashMap<String, Object> map) throws Exception {
+	    HashMap<String, Object> resultMap = new HashMap<>();
+
+	    resultMap = boardService.deleteInquiry(map);
+
+	    return new Gson().toJson(resultMap);
 	}
 	
 	
