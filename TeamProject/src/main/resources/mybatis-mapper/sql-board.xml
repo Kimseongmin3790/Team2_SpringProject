@@ -4,6 +4,111 @@
 
 <mapper namespace="com.example.TeamProject.mapper.BoardMapper">
 	
+	<select id="selectInquiryList" parameterType="hashmap" resultType="com.example.TeamProject.model.Board">
+	  	SELECT 
+	    INQUIRY_NO, 
+	    TITLE, 
+	    USER_ID, 
+	    TO_CHAR(CDATETIME, 'YYYY-MM-DD') AS REG_DATE,
+	    IS_SECRET, 
+	    STATUS,
+	    CNT
+	  FROM INQUIRY
+	  WHERE 1=1
+	    <if test="keyword != null and keyword != ''">
+	      <choose>
+	        <when test="searchType == 'title'">
+	          AND TITLE LIKE '%' || #{keyword} || '%'
+	        </when>
+	        <when test="searchType == 'content'">
+	          AND CONTENT LIKE '%' || #{keyword} || '%'
+	        </when>
+	        <when test="searchType == 'userId'">
+	          AND USER_ID LIKE '%' || #{keyword} || '%'
+	        </when>
+	        <otherwise>
+	          AND (TITLE LIKE '%' || #{keyword} || '%' OR CONTENT LIKE '%' || #{keyword} || '%')
+	        </otherwise>
+	      </choose>
+	    </if>
+	  ORDER BY INQUIRY_NO DESC
+	  OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+	</select>
 	
+	<select id="countInquiry" parameterType="hashmap" resultType="int">
+	  SELECT COUNT(*)
+	  FROM INQUIRY
+	  WHERE 1=1
+	    <if test="keyword != null and keyword != ''">
+	      <choose>
+	        <when test="searchType == 'title'">
+	          AND TITLE LIKE '%' || #{keyword} || '%'
+	        </when>
+	        <when test="searchType == 'content'">
+	          AND CONTENT LIKE '%' || #{keyword} || '%'
+	        </when>
+	        <when test="searchType == 'userId'">
+	          AND USER_ID LIKE '%' || #{keyword} || '%'
+	        </when>
+	      </choose>
+	    </if>
+	</select>
 	
+	<update id="updateInquiryCount" parameterType="int">
+	    UPDATE INQUIRY
+	    SET CNT = NVL(CNT, 0) + 1
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</update>
+	
+	<select id="selectInquiryDetail" parameterType="int" resultType="com.example.TeamProject.model.Board">
+	    SELECT 
+	        INQUIRY_NO,
+	        TITLE,
+	        USER_ID,
+	        CONTENT,
+	        IS_SECRET,
+	        CNT,
+	        STATUS,
+	        TO_CHAR(CDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS REG_DATE
+	    FROM INQUIRY
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</select>
+	
+	<select id="selectInquiryPwd" parameterType="int" resultType="String">
+	    SELECT PASSWORD
+	    FROM INQUIRY
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</select>
+	
+	<select id="selectAnswer" parameterType="int" resultType="com.example.TeamProject.model.Answer">
+	    SELECT *
+	    FROM INQUIRY_ANSWER
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</select>
+	
+	<insert id="insertAnswer" parameterType="hashmap">
+	    INSERT INTO "INQUIRY_ANSWER" (
+	        ANSWER_NO, 
+	        INQUIRY_NO, 
+	        SELLER_ID, 
+	        CONTENT, 
+	        CDATETIME, 
+	        UDATETIME
+	    ) VALUES (
+	        ANSWER_SEQ.NEXTVAL, 
+	        #{inquiryNo}, 
+	        #{userId}, 
+	        #{content}, 
+	        SYSDATE, 
+	        SYSDATE
+	    )
+	</insert>
+	
+	<update id="updateInquiryStatusAnswered" parameterType="int">
+	    UPDATE INQUIRY
+	    SET STATUS = '답변완료',
+	        UDATETIME = SYSDATE
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</update>
+
 </mapper>

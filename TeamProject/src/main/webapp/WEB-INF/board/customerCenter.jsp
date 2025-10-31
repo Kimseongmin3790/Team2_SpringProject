@@ -10,6 +10,7 @@
 
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
@@ -105,7 +106,19 @@
                     gap: 20px;
                 }
 
-                /* 왼쪽 영역 */
+                /* ✅ 고객문의 헤더 (공지사항과 동일하게 정렬) */
+                .inquiry-header {
+                    display: flex;
+                    justify-content: space-between;
+                    /* 검색창을 오른쪽으로 정렬 */
+                    align-items: flex-end;
+                    /* 제목과 검색창 아래쪽 맞춤 */
+                    margin-bottom: 25px;
+                    flex-wrap: wrap;
+                    gap: 20px;
+                }
+
+                /* 공지사항 왼쪽 영역 */
                 .notice-left {
                     display: flex;
                     flex-direction: column;
@@ -129,8 +142,33 @@
                     font-weight: 700;
                 }
 
+                /* ✅ 고객문의 왼쪽 영역 (공지사항 동일 스타일) */
+                .inquiry-left {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .inquiry-left h3 {
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #1a5d1a;
+                    margin: 0 0 5px 0;
+                }
+
+                .inquiry-left .total-count {
+                    font-size: 14px;
+                    color: #666;
+                }
+
+                .inquiry-left .total-count strong {
+                    color: #1a5d1a;
+                    font-weight: 700;
+                }
+
                 /* 오른쪽 검색창 */
-                .notice-header .search-bar {
+                .notice-header .search-bar,
+                .inquiry-header .search-bar {
                     display: flex;
                     align-items: center;
                     gap: 6px;
@@ -144,7 +182,9 @@
                 }
 
                 .notice-header select,
-                .notice-header input {
+                .inquiry-header select,
+                .notice-header input,
+                .inquiry-header input {
                     border: none;
                     background: transparent;
                     outline: none;
@@ -152,16 +192,19 @@
                     color: #333;
                 }
 
-                .notice-header select {
+                .notice-header select,
+                .inquiry-header select {
                     width: 70px;
                 }
 
-                .notice-header input {
+                .notice-header input,
+                .inquiry-header input {
                     flex: 1;
                     min-width: 80px;
                 }
 
-                .notice-header button {
+                .notice-header button,
+                .inquiry-header button {
                     background: #5dbb63;
                     border: none;
                     color: white;
@@ -172,7 +215,8 @@
                     transition: 0.3s;
                 }
 
-                .notice-header button:hover {
+                .notice-header button:hover,
+                .inquiry-header button:hover {
                     background: #4ba954;
                 }
 
@@ -183,6 +227,19 @@
                     border-collapse: collapse;
                     text-align: center;
                     font-size: 15px;
+                }
+
+                .notice-table a,
+                table a {
+                    color: inherit;
+                    text-decoration: none;
+                }
+
+                .notice-table a:hover,
+                table a:hover {
+                    color: #1a5d1a;
+                    text-decoration: underline;
+                    font-weight: 600;
                 }
 
                 thead {
@@ -275,13 +332,13 @@
                 /* ============================= */
                 /* 🔐 비밀번호 모달 */
                 .modal {
-                    display: none;
                     position: fixed;
                     top: 0;
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    background: rgba(0, 0, 0, 0.5);
+                    background: rgba(0, 0, 0, 0.4);
+                    display: flex;
                     justify-content: center;
                     align-items: center;
                     z-index: 1000;
@@ -289,36 +346,36 @@
 
                 .modal-content {
                     background: #fff;
-                    padding: 25px 30px;
+                    padding: 25px;
                     border-radius: 10px;
-                    text-align: center;
                     width: 320px;
-                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+                    text-align: center;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
                 }
 
-                .modal-content p {
-                    font-weight: 500;
+                .modal-content h4 {
+                    color: #1a5d1a;
                     margin-bottom: 15px;
-                    color: #333;
+                    font-size: 18px;
                 }
 
                 .modal-content input {
-                    width: 100%;
+                    width: 90%;
                     padding: 8px;
-                    margin-top: 8px;
                     border: 1px solid #ccc;
-                    border-radius: 5px;
+                    border-radius: 6px;
+                    font-size: 14px;
                 }
 
                 .modal-content button {
                     background: #5dbb63;
+                    color: #fff;
                     border: none;
-                    color: white;
-                    padding: 8px 16px;
+                    padding: 8px 14px;
                     border-radius: 6px;
-                    margin-top: 15px;
+                    margin-top: 12px;
                     cursor: pointer;
-                    transition: 0.3s;
+                    transition: 0.25s;
                 }
 
                 .modal-content button:hover {
@@ -440,7 +497,7 @@
                                     <option value="content">내용</option>
                                     <option value="writer">작성자</option>
                                 </select>
-                                <input type="text" v-model="keyword" placeholder="검색어 입력">
+                                <input type="text" v-model="keyword" placeholder="검색어를 입력하세요">
                                 <button @click="fnSearchNotice">검색</button>
                             </div>
                         </div>
@@ -520,19 +577,266 @@
                             </tbody>
                         </table>
                     </c:if>
+
+                    <!-- ✅ 고객문의 (비밀번호 모달 적용) -->
+                    <c:if test="${param.tab eq 'inquiry'}">
+                        <div class="inquiry-header">
+                            <div class="inquiry-left">
+                                <h3>고객문의</h3>
+                                <p class="total-count">총 <strong>{{ inquiryList.length }}</strong>개의 게시물</p>
+                            </div>
+
+                            <div class="search-bar">
+                                <select v-model="inquirySearchType">
+                                    <option value="title">제목</option>
+                                    <option value="content">내용</option>
+                                    <option value="userId">작성자</option>
+                                </select>
+                                <input type="text" v-model="inquiryKeyword" placeholder="검색어를 입력하세요">
+                                <button @click="fnSearchInquiry">검색</button>
+                            </div>
+                        </div>
+
+                        <div v-if="inquiryList.length === 0" class="empty">고객문의 내역이 없습니다.</div>
+
+                        <table v-if="inquiryList.length > 0" class="notice-table">
+                            <thead>
+                                <tr>
+                                    <th>번호</th>
+                                    <th>제목</th>
+                                    <th>작성자</th>
+                                    <th>작성일</th>
+                                    <th>조회수</th>
+                                    <th>처리상태</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="i in inquiryList" :key="i.inquiryNo" class="row-link">
+                                    <td>{{ i.inquiryNo }}</td>
+                                    <td style="text-align:left; padding-left:15px;">
+                                        <a href="javascript:void(0);"
+                                            @click="fnOpenInquiryDetail(i.inquiryNo, i.isSecret)">
+                                            {{ i.title }}
+                                            <span v-if="i.isSecret === 'Y'" class="lock">🔒</span>
+                                        </a>
+                                    </td>
+                                    <td>{{ i.userId }}</td>
+                                    <td>{{ i.regDate }}</td>
+                                    <td>{{ i.cnt }}</td>
+                                    <td>{{ i.status }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ✅ 페이지네이션 -->
+                        <div class="pagination" v-if="inquiryTotalPage > 1">
+                            <button :disabled="inquiryPage === 1"
+                                @click="fnChangeInquiryPage(inquiryPage - 1)">이전</button>
+                            <button v-for="p in inquiryTotalPage" :key="p" :class="{active: p === inquiryPage}"
+                                @click="fnChangeInquiryPage(p)">
+                                {{ p }}
+                            </button>
+                            <button :disabled="inquiryPage === inquiryTotalPage"
+                                @click="fnChangeInquiryPage(inquiryPage + 1)">다음</button>
+                        </div>
+
+                    </c:if>
                 </div>
 
-                <!-- 비밀번호 확인 모달 -->
-                <div id="pwModal" class="modal">
-                    <div class="modal-content">
-                        <p>비밀번호를 입력해주세요.</p>
-                        <input type="password" id="pwInput" placeholder="비밀번호 입력">
-                        <button id="btnPwCheck">확인</button>
-                        <button onclick="$('#pwModal').fadeOut()">닫기</button>
-                    </div>
-                </div>
+                <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
-                <%@ include file="/WEB-INF/views/common/footer.jsp" %>             
+                    <script>
+                        const app = Vue.createApp({
+                            data() {
+                                return {
+                                    sessionId: "${sessionId}",
+                                    noticeList: [],
+                                    searchType: "title",
+                                    keyword: "",
+                                    page: 1,
+                                    totalPage: 1,
+
+                                    // 고객문의
+                                    inquiryList: [],
+                                    inquirySearchType: "title",
+                                    inquiryKeyword: "",
+                                    inquiryPage: 1,
+                                    inquiryTotalPage: 1,
+                                    inquiryPageSize: 10
+                                };
+                            },
+                            methods: {
+                                /* =========================
+                                   ✅ 공지사항 불러오기
+                                ========================== */
+                                fnLoadNotice(keyword = "", searchType = "", page = 1) {
+                                    const self = this;
+                                    $.ajax({
+                                        url: "/noticeList.dox",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: { keyword, searchType, page, pageSize: self.noticePageSize },
+                                        success(res) {
+                                            self.noticeList = res.list || [];
+                                            self.noticePage = res.page;
+                                            self.noticeTotalPage = res.totalPage;
+                                        },
+                                        error() {
+                                            console.error("공지사항 불러오기 실패");
+                                        }
+                                    });
+                                },
+
+                                /* =========================
+                                   ✅ 고객문의 목록 불러오기
+                                ========================== */
+                                fnLoadInquiry(keyword = "", searchType = "", page = 1) {
+                                    const self = this;
+                                    $.ajax({
+                                        url: "/inquiryList.dox",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: {
+                                            keyword: self.inquiryKeyword,
+                                            searchType: self.inquirySearchType,
+                                            page: self.inquiryPage,
+                                            pageSize: self.inquiryPageSize
+                                        },
+                                        success(res) {
+                                            self.inquiryList = res.list || [];
+                                            self.inquiryPage = res.page;
+                                            self.inquiryTotalPage = res.totalPage;
+                                        },
+                                        error() {
+                                            console.error("고객문의 불러오기 실패");
+                                        }
+                                    });
+                                },
+
+                                fnSearchInquiry() {
+                                    if (!this.inquiryKeyword.trim()) return alert("검색어를 입력하세요.");
+                                    this.inquiryPage = 1;
+                                    this.fnLoadInquiry(this.inquiryKeyword, this.inquirySearchType, 1);
+                                },
+
+                                // ===== 페이지 전환 =====
+                                fnChangeInquiryPage(p) {
+                                    this.inquiryPage = p;
+                                    this.fnLoadInquiry(this.inquiryKeyword, this.inquirySearchType, p);
+                                },
+
+                                /* =========================
+                                ✅ 고객문의 제목 클릭 시 동작
+                                ========================== */
+                                fnOpenInquiryDetail(id, isSecret) {
+                                    // 공개글이면 바로 이동
+                                    if (isSecret !== 'Y') {
+                                        location.href = "/inquiry/detail.do?inquiryNo=" + id;
+                                        return;
+                                    }
+
+                                    // 이미 인증된 글이면 바로 이동
+                                    if (sessionStorage.getItem(`auth_inquiry_${id}`) === "true") {
+                                        location.href = "/inquiry/detail.do?inquiryNo=" + id;
+                                        return;
+                                    }
+
+                                    // ✅ SweetAlert2 비밀번호 입력창
+                                    Swal.fire({
+                                        title: "비밀번호 확인",
+                                        input: "password",
+                                        inputLabel: "비공개 게시글입니다. 비밀번호를 입력해주세요.",
+                                        inputPlaceholder: "비밀번호를 입력하세요",
+                                        inputAttributes: {
+                                            maxlength: 20,
+                                            autocapitalize: "off",
+                                            autocorrect: "off"
+                                        },
+                                        confirmButtonText: "확인",
+                                        showCancelButton: true,
+                                        cancelButtonText: "취소",
+                                        confirmButtonColor: "#5dbb63",
+                                        cancelButtonColor: "#aaa",
+                                        preConfirm: (password) => {
+                                            if (!password) {
+                                                Swal.showValidationMessage("비밀번호를 입력해주세요.");
+                                                return false;
+                                            }
+                                            return password;
+                                        }
+                                    }).then((result) => {
+                                        if (result.isConfirmed && result.value) {
+                                            const pw = result.value;
+
+                                            $.ajax({
+                                                url: "/inquiry/checkPwd.dox",
+                                                type: "POST",
+                                                dataType: "json",
+                                                data: { 
+                                                    inquiryNo: id,
+                                                    pw: pw 
+                                                },
+                                                success: (res) => {
+                                                    if (res.result === "success") {
+                                                        // 인증 성공 → 세션 저장 + 이동
+                                                        sessionStorage.setItem(`auth_inquiry_${id}`, "true");
+                                                        Swal.fire({
+                                                            icon: "success",
+                                                            title: "인증 완료",
+                                                            text: "게시글로 이동합니다.",
+                                                            confirmButtonColor: "#5dbb63",
+                                                            timer: 1200,
+                                                            showConfirmButton: false
+                                                        }).then(() => {
+                                                            location.href = "/inquiry/detail.do?inquiryNo=" + id;
+                                                        });
+                                                    } else {
+                                                        Swal.fire({
+                                                            icon: "error",
+                                                            title: "인증 실패",
+                                                            text: "비밀번호가 올바르지 않습니다.",
+                                                            confirmButtonColor: "#5dbb63"
+                                                        });
+                                                    }
+                                                },
+                                                error: () => {
+                                                    Swal.fire({
+                                                        icon: "error",
+                                                        title: "오류 발생",
+                                                        text: "비밀번호 확인 중 오류가 발생했습니다.",
+                                                        confirmButtonColor: "#5dbb63"
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+
+                            },
+                            mounted() {
+                                const currentTab = new URLSearchParams(window.location.search).get("tab");
+
+                                switch (currentTab) {
+                                    case "notice":
+                                    case null:
+                                    case "":
+                                        this.fnLoadNotice();
+                                        break;
+                                    case "inquiry":
+                                        this.fnLoadInquiry();
+                                        break;
+                                    case "qna":
+                                        this.fnLoadQna && this.fnLoadQna(); // 필요 시
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+                            }
+                        });
+
+                        app.mount("#app");
+                    </script>
         </body>
         </html>
 <script>

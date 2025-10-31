@@ -266,7 +266,7 @@
                             <div class="input-group">
                                 <label>휴대폰 인증</label>
                                 <div class="input-wrapper">
-                                    <input type="text" v-model="userPhone" placeholder="010-1234-5678">
+                                    <input type="text" v-model="userPhone" placeholder="-는 빼고 입력해주세요">
                                     <button @click="fnSendCode">인증번호 전송</button>
                                 </div>
                             </div>
@@ -396,9 +396,9 @@
                                         Swal.fire('⚠️', '이메일 형식에 맞게 입력해주세요.', 'warning');
                                         return;
                                     }
-                                    const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
+                                    const phoneRegex = /^01[0-9]\d{3,4}\d{4}$/;
                                     if (!phoneRegex.test(self.userPhone)) {
-                                        Swal.fire('⚠️', '휴대폰 번호는 010-1234-5678 형태로 입력해주세요.', 'warning');
+                                        Swal.fire('⚠️', '휴대폰 번호는 01012345678 형태로 입력해주세요.', 'warning');
                                         return;
                                     }
                                     if (!self.agree) {
