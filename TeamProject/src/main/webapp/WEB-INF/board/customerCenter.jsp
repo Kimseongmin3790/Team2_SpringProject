@@ -458,6 +458,13 @@
                 .btn-write-notice:hover {
                     background: #154a15;
                 }
+                .comment-count-badge {
+                    color: #5dbb63; 
+                    font-size: 13px; 
+                    font-weight: 600;
+                    margin-left: 5px; 
+                }
+
 
                 .btn-write-inquiry {
                     position: fixed;
@@ -538,15 +545,14 @@
                                 <tr v-for="n in noticeList" :key="n.noticeNo" @click="fnDetail(n.noticeNo)"
                                     class="row-link">
                                     <td>{{ n.noticeNo }}</td>
-                                    <td style="text-align:left; padding-left:15px; cursor:pointer;">{{ n.title }}</td>
+                                    <td style="text-align:left; padding-left:15px; cursor:pointer;">{{ n.title }}<span v-if="n.commentCount > 0" class="comment-count-badge">({{ n.commentCount }})</span></td>
                                     <td>{{ n.userId }}</td>
                                     <td>{{ n.regDate }}</td>
                                 </tr>
                             </tbody>
                         </table>
                         <div class="notice-bottom-actions">
-                            <button v-if="userRole === 'ADMIN'" class="btn-write-notice" @click="fnGoToNoticeWrite">공지사항
-                                작성</button>
+                            <button v-if="userRole === 'ADMIN'" class="btn-write-notice" @click="fnGoToNoticeWrite">공지사항 작성</button>
                         </div>
 
                         <!-- ✅ 페이지네이션 -->

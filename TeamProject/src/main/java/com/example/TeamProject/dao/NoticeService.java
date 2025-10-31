@@ -140,4 +140,21 @@ public class NoticeService {
 		    }
 		    return resultMap;
 		}
+	 
+	// 최신 공지사항 N개 조회
+	public HashMap<String, Object> getLatestNotices(HashMap<String, Object> map) { 
+		HashMap<String, Object> resultMap = new HashMap<>();
+	    try {
+	        List<Notice> list = noticeMapper.selectLatestNotices(map); 
+	        resultMap.put("list", list);
+	        resultMap.put("result", "success");
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        resultMap.put("result", "fail");
+	        resultMap.put("message", e.getMessage());
+	    }
+	    return resultMap;
+	}
+	 
+	 
 }

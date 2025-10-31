@@ -25,35 +25,43 @@
 	    </where>
 	</select>
 	
-	<!-- 한 페이지에 보여줄 게시물 목록 조회 -->
-    <select id="selectNoticeList" parameterType="hashmap" resultType="com.example.TeamProject.model.Notice">
-        SELECT *
-        FROM (
-            SELECT ROWNUM AS RNUM, A.*
-            FROM (
-                SELECT NOTICE_NO, TITLE, USER_ID, TO_CHAR(CDATETIME, 'YYYY-MM-DD') AS REG_DATE, CNT
-                FROM NOTICE
-                <where>
-                    <if test="keyword != null and !keyword.equals('')">
-                        <choose>
-                            <when test="searchType.equals('title')">
-                                TITLE LIKE '%' || #{keyword} || '%'
-                            </when>
-                            <when test="searchType.equals('content')">
-                                CONTENTS LIKE '%' || #{keyword} || '%'
-                            </when>
-                            <when test="searchType.equals('writer')">
-                                USER_ID LIKE '%' || #{keyword} || '%'
-                            </when>
-                        </choose>
-                    </if>
-                </where>
-                ORDER BY NOTICE_NO DESC
-            ) A
-            WHERE ROWNUM &lt;= #{endRow}
-        )
-        WHERE RNUM &gt;= #{startRow}
-    </select>
+	<!-- 공지사항 목록 가져오기 -->
+	<select id="selectNoticeList" parameterType="hashmap" resultType="com.example.TeamProject.model.Notice">
+	    SELECT *
+	    FROM (
+	        SELECT ROWNUM AS RNUM, A.*
+	        FROM (
+	            SELECT
+	                N.NOTICE_NO,
+	                N.TITLE,
+	                N.USER_ID,
+	                TO_CHAR(N.CDATETIME, 'YYYY-MM-DD') AS REG_DATE,
+	                N.CNT,
+	                COUNT(NC.COMMENT_NO) AS COMMENT_COUNT
+	            FROM NOTICE N
+	            LEFT JOIN NOTICE_COMMENT NC ON N.NOTICE_NO = NC.NOTICE_NO 
+	            <where>
+	                <if test="keyword != null and !keyword.equals('')">
+	                    <choose>
+	                        <when test="searchType.equals('title')">
+	                            N.TITLE LIKE '%' || #{keyword} || '%'
+	                        </when>
+	                        <when test="searchType.equals('content')">
+	                            N.CONTENTS LIKE '%' || #{keyword} || '%'
+	                        </when>
+	                        <when test="searchType.equals('writer')">
+	                            N.USER_ID LIKE '%' || #{keyword} || '%'
+	                        </when>
+	                    </choose>
+	                </if>
+	            </where>
+	            GROUP BY N.NOTICE_NO, N.TITLE, N.USER_ID, N.CDATETIME, N.CNT 
+	            ORDER BY N.NOTICE_NO DESC
+	        ) A
+	        WHERE ROWNUM &lt;= #{endRow}
+	    )
+	    WHERE RNUM &gt;= #{startRow}
+	</select>
     
     <!-- 공지사항 상세보기  -->
 	<select id="selectNoticeInfo" parameterType="int" resultType="com.example.TeamProject.model.Notice">
@@ -113,6 +121,23 @@
 	        SYSDATE
 	    )
 	</insert>
+	
+	<!-- 최신 공지사항 가져오기 -->
+	<select id="selectLatestNotices" parameterType="hashmap" resultType="com.example.TeamProject.model.Notice">
+	    SELECT *
+	    FROM (
+	        SELECT
+	            NOTICE_NO,
+	            TITLE,
+	            USER_ID,
+	            TO_CHAR(CDATETIME, 'YYYY-MM-DD') AS REG_DATE,
+	            CNT,
+	            (SELECT COUNT(*) FROM NOTICE_COMMENT NC WHERE NC.NOTICE_NO = N.NOTICE_NO) AS COMMENT_COUNT
+	        FROM NOTICE N
+	        ORDER BY N.NOTICE_NO DESC
+	    )
+	    WHERE ROWNUM &lt;= #{limit}
+	</select>
 	
 	
 </mapper>
