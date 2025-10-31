@@ -64,6 +64,7 @@
 	    SELECT 
 	        INQUIRY_NO,
 	        TITLE,
+	        CATEGORY,
 	        USER_ID,
 	        CONTENT,
 	        IS_SECRET,
@@ -110,5 +111,43 @@
 	        UDATETIME = SYSDATE
 	    WHERE INQUIRY_NO = #{inquiryNo}
 	</update>
+	
+	<insert id="insertInquiry" parameterType="hashmap">
+	    INSERT INTO INQUIRY (
+	        INQUIRY_NO, USER_ID, CATEGORY, TITLE, CONTENT, IS_SECRET, PASSWORD, STATUS, CNT, CDATETIME, UDATETIME
+	    ) VALUES (
+	        INQUIRY_SEQ.NEXTVAL,
+	        #{userId},
+	        #{category},
+	        #{title},
+	        #{content},
+	        #{isSecret},
+	        #{password},
+	        '대기',
+	        0,
+	        SYSDATE,
+	        SYSDATE
+	    )
+	</insert>
+	
+	<update id="updateInquiry" parameterType="hashmap">
+	    UPDATE INQUIRY
+	    SET 
+	        CATEGORY = #{category},
+	        TITLE = #{title},
+	        CONTENT = #{content},
+	        IS_SECRET = #{isSecret},
+	        PASSWORD = #{password},
+	        UDATETIME = SYSDATE
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</update>
+	
+	<delete id="deleteInquiryAnswer" parameterType="hashmap">
+	  DELETE FROM INQUIRY_ANSWER WHERE INQUIRY_NO = #{inquiryNo}
+	</delete>
+	
+	<delete id="deleteInquiry" parameterType="hashmap">
+	  DELETE FROM INQUIRY WHERE INQUIRY_NO = #{inquiryNo}
+	</delete>
 
 </mapper>
