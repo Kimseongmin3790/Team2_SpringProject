@@ -265,12 +265,62 @@
             padding: 3px 10px;
             border-radius: 15px;
             cursor: pointer;
+            margin-left: 5px; 
+        }
+        .comment-actions button:hover {
+            background: #eee;
+        }
+        .comment-actions button:nth-of-type(2) { 
+            border-color: #3498db;
+            color: #3498db;
+        }
+        .comment-actions button:nth-of-type(3) { 
+            border-color: #e74c3c;
+            color: #e74c3c;
         }
         .no-comments {
             text-align: center;
             padding: 50px 0;
             color: #888;
             border-bottom: 1px solid #f5f5f5;
+        }
+
+        .comment-edit-form {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .comment-edit-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            resize: vertical;
+            font-size: 15px;
+        }
+        .comment-edit-actions {
+            text-align: right;
+            margin-top: 10px;
+        }
+        .comment-edit-actions button {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 15px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-left: 5px;
+        }
+        .comment-edit-actions button:hover {
+            background: #2980b9;
+        }
+        .comment-edit-actions button:nth-child(2) 
+            background: #7f8c8d;
+        }
+        .comment-edit-actions button:nth-child(2):hover {
+            background: #6c7a7b;
         }
     </style>
 </head>
@@ -327,10 +377,19 @@
                                 <span class="comment-author">{{ comment.userId }}</span>
                                 <span class="comment-date">{{ comment.cdatetime }}</span>
                             </div>
+                            <div v-if="editingCommentNo === comment.commentNo" class="comment-edit-form">
+                                <textarea v-model="editedCommentContent"></textarea>
+                                <div class="comment-edit-actions">
+                                    <button @click="fnUpdateComment(comment.commentNo)">저장</button>
+                                    <button @click="fnCancelEdit()">취소</button>
+                                </div>
+                            </div>
                             <div class="comment-content" v-html="comment.contents"></div> 
                
                             <div class="comment-actions">
                                 <button v-if="sessionId" @click="fnShowReplyForm(comment.commentNo)">답글</button>
+                                <button v-if="sessionId === comment.userId" @click= "fnEditComment(comment.commentNo)">수정</button>
+                                <button v-if="sessionId === comment.userId || userRole === 'ADMIN'" @click="fnDeleteComment(comment.commentNo)">삭제</button>
                             </div>
 
                             <div v-if="sessionId && replyFormTarget === comment.commentNo" class="comment-form reply-form">
@@ -361,7 +420,9 @@
                 comments: [],         
                 newCommentContent: '',       
                 replyFormTarget: null,     
-                newReplyContent: ''
+                newReplyContent: '',
+                editingCommentNo: null, 
+                editedCommentContent: '' 
 
             };
         },
@@ -473,6 +534,86 @@
                    }
                });
            },
+           fnEditComment: function(commentNo) {
+                let self = this;
+                self.editingCommentNo = commentNo;
+
+                const commentToEdit = self.comments.find(c => c.commentNo === commentNo);
+                if (commentToEdit) {
+                    self.editedCommentContent = commentToEdit.contents;
+                }
+            },
+
+            // 댓글 수정 취소
+            fnCancelEdit: function() {
+                let self = this;
+                self.editingCommentNo = null;
+                self.editedCommentContent = '';
+            },
+
+            // 댓글 수정 저장
+            fnUpdateComment: function(commentNo) {
+                let self = this;
+                if (!self.editedCommentContent.trim()) {
+                    alert("수정할 내용을 입력해주세요.");
+                    return;
+                }
+                if (!confirm("댓글을 수정하시겠습니까?")) {
+                    return;
+                }
+
+                const commentData = {
+                    commentNo: commentNo,
+                    contents: self.editedCommentContent
+                };
+
+                $.ajax({
+                    url: "/notice/comments/update.dox",
+                    type: "POST",
+                    contentType: "application/json; charset=UTF-8",
+                    data: JSON.stringify(commentData),
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.result === "success") {
+                            alert("댓글이 수정되었습니다.");
+                            self.fnLoadComments();
+                            self.fnCancelEdit(); 
+                        } else {
+                            alert("댓글 수정 실패: " + res.message);
+                        }
+                    },
+                    error: function() {
+                        alert("서버와의 통신 중 오류가 발생했습니다.");
+                    }
+                });
+            },
+
+            // 댓글 삭제
+            fnDeleteComment: function(commentNo) {
+                let self = this;
+                if (!confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
+                    return;
+                }
+
+                $.ajax({
+                    url: "/notice/comments/delete.dox",
+                    type: "POST",
+                    dataType: "json",
+                    data: { commentNo: commentNo }, 
+                    success: function(res) {
+                        if (res.result === "success") {
+                            alert("댓글이 삭제되었습니다.");
+                            self.fnLoadComments(); 
+                        } else {
+                            alert("댓글 삭제 실패: " + res.message);
+                        }
+                    },
+                    error: function() {
+                        alert("서버와의 통신 중 오류가 발생했습니다.");
+                    }
+                });
+            },
+
 
         }, // methods
         mounted() {

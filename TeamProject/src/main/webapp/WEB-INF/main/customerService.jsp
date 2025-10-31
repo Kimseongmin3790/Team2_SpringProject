@@ -225,38 +225,56 @@
             margin-bottom: 0; 
         }
         /* 공지사항 리스트 스타일 */
-        .notice-list { 
-            display: flex; 
-            flex-direction: column; 
+        .notice-list {
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid #e5e7eb; 
         }
-        .notice-item { 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 0.75rem; 
-            border-bottom:1px solid #e5e7eb; 
+        .notice-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem; 
+            border-bottom:1px solid #e5e7eb;
+            transition: background-color 0.2s ease-in-out; 
         }
-        .notice-item:last-child { 
-            border-bottom: none; 
+        .notice-item:hover {
+            background-color: #f9fafb; 
         }
-        .notice-item:hover { 
-            background-color: #e5e7eb; 
+        .notice-item .notice-title { 
+            font-weight: 500;
+            color: #1f2937; 
+            text-decoration: none; 
+            flex-grow: 1; 
+            text-align: left;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            max-width: calc(100% - 100px); 
+            font-size: 0.9rem; 
         }
-        .notice-title { 
-            font-weight: 500; 
+        .notice-item .notice-title:hover {
+            color: #059669; 
         }
-        .notice-date { 
-            color: #6b7280; 
-            font-size: 0.875rem; 
+        .notice-date {
+            color: #6b7280;
+            font-size: 0.875rem;
+            flex-shrink: 0; 
+            margin-left: 1rem;
+        }
+        .comment-count-badge {
+            color: #5dbb63;/
+            font-size: 0.8rem; 
+            font-weight: 600;
+            margin-left: 5px; 
         }
     </style>
 </head>
 <body>
-    <%@ include file="/WEB-INF/views/common/header.jsp" %> <!-- 헤더 -->
-    <div id="app">
+    <%@ include file="/WEB-INF/views/common/header.jsp" %> <div id="app">
         <main class="container main-content">
             <div class="max-w-5xl mx-auto">
-                <h2 class="main-title">무엇을 도와드릴까요?</h2> <!-- 공지사항과 자주묻는 질문 테이블에서 검색가능-->
-                <div class="search-wrapper">
+                <h2 class="main-title">무엇을 도와드릴까요?</h2> <div class="search-wrapper">
                     <div class="search-form">
                         <input type="text" placeholder="궁금한 점을 검색해보세요" class="search-input" v-model="searchText">
                         <button class="search-button" aria-label="검색" @click="fnSearch"><span>🔍</span></button>
@@ -264,24 +282,23 @@
                 </div>
 
                 <div class="service-card-grid">
-                    <div class="service-card" @click="activeTab = 'faq'" :class="{ 'active': activeTab=== 'faq' }">
+                    <div class="service-card" @click="activeTab = 'faq'" :class="{ 'active': activeTab === 'faq' }">
                         <div class="card-icon-wrapper"><span class="card-icon">❓</span></div>
                         <h3 class="card-title">자주 묻는 질문</h3>
                         <p class="card-description">고객님들이 자주 묻는 질문과 답변을 확인하세요</p>
                     </div>
-                    <div class="service-card" @click="activeTab = 'inquiry'" :class="{ 'active':activeTab === 'inquiry' }">
+                    <div class="service-card" @click="activeTab = 'inquiry'" :class="{ 'active': activeTab === 'inquiry' }">
                         <div class="card-icon-wrapper"><span class="card-icon">💬</span></div>
                         <h3 class="card-title">1대1 문의</h3>
                         <p class="card-description">궁금한 사항을 직접 문의해주세요</p>
                     </div>
-                    <div class="service-card" @click="activeTab = 'notice'" :class="{ 'active': activeTab=== 'notice' }">
+                    <div class="service-card" @click="activeTab = 'notice'" :class="{ 'active': activeTab === 'notice' }">
                         <div class="card-icon-wrapper"><span class="card-icon">📢</span></div>
                         <h3 class="card-title">공지사항</h3>
                         <p class="card-description">사이트의 중요 소식과 업데이트를 확인하세요</p>
                     </div>
                 </div>
 
-                <!-- 자주 묻는 질문 (기본) -->
                 <div v-if="activeTab === 'faq'" class="content-section">
                     <h3 class="content-title">빠른 답변</h3>
                     <div class="faq-list">
@@ -304,11 +321,10 @@
                         <details>
                             <summary class="faq-question"><span class="faq-question-text">ㅇㅇ</span><span class="faq-arrow">▼</span></summary>
                             <div class="faq-answer">ㅇㅇ</div>
-                        </details>                    
+                        </details>
                     </div>
                 </div>
 
-                <!-- 1대1 문의 -->
                 <div v-if="activeTab === 'inquiry'" class="content-section inquiry-form">
                     <h3 class="content-title">1대1 문의하기</h3>
                     <div class="form-group">
@@ -327,7 +343,7 @@
                             <option :value="null">문의할 주문을 선택하세요</option>
 
                             <option v-for="order in orderList" :key="order.orderNo" :value="order.orderNo">
-                                주문날짜 : [{{ order.orderDate.split(' ')[0] }}]  , 주문번호 : [{{ order.orderNo }}]
+                                주문날짜 : [{{ order.orderDate.split(' ')[0] }}] , 주문번호 : [{{ order.orderNo }}]
                             </option>
                         </select>
                     </div>
@@ -342,28 +358,28 @@
                     <button class="submit-button" @click="fnInquiry">문의 등록</button>
                 </div>
 
-                <!-- 공지사항 추후 공지사항 게시판과 연동 예정-->
                 <div v-if="activeTab === 'notice'" class="content-section">
                     <h3 class="content-title">공지사항</h3>
                     <div class="notice-list">
-                        <div class="notice-item">
-                            <span class="notice-title">[안내] 추석 연휴 배송 일정 안내</span>
-                            <span class="notice-date">2025-10-20</span>
+                        <div v-if="latestNotices.length === 0" class="notice-item">
+                            <span class="notice-title">최신 공지사항이 없습니다.</span>
                         </div>
-                        <div class="notice-item">
-                            <span class="notice-title">[점검] 10월 25일(토) 서비스 정기 점검 안내</span>
-                            <span class="notice-date">2025-10-18</span>
-                        </div>
-                        <div class="notice-item">
-                            <span class="notice-title">[이벤트] 가을 제철 농산물 할인 이벤트 당첨자 발표</span>
-                            <span class="notice-date">2025-10-15</span>
+                        <div v-for="notice in latestNotices" :key="notice.noticeNo" class="notice-item">
+                            <a :href="'/noticeView.do?noticeNo=' + notice.noticeNo" class="notice-title">
+                                {{ notice.title }}
+                                <span v-if="notice.commentCount > 0" class="comment-count-badge">({{notice.commentCount}})</span>
+                            </a>
+                            <span class="notice-date">{{ notice.regDate }}</span>
                         </div>
                     </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="card-link" @click="fnGoToNoticeList">더보기</button>
+                    </div>
                 </div>
-            </div>
-        </main>
+
+            </div> </main>
     </div>
-    <%@ include file="/WEB-INF/views/common/footer.jsp" %> <!-- 푸터 -->
+    <%@ include file="/WEB-INF/views/common/footer.jsp" %> 
 </body>
 </html>
 <script>
@@ -371,7 +387,7 @@
         data() {
             return {
                 activeTab: 'faq', // 기본으로 보여줄 탭
-                id : '${sessionId}', // 임시로 아이디 넣어둠
+                id : '${sessionId}', 
                 
                 // 문의글
                 inquiryCategory: "",
@@ -385,6 +401,8 @@
                 noticeList : [],
                 filteredFaqList: [],
                 filteredNoticeList: [],
+
+                latestNotices: [],
 
 
 
@@ -448,12 +466,36 @@
                         alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
                     }
                 });    
-            }
+            },
+            fnLoadLatestNotices() {
+                let self = this;
+                $.ajax({
+                    url: "/notice/latest.dox",
+                    type: "GET",
+                    dataType: "json",
+                    data: { limit: 3 }, 
+                    success: function (res) {
+                        if (res.result === "success") {
+                            self.latestNotices = res.list;
+                        } else {
+                            alert("최신 공지사항을 불러오는 데 실패했습니다.");
+                        }
+                    },
+                    error: function() {
+                        alert("서버와의 통신 중 오류가 발생했습니다.");
+                    }
+                });
+            },
+            fnGoToNoticeList: function() {
+                location.href = '/board.do?tab=notice';
+            },
 
         },
         mounted() {
             let self = this;
             self.fnOrderInfo();
+            self.fnLoadLatestNotices();
+
             const urlParams = new URLSearchParams(window.location.search);
             const tabFromUrl = urlParams.get('tab'); 
             const validTabs = ['faq', 'inquiry', 'notice'];

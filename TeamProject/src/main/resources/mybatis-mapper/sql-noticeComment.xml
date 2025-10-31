@@ -15,7 +15,7 @@
          <result property="level" column="LVL"/>
      </resultMap>
 
-     <!-- 특정 공지사항의 모든 댓글을 계층형으로 조회합니다. -->
+     <!-- 댓글 조회 -->
      <select id="findByNoticeNo" parameterType="int" resultMap="commentResultMap">
          SELECT
              COMMENT_NO,
@@ -38,9 +38,8 @@
              CDATETIME ASC
      </select>
 
-     <!-- 새로운 댓글을 저장합니다. -->
+     <!-- 댓글 작성 -->
      <insert id="save" parameterType="com.example.TeamProject.model.NoticeComment">
-         <!-- INSERT 전에 시퀀스 값을 먼저 조회해서 commentNo에 세팅합니다. -->
          <selectKey keyProperty="commentNo" resultType="int" order="BEFORE">
              SELECT NOTICE_COMMENT_SEQ.NEXTVAL FROM DUAL
          </selectKey>
@@ -63,5 +62,35 @@
              SYSDATE
          )
      </insert>
+     
+     <!-- 댓글 수정 -->
+	<update id="update" parameterType="com.example.TeamProject.model.NoticeComment">
+	    UPDATE NOTICE_COMMENT
+	       SET CONTENTS = #{contents},
+	           UDATETIME = SYSDATE
+	     WHERE COMMENT_NO = #{commentNo}
+	</update>
+	
+	<!-- 댓글 삭제 -->
+	<delete id="delete" parameterType="int">
+	    DELETE FROM NOTICE_COMMENT
+	     WHERE COMMENT_NO = #{commentNo}
+	</delete>
+	
+	<!-- 댓글 조회 -->
+	<select id="findById" parameterType="int" resultType="com.example.TeamProject.model.NoticeComment">
+	    SELECT
+	        COMMENT_NO,
+	        NOTICE_NO,
+	        USER_ID,
+	        CONTENTS,
+	        TO_CHAR(CDATETIME, 'YYYY-MM-DD HH24:MI') AS CDATETIME,
+	        TO_CHAR(UDATETIME, 'YYYY-MM-DD HH24:MI') AS UDATETIME,
+	        PARENT_COMMENT_NO
+	    FROM
+	        NOTICE_COMMENT
+	    WHERE
+	        COMMENT_NO = #{commentNo}
+	</select>
 
  </mapper>

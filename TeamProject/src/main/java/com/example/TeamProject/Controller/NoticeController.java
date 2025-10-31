@@ -101,7 +101,31 @@ public class NoticeController {
     		    return new Gson().toJson(resultMap);
     		}
     
+    @RequestMapping(value = "/notice/comments/update.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String updateComment(@RequestBody NoticeComment comment, HttpSession session) {
+        HashMap<String, Object> resultMap = noticeCommentService.updateComment(comment, session);
+        return new Gson().toJson(resultMap);
+    }
     
+    @RequestMapping(value = "/notice/comments/delete.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String deleteComment(@RequestParam("commentNo") int commentNo, HttpSession session) {
+        HashMap<String, Object> resultMap = noticeCommentService.deleteComment(commentNo, session);
+        return new Gson().toJson(resultMap);
+    }
+    
+    @RequestMapping(value = "/notice/latest.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getLatestNotices(@RequestParam(value = "limit", defaultValue = "3") int limit) {
+    	HashMap<String, Object> paramMap = new HashMap<>();
+    	
+    	paramMap.put("limit", limit); 
+    	
+    	HashMap<String, Object> resultMap = noticeService.getLatestNotices(paramMap);
+    	return new Gson().toJson(resultMap);
+    }
+
     
     
 }

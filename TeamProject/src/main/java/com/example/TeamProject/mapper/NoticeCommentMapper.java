@@ -11,8 +11,10 @@ public interface NoticeCommentMapper {
     List<NoticeComment> findByNoticeNo(int noticeNo);
     // 댓글 작성
     int save(NoticeComment comment);
-
-    // (아래는 추후 구현)
-    // int update(NoticeComment comment);
-    // int delete(int commentNo);
+    // 댓글 수정
+    int update(NoticeComment comment);
+    // 댓글 삭제
+    int delete(int commentNo);
+    // 댓글 조회
+    NoticeComment findById(int commentNo);
 }

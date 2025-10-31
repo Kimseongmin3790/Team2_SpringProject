@@ -24,5 +24,7 @@ public interface NoticeMapper {
 	int updateNotice(HashMap<String, Object> map);
 	// 공지 작성
 	int saveNotice(HashMap<String, Object> map);
+	// 최신 공지사항 n개 가져오기
+	List<Notice> selectLatestNotices(HashMap<String, Object> map);
 	
 }

@@ -11,4 +11,5 @@ public class Notice {
 	private String regDate;
 	private String uDatetime;
 	private int cnt;
+	private int commentCount;
 }

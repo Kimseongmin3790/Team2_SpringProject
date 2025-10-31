@@ -52,4 +52,91 @@ public class NoticeCommentService {
     	    }
     	    return resultMap;
     	}
+    
+    // 댓글 수정
+    public HashMap<String, Object> updateComment(NoticeComment comment, HttpSession session) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+        try {
+            String loginUserId = (String) session.getAttribute("sessionId");
+            String userRole = (String) session.getAttribute("userRole");
+
+            if (loginUserId == null) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "로그인이 필요합니다.");
+                return resultMap;
+            }
+
+            //(권한 확인용)
+            NoticeComment existingComment = noticeCommentMapper.findById(comment.getCommentNo());
+            if (existingComment == null) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "댓글을 찾을 수 없습니다.");
+                return resultMap;
+            }
+
+            // 작성자 본인이거나 관리자인 경우에만 수정 가능
+            if (!(loginUserId.equals(existingComment.getUserId()) || "ADMIN".equals(userRole))) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "수정 권한이 없습니다.");
+                return resultMap;
+            }
+
+            int updatedRows = noticeCommentMapper.update(comment);
+            if (updatedRows > 0) {
+                resultMap.put("result", "success");
+            } else {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "댓글 수정에 실패했습니다.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            resultMap.put("result", "fail");
+            resultMap.put("message", e.getMessage());
+        }
+        return resultMap;
+    }
+
+    // 댓글 삭제
+    public HashMap<String, Object> deleteComment(int commentNo, HttpSession session) { 
+        HashMap<String, Object> resultMap = new HashMap<>();
+        try {
+            String loginUserId = (String) session.getAttribute("sessionId");
+            String userRole = (String) session.getAttribute("sessionStatus");
+           
+            if (loginUserId == null) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "로그인이 필요합니다.");
+                return resultMap;
+            }
+
+            // 권한 확인용
+            NoticeComment existingComment = noticeCommentMapper.findById(commentNo);
+            if (existingComment == null) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "댓글을 찾을 수 없습니다.");
+                return resultMap;
+            }
+
+            // 작성자 본인이거나 관리자인 경우에만 삭제 가능
+            if (!(loginUserId.equals(existingComment.getUserId()) || "ADMIN".equals(userRole))) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "삭제 권한이 없습니다.");
+                return resultMap;
+            }
+
+            int deletedRows = noticeCommentMapper.delete(commentNo);
+            if (deletedRows > 0) {
+                resultMap.put("result", "success");
+            } else {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "댓글 삭제에 실패했습니다.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            resultMap.put("result", "fail");
+            resultMap.put("message", e.getMessage());
+        }
+        return resultMap;
+    }
+    
 }
