@@ -27,4 +27,12 @@ public interface BoardMapper {
 	int insertAnswer(HashMap<String, Object> map);
 	// 문의 글 상태 변경
 	int updateInquiryStatusAnswered(int inquiryNo);
+	// 문의 글 등록
+	int insertInquiry(HashMap<String, Object> map);
+	// 문의 글 수정
+	int updateInquiry(HashMap<String, Object> map);
+	// 문의 글 삭제
+	int deleteInquiry(HashMap<String, Object> map);
+	// 문의 글 답변 삭제
+	int deleteInquiryAnswer(HashMap<String, Object> map);
 }
