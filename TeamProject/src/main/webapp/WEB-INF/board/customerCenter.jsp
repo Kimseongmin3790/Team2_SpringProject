@@ -6,7 +6,7 @@
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>고객센터 | AGRICOLA</title>
+            <title>커뮤니티 | AGRICOLA</title>
 
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -224,7 +224,6 @@
                 .pagination {
                     display: flex;
                     justify-content: center;
-                    margin-top: 30px;
                     gap: 6px;
                 }
 
@@ -380,6 +379,28 @@
                         width: 100%;
                     }
                 }
+            
+                .notice-bottom-actions {
+                    text-align: right;
+                    margin-top: 20px;
+                    margin-bottom: 20px; 
+                }
+
+                .btn-write-notice {
+                    background: #1a5d1a; 
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    font-size: 15px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: 0.3s;
+                }
+                .btn-write-notice:hover {
+                    background: #154a15;
+                }
+                
             </style>
         </head>
 
@@ -387,7 +408,7 @@
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                 <div id="app">
-                    <h1 class="title">고객센터</h1>
+                    <h1 class="title">커뮤니티</h1>
 
                     <!-- ✅ 탭 메뉴 -->
                     <ul class="tab-menu">
@@ -425,7 +446,6 @@
                         </div>
 
                         <div v-if="noticeList.length === 0" class="empty">공지사항을 불러오는 중...</div>
-
                         <table v-if="noticeList.length > 0" class="notice-table">
                             <thead>
                                 <tr>
@@ -436,17 +456,19 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="n in noticeList" :key="n.noticeNo" @click="fnDetail(n.boardNo)"
+                                <tr v-for="n in noticeList" :key="n.noticeNo" @click="fnDetail(n.noticeNo)"
                                     class="row-link">
                                     <td>{{ n.noticeNo }}</td>
-                                    <td style="text-align:left; padding-left:15px; cursor:pointer;">{{ n.title }}
-                                    </td>
+                                    <td style="text-align:left; padding-left:15px; cursor:pointer;">{{ n.title }}</td>
                                     <td>{{ n.userId }}</td>
                                     <td>{{ n.regDate }}</td>
                                 </tr>
                             </tbody>
                         </table>
-
+                        <div class="notice-bottom-actions">
+                            <button v-if="userRole === 'ADMIN'" class="btn-write-notice" @click= "fnGoToNoticeWrite">공지사항 작성</button>
+                        </div>
+        
                         <!-- ✅ 페이지네이션 -->
                         <div class="pagination" v-if="totalPage > 1">
                             <button :disabled="page === 1" @click="fnChangePage(page - 1)">이전</button>
@@ -510,80 +532,121 @@
                     </div>
                 </div>
 
-                <%@ include file="/WEB-INF/views/common/footer.jsp" %>
-
-                    <script>
-                        const app = Vue.createApp({
-                            data() {
-                                return {
-                                    sessionId: "${sessionId}",
-                                    noticeList: []
-                                };
-                            },
-                            methods: {
-                                // ✅ 공지사항 불러오기 (AJAX)
-                                fnLoadNotice() {
-                                    const self = this;
-                                    $.ajax({
-                                        url: "/noticeList.dox",
-                                        type: "POST",
-                                        dataType: "json",
-                                        success(res) {
-                                            self.noticeList = res.list;
-                                        },
-                                        error() {
-                                            console.error("공지사항 불러오기 실패");
-                                        }
-                                    });
-                                },
-
-                                // ✅ 비밀번호 확인 모달
-                                fnOpenQna(qnaNo, secret) {
-                                    if (secret !== 'Y') {
-                                        location.href = "/qna/detail.do?qnaNo=" + qnaNo;
-                                        return;
-                                    }
-                                    if (sessionStorage.getItem("auth_qna_" + qnaNo) === "true") {
-                                        location.href = "/qna/detail.do?qnaNo=" + qnaNo;
-                                        return;
-                                    }
-
-                                    $("#pwModal").fadeIn();
-                                    $("#pwInput").val("").focus();
-
-                                    $("#btnPwCheck").off("click").on("click", function () {
-                                        const pw = $("#pwInput").val();
-                                        if (!pw) return alert("비밀번호를 입력해주세요.");
-
-                                        $.ajax({
-                                            url: "/qna/checkPw.dox",
-                                            type: "POST",
-                                            dataType: "json",
-                                            data: { qnaNo, pw },
-                                            success(res) {
-                                                if (res.result === "success") {
-                                                    sessionStorage.setItem("auth_qna_" + qnaNo, "true");
-                                                    $("#pwModal").fadeOut();
-                                                    location.href = "/qna/detail.do?qnaNo=" + qnaNo;
-                                                } else {
-                                                    alert("비밀번호가 올바르지 않습니다.");
-                                                }
-                                            }
-                                        });
-                                    });
-                                }
-                            },
-                            mounted() {
-                                // 현재 탭이 notice면 자동으로 불러오기
-                                const currentTab = new URLSearchParams(window.location.search).get("tab");
-                                if (!currentTab || currentTab === "notice") {
-                                    this.fnLoadNotice();
-                                }
-                            }
-                        });
-
-                        app.mount("#app");
-                    </script>
+                <%@ include file="/WEB-INF/views/common/footer.jsp" %>             
         </body>
-
         </html>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                sessionId: "${sessionId}",
+                noticeList: [],
+                searchType: 'title',
+                keyword: '',
+                page: 1,        // 현재 페이지
+                totalPage: 1,    // 전체 페이지 수
+                userRole: "${sessionScope.sessionStatus}"
+            };
+        },
+        methods: {
+            // ✅ 공지사항 불러오기 (AJAX)
+            fnLoadNotice() {
+                const self = this;
+                const params = {
+                    searchType: self.searchType,
+                    keyword: self.keyword,
+                    page: self.page // 페이지 번호 파라미터 추가
+                };
+
+                $.ajax({
+                    url: "/noticeList.dox",
+                    type: "POST",
+                    data: params,
+                    dataType: "json",
+                    success(res) {
+                        // 서버로부터 받은 데이터로 갱신
+                        console.log(res);
+                        self.noticeList = res.list;
+                        self.page = res.page;
+                        self.totalPage = res.totalPage;
+
+                        // 총 게시물 개수 표시 업데이트
+                        const totalCountEl = document.querySelector('.total-count strong');
+                        if(totalCountEl) totalCountEl.textContent = res.totalCount;
+                    },
+                    error() {
+                        console.error("공지사항 불러오기 실패");
+                    }
+                });
+            },
+
+            // ✅ 공지사항 검색
+            fnSearchNotice() {
+                let self = this;
+                self.page = 1; 
+                self.fnLoadNotice();
+            },
+
+            // ✅ 페이지 변경
+            fnChangePage(p) {
+                // 유효하지 않은 페이지는 무시
+                if (p < 1 || p > this.totalPage) {
+                    return;
+                }
+                this.page = p;
+                this.fnLoadNotice();
+            },
+
+            // ✅ 비밀번호 확인 모달 (기존과 동일)
+            fnOpenQna(qnaNo, secret) {
+                if (secret !== 'Y') {
+                    location.href = "/qna/detail.do?qnaNo=" + qnaNo;
+                    return;
+                }
+                if (sessionStorage.getItem("auth_qna_" + qnaNo) === "true") {
+                    location.href = "/qna/detail.do?qnaNo=" + qnaNo;
+                    return;
+                }
+
+                $("#pwModal").fadeIn();
+                $("#pwInput").val("").focus();
+
+                $("#btnPwCheck").off("click").on("click", function () {
+                    const pw = $("#pwInput").val();
+                    if (!pw) return alert("비밀번호를 입력해주세요.");
+
+                    $.ajax({
+                        url: "/qna/checkPw.dox",
+                        type: "POST",
+                        dataType: "json",
+                        data: { qnaNo, pw },
+                        success(res) {
+                            if (res.result === "success") {
+                                sessionStorage.setItem("auth_qna_" + qnaNo, "true");
+                                $("#pwModal").fadeOut();
+                                location.href = "/qna/detail.do?qnaNo=" + qnaNo;
+                            } else {
+                                alert("비밀번호가 올바르지 않습니다.");
+                            }
+                        }
+                    });
+                });
+            },
+            fnDetail(noticeNo) {
+                location.href = "/noticeView.do?noticeNo=" + noticeNo;
+            },
+            fnGoToNoticeWrite: function() {
+                location.href = "/notice/write.do";
+            },
+        },
+        mounted() {
+            // 현재 탭이 notice면 자동으로 불러오기
+            const currentTab = new URLSearchParams(window.location.search).get("tab");
+            if (!currentTab || currentTab === "notice") {
+                this.fnLoadNotice();
+            }
+        }
+    });
+
+    app.mount("#app");
+</script>

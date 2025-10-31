@@ -10,6 +10,6 @@ import com.example.TeamProject.model.Board;
 @Mapper
 public interface BoardMapper {
 	
-	// 공지사항 글 리스트
-	List<Board> selectNoticeList(HashMap<String, Object> map);
+	
+	
 }
