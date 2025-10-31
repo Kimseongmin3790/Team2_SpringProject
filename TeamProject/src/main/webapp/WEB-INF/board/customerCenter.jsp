@@ -224,7 +224,6 @@
                 .pagination {
                     display: flex;
                     justify-content: center;
-                    margin-top: 30px;
                     gap: 6px;
                 }
 
@@ -380,6 +379,28 @@
                         width: 100%;
                     }
                 }
+            
+                .notice-bottom-actions {
+                    text-align: right;
+                    margin-top: 20px;
+                    margin-bottom: 20px; 
+                }
+
+                .btn-write-notice {
+                    background: #1a5d1a; 
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    font-size: 15px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: 0.3s;
+                }
+                .btn-write-notice:hover {
+                    background: #154a15;
+                }
+                
             </style>
         </head>
 
@@ -387,7 +408,7 @@
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                 <div id="app">
-                    <h1 class="title">고객센터</h1>
+                    <h1 class="title">커뮤니티</h1>
 
                     <!-- ✅ 탭 메뉴 -->
                     <ul class="tab-menu">
@@ -425,7 +446,6 @@
                         </div>
 
                         <div v-if="noticeList.length === 0" class="empty">공지사항을 불러오는 중...</div>
-
                         <table v-if="noticeList.length > 0" class="notice-table">
                             <thead>
                                 <tr>
@@ -436,20 +456,19 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="n in noticeList" :key="n.noticeNo" @click="fnDetail(n.boardNo)"
+                                <tr v-for="n in noticeList" :key="n.noticeNo" @click="fnDetail(n.noticeNo)"
                                     class="row-link">
                                     <td>{{ n.noticeNo }}</td>
-                                    <td style="text-align:left; padding-left:15px; cursor:pointer;">{{ n.title }}
-                                    </td>
+                                    <td style="text-align:left; padding-left:15px; cursor:pointer;">{{ n.title }}</td>
                                     <td>{{ n.userId }}</td>
                                     <td>{{ n.regDate }}</td>
                                 </tr>
                             </tbody>
                         </table>
-                        
-
-                        <p style="text-align:center; color:red; font-weight:bold;">[디버깅] totalPage 값: {{ totalPage }}</p> <!-- 디버깅 용-->
-
+                        <div class="notice-bottom-actions">
+                            <button v-if="userRole === 'ADMIN'" class="btn-write-notice" @click= "fnGoToNoticeWrite">공지사항 작성</button>
+                        </div>
+        
                         <!-- ✅ 페이지네이션 -->
                         <div class="pagination" v-if="totalPage > 1">
                             <button :disabled="page === 1" @click="fnChangePage(page - 1)">이전</button>
@@ -525,7 +544,8 @@
                 searchType: 'title',
                 keyword: '',
                 page: 1,        // 현재 페이지
-                totalPage: 1    // 전체 페이지 수
+                totalPage: 1,    // 전체 페이지 수
+                userRole: "${sessionScope.sessionStatus}"
             };
         },
         methods: {
@@ -545,6 +565,7 @@
                     dataType: "json",
                     success(res) {
                         // 서버로부터 받은 데이터로 갱신
+                        console.log(res);
                         self.noticeList = res.list;
                         self.page = res.page;
                         self.totalPage = res.totalPage;
@@ -610,7 +631,13 @@
                         }
                     });
                 });
-            }
+            },
+            fnDetail(noticeNo) {
+                location.href = "/noticeView.do?noticeNo=" + noticeNo;
+            },
+            fnGoToNoticeWrite: function() {
+                location.href = "/notice/write.do";
+            },
         },
         mounted() {
             // 현재 탭이 notice면 자동으로 불러오기

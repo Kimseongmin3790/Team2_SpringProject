@@ -26,12 +26,7 @@ public class BoardController {
     }
 	
 	
-	@RequestMapping(value = "/noticeList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-	@ResponseBody
-	public String noticeList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap = boardService.getNoticeList(map);
-		
-		return new Gson().toJson(resultMap);
-	}
 }
+	
+	
+
