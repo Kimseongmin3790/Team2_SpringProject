@@ -81,7 +81,7 @@
 
                 <nav class="nav-menu">
                     <a href="${path}/main.do">홈</a>
-                    <a href="${path}/product/list">상품목록</a>
+                    <a href="${path}/productInfo.do">상품목록</a>
                     <a href="${path}/product/add.do">신상품</a>
                     <a href="${path}/review/list">상품후기</a>
                     <a href="${path}/bunjjukEvent">번쩍장터</a>

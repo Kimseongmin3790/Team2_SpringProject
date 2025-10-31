@@ -89,6 +89,33 @@ public class AdminController {
 		return new Gson().toJson(resultMap);
 	}
 	
+	@RequestMapping(value = "/CategoryTopList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String topList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = adminService.getTopList(map);
+		
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/CategoryMidList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String midList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = adminService.getMidList(map);
+		
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/CategoryLeafList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String leafList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = adminService.getLeafList(map);
+		
+		return new Gson().toJson(resultMap);
+	}
+	
 	@RequestMapping(value = "/nearestSellers.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String nearestSellers(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
@@ -100,4 +127,5 @@ public class AdminController {
 		
 		return new Gson().toJson(resultMap);
 	}
+	
 }

@@ -30,4 +30,10 @@ public interface AdminMapper {
 	List<ProductCategory> selectCategoryList(HashMap<String, Object> map);
 	// 소비자기준 가장 가까운 판매자 3명 거리계산
 	List<SellerVO> selectNearestSellers(HashMap<String, Object> map);
+	// 카테고리 대분류
+	List<ProductCategory> selectTopList(HashMap<String, Object> map);
+	// 카테고리 중분류
+	List<ProductCategory> selectMidList(HashMap<String, Object> map);
+	// 카테고리 소분류
+	List<ProductCategory> selectLeafList(HashMap<String, Object> map);
 }

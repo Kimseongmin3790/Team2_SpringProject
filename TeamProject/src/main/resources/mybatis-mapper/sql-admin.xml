@@ -44,6 +44,33 @@
 		INNER JOIN PRODUCT_CATEGORY C3 ON C2.PARENT_CATEGORY_NO = C3.CATEGORY_NO
 	</select>
 	
+	 <!-- 대분류: 부모가 없음 -->
+	 <select id="selectTopList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
+	   SELECT
+	     CATEGORY_NO, CATEGORY_NAME, PARENT_CATEGORY_NO
+	   FROM PRODUCT_CATEGORY
+	   WHERE PARENT_CATEGORY_NO IS NULL
+	   ORDER BY CATEGORY_NO
+	 </select>
+
+	 <!-- 중분류: 선택한 대분류의 직계 자식 -->
+	 <select id="selectMidList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
+	   SELECT
+	     CATEGORY_NO, CATEGORY_NAME, PARENT_CATEGORY_NO
+	   FROM PRODUCT_CATEGORY
+	   WHERE PARENT_CATEGORY_NO = #{topNo}
+	   ORDER BY CATEGORY_NO
+	 </select>
+
+	 <!-- 소분류: 선택한 중분류의 직계 자식 -->
+	 <select id="selectLeafList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
+	   SELECT
+	     CATEGORY_NO, CATEGORY_NAME, PARENT_CATEGORY_NO
+	   FROM PRODUCT_CATEGORY
+	   WHERE PARENT_CATEGORY_NO = #{midNo}
+	   ORDER BY CATEGORY_NO
+	 </select>
+	
 	<select id="selectCategoryList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
 		SELECT *
 		FROM PRODUCT_CATEGORY
