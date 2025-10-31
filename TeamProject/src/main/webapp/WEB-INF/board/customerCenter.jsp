@@ -436,15 +436,15 @@
                         width: 100%;
                     }
                 }
-            
+
                 .notice-bottom-actions {
                     text-align: right;
                     margin-top: 20px;
-                    margin-bottom: 20px; 
+                    margin-bottom: 20px;
                 }
 
                 .btn-write-notice {
-                    background: #1a5d1a; 
+                    background: #1a5d1a;
                     color: white;
                     border: none;
                     padding: 10px 20px;
@@ -454,10 +454,10 @@
                     cursor: pointer;
                     transition: 0.3s;
                 }
+
                 .btn-write-notice:hover {
                     background: #154a15;
                 }
-                
             </style>
         </head>
 
@@ -523,9 +523,10 @@
                             </tbody>
                         </table>
                         <div class="notice-bottom-actions">
-                            <button v-if="userRole === 'ADMIN'" class="btn-write-notice" @click= "fnGoToNoticeWrite">공지사항 작성</button>
+                            <button v-if="userRole === 'ADMIN'" class="btn-write-notice" @click="fnGoToNoticeWrite">공지사항
+                                작성</button>
                         </div>
-        
+
                         <!-- ✅ 페이지네이션 -->
                         <div class="pagination" v-if="totalPage > 1">
                             <button :disabled="page === 1" @click="fnChangePage(page - 1)">이전</button>
@@ -655,6 +656,8 @@
                                     keyword: "",
                                     page: 1,
                                     totalPage: 1,
+                                    userRole: "${sessionScope.sessionStatus}",
+
 
                                     // 고객문의
                                     inquiryList: [],
@@ -669,22 +672,50 @@
                                 /* =========================
                                    ✅ 공지사항 불러오기
                                 ========================== */
-                                fnLoadNotice(keyword = "", searchType = "", page = 1) {
+                                fnLoadNotice() {
                                     const self = this;
+                                    const params = {
+                                        searchType: self.searchType,
+                                        keyword: self.keyword,
+                                        page: self.page // 페이지 번호 파라미터 추가
+                                    };
+
                                     $.ajax({
                                         url: "/noticeList.dox",
                                         type: "POST",
+                                        data: params,
                                         dataType: "json",
-                                        data: { keyword, searchType, page, pageSize: self.noticePageSize },
                                         success(res) {
-                                            self.noticeList = res.list || [];
-                                            self.noticePage = res.page;
-                                            self.noticeTotalPage = res.totalPage;
+                                            // 서버로부터 받은 데이터로 갱신
+                                            console.log(res);
+                                            self.noticeList = res.list;
+                                            self.page = res.page;
+                                            self.totalPage = res.totalPage;
+
+                                            // 총 게시물 개수 표시 업데이트
+                                            const totalCountEl = document.querySelector('.total-count strong');
+                                            if (totalCountEl) totalCountEl.textContent = res.totalCount;
                                         },
                                         error() {
                                             console.error("공지사항 불러오기 실패");
                                         }
                                     });
+                                },
+                                // ✅ 공지사항 검색
+                                fnSearchNotice() {
+                                    let self = this;
+                                    self.page = 1;
+                                    self.fnLoadNotice();
+                                },
+
+                                // ✅ 페이지 변경
+                                fnChangePage(p) {
+                                    // 유효하지 않은 페이지는 무시
+                                    if (p < 1 || p > this.totalPage) {
+                                        return;
+                                    }
+                                    this.page = p;
+                                    this.fnLoadNotice();
                                 },
 
                                 /* =========================
@@ -723,6 +754,13 @@
                                 fnChangeInquiryPage(p) {
                                     this.inquiryPage = p;
                                     this.fnLoadInquiry(this.inquiryKeyword, this.inquirySearchType, p);
+                                },
+
+                                fnDetail(noticeNo) {
+                                    location.href = "/noticeView.do?noticeNo=" + noticeNo;
+                                },
+                                fnGoToNoticeWrite: function () {
+                                    location.href = "/notice/write.do";
                                 },
 
                                 /* =========================
@@ -772,9 +810,9 @@
                                                 url: "/inquiry/checkPwd.dox",
                                                 type: "POST",
                                                 dataType: "json",
-                                                data: { 
+                                                data: {
                                                     inquiryNo: id,
-                                                    pw: pw 
+                                                    pw: pw
                                                 },
                                                 success: (res) => {
                                                     if (res.result === "success") {
@@ -838,119 +876,5 @@
                         app.mount("#app");
                     </script>
         </body>
+
         </html>
-<script>
-    const app = Vue.createApp({
-        data() {
-            return {
-                sessionId: "${sessionId}",
-                noticeList: [],
-                searchType: 'title',
-                keyword: '',
-                page: 1,        // 현재 페이지
-                totalPage: 1,    // 전체 페이지 수
-                userRole: "${sessionScope.sessionStatus}"
-            };
-        },
-        methods: {
-            // ✅ 공지사항 불러오기 (AJAX)
-            fnLoadNotice() {
-                const self = this;
-                const params = {
-                    searchType: self.searchType,
-                    keyword: self.keyword,
-                    page: self.page // 페이지 번호 파라미터 추가
-                };
-
-                $.ajax({
-                    url: "/noticeList.dox",
-                    type: "POST",
-                    data: params,
-                    dataType: "json",
-                    success(res) {
-                        // 서버로부터 받은 데이터로 갱신
-                        console.log(res);
-                        self.noticeList = res.list;
-                        self.page = res.page;
-                        self.totalPage = res.totalPage;
-
-                        // 총 게시물 개수 표시 업데이트
-                        const totalCountEl = document.querySelector('.total-count strong');
-                        if(totalCountEl) totalCountEl.textContent = res.totalCount;
-                    },
-                    error() {
-                        console.error("공지사항 불러오기 실패");
-                    }
-                });
-            },
-
-            // ✅ 공지사항 검색
-            fnSearchNotice() {
-                let self = this;
-                self.page = 1; 
-                self.fnLoadNotice();
-            },
-
-            // ✅ 페이지 변경
-            fnChangePage(p) {
-                // 유효하지 않은 페이지는 무시
-                if (p < 1 || p > this.totalPage) {
-                    return;
-                }
-                this.page = p;
-                this.fnLoadNotice();
-            },
-
-            // ✅ 비밀번호 확인 모달 (기존과 동일)
-            fnOpenQna(qnaNo, secret) {
-                if (secret !== 'Y') {
-                    location.href = "/qna/detail.do?qnaNo=" + qnaNo;
-                    return;
-                }
-                if (sessionStorage.getItem("auth_qna_" + qnaNo) === "true") {
-                    location.href = "/qna/detail.do?qnaNo=" + qnaNo;
-                    return;
-                }
-
-                $("#pwModal").fadeIn();
-                $("#pwInput").val("").focus();
-
-                $("#btnPwCheck").off("click").on("click", function () {
-                    const pw = $("#pwInput").val();
-                    if (!pw) return alert("비밀번호를 입력해주세요.");
-
-                    $.ajax({
-                        url: "/qna/checkPw.dox",
-                        type: "POST",
-                        dataType: "json",
-                        data: { qnaNo, pw },
-                        success(res) {
-                            if (res.result === "success") {
-                                sessionStorage.setItem("auth_qna_" + qnaNo, "true");
-                                $("#pwModal").fadeOut();
-                                location.href = "/qna/detail.do?qnaNo=" + qnaNo;
-                            } else {
-                                alert("비밀번호가 올바르지 않습니다.");
-                            }
-                        }
-                    });
-                });
-            },
-            fnDetail(noticeNo) {
-                location.href = "/noticeView.do?noticeNo=" + noticeNo;
-            },
-            fnGoToNoticeWrite: function() {
-                location.href = "/notice/write.do";
-            },
-        },
-        mounted() {
-            // 현재 탭이 notice면 자동으로 불러오기
-            const currentTab = new URLSearchParams(window.location.search).get("tab");
-            if (!currentTab || currentTab === "notice") {
-                this.fnLoadNotice();
-            }
-        }
-    });
-
-    app.mount("#app");
-</script>
