@@ -17,8 +17,8 @@
 	</insert>
 
 	<insert id="insertProductImage" parameterType="hashmap">
-	    INSERT INTO PRODUCT_IMAGE (IMAGE_ID, PRODUCT_NO, IMAGE_URL, IS_THUMBNAIL)
-	    VALUES (PRODUCT_IMAGE_SEQ.NEXTVAL, #{productNo}, #{imageUrl}, #{isThumbnail})
+	    INSERT INTO PRODUCT_IMAGE (IMAGE_ID, PRODUCT_NO, IS_THUMBNAIL, IMAGE_URL)
+	    VALUES (PRODUCT_IMAGE_SEQ.NEXTVAL, #{productNo}, #{isThumbnail}, #{imageUrl})
 	</insert>
 	
 </mapper>

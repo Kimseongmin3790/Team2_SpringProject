@@ -10,6 +10,7 @@ public class Product {
 	private String pname;
 	private int price;
 	private int stock;
+	private String unit;
 	private String cdate;
 	private String productStatus;
 	private String c1;
