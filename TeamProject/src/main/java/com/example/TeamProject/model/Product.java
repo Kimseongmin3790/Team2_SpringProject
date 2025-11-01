@@ -11,9 +11,11 @@ public class Product {
 	private int price;
 	private int stock;
 	private String unit;
+	private String origin;
 	private String cdate;
 	private String productStatus;
 	private String c1;
 	private String c2;
 	private String c3;
+	private String imagePath;
 }
