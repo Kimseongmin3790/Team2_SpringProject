@@ -21,4 +21,81 @@
 	    VALUES (PRODUCT_IMAGE_SEQ.NEXTVAL, #{productNo}, #{isThumbnail}, #{imageUrl})
 	</insert>
 	
+	<select id="selectAllProductList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+        SELECT 
+		    P.PRODUCT_NO,
+		    P.PNAME,
+		    P.PRICE,
+		    P.ORIGIN,
+		    P.SELLER_ID,
+		    I.IMAGE_URL AS IMAGE_PATH
+		FROM PRODUCT P
+		LEFT JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO AND I.IS_THUMBNAIL = 'Y'
+		ORDER BY P.PRODUCT_NO DESC
+    </select>
+    
+    <select id="selectFilteredCategoryList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
+        SELECT CATEGORY_NO, CATEGORY_NAME, PARENT_CATEGORY_NO
+        FROM PRODUCT_CATEGORY
+        WHERE 
+            <choose>
+                <when test="parent != null">
+                    PARENT_CATEGORY_NO = #{parent}
+                </when>
+                <otherwise>
+                    PARENT_CATEGORY_NO IS NULL
+                </otherwise>
+            </choose>
+        ORDER BY CATEGORY_NO
+    </select>
+    
+    <select id="selectFilteredProductList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+        SELECT
+            P.PRODUCT_NO,
+		    P.PNAME,
+		    P.PRICE,
+		    P.ORIGIN,
+		    P.SELLER_ID,
+		    I.IMAGE_URL AS IMAGE_PATH
+        FROM PRODUCT P
+        LEFT JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO AND I.IS_THUMBNAIL = 'Y'
+        LEFT JOIN PRODUCT_CATEGORY C ON P.CATEGORY_NO = C.CATEGORY_NO
+        WHERE 1=1
+        <if test="detail != null and detail != ''">
+            AND P.CATEGORY_NO = #{detail}
+        </if>
+        <if test="(detail == null or detail == '') and (sub != null and sub != '')">
+            AND P.CATEGORY_NO IN (
+                SELECT CATEGORY_NO FROM PRODUCT_CATEGORY WHERE PARENT_CATEGORY_NO = #{sub}
+            )
+        </if>
+        <if test="(sub == null or sub == '') and (main != null and main != '')">
+            AND P.CATEGORY_NO IN (
+                SELECT CATEGORY_NO FROM PRODUCT_CATEGORY
+                WHERE PARENT_CATEGORY_NO IN (
+                    SELECT CATEGORY_NO FROM PRODUCT_CATEGORY WHERE PARENT_CATEGORY_NO = #{main}
+                )
+            )
+        </if>
+
+        <if test="priceRange != null and priceRange != ''">
+            <choose>
+                <when test="priceRange == '5000'">
+                    AND P.PRICE &lt;= 5000
+                </when>
+                <when test="priceRange == '10000'">
+                    AND P.PRICE BETWEEN 5000 AND 10000
+                </when>
+                <when test="priceRange == '30000'">
+                    AND P.PRICE BETWEEN 10000 AND 30000
+                </when>
+                <when test="priceRange == '30001'">
+                    AND P.PRICE &gt;= 30000
+                </when>
+            </choose>
+        </if>
+
+        ORDER BY P.PRODUCT_NO DESC
+    </select>
+	
 </mapper>
