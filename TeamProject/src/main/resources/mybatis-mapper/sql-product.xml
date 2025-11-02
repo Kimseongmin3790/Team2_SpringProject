@@ -3,6 +3,11 @@
 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.TeamProject.mapper.ProductMapper">
+
+	<select id="selectProduct" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+		SELECT * FROM PRODUCT
+		WHERE PRODUCT_NO=#{productNo}
+	</select>
 	
 	<insert id="insertProduct" parameterType="hashmap" useGeneratedKeys="true" keyColumn="PRODUCT_NO" keyProperty="productNo">
 	    INSERT INTO PRODUCT (

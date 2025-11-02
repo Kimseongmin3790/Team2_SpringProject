@@ -113,7 +113,7 @@ public class ProductController {
 			if (detailImages != null) {
 				for (MultipartFile f : detailImages) {
 					if (f != null && !f.isEmpty()) {
-						insertProductImage(productNo, saveFile(f, uploadDir), "N");
+						insertProductImage(productNo, saveFile(f, uploadDir), "D");
 					}
 				}
 			}

@@ -1266,21 +1266,41 @@
                     totalQty() { return this.selections.reduce((n, it) => n + (it.qty || 0), 0); }
                 },
                 methods: {
-                    alreadyAdded(opt) { return this.selections.some(s => s.sku === opt.value); },
-                    pickFulfillment(opt) { this.fulfillment = opt.value; this.ddOpen1 = false; },
-                    pickSku(opt) {
+                    fnInfo: function () {
+                        let self = this;
+                        let param = {};
+                        $.ajax({
+                            url: "",
+                            dataType: "json",
+                            type: "POST",
+                            data: param,
+                            success: function (data) {
+                                console.log(data);
+                                self.info = data.info;
+                            }
+                        });
+                    },
+
+                    alreadyAdded: function (opt) {
+                        return this.selections.some(s => s.sku === opt.value);
+                    },
+                    pickFulfillment: function (opt) {
+                        this.fulfillment = opt.value;
+                        this.ddOpen1 = false;
+                    },
+                    pickSku: function (opt) {
                         if (this.alreadyAdded(opt)) { alert("이미 추가한 옵션입니다."); this.ddOpen2 = false; return; }
                         this.selections.push({ sku: opt.value, name: opt.l1, price: opt.l2, qty: 1 });
                         this.sku = opt.value; this.ddOpen2 = false; this.recomputeTotal();
                     },
-                    shareNaver() {
+                    shareNaver: function () {
                         if (!this.shareUrl || !this.shareTitle) { alert('공유할 URL/제목이 비었습니다.'); return; }
                         let encUrl = encodeURI(encodeURIComponent(this.shareUrl));
                         let encTitle = encodeURI(this.shareTitle);
                         window.open("https://share.naver.com/web/shareView?url=" + encUrl + "&title=" + encTitle, "_blank");
                         this.shareOpen = false;
                     },
-                    shareKakao() {
+                    shareKakao: function () {
                         if (!(window.Kakao && window.Kakao.isInitialized && window.Kakao.isInitialized())) {
                             alert('카카오 SDK가 초기화되지 않았습니다.'); return;
                         }
@@ -1296,7 +1316,7 @@
                         });
                         this.shareOpen = false;
                     },
-                    shareCopy() {
+                    shareCopy: function () {
                         let link = this.shareUrl || location.href;
                         (navigator.clipboard ? navigator.clipboard.writeText(link)
                             : new Promise(res => {
@@ -1306,21 +1326,48 @@
                         ).then(() => alert('링크가 복사되었습니다.'));
                         this.shareOpen = false;
                     },
-                    fnMinus(i) { const it = this.selections[i]; if (it && it.qty > 1) { it.qty--; this.recomputeTotal(); } },
-                    fnPlus(i) { const it = this.selections[i]; if (it) { it.qty++; this.recomputeTotal(); } },
-                    removeExtra(i) { this.selections.splice(i, 1); this.recomputeTotal(); },
-                    recomputeTotal() { this.totalSum = this.selections.reduce((s, it) => s + it.price * it.qty, 0); },
-                    openDetail() { this.showDetail = true; },
-                    closeDetail() { this.showDetail = false; },
-                    fnPurchase() { }, fnBasket() { }, fnWish() { },
-                    toggleComments() {
+                    fnMinus: function (i) {
+                        const it = this.selections[i];
+                        if (it && it.qty > 1) {
+                            it.qty--; this.recomputeTotal();
+                        }
+                    },
+                    fnPlus: function (i) {
+                        const it = this.selections[i];
+                        if (it) {
+                            it.qty++; this.recomputeTotal();
+                        }
+                    },
+                    removeExtra: function (i) {
+                        this.selections.splice(i, 1);
+                        this.recomputeTotal();
+                    },
+                    recomputeTotal: function () {
+                        this.totalSum = this.selections.reduce((s, it) => s + it.price * it.qty, 0);
+                    },
+                    openDetail: function () {
+                        this.showDetail = true;
+                    },
+                    closeDetail: function () {
+                        this.showDetail = false;
+                    },
+                    fnPurchase: function () {
+
+                    },
+                    fnBasket: function () {
+
+                    },
+                    fnWishL: function () {
+
+                    },
+                    toggleComments: function () {
                         this.commentOpen = !this.commentOpen;
                         // 처음 펼칠 때만 로드(실서비스에선 AJAX로 대체)
                         if (this.commentOpen && this.comments.length === 0) {
                             this.loadCommentsOnce();
                         }
                     },
-                    loadCommentsOnce() {
+                    loadCommentsOnce: function () {
                         // TODO: 실제 API 연동으로 교체
                         this.comments = [
                             { id: 1, text: '고객님, [경북 포항 김지윤] 구룡포 연지홍게 홍게제철 실속 가성비 3kg(10~12미) 구매해주시고 소중한 리뷰 남겨주셔서 진심으로 감사드립니다. 달큰하고 싱싱하게 드셨다니 저희도 정말 기쁩니다! 앞으로도 저희 대한민국농수산 직거래마켓에 많은 관심 부탁드리며, 또 찾아주시길 바라겠습니다. 😊' },
