@@ -265,6 +265,7 @@ body {
   animation: fadeIn 0.25s ease;
 }
 
+
 .category-container:hover .category-menu {
   display: block;
 }

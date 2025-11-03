@@ -36,6 +36,7 @@ public class AdminController {
 
         return "admin/productManage"; 
     }
+		
 	
 	@RequestMapping("/locationMap.do") 
     public String locationMap(Model model) throws Exception{

@@ -7,6 +7,6 @@ public class ProductCategory {
 	private int categoryNo;
 	private String categoryName;
 	private int parentCategoryNo;
-	
+	private String imageUrl;
 	
 }
