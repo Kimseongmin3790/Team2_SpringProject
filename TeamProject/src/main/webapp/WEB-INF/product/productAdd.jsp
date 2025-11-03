@@ -176,6 +176,7 @@
                                         <input type="number" name="stock" placeholder="재고 수량을 입력하세요" required>
 
                                         <label>단위</label>
+                                        <input type="text">
                                         <select name="unit" v-model="unit">
                                             <option value="">단위 선택</option>
                                             <option v-for="it in units" :value="it">{{it}}</option>

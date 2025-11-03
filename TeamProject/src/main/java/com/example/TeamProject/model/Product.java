@@ -18,6 +18,10 @@ public class Product {
 	private String c1;
 	private String c2;
 	private String c3;
+	private String imageId;
+	private String isThumbnail;
+	private String sortOrder;
+	private String imageUrl;
 	private String categoryName;
 	private String filePath;
 	private String imagePath;

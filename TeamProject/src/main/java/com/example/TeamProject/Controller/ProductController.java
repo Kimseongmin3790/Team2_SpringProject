@@ -36,11 +36,21 @@ public class ProductController {
 	}
 
 	@RequestMapping("/productInfo.do")
-	public String info(Model model) {
+	public String info(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
+			throws Exception {
+		System.out.println(map.get("productNo"));
+		request.setAttribute("productNo", map.get("productNo"));
 		return "product/productInfo";
 	}
 	
-	
+	@RequestMapping(value = "/product-view.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String productView(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = productService.getProduct(map);
+		return new Gson().toJson(resultMap);
+	}
+
 	@PostMapping(value = "/productUpload.dox", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> productUpload(
@@ -109,7 +119,7 @@ public class ProductController {
 			if (galleryImages != null) {
 				for (MultipartFile f : galleryImages) {
 					if (f != null && !f.isEmpty()) {
-						insertProductImage(productNo, saveFile(f, uploadDir), "N");
+						insertProductImage(productNo, saveFile(f, uploadDir), "A");
 					}
 				}
 			}

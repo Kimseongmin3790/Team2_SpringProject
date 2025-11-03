@@ -21,4 +21,37 @@
 	    VALUES (PRODUCT_IMAGE_SEQ.NEXTVAL, #{productNo}, #{isThumbnail}, #{imageUrl})
 	</insert>
 	
+	<select id="selectAllProductList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+        SELECT 
+		    P.PRODUCT_NO,
+		    P.PNAME,
+		    P.PRICE,
+		    P.ORIGIN,
+		    P.SELLER_ID,
+		    I.IMAGE_URL AS IMAGE_PATH
+		FROM PRODUCT P
+		LEFT JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO AND I.IS_THUMBNAIL = 'Y'
+		ORDER BY P.PRODUCT_NO DESC
+    </select>
+    
+    <select id="selectProduct" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+    	SELECT * FROM PRODUCT
+		WHERE PRODUCT_NO = #{productNo}
+    </select>
+    
+    <select id="selectImageList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+		SELECT
+		I.IMAGE_ID AS imageId,
+		I.PRODUCT_NO AS productNo,
+		UPPER(TRIM(I.IS_THUMBNAIL)) AS isThumbnail, -- 공백/대소문자 정규화
+		NVL(I.SORT_ORDER, 9999) AS sortOrder,
+		DBMS_LOB.SUBSTR(I.IMAGE_URL, 4000, 1) AS imageUrl
+		FROM PRODUCT_IMAGE I
+		WHERE I.PRODUCT_NO = #{productNo}
+		AND UPPER(TRIM(I.IS_THUMBNAIL)) IN ('A','N') -- 유효한 값만
+		ORDER BY
+		DECODE(UPPER(TRIM(I.IS_THUMBNAIL)), 'A', 1, 'N', 2, 9), -- A 먼저
+		NVL(I.SORT_ORDER, 9999),
+		I.IMAGE_ID
+	</select>
 </mapper>
