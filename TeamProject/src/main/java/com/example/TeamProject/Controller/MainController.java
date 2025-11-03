@@ -3,7 +3,9 @@ package com.example.TeamProject.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller; 
+import org.springframework.stereotype.Controller; // 뷰 반환과 데이터 응답을 모두 처리하기 위해 @Controller 유지
+import org.springframework.ui.Model;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -53,4 +55,9 @@ public class MainController {
         List<?> list = mainService.selectBestProducts();
         return new Gson().toJson(list); 
     }
+
+    
 }
+
+
+

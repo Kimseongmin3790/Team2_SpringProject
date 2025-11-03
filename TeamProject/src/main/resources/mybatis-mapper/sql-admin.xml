@@ -38,10 +38,13 @@
 	
 	<select id="selectProductList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
 		SELECT P.*, C.CATEGORY_NAME AS C1, C2.CATEGORY_NAME AS C2, C3.CATEGORY_NAME AS C3, TO_CHAR(P.CDATETIME, 'YY-MM-DD') AS CDATE
+		            
 		FROM PRODUCT P 
-		INNER JOIN PRODUCT_CATEGORY C ON P.CATEGORY_NO = C.CATEGORY_NO
-		INNER JOIN PRODUCT_CATEGORY C2 ON C.PARENT_CATEGORY_NO = C2.CATEGORY_NO
-		INNER JOIN PRODUCT_CATEGORY C3 ON C2.PARENT_CATEGORY_NO = C3.CATEGORY_NO
+		INNER JOIN PRODUCT_CATEGORY C   ON P.CATEGORY_NO = C.CATEGORY_NO
+        LEFT JOIN PRODUCT_CATEGORY C2   ON C.PARENT_CATEGORY_NO = C2.CATEGORY_NO
+        LEFT JOIN PRODUCT_CATEGORY C3   ON C2.PARENT_CATEGORY_NO = C3.CATEGORY_NO
+        
+        		        
 	</select>
 	
 	 <!-- 대분류: 부모가 없음 -->
@@ -74,6 +77,7 @@
 	<select id="selectCategoryList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
 		SELECT *
 		FROM PRODUCT_CATEGORY
+		ORDER BY CATEGORY_NO
 	</select>
 	
 	<select id="selectNearestSellers" parameterType="hashmap" resultType="com.example.TeamProject.model.SellerVO">
