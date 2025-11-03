@@ -1,0 +1,14 @@
+package com.example.TeamProject.model;
+
+import lombok.Data;
+
+@Data
+public class OrderItem {
+	private int orderItemNo;
+	private int orderNo;
+	private int productNo;
+	private int quantity;
+	private int price;
+	private String productName;
+	
+}

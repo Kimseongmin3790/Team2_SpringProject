@@ -149,5 +149,94 @@
 	<delete id="deleteInquiry" parameterType="hashmap">
 	  DELETE FROM INQUIRY WHERE INQUIRY_NO = #{inquiryNo}
 	</delete>
+	
+	<select id="selectProductQnaList" parameterType="hashmap" resultType="com.example.TeamProject.model.Board">
+	  SELECT
+	    Q.QNA_NO,
+	    Q.TITLE,
+	    Q.USER_ID,
+	    TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD') AS REG_DATE,
+	    Q.STATUS,
+	    Q.IS_SECRET,
+	    P.PNAME,
+	    I.IMAGE_URL AS THUMB_URL
+	  FROM PRODUCT_QNA Q
+	  JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
+	  LEFT JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO AND I.IS_THUMBNAIL = 'Y'
+	  <where>
+	      <if test="keyword != null and keyword != ''">
+	          <choose>
+	              <when test="searchType == 'title'">
+	                  AND Q.TITLE LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <when test="searchType == 'content'">
+	                  AND Q.CONTENT LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <when test="searchType == 'userId'">
+	                  AND Q.USER_ID LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <otherwise>
+	                  AND (Q.TITLE LIKE '%' || #{keyword} || '%' OR Q.CONTENT LIKE '%' || #{keyword} || '%')
+	              </otherwise>
+	          </choose>
+	      </if>
+	  </where>
+	  ORDER BY Q.QNA_NO DESC
+	  OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+	</select>
+	
+	<select id="countProductQna" parameterType="hashmap" resultType="int">
+	  SELECT COUNT(*)
+	  FROM PRODUCT_QNA Q
+	  JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
+	  <where>
+	      <if test="keyword != null and keyword != ''">
+	          <choose>
+	              <when test="searchType == 'title'">
+	                  AND Q.TITLE LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <when test="searchType == 'content'">
+	                  AND Q.CONTENT LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <when test="searchType == 'userId'">
+	                  AND Q.USER_ID LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <otherwise>
+	                  AND (Q.TITLE LIKE '%' || #{keyword} || '%' OR Q.CONTENT LIKE '%' || #{keyword} || '%')
+	              </otherwise>
+	          </choose>
+	      </if>
+	  </where>
+	</select>
+	
+	<select id="selectProductQnaDetail" parameterType="int" resultType="com.example.TeamProject.model.Board">
+	    SELECT 
+		    Q.QNA_NO,
+		    Q.TITLE,
+		    Q.USER_ID,
+		    Q.CONTENT,
+		    Q.IS_SECRET,
+		    Q.CNT,
+		    Q.STATUS,
+		    TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS REG_DATE,
+		    P.PNAME,
+		    I.IMAGE_URL AS THUMB_URL
+		FROM PRODUCT_QNA Q
+		INNER JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
+		INNER JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO
+		WHERE I.IS_THUMBNAIL = 'Y' AND Q.QNA_NO = #{qnaNo}
+	</select>
+	
+	<select id="selectQnaPwd" parameterType="int" resultType="String">
+	    SELECT PASSWORD
+	    FROM PRODUCT_QNA
+	    WHERE QNA_NO = #{qnaNo}
+	</select>
+	
+	<select id="selectQnaAnswer" parameterType="int" resultType="com.example.TeamProject.model.Answer">
+	    SELECT *
+	    FROM PRODUCT_QNA_ANSWER
+	    WHERE QNA_NO = #{qnaNo}
+	</select>
 
 </mapper>

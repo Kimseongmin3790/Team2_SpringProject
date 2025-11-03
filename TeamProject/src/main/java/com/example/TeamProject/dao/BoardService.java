@@ -158,8 +158,69 @@ public class BoardService {
 		return resultMap;
 	}
 	
-	public boolean checkPassword(Integer inquiryNo, String pw) {		
+	public HashMap<String, Object> getProductQnaList(HashMap<String, Object> map) {
+	    HashMap<String, Object> resultMap = new HashMap<>();
+	    try {
+	        int page = Integer.parseInt(map.getOrDefault("page", "1").toString());
+	        int pageSize = Integer.parseInt(map.getOrDefault("pageSize", "10").toString());
+	        int offset = (page - 1) * pageSize;
+	        
+	        map.put("offset", offset);
+	        map.put("limit", pageSize);
+	        List<Board> list = boardMapper.selectProductQnaList(map);
+	        int totalCount = boardMapper.countProductQna(map);	        
+	        int totalPage = (int) Math.ceil((double) totalCount / pageSize);
+
+	        resultMap.put("list", list);
+	        resultMap.put("page", page);
+	        resultMap.put("totalPage", totalPage);
+	        resultMap.put("totalCount", totalCount);
+	        resultMap.put("result", "success");
+	    } catch (Exception e) {
+	        resultMap.put("result", "fail");
+	        e.printStackTrace();
+	    }
+	    return resultMap;
+	}
+	
+	public HashMap<String, Object> getProductQnaInfo(Integer qnaNo, HttpSession session) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
+		try {
+			Board info = boardMapper.selectProductQnaDetail(qnaNo);
+			resultMap.put("info", info);
+	        resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> getQnaAnswer(Integer qnaNo) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
+		try {
+	        Answer answer = boardMapper.selectQnaAnswer(qnaNo);
+	        
+	        resultMap.put("info", answer);
+	        resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
+	public boolean inquiryCheckPassword(Integer inquiryNo, String pw) {		
 		String dbPw = boardMapper.selectInquiryPwd(inquiryNo);
+		return dbPw != null && dbPw.equals(pw);
+	}
+	
+	public boolean qnaCheckPassword(Integer qnaNo, String pw) {		
+		String dbPw = boardMapper.selectQnaPwd(qnaNo);
 		return dbPw != null && dbPw.equals(pw);
 	}
 	

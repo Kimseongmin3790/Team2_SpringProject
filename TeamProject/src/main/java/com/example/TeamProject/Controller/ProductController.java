@@ -42,44 +42,12 @@ public class ProductController {
 		request.setAttribute("productNo", map.get("productNo"));
 		return "product/productInfo";
 	}
-
-	@RequestMapping("/productList.do")
-	public String list(Model model) {
-		return "product/productList";
-	}
 	
 	@RequestMapping(value = "/product-view.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String productView(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = productService.getProduct(map);
-		return new Gson().toJson(resultMap);
-	}
-
-	@RequestMapping(value = "/productAllList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-	@ResponseBody
-	public String productList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap = productService.getAllProductList(map);
-
-		return new Gson().toJson(resultMap);
-	}
-
-	@RequestMapping(value = "/productAllCategoryList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-	@ResponseBody
-	public String productCategoryList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap = productService.getAllCategoryList(map);
-
-		return new Gson().toJson(resultMap);
-	}
-
-	@RequestMapping(value = "/productFilter.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-	@ResponseBody
-	public String productFilter(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap = productService.getFilteredProductList(map);
-
 		return new Gson().toJson(resultMap);
 	}
 

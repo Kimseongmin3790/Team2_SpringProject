@@ -119,7 +119,6 @@ public class CommonController {
 	    if (userId == null || userId.isEmpty()) {
 	  
 	        response.put("status", "fail");
-//	        response.put("message", "로그인이 필요합니다."); 프론트부분에 경고창이 나와 삭제해도될듯?
 	        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
 	    }
 

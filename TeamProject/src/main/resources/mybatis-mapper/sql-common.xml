@@ -22,7 +22,9 @@
 		    IS_SECRET,
 		    CDATETIME,
 		    UDATETIME,
-		    ORDER_NO
+		    ORDER_NO,
+		    CNT,
+		    PASSWORD
 		) VALUES (
 		    INQUIRY_SEQ.NEXTVAL,
 		    #{userId},
@@ -33,8 +35,8 @@
 		    #{isSecret},
 		    SYSDATE,
 		    SYSDATE,
-		    #{orderNo}
-		)
+		    #{orderNo},
+		    0)
 		</insert>
 	
 	<!--상품 카테고리 목록 가져오기-->

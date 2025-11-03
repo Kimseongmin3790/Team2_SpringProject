@@ -229,6 +229,23 @@
                     font-size: 15px;
                 }
 
+                .notice-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    text-align: center;
+                    font-size: 15px;
+                    table-layout: fixed;
+                    /* ✅ 열 너비 고정 */
+                }
+
+                .notice-table th,
+                .notice-table td {
+                    padding: 12px 10px;
+                    border-bottom: 1px solid #eee;
+                    word-wrap: break-word;
+                    /* ✅ 긴 글도 줄바꿈 */
+                }
+
                 .notice-table a,
                 table a {
                     color: inherit;
@@ -458,11 +475,12 @@
                 .btn-write-notice:hover {
                     background: #154a15;
                 }
+
                 .comment-count-badge {
-                    color: #5dbb63; 
-                    font-size: 13px; 
+                    color: #5dbb63;
+                    font-size: 13px;
                     font-weight: 600;
-                    margin-left: 5px; 
+                    margin-left: 5px;
                 }
 
 
@@ -486,6 +504,21 @@
                 .btn-write-inquiry:hover {
                     background: #4ba954;
                     transform: translateY(-2px);
+                }
+
+                .product-thumb {
+                    width: 60px;
+                    height: 60px;
+                    object-fit: cover;
+                    border-radius: 8px;
+                    margin-right: 10px;
+                }
+
+                .product-name {
+                    font-size: 13px;
+                    color: #5dbb63;
+                    font-weight: 600;
+                    margin-bottom: 3px;
                 }
             </style>
         </head>
@@ -545,14 +578,17 @@
                                 <tr v-for="n in noticeList" :key="n.noticeNo" @click="fnDetail(n.noticeNo)"
                                     class="row-link">
                                     <td>{{ n.noticeNo }}</td>
-                                    <td style="text-align:left; padding-left:15px; cursor:pointer;">{{ n.title }}<span v-if="n.commentCount > 0" class="comment-count-badge">({{ n.commentCount }})</span></td>
+                                    <td style="text-align:left; padding-left:15px; cursor:pointer;">{{ n.title }}<span
+                                            v-if="n.commentCount > 0" class="comment-count-badge">({{ n.commentCount
+                                            }})</span></td>
                                     <td>{{ n.userId }}</td>
                                     <td>{{ n.regDate }}</td>
                                 </tr>
                             </tbody>
                         </table>
                         <div class="notice-bottom-actions">
-                            <button v-if="userRole === 'ADMIN'" class="btn-write-notice" @click="fnGoToNoticeWrite">공지사항 작성</button>
+                            <button v-if="userRole === 'ADMIN'" class="btn-write-notice" @click="fnGoToNoticeWrite">공지사항
+                                작성</button>
                         </div>
 
                         <!-- ✅ 페이지네이션 -->
@@ -577,34 +613,66 @@
                         </c:forEach>
                     </c:if>
 
-                    <!-- ✅ 상품문의 (비밀번호 모달 유지) -->
+                    <!-- ✅ 상품문의 (썸네일 + 상품명 + 비밀글 처리) -->
                     <c:if test="${param.tab eq 'qna'}">
-                        <h3>상품문의</h3>
-                        <table>
+                        <div class="inquiry-header">
+                            <div class="inquiry-left">
+                                <h3>상품문의</h3>
+                                <p class="total-count">총 <strong>{{ qnaList.length }}</strong>개의 게시물</p>
+                            </div>
+                        </div>
+
+                        <div v-if="qnaList.length === 0" class="empty">등록된 상품문의가 없습니다.</div>
+
+                        <table v-if="qnaList.length > 0" class="notice-table">
                             <thead>
                                 <tr>
                                     <th>번호</th>
+                                    <th>상품정보</th>
                                     <th>제목</th>
                                     <th>작성자</th>
                                     <th>작성일</th>
+                                    <th>조회수</th>
+                                    <th>처리상태</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <c:forEach var="q" items="${qnaList}">
-                                    <tr>
-                                        <td>${q.qnaNo}</td>
-                                        <td>
-                                            <a href="javascript:void(0);" @click="fnOpenQna(${q.qnaNo}, '${q.secret}')">
-                                                ${q.title}
-                                                <c:if test="${q.secret eq 'Y'}"><span class="lock">🔒</span></c:if>
-                                            </a>
-                                        </td>
-                                        <td>${q.writer}</td>
-                                        <td>${q.regDate}</td>
-                                    </tr>
-                                </c:forEach>
+                                <tr v-for="q in qnaList" :key="q.qnaNo" @click="fnOpenQnaDetail(q.qnaNo, q.isSecret)">
+                                    <td>{{ q.qnaNo }}</td>
+                                    <td style="text-align:left; display:flex; align-items:center;">
+                                        <img :src="q.thumbUrl" class="product-thumb" v-if="q.thumbUrl">
+                                        <div>
+                                            <div class="product-name">{{ q.pname }}</div>
+                                        </div>
+                                    </td>
+                                    <td style="text-align:left; padding-left:15px;">
+                                        <a href="javascript:void(0);" style="text-decoration:none; color:inherit;">
+                                            {{ q.title }}
+                                            <span v-if="q.isSecret === 'Y'" class="lock">🔒</span>
+                                        </a>
+                                    </td>
+                                    <td>{{ q.userId }}</td>
+                                    <td>{{ q.regDate }}</td>
+                                    <td>{{ q.cnt }}</td>
+                                    <td>{{ q.status }}</td>
+                                </tr>
                             </tbody>
                         </table>
+
+                        <!-- ✅ 페이지네이션 -->
+                        <div class="pagination" v-if="qnaTotalPage > 1">
+                            <button :disabled="qnaPage === 1" @click="fnChangeQnaPage(qnaPage - 1)">이전</button>
+                            <button v-for="p in qnaTotalPage" :key="p" :class="{active: p === qnaPage}"
+                                @click="fnChangeQnaPage(p)">
+                                {{ p }}
+                            </button>
+                            <button :disabled="qnaPage === qnaTotalPage"
+                                @click="fnChangeQnaPage(qnaPage + 1)">다음</button>
+                        </div>
+
+                        <button class="btn-write-inquiry" @click="fnGoToQnaWrite">
+                            ✏️ 상품문의 작성
+                        </button>
                     </c:if>
 
                     <!-- ✅ 고객문의 (비밀번호 모달 적용) -->
@@ -682,12 +750,18 @@
                             data() {
                                 return {
                                     sessionId: "${sessionId}",
+                                    // 공지사항
                                     noticeList: [],
                                     searchType: "title",
                                     keyword: "",
                                     page: 1,
                                     totalPage: 1,
                                     userRole: "${sessionScope.sessionStatus}",
+
+                                    // 상품문의
+                                    qnaList: [],
+                                    qnaPage: 1,
+                                    qnaTotalPage: 1,
 
 
                                     // 고객문의
@@ -747,6 +821,115 @@
                                     }
                                     this.page = p;
                                     this.fnLoadNotice();
+                                },
+
+                                /* =========================
+                                    ✅ 상품문의 목록 불러오기
+                                ========================== */
+                                fnLoadQna(keyword = "", searchType = "", page = 1) {
+                                    const self = this;
+                                    $.ajax({
+                                        url: "/productQnaList.dox",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: {
+                                            keyword: keyword,
+                                            searchType: searchType,
+                                            page: page
+                                        },
+                                        success(res) {
+                                            self.qnaList = res.list || [];
+                                            self.qnaPage = res.page;
+                                            self.qnaTotalPage = res.totalPage;
+                                        },
+                                        error() {
+                                            console.error("상품문의 불러오기 실패");
+                                        }
+                                    });
+                                },
+
+                                fnChangeQnaPage(p) {
+                                    this.qnaPage = p;
+                                    this.fnLoadQna(this.qnaKeyword, this.qnaSearchType, p);
+                                },
+
+                                fnOpenQnaDetail(id, isSecret) {
+                                    // 공개글
+                                    if (isSecret !== "Y") {
+                                        location.href = "/productQna/detail.do?qnaNo=" + id;
+                                        return;
+                                    }
+
+                                    // 비공개글 → 비밀번호 입력창
+                                    Swal.fire({
+                                        title: "비밀번호 확인",
+                                        input: "password",
+                                        inputLabel: "비공개 게시글입니다. 비밀번호를 입력해주세요.",
+                                        confirmButtonText: "확인",
+                                        showCancelButton: true,
+                                        cancelButtonText: "취소",
+                                        confirmButtonColor: "#5dbb63",
+                                        cancelButtonColor: "#aaa",
+                                        preConfirm: (password) => {
+                                            if (!password) {
+                                                Swal.showValidationMessage("비밀번호를 입력해주세요.");
+                                                return false;
+                                            }
+                                            return password;
+                                        }
+                                    }).then((result) => {
+                                        if (result.isConfirmed && result.value) {
+                                            $.ajax({
+                                                url: "/productQna/checkPwd.dox",
+                                                type: "POST",
+                                                dataType: "json",
+                                                data: { 
+                                                    qnaNo: id, 
+                                                    pw: result.value 
+                                                },
+                                                success: (res) => {
+                                                    if (res.result === "success") {
+                                                        Swal.fire({
+                                                            icon: "success",
+                                                            title: "인증 완료",
+                                                            text: "게시글로 이동합니다.",
+                                                            confirmButtonColor: "#5dbb63",
+                                                            timer: 1200,
+                                                            showConfirmButton: false
+                                                        }).then(() => {
+                                                            location.href = "/productQna/detail.do?qnaNo=" + id;
+                                                        });
+                                                    } else {
+                                                        Swal.fire({
+                                                            icon: "error",
+                                                            title: "인증 실패",
+                                                            text: "비밀번호가 올바르지 않습니다.",
+                                                            confirmButtonColor: "#5dbb63"
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    });
+                                },
+
+                                fnGoToQnaWrite() {
+                                    const self = this;
+                                    // 로그인 체크
+                                    if (!self.sessionId || self.sessionId.trim() === "") {
+                                        Swal.fire({
+                                            icon: "warning",
+                                            title: "로그인이 필요합니다",
+                                            text: "상품문의 작성은 로그인 후 이용 가능합니다.",
+                                            confirmButtonColor: "#5dbb63"
+                                        }).then(() => {
+                                            location.href = "/login.do";
+                                        });
+                                        return;
+                                    }
+
+                                    // 상품문의 작성 페이지로 이동
+                                    location.href = "/productQna/write.do";
                                 },
 
                                 /* =========================

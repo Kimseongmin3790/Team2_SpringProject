@@ -1,13 +1,14 @@
 package com.example.TeamProject.model;
 
-import lombok.Data; 
+import lombok.Data;
 
 @Data
 public class Producer {
-    // SELLER_INFO 테이블 컬럼 구조를 알 수 없으나, JSP의 Vue 데이터 구조에 맞춰 임시 정의
-    private int id; // SELLER_ID 또는 SELLER_NO로 예상
-    private String name; 
-    private String description;
-    private String logoUrl; // DB 컬럼: LOGO_URL로 예상
-    private String linkUrl = "#"; // JSP에서 사용하므로 기본값 설정
+
+    private String userId;         // 입점 업체 ID (SELLER_ID)
+    private String businessName;     // 입점 업체 이름
+    private String profileImg;  // 입점 업체 로고 이미지 경로
+    private String addrDo; // 주소 중 시,도 추출
+    private String addrCity; // 주소 중 시,군,구 추출
+
 }
