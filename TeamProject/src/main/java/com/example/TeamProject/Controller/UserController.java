@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.TeamProject.dao.OrderService;
 import com.example.TeamProject.dao.UserService;
-import com.example.TeamProject.model.User;
 import com.google.gson.Gson;
 
 import jakarta.servlet.http.HttpSession;
@@ -22,6 +22,9 @@ public class UserController {
 	
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	OrderService orderService;
 	
 	@RequestMapping("/login.do") 
     public String login(Model model) throws Exception{
@@ -206,5 +209,16 @@ public class UserController {
 		HashMap<String, Object> resultMap = userService.recoverUser(map);
 		return new Gson().toJson(resultMap);
 	}
+	
+	// 주문목록 가져오기
+    @RequestMapping(value = "/myPage/orders.dox", method = RequestMethod.GET, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String getOrderHistory(HttpSession session) throws Exception {
+        String userId = (String) session.getAttribute("sessionId");
+
+        HashMap<String, Object> resultMap = orderService.getOrderHistory(userId);
+
+        return new Gson().toJson(resultMap);
+    }
 	
 }

@@ -355,6 +355,11 @@
                         <label for="inquiry-content">내용</label>
                         <textarea id="inquiry-content" class="form-textarea" placeholder="문의하실 내용을 입력하세요" v-model="inquiryContent"></textarea>
                     </div>
+                    <div class="form-group">
+                        <label for="inquiry-password">비밀번호</label>
+                        <input type="password" id="inquiry-password" class="form-input" placeholder="비밀번호를 입력하세요. (최대 20자)" v-model="inquiryPassword" maxlength="20">
+                    </div>
+
                     <button class="submit-button" @click="fnInquiry">문의 등록</button>
                 </div>
 
@@ -395,6 +400,7 @@
                 inquiryContent : "",
                 orderList: [],
                 selectedOrderNo: null,
+                inquiryPassword: "",
 
                 // 검색기능
                 searchText: "",
@@ -437,9 +443,11 @@
                     category: self.inquiryCategory,
                     title: self.inquiryTitle,
                     content: self.inquiryContent,
+                    password: self.inquiryPassword,
                     isSecret: 'Y',
                     orderNo: self.selectedOrderNo,
                     userId : self.id
+                    
                 };
                 $.ajax({
                     url: "/inquiry-add.dox",
@@ -454,6 +462,7 @@
                             self.inquiryCategory = "";
                             self.inquiryTitle = "";
                             self.inquiryContent = "";
+                            self.inquiryPassword = "";
                             self.selectedOrderNo = null;
 
                                 
