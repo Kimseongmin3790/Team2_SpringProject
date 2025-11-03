@@ -12,11 +12,58 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
     <style>
+
         body { font-family: "Noto Sans KR", sans-serif; background: #fafafa; margin: 0; }
-        .container { display: flex; max-width: 1200px; margin: 30px auto; gap: 20px; }
+        .product-category-page {
+            display: flex; 
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: space-between;
+            max-width: 1400px; 
+            margin: 40px auto; 
+            padding: 0 20px;
+            gap: 30px; }
 
         /* ---- 좌측 트리 ---- */
-        .sidebar { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .product-category-page .sidebar {
+            flex: 0 0 250px;
+            background: white;
+            padding: 20px; 
+            border-radius: 15px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 120px;
+            align-self: flex-start;
+         }
+
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .btn-register {
+            background-color: #4CAF50; /* 녹색 */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-register:hover {
+            background-color: #45a049; /* hover 시 조금 진하게 */
+        }
+
+        .sidebar h3{
+            color:#1a5d1a;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
         .sidebar ul { list-style: none; padding-left: 12px; }
         .sidebar li { cursor: pointer; padding: 6px 8px; border-radius: 6px; transition: 0.2s; }
         .sidebar li:hover { background: #e8f5e9; }
@@ -44,10 +91,17 @@
 <body>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-<div id="app" class="container">
+<div id="app" class="product-category-page">
     <!-- 좌측 트리 -->
+    
+   
     <div class="sidebar">
+
+        <div class="sidebar-header">
         <h3>카테고리</h3>
+        <button class="btn-register" @click="goToProductRegister">상품등록</button>
+        </div>
+
         <ul>
             <li v-for="p in parentCategories" :key="p.categoryNo">
                 <div @click="toggleParent(p.categoryNo)" :class="{ active: selectedParent === p.categoryNo }">
@@ -86,7 +140,7 @@
             <div class="grid">
                 <div class="grid-item" v-for="p in parentCategories" :key="p.categoryNo"
                      @click="toggleParent(p.categoryNo)">
-                    <img :src="p.imageUrl || '/resources/img/category/noimage.jpg'" alt="">
+                    <img :src="p.imageUrl || '/resources/img/category/noimage.png'" alt="대분류 이미지">
                    {{ p.categoryName }}
                 </div>
             </div>
@@ -98,7 +152,7 @@
             <div class="grid">
                 <div class="grid-item" v-for="m in getChildCategories(selectedParent)" :key="m.categoryNo"
                      @click="toggleChild(m.categoryNo)">
-                    <img :src="m.imageUrl || '/resources/img/category/noimage.jpg'" alt="">
+                    <img :src="m.imageUrl || '/resources/img/category/noimage.png'" alt="중분류 이미지">
                     {{ m.categoryName }}
                 </div>
             </div>
@@ -110,7 +164,7 @@
             <div class="grid">
                 <div class="grid-item" v-for="s in getChildCategories(selectedChild)" :key="s.categoryNo"
                      @click="selectSub(s.categoryNo)">
-                    <img :src="s.imageUrl || '/resources/img/category/noimage.jpg'" alt="카테고리 이미지">
+                    <img :src="s.imageUrl || '/resources/img/category/noimage.png'" alt="소분류 이미지">
                     {{ s.categoryName }}
                 </div>
             </div>
@@ -121,7 +175,7 @@
             <div class="section-title"></div>
             <div class="grid">
                 <a class="grid-item" v-for="p in filteredProducts" :key="p.productNo"
-                   :href="'/product/detail?productNo=' + p.productNo">
+                   :href="'/productInfo.do?productNo=' + p.productNo">
                     <img :src="p.filePath || '/resources/img/category/noimage.jpg'" alt="상품 이미지">
                     <div>{{ p.pname }}</div>
                     <div>{{p.pinfo}}</div>
@@ -131,6 +185,7 @@
             <div v-if="filteredProducts.length === 0">등록된 상품이 없습니다.</div>
         </div>
     </div>
+   
 </div>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
@@ -144,7 +199,8 @@ const app = Vue.createApp({
             selectedParent: '',
             selectedChild: '',
             selectedSub: '',
-            viewLevel: 'parent'
+            viewLevel: 'parent',
+            initialCategoryNo: '${categoryNo}' // URL로부터 전달받은 값
         }
     },
     computed: {
@@ -156,7 +212,7 @@ const app = Vue.createApp({
         },
         breadcrumb() {
             const result = [];
-            if (this.selectedParent) result.push(this.getCategoryName(this.selectedParent));
+            if (this.selectedParent) result.push(this.getCategoryName(this.selectedParent));                
             if (this.selectedChild) result.push(this.getCategoryName(this.selectedChild));
             if (this.selectedSub) result.push(this.getCategoryName(this.selectedSub));
             return result;
@@ -166,9 +222,12 @@ const app = Vue.createApp({
         fnLoad() {
             $.post("/categoryProductList.dox", {}, data => {
                 if (data.result === "success") {
-                    console.log(data);
                     this.categoryList = data.categories;
                     this.productList = data.list;
+                    console.log("카테고리 리스트:", this.categoryList[0]?.imageUrl);
+
+                    // 카테고리 데이터 로드 후 URL 값 적용
+                    this.applyInitialCategory();
                 }
             }, "json");
         },
@@ -205,7 +264,6 @@ const app = Vue.createApp({
             this.viewLevel = 'product';
         },
         goToLevel(index) {
-            // breadcrumb 클릭 시 상위 레벨로 이동
             if (index === 0) {
                 this.selectedChild = '';
                 this.selectedSub = '';
@@ -214,10 +272,56 @@ const app = Vue.createApp({
                 this.selectedSub = '';
                 this.viewLevel = 'sub';
             }
+        },
+
+        // URL에서 categoryNo 추출
+        getCategoryFromURL() {
+            const path = window.location.pathname;
+            const match = path.match(/\/category\/(\d+)/);
+            return match ? match[1] : '';
+        },
+
+        // URL에 맞게 초기 상태 설정
+        applyInitialCategory() {
+            const no = Number(this.initialCategoryNo);
+            if (!no) return;
+
+            const target = this.categoryList.find(c => Number(c.categoryNo) === no);
+            if (!target) return;
+
+            // target의 부모 트리 찾아서 레벨 세팅
+            if (!target.parentCategoryNo) {
+                // 대분류
+                this.selectedParent = no;
+                this.viewLevel = 'child';
+            } else {
+                const parent = this.categoryList.find(c => c.categoryNo === target.parentCategoryNo);
+                if (parent && !parent.parentCategoryNo) {
+                    // 중분류
+                    this.selectedParent = parent.categoryNo;
+                    this.selectedChild = no;
+                    this.viewLevel = 'sub';
+                } else if (parent && parent.parentCategoryNo) {
+                    // 소분류
+                    const top = this.categoryList.find(c => c.categoryNo === parent.parentCategoryNo);
+                    this.selectedParent = top ? top.categoryNo : '';
+                    this.selectedChild = parent.categoryNo;
+                    this.selectedSub = no;
+                    this.viewLevel = 'product';
+                }
+            }
+        },
+
+        goToProductRegister() {
+        window.location.href = '/product/add.do';
         }
     },
     mounted() {
-        this.fnLoad();
+
+        if (this.initialCategoryNo) {
+            console.log("받은 categoryNo:", this.initialCategoryNo);
+        }
+        this.fnLoad(); // 카테고리 로드 후 자동 적용
     }
 });
 app.mount("#app");

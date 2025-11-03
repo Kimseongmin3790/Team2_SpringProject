@@ -1,96 +1,55 @@
 $(document).ready(function () {
     const path = $("body").data("context") || ""; // JSP contextPath 필요 시 body에 data-context로 전달
 
-	$.ajax({
-	        url: path + "/categoryList.dox",
-	        type: "POST",
-	        dataType: "json",
-	        success: function (res) {
-	            const menu = $("#dropdownMenu");
-	            menu.empty();
+    $.ajax({
+        url: path + "/categoryList.dox",
+        type: "POST",
+        dataType: "json",
+        success: function (res) {
+            const menu = $("#dropdownMenu");
+            menu.empty();
 
-	            const topLevel = res.list.filter(c => !c.parentCategoryNo);
-	            const children = res.list.filter(c => c.parentCategoryNo);
-	            
-	            topLevel.forEach(top => {
-	                const liTop = $("<li>");
-	                const aTop = $("<a>")
-	                    .text(top.categoryName)
-	                    .attr("href", path + "/category/" + top.categoryNo)
-	                    .attr("data-category-no", top.categoryNo)
-	                    .attr("data-category-name", top.categoryName)
-	                    .addClass("category-link");
+            const topLevel = res.list.filter(c => !c.parentCategoryNo);
+            const children = res.list.filter(c => c.parentCategoryNo);
 
-	                liTop.append(aTop);
-	                
-	                const midList = children.filter(m => m.parentCategoryNo === top.categoryNo);
-	                if (midList.length > 0) {
-	                    const ulMid = $("<ul>");
-	                    midList.forEach(mid => {
-	                        const liMid = $("<li>");
-	                        const aMid = $("<a>")
-	                            .text(mid.categoryName)
-	                            .attr("href", path + "/category/" + mid.categoryNo)
-	                            .attr("data-category-no", mid.categoryNo)
-	                            .attr("data-category-name", mid.categoryName)
-	                            .addClass("category-link");
-	                        
-	                        const lowList = children.filter(s => s.parentCategoryNo === mid.categoryNo);
-	                        if (lowList.length > 0) {
-	                            const ulLow = $("<ul>");
-	                            lowList.forEach(low => {
-	                                const liLow = $("<li>");
-	                                const aLow = $("<a>")
-	                                    .text(low.categoryName)
-	                                    .attr("href", path + "/category/" + low.categoryNo)
-	                                    .attr("data-category-no", low.categoryNo)
-	                                    .attr("data-category-name", low.categoryName)
-	                                    .addClass("category-link");
+            topLevel.forEach(top => {
+                const liTop = $("<li>");
+                const aTop = $("<a>").text(top.categoryName).attr("href", path + "/category/" + top.categoryNo);
+                liTop.append(aTop);
 
-	                                liLow.append(aLow);
-	                                ulLow.append(liLow);
-	                            });
-	                            liMid.append(ulLow);
-	                        }
+                const midList = children.filter(m => m.parentCategoryNo === top.categoryNo);
+                if (midList.length > 0) {
+                    const ulMid = $("<ul>");
+                    midList.forEach(mid => {
+                        const liMid = $("<li>");
+                        const aMid = $("<a>").text(mid.categoryName).attr("href", path + "/category/" + mid.categoryNo);
 
-	                        liMid.append(aMid);
-	                        ulMid.append(liMid);
-	                    });
-	                    liTop.append(ulMid);
-	                }
+                        const lowList = children.filter(s => s.parentCategoryNo === mid.categoryNo);
+                        if (lowList.length > 0) {
+                            const ulLow = $("<ul>");
+                            lowList.forEach(low => {
+                                const liLow = $("<li>");
+                                const aLow = $("<a>").text(low.categoryName).attr("href", path + "/category/" + low.categoryNo);
+                                liLow.append(aLow);
+                                ulLow.append(liLow);
+                            });
+                            liMid.append(ulLow);
+                        }
 
-	                menu.append(liTop);
-	            });
-	        },
-	        error: function (xhr, status, error) {
-	            console.error("카테고리 불러오기 실패:", error);
-	            $("#dropdownMenu").append("<li><span>불러오기 실패</span></li>");
-	        }
-	  });
-	  
-	  $(document).on("click", ".category-link", function (e) {
-	          e.preventDefault(); // a태그 기본 이동 방지
+                        liMid.append(aMid);
+                        ulMid.append(liMid);
+                    });
+                    liTop.append(ulMid);
+                }
 
-	          const href = $(this).attr("href");
-	          const categoryNo = $(this).data("category-no");
-	          const categoryName = $(this).data("category-name");
-
-	          if (!href || href === "#") {
-	              console.error("잘못된 링크입니다.");
-	              return;
-	          }
-			  
-			  if (!categoryNo || !categoryName) {
-			     console.error("카테고리 정보가 올바르지 않습니다.");
-			     return;
-			  }
-	         
-	          const newUrl = `${href}?categoryNo=${categoryNo}&categoryName=${encodeURIComponent(categoryName)}`;
-	          window.location.href = newUrl; 
-	          
-	 });
-			     		   	   
-	
+                menu.append(liTop);
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error("카테고리 불러오기 실패:", error);
+            $("#dropdownMenu").append("<li><span>불러오기 실패</span></li>");
+        }
+    });
 
     $("#logoClick").on("click", function () {
         location.href = path + "/main.do";
@@ -113,6 +72,7 @@ $(document).ready(function () {
                 success: function (res) {
                     if (res.result === "success") {
                         alert("로그아웃 되었습니다.");
+						sessionStorage.clear();
                         location.href = path + "/login.do";
                     }
                 },

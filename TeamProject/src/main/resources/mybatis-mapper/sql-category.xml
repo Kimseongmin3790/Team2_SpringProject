@@ -27,11 +27,13 @@
    
     <select id="selectCategoryList" resultType="com.example.TeamProject.model.ProductCategory">
         SELECT 
-            CATEGORY_NO       AS categoryNo,
-            CATEGORY_NAME     AS categoryName,
-            NVL(PARENT_CATEGORY_NO, 0) AS parentCategoryNo
-        FROM PRODUCT_CATEGORY
-        ORDER BY CATEGORY_NO
+            C.CATEGORY_NO       AS categoryNo,
+            C.CATEGORY_NAME     AS categoryName,
+            C.PARENT_CATEGORY_NO AS parentCategoryNo,
+            NVL(I.IMAGE_URL, '/resources/img/category/noimage.png') AS imageUrl
+        FROM PRODUCT_CATEGORY C
+        LEFT JOIN CATEGORY_IMAGE I ON C.CATEGORY_NO = I.CATEGORY_NO
+        ORDER BY C.CATEGORY_NO
     </select>
 
 </mapper>
