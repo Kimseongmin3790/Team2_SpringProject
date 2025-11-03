@@ -24,7 +24,51 @@ public class MainService {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		try {
 			// Mapper에서 List<Main>을 가져옵니다.
-			List<Main> list = mainMapper.selectMainBanners();
+			List<Main> list = mainMapper.selectMainBanners();			
+			resultMap.put("list", list);
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			resultMap.put("result", "fail");
+			System.out.println("MainService.selectMainBanners 오류: " + e.getMessage());
+		}
+		
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> selectRecommendList() {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			List<Main> list = mainMapper.selectRecommendList();
+			
+			resultMap.put("list", list);
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			resultMap.put("result", "fail");
+			System.out.println("MainService.selectMainBanners 오류: " + e.getMessage());
+		}
+		
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> selectNewList() {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			List<Main> list = mainMapper.selectNewList();
+			
+			resultMap.put("list", list);
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			resultMap.put("result", "fail");
+			System.out.println("MainService.selectMainBanners 오류: " + e.getMessage());
+		}
+		
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> selectSellerList() {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			List<Producer> list = mainMapper.selectSellerList();
 			
 			resultMap.put("list", list);
 			resultMap.put("result", "success");
