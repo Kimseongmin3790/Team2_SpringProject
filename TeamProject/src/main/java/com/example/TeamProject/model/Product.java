@@ -7,7 +7,8 @@ public class Product {
 	private int productNo;
 	private String sellerId;
 	private String categoryNo;
-	private String pname;
+	private String pName;
+	private String pInfo;
 	private int price;
 	private int stock;
 	private String unit;
@@ -17,5 +18,8 @@ public class Product {
 	private String c1;
 	private String c2;
 	private String c3;
-	private String imagePath;
+	private String imageId;
+	private String isThumbnail;
+	private String sortOrder;
+	private String imageUrl;
 }

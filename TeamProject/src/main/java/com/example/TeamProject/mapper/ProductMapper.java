@@ -21,4 +21,8 @@ public interface ProductMapper {
 	List<ProductCategory> selectFilteredCategoryList(HashMap<String, Object> map);
 	// 필터링 된 상품 리스트
 	List<Product> selectFilteredProductList(HashMap<String, Object> map);
+	// 상품 상세보기
+	Product selectProduct(HashMap<String, Object> map);
+	//첨부파일 목록
+	List<Product> selectImageList(HashMap<String, Object> map);
 }

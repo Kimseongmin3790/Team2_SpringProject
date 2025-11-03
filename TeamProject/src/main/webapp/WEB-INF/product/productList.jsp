@@ -14,6 +14,7 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+            <script src="/resources/js/page-change.js"></script>
 
             <!-- 공통 헤더 / 푸터 CSS -->
             <link rel="stylesheet" href="${path}/resources/css/header.css">
@@ -245,15 +246,18 @@
                         <!-- ✅ 오른쪽 상품 목록 -->
                         <section class="product-list">
                             <div class="product-card" v-for="p in productList" :key="p.productNo">
-                                <img :src="p.imagePath" :alt="p.pname">
-                                <div class="product-info">
-                                    <h4>{{ p.pname }}</h4>
-                                    <p class="price">{{ p.price }}원</p>
-                                    <p class="seller">판매자: {{ p.sellerId }}</p>
-                                </div>
+                                <a href="javascript:;" @click="fnView(p.productNo)">
+                                    <img :src="p.imagePath" :alt="p.pName">
+                                    <div class="product-info">
+                                        <h4>{{ p.pName }}</h4>
+                                        <p class="price">{{ p.price }}원</p>
+                                        <p class="seller">판매자: {{ p.sellerId }}</p>
+                                    </div>
+                                </a>
                             </div>
-                        </section>
-                    </main>
+                </div>
+                </section>
+                </main>
                 </div>
 
                 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
@@ -377,7 +381,13 @@
                                             console.error("필터 요청 실패");
                                         }
                                     });
+                                },
+
+                                fnView: function (productNo) {
+                                    let self = this;
+                                    pageChange("/productInfo.do", { productNo: productNo });
                                 }
+
                             },
                             mounted() {
                                 this.fnLoadMain();
