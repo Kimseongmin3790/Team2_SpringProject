@@ -229,6 +229,23 @@
                     font-size: 15px;
                 }
 
+                .notice-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    text-align: center;
+                    font-size: 15px;
+                    table-layout: fixed;
+                    /* ✅ 열 너비 고정 */
+                }
+
+                .notice-table th,
+                .notice-table td {
+                    padding: 12px 10px;
+                    border-bottom: 1px solid #eee;
+                    word-wrap: break-word;
+                    /* ✅ 긴 글도 줄바꿈 */
+                }
+
                 .notice-table a,
                 table a {
                     color: inherit;
@@ -615,6 +632,7 @@
                                     <th>제목</th>
                                     <th>작성자</th>
                                     <th>작성일</th>
+                                    <th>조회수</th>
                                     <th>처리상태</th>
                                 </tr>
                             </thead>
@@ -635,6 +653,7 @@
                                     </td>
                                     <td>{{ q.userId }}</td>
                                     <td>{{ q.regDate }}</td>
+                                    <td>{{ q.cnt }}</td>
                                     <td>{{ q.status }}</td>
                                 </tr>
                             </tbody>
@@ -650,6 +669,10 @@
                             <button :disabled="qnaPage === qnaTotalPage"
                                 @click="fnChangeQnaPage(qnaPage + 1)">다음</button>
                         </div>
+
+                        <button class="btn-write-inquiry" @click="fnGoToQnaWrite">
+                            ✏️ 상품문의 작성
+                        </button>
                     </c:if>
 
                     <!-- ✅ 고객문의 (비밀번호 모달 적용) -->
@@ -860,7 +883,10 @@
                                                 url: "/productQna/checkPwd.dox",
                                                 type: "POST",
                                                 dataType: "json",
-                                                data: { qnaNo: id, pw: result.value },
+                                                data: { 
+                                                    qnaNo: id, 
+                                                    pw: result.value 
+                                                },
                                                 success: (res) => {
                                                     if (res.result === "success") {
                                                         Swal.fire({
@@ -885,6 +911,25 @@
                                             });
                                         }
                                     });
+                                },
+
+                                fnGoToQnaWrite() {
+                                    const self = this;
+                                    // 로그인 체크
+                                    if (!self.sessionId || self.sessionId.trim() === "") {
+                                        Swal.fire({
+                                            icon: "warning",
+                                            title: "로그인이 필요합니다",
+                                            text: "상품문의 작성은 로그인 후 이용 가능합니다.",
+                                            confirmButtonColor: "#5dbb63"
+                                        }).then(() => {
+                                            location.href = "/login.do";
+                                        });
+                                        return;
+                                    }
+
+                                    // 상품문의 작성 페이지로 이동
+                                    location.href = "/productQna/write.do";
                                 },
 
                                 /* =========================

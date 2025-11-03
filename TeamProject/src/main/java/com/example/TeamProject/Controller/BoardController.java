@@ -28,22 +28,29 @@ public class BoardController {
     }
 	
 	@RequestMapping("/inquiry/detail.do") 
-    public String detail(Model model) throws Exception{
+    public String inquiryDetail(Model model) throws Exception{
 
         return "board/inquiryInfo"; 
     }
 	
 	@RequestMapping("/inquiry/write.do") 
-    public String write(Model model) throws Exception{
+    public String inquiryWrite(Model model) throws Exception{
 
         return "board/inquiryWrite";
     }
 	
 	@RequestMapping("/inquiry/edit.do") 
-    public String edit(Model model) throws Exception{
+    public String inquiryEdit(Model model) throws Exception{
 
         return "board/inquiryEdit";
     }
+	
+	@RequestMapping("/productQna/detail.do") 
+    public String productQnaDetail(Model model) throws Exception{
+
+        return "board/productQnaInfo"; 
+    }
+	
 	
 	@RequestMapping(value = "/inquiryList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
@@ -89,7 +96,7 @@ public class BoardController {
 	@ResponseBody
 	public String checkPwd(Model model, @RequestParam int inquiryNo, @RequestParam String pw) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		boolean match = boardService.checkPassword(inquiryNo, pw);
+		boolean match = boardService.inquiryCheckPassword(inquiryNo, pw);
 		System.out.println(match);
 		if (match) {
 			resultMap.put("result", "success");
@@ -138,6 +145,40 @@ public class BoardController {
 	    resultMap = boardService.getProductQnaList(map);
 	    
 	    return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/productQnaInfo.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String productQnaInfo(@RequestParam int qnaNo, HttpSession session) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<>();
+		
+	    resultMap = boardService.getProductQnaInfo(qnaNo, session);
+	    
+	    return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/productQna/checkPwd.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String qnaCheckPwd(Model model, @RequestParam int qnaNo, @RequestParam String pw) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		boolean match = boardService.qnaCheckPassword(qnaNo, pw);
+		System.out.println(match);
+		if (match) {
+			resultMap.put("result", "success");
+		} else {
+			resultMap.put("result", "fail");
+		}
+		
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/productQnaAnswerInfo.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String productQnaAnswerInfo(Model model, @RequestParam int qnaNo) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = boardService.getQnaAnswer(qnaNo);
+		
+		return new Gson().toJson(resultMap);
 	}
 	
 	

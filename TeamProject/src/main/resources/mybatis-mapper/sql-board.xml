@@ -208,5 +208,35 @@
 	      </if>
 	  </where>
 	</select>
+	
+	<select id="selectProductQnaDetail" parameterType="int" resultType="com.example.TeamProject.model.Board">
+	    SELECT 
+		    Q.QNA_NO,
+		    Q.TITLE,
+		    Q.USER_ID,
+		    Q.CONTENT,
+		    Q.IS_SECRET,
+		    Q.CNT,
+		    Q.STATUS,
+		    TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS REG_DATE,
+		    P.PNAME,
+		    I.IMAGE_URL AS THUMB_URL
+		FROM PRODUCT_QNA Q
+		INNER JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
+		INNER JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO
+		WHERE I.IS_THUMBNAIL = 'Y' AND Q.QNA_NO = #{qnaNo}
+	</select>
+	
+	<select id="selectQnaPwd" parameterType="int" resultType="String">
+	    SELECT PASSWORD
+	    FROM PRODUCT_QNA
+	    WHERE QNA_NO = #{qnaNo}
+	</select>
+	
+	<select id="selectQnaAnswer" parameterType="int" resultType="com.example.TeamProject.model.Answer">
+	    SELECT *
+	    FROM PRODUCT_QNA_ANSWER
+	    WHERE QNA_NO = #{qnaNo}
+	</select>
 
 </mapper>
