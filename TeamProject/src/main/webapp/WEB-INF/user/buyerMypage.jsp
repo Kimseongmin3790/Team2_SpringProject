@@ -14,6 +14,29 @@
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <style>
+                .w-100 {
+                    width: 100%;
+                }
+                .mt-1 {
+                    margin-top: 1rem;
+                }
+                .btn.text-danger {
+                    color: #ef4444;
+                }
+                .text-center {
+                    text-align: center;
+                }
+                .text-muted {
+                    color: #6b7280;
+                }
+                .order-item-divider {
+                    margin-top: 1rem;
+                    border-top: 1px solid #f3f4f6;
+                    padding-top: 1rem;
+                }
+                .icon-warning {
+                    font-size: 1.5rem;
+                }
                 * {
                     margin: 0;
                     padding: 0;
@@ -294,12 +317,6 @@
                     font-weight: 600;
                 }
 
-                .order-actions {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.5rem;
-                }
-
                 /* 리뷰 */
                 .review-item {
                     display: flex;
@@ -414,7 +431,7 @@
                 }
 
                 /* 반응형 */
-                @media (max-width: 768px) {
+               @media (max-width: 768px) {
                     .tabs-list {
                         grid-template-columns: repeat(2, 1fr);
                     }
@@ -434,6 +451,32 @@
                     font-weight: 500;
                     margin-top: 0.25rem;
                 }
+                .btn-outline-success {
+                    background-color: white;
+                    color: #22c55e;
+                    border: 1px solid #22c55e; 
+                }
+                .btn-outline-success:hover {
+                    background-color: #22c55e; 
+                    color: white; 
+                }
+
+                .btn-outline-info {
+                    background-color: white;
+                    color: #3b82f6; 
+                    border: 1px solid #3b82f6; 
+                }
+                .btn-outline-info:hover {
+                    background-color: #3b82f6; 
+                    color: white; 
+                }
+                .order-header-actions {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    gap: 0.75rem;
+                }
+                
             </style>
         </head>
         <body>
@@ -445,7 +488,7 @@
                         <div class="container">
                             <!-- 유저 정보 -->
                             <div class="user-banner">
-                                <div class="user-avatar">홍</div>
+                                <div class="user-avatar"></div>
                                 <div class="user-info">
                                     <h2>{{ userName }}님</h2>
                                     <p>{{ userEmail }}</p>
@@ -505,35 +548,38 @@
                                             <span class="price">{{ (totalPrice + shippingFee).toLocaleString()
                                                 }}원</span>
                                         </div>
-                                        <button class="btn btn-primary btn-lg"
-                                            style="width: 100%; margin-top: 1rem;">주문하기</button>
+                                        <button class="btn btn-primary btn-lg w-100 mt-1">주문하기</button>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- 주문 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'orders' }">
-                                <div class="card" v-for="order in orders" :key="order.id">
+                                <div class="card" v-for="order in orders" :key="order.orderNo">
                                     <div class="order-header">
                                         <div>
-                                            <p class="order-date">{{ order.date }}</p>
-                                            <p class="order-number">주문번호: {{ order.orderNumber }}</p>
+                                            <p class="order-date">{{ order.orderdate }}</p>
+                                            <p class="order-number">주문번호: {{ order.orderNo }}</p>
                                         </div>
-                                        <span class="badge">{{ order.status }}</span>
+                                        <div class="order-header-actions">
+                                            <span class="badge">{{ order.status }}</span>
+                                            <button class="btn btn-outline-info btn-sm">배송조회</button>
+                                        </div>
                                     </div>
-                                    <div class="cart-item">
+                                    <div class="cart-item order-item-divider" v-for="item in order.items" :key="item.orderItemNo">
                                         <div class="cart-item-image"></div>
                                         <div class="cart-item-info">
-                                            <h3>{{ order.productName }}</h3>
-                                            <p>수량: {{ order.quantity }}개</p>
-                                            <p class="cart-item-price">{{ order.price.toLocaleString() }}원</p>
+                                            <h3>{{ item.productName }}</h3>
+                                            <p>수량: {{ item.quantity }}개</p>
+                                            <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p>
                                         </div>
-                                        <div class="order-actions">
-                                            <button class="btn btn-outline btn-sm">배송조회</button>
-                                            <button class="btn btn-outline btn-sm">리뷰작성</button>
-                                            <button class="btn btn-outline btn-sm" style="color: #ef4444;">환불신청</button>
-                                        </div>
+                                        <button class="btn btn-outline-success btn-sm" @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button>
+                                        <button class="btn btn-outline btn-sm text-danger">환불신청</button>
                                     </div>
+                                </div>
+
+                                <div v-if="orders.length === 0" class="card">
+                                    <p class="text-center text-muted">주문 내역이 없습니다.</p>
                                 </div>
                             </div>
 
@@ -552,7 +598,7 @@
                                         </div>
                                         <div class="order-actions">
                                             <button class="btn btn-outline btn-sm">수정</button>
-                                            <button class="btn btn-outline btn-sm" style="color: #ef4444;">삭제</button>
+                                            <button class="btn btn-outline btn-sm text-danger">삭제</button>
                                         </div>
                                     </div>
                                 </div>
@@ -596,7 +642,7 @@
                                 <!-- 탈퇴 기능 -->
                                 <div class="danger-zone">
                                     <div class="danger-zone-header">
-                                        <span style="font-size: 1.5rem;">⚠️</span>
+                                        <span class="icon-warning">⚠️</span>
                                         <h3 class="danger-zone-title">탈퇴 기능</h3>
                                     </div>
                                     <div class="danger-zone-content">
@@ -623,6 +669,8 @@
                 window.vueObj.fnResult(roadFullAddr, addrDetail, zipNo);
             }
 
+            const contextPath = "<%= request.getContextPath() %>";
+
             const app = Vue.createApp({
                 data() {
                     return {
@@ -636,30 +684,12 @@
                             { id: 3, name: '제철 딸기 2kg', description: '달콤한 제철 딸기', price: 20000, quantity: 1 }
                         ],
                         shippingFee: 3000,
-                        orders: [
-                            { id: 1, date: '2024.01.15', orderNumber: '20240115-001', status: '배송완료', productName: '제주 감귤 5kg', quantity: 1, price: 25000 },
-                            { id: 2, date: '2024.01.10', orderNumber: '20240110-001', status: '배송중', productName: '유기농 사과 3kg', quantity: 1, price: 30000 },
-                            { id: 3, date: '2024.01.05', orderNumber: '20240105-001', status: '배송완료', productName: '제철 딸기 2kg', quantity: 1, price: 20000 }
-                        ],
-                        reviews: [
-                            { id: 1, productName: '제주 감귤 5kg', date: '2024.01.20', content: '정말 신선하고 맛있어요! 다음에도 구매할게요.' },
-                            { id: 2, productName: '유기농 사과 3kg', date: '2024.01.18', content: '아이들이 너무 좋아해요. 무농약이라 안심하고 먹을 수 있어요.' }
-                        ],
-                        profile: {
-                            name: '',
-                            email: '',
-                            phone: '',
-                            address: '',
-                            newPassword: '',
-                            confirmPassword: ''
-                        },
+                        orders: [],
+                        reviews: [],
+                        profile: {},
                         loginType: '',
                         
-                        errors: { 
-                            phone: '',
-                            newPassword: '',
-                            confirmPassword: ''
-                        },
+                        errors: {},
                     };
                 },
                 computed: {
@@ -786,7 +816,7 @@
                             let withdrawalData = {};
                             let proceedWithdrawal = false;
                             
-                            if (self.loginType === 'NORMAL') { // 일반 로그인 사용자
+                            if (self.loginType === 'NORMAL') { 
                             let passwordConfirm = prompt('탈퇴를 진행하려면 현재 비밀번호를 입력하세요:');
                             if (passwordConfirm) {
                                 withdrawalData.password = passwordConfirm;
@@ -799,16 +829,16 @@
                                 return; 
                             }
 
-                            } else if (self.loginType === 'SOCIAL') { // 소셜 로그인 사용자
+                            } else if (self.loginType === 'SOCIAL') { 
                                 let finalConfirm = prompt('소셜 로그인 계정입니다. 탈퇴를 진행하려면 "탈퇴"를 입력하세요:');
                                 if (finalConfirm === '탈퇴') {
                                     proceedWithdrawal = true;
                                 } else if (finalConfirm === null) {
                                     alert('탈퇴가 취소되었습니다.');
-                                    return; // 사용자가 취소
+                                    return; 
                                 } else {
                                     alert('정확히 "탈퇴"를 입력해야 합니다.');
-                                    return; // 잘못 입력
+                                    return; 
                                 }
                             } else { // 로그인 유형을 알 수 없는 경우 (예외 처리)
                                 alert('로그인 유형을 알 수 없어 탈퇴를 진행할 수 없습니다.');
@@ -817,7 +847,7 @@
 
                             if (proceedWithdrawal) {
                                 $.ajax({
-                                    url: "${pageContext.request.contextPath}/user/withdrawal.dox", // 일반 사용자 탈퇴 URL
+                                    url: "${pageContext.request.contextPath}/user/withdrawal.dox", 
                                     dataType: "json",
                                     type: "POST",
                                     contentType: "application/json; charset=utf-8",
@@ -825,7 +855,7 @@
                                     success: function (response) {
                                         if (response.result === 'success') {
                                             alert('회원 계정이 성공적으로 탈퇴되었습니다.');
-                                            location.href = '${pageContext.request.contextPath}/'; // 메인 페이지로 이동
+                                            location.href = '${pageContext.request.contextPath}/'; 
                                         } else {
                                             alert(response.message || '계정 탈퇴 중 오류가 발생했습니다.');
                                         }
@@ -836,6 +866,39 @@
                                 });
                             }    
                         }
+                    },
+                    fnLoadOrders() {
+                        let self = this;
+                        $.ajax({
+                            url: "<%= request.getContextPath() %>/myPage/orders.dox",
+                            dataType: "json",
+                            type: "GET",
+                            success: function (data) {
+                                if (data.result === "success") {
+                                    self.orders = data.list;
+                                    self.orders.forEach(order => {
+                                        console.log("주문번호:", order.orderNo);
+                                        console.log("items:", order.items);
+                                    });
+                                } else {
+                                    alert("주문 내역을 불러오는 데 실패했습니다: " + data.message);
+                                    console.error("Error:", data.message);
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                alert("서버와의 통신 중 오류가 발생했습니다. 주문 내역을 불러올 수 없습니다.");
+                                console.error("Ajax Error:", error);
+                            }
+                        });
+                    },
+                    fnWriteReview(productNo, orderItemNo) {
+                        console.log("productNo:", productNo, "orderItemNo:", orderItemNo);
+
+                        const url = contextPath + "/reviewWrite.do?productNo=" + encodeURIComponent(productNo) 
+                                    + "&orderItemNo=" + encodeURIComponent(orderItemNo);
+
+                        console.log("생성된 URL:", url);
+                        location.href = url;
                     },
 
                     // ✅ 판매자 마커 표시
@@ -855,11 +918,9 @@
                 },
                 mounted() {
                     let self = this;
-                    // 초기 데이터 로드 등
                     self.fnUserInfo();
-                   
+                    self.fnLoadOrders();              
                 }
             })
             window.vueObj = app.mount('#app');
-            
         </script>
