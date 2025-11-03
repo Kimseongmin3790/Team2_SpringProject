@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class Board {
 	private int inquiryNo;
+	private int qnaNo;
 	private String title;
 	private String category;
 	private String userId;
@@ -13,4 +14,6 @@ public class Board {
 	private int cnt;
 	private String status;
 	private String isSecret;
+	private String pname;
+	private String thumbUrl;
 }

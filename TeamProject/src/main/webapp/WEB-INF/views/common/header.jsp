@@ -82,11 +82,12 @@
                 <nav class="nav-menu">
                     <a href="${path}/main.do">홈</a>
                     <a href="${path}/productCategory.do">상품목록</a>
+                    <a href="${path}/productList.do">상품목록</a>                    
+                    <a href="${path}/review/list">베스트</a>
                     <a href="${path}/product/add.do">신상품</a>
-                    <a href="${path}/review/list">상품후기</a>
                     <a href="${path}/bunjjukEvent">번쩍장터</a>
                     <a href="${path}/board.do">커뮤니티</a>
-                    <a href="${path}/event">이벤트</a>
+                    <a href="${path}/event">상품후기</a>
                 </nav>
             </div>
 

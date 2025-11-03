@@ -1,17 +1,24 @@
 package com.example.TeamProject.dao;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.TeamProject.mapper.AdminMapper;
 import com.example.TeamProject.mapper.ProductMapper;
+import com.example.TeamProject.model.Product;
+import com.example.TeamProject.model.ProductCategory;
 
 @Service
 public class ProductService {
 	
 	@Autowired
 	ProductMapper productMapper;
+	
+	@Autowired
+	AdminMapper adminMapper;
 	
 	public HashMap<String, Object> insertProduct(HashMap<String, Object> map) {
 		// TODO Auto-generated method stub
@@ -40,4 +47,50 @@ public class ProductService {
 		
 		return resultMap;
 	}
+	
+	public HashMap<String, Object> getAllProductList(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			List<Product> list = productMapper.selectAllProductList(map);
+			resultMap.put("list", list);
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+		}		
+		
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> getAllCategoryList(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			List<ProductCategory> list = productMapper.selectFilteredCategoryList(map);
+			resultMap.put("list", list);
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+		}		
+		
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> getFilteredProductList(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			List<Product> list = productMapper.selectFilteredProductList(map);
+			resultMap.put("list", list);
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+		}		
+		
+		return resultMap;
+	}
+	
 }
