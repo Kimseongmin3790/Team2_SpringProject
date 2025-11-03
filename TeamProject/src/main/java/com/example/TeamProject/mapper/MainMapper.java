@@ -13,13 +13,5 @@ public interface MainMapper {
     // 1. 메인 배너 리스트 조회
     // MainMapper.xml의 <select id="selectMainBanners"> 쿼리와 연결됩니다.
     public List<Main> selectMainBanners() throws Exception;
-    
-    // 2. 입점 업체 리스트 조회
-    // MainMapper.xml의 <select id="selectProducers"> 쿼리와 연결됩니다.
-    public List<Producer> selectProducers() throws Exception;
-    
-    // 3. 베스트 상품 리스트 조회
-    // MainMapper.xml의 <select id="selectBestProducts"> 쿼리와 연결됩니다.
-    public List<BestProduct> selectBestProducts() throws Exception;
 
 }

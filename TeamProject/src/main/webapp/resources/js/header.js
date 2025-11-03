@@ -115,12 +115,12 @@ $(document).ready(function () {
 	    });
 
     $("#btnCategory").on("click", function () {
-        $("#dropdownMenu").toggleClass("show");
+        $("#dropdownMenu").toggleClass("active");
     });
 
     $(document).on("click", function (e) {
         if (!$(e.target).closest(".category-container").length) {
-            $("#dropdownMenu").removeClass("show");
+            $("#dropdownMenu").removeClass("active");
         }
     });
 	

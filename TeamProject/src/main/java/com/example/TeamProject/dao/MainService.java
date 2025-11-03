@@ -35,43 +35,4 @@ public class MainService {
 		
 		return resultMap;
 	}
-
-	// ----------------------------------------------------
-	// 2. 입점 업체 데이터 조회 (fnGetProducers용)
-	// ----------------------------------------------------
-	public HashMap<String, Object> selectProducers() {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		try {
-			// Mapper에서 List<Producer>를 가져옵니다.
-			List<Producer> list = mainMapper.selectProducers();
-			
-			resultMap.put("list", list);
-			resultMap.put("result", "success");
-		} catch (Exception e) {
-			resultMap.put("result", "fail");
-			System.out.println("MainService.selectProducers 오류: " + e.getMessage());
-		}
-		
-		return resultMap;
-	}
-	
-	// ----------------------------------------------------
-	// 3. 베스트 상품 데이터 조회 (fnGetBestProducts용)
-	// ----------------------------------------------------
-	public HashMap<String, Object> selectBestProducts() {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		try {
-			// Mapper에서 List<BestProduct>를 가져옵니다.
-			List<BestProduct> list = mainMapper.selectBestProducts();
-			
-			resultMap.put("list", list);
-			resultMap.put("result", "success");
-		} catch (Exception e) {
-			resultMap.put("result", "fail");
-			System.out.println("MainService.selectBestProducts 오류: " + e.getMessage());
-		}
-		
-		return resultMap;
-	}
-	
 }

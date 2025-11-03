@@ -6,20 +6,7 @@
     
     <select id="selectMainBanners" resultType="com.example.TeamProject.model.Banner">
         SELECT *
-            FROM MAIN_BANNER 
+        FROM MAIN_BANNER 
     </select>
-    
-    <select id="selectProducers" resultType="com.example.TeamProject.model.Producer">
-        SELECT DISTINCT
-            SELLER_ID AS id,          SELLER_ID AS name,        '직거래 전문 업체' AS description, '/resources/img/main/default-logo.png' AS logoUrl FROM PRODUCT
-        WHERE ROWNUM &lt;= 5
-    </select>
-    
-    <select id="selectBestProducts" resultType="com.example.TeamProject.model.BestProduct">
-        SELECT 
-            P.PRODUCT_NO AS productNo,  '임시 카테고리' AS category, P.PNAME AS name,            P.PRICE AS price            FROM PRODUCT P
-        WHERE P.PRODUCT_STATUS = 'SELLING'
-        AND ROWNUM &lt;= 4
-        ORDER BY DBMS_RANDOM.VALUE </select> 
 
 </mapper>
