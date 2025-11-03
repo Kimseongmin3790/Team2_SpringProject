@@ -8,5 +8,64 @@
         SELECT *
         FROM MAIN_BANNER 
     </select>
+    
+    <select id="selectRecommendList" resultType="com.example.TeamProject.model.Main">
+        SELECT *
+		FROM (
+		    SELECT 
+		        P.PRODUCT_NO,
+		        P.PNAME,
+		        P.PINFO,
+		        P.PRICE,
+		        P.CATEGORY_NO,
+		        P.RECOMMEND,
+		        I.IMAGE_URL
+		    FROM PRODUCT P
+		    INNER JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO
+		    WHERE P.RECOMMEND = 'Y'
+		    ORDER BY P.CDATETIME DESC
+		)
+		WHERE ROWNUM &lt;= 8
+    </select>
+    
+    <select id="selectNewList" resultType="com.example.TeamProject.model.Main">
+        SELECT *
+		FROM (
+		    SELECT 
+		        P.PRODUCT_NO,
+		        P.PNAME,
+		        P.PINFO,
+		        P.PRICE,
+		        P.CATEGORY_NO,
+		        P.RECOMMEND,
+		        I.IMAGE_URL
+		    FROM PRODUCT P
+		    LEFT JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO
+		    ORDER BY P.CDATETIME DESC
+		)
+		WHERE ROWNUM &lt;= 8
+    </select>
+    
+    <select id="selectSellerList" resultType="com.example.TeamProject.model.Producer">
+    	SELECT 
+	    S.USER_ID,
+	    S.BUSINESS_NAME,
+	    
+	    REGEXP_SUBSTR(ADDRESS, '[가-힣]+(도|특별시|광역시)') AS addrDo,
+	    
+	    CASE
+	        WHEN REGEXP_LIKE(ADDRESS, '광역시') THEN 
+	            REGEXP_SUBSTR(ADDRESS, '[가-힣]+(시|군|구)', INSTR(ADDRESS, '광역시') + 3)
+	        WHEN REGEXP_LIKE(ADDRESS, '특별시') THEN 
+	            REGEXP_SUBSTR(ADDRESS, '[가-힣]+(시|군|구)', INSTR(ADDRESS, '특별시') + 3)
+	        WHEN REGEXP_LIKE(ADDRESS, '도') THEN 
+	            REGEXP_SUBSTR(ADDRESS, '[가-힣]+(시|군|구)', INSTR(ADDRESS, '도') + 1)
+	        ELSE NULL
+	    END AS addrCity,
+	    
+	    S.PROFILE_IMG
+		FROM SELLER_INFO S
+		INNER JOIN USERS U ON S.USER_ID = U.USER_ID
+    </select>
 
 </mapper>
