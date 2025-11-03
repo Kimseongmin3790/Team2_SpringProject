@@ -507,18 +507,17 @@
                 }
 
                 .product-thumb {
-                    width: 60px;
-                    height: 60px;
+                    width: 45px;
+                    height: 45px;
                     object-fit: cover;
-                    border-radius: 8px;
-                    margin-right: 10px;
+                    border-radius: 6px;
+                    margin-right: 8px;
                 }
 
                 .product-name {
-                    font-size: 13px;
-                    color: #5dbb63;
-                    font-weight: 600;
-                    margin-bottom: 3px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    color: #1a5d1a;
                 }
             </style>
         </head>
@@ -613,12 +612,22 @@
                         </c:forEach>
                     </c:if>
 
-                    <!-- ✅ 상품문의 (썸네일 + 상품명 + 비밀글 처리) -->
+                    <!-- ✅ 상품문의 (검색창 + 페이지네이션 완전 동일 구조) -->
                     <c:if test="${param.tab eq 'qna'}">
                         <div class="inquiry-header">
                             <div class="inquiry-left">
                                 <h3>상품문의</h3>
                                 <p class="total-count">총 <strong>{{ qnaList.length }}</strong>개의 게시물</p>
+                            </div>
+
+                            <div class="search-bar">
+                                <select v-model="qnaSearchType">
+                                    <option value="title">제목</option>
+                                    <option value="content">내용</option>
+                                    <option value="userId">작성자</option>
+                                </select>
+                                <input type="text" v-model="qnaKeyword" placeholder="검색어를 입력하세요">
+                                <button @click="fnSearchQna">검색</button>
                             </div>
                         </div>
 
@@ -637,16 +646,17 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="q in qnaList" :key="q.qnaNo" @click="fnOpenQnaDetail(q.qnaNo, q.isSecret)">
+                                <tr v-for="q in qnaList" :key="q.qnaNo" class="row-link">
                                     <td>{{ q.qnaNo }}</td>
                                     <td style="text-align:left; display:flex; align-items:center;">
                                         <img :src="q.thumbUrl" class="product-thumb" v-if="q.thumbUrl">
-                                        <div>
+                                        <div style="margin-left:10px;">
                                             <div class="product-name">{{ q.pname }}</div>
                                         </div>
                                     </td>
                                     <td style="text-align:left; padding-left:15px;">
-                                        <a href="javascript:void(0);" style="text-decoration:none; color:inherit;">
+                                        <a href="javascript:void(0);" @click="fnOpenQnaDetail(q.qnaNo, q.isSecret)"
+                                            style="text-decoration:none; color:inherit;">
                                             {{ q.title }}
                                             <span v-if="q.isSecret === 'Y'" class="lock">🔒</span>
                                         </a>
@@ -670,6 +680,7 @@
                                 @click="fnChangeQnaPage(qnaPage + 1)">다음</button>
                         </div>
 
+                        <!-- ✅ 문의글 작성 버튼 -->
                         <button class="btn-write-inquiry" @click="fnGoToQnaWrite">
                             ✏️ 상품문의 작성
                         </button>
@@ -760,8 +771,11 @@
 
                                     // 상품문의
                                     qnaList: [],
+                                    qnaKeyword: "",
+                                    qnaSearchType: "title",
                                     qnaPage: 1,
                                     qnaTotalPage: 1,
+                                    qnaPageSize: 10,
 
 
                                     // 고객문의
@@ -833,9 +847,10 @@
                                         type: "POST",
                                         dataType: "json",
                                         data: {
-                                            keyword: keyword,
-                                            searchType: searchType,
-                                            page: page
+                                            keyword: self.qnaKeyword,
+                                            searchType: self.qnaSearchType,
+                                            page: self.qnaPage,
+                                            pageSize: self.qnaPageSize,
                                         },
                                         success(res) {
                                             self.qnaList = res.list || [];
@@ -846,6 +861,15 @@
                                             console.error("상품문의 불러오기 실패");
                                         }
                                     });
+                                },
+
+                                fnSearchQna() {
+                                    if (!this.qnaKeyword.trim()) {
+                                        Swal.fire("검색어 입력", "검색어를 입력하세요.", "warning");
+                                        return;
+                                    }
+                                    this.qnaPage = 1;
+                                    this.fnLoadQna(this.qnaKeyword, this.qnaSearchType, 1);
                                 },
 
                                 fnChangeQnaPage(p) {
@@ -883,9 +907,9 @@
                                                 url: "/productQna/checkPwd.dox",
                                                 type: "POST",
                                                 dataType: "json",
-                                                data: { 
-                                                    qnaNo: id, 
-                                                    pw: result.value 
+                                                data: {
+                                                    qnaNo: id,
+                                                    pw: result.value
                                                 },
                                                 success: (res) => {
                                                     if (res.result === "success") {
