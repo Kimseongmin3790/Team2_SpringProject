@@ -158,6 +158,7 @@
 	    TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD') AS REG_DATE,
 	    Q.STATUS,
 	    Q.IS_SECRET,
+	    Q.CNT,
 	    P.PNAME,
 	    I.IMAGE_URL AS THUMB_URL
 	  FROM PRODUCT_QNA Q
@@ -201,9 +202,6 @@
 	              <when test="searchType == 'userId'">
 	                  AND Q.USER_ID LIKE '%' || #{keyword} || '%'
 	              </when>
-	              <otherwise>
-	                  AND (Q.TITLE LIKE '%' || #{keyword} || '%' OR Q.CONTENT LIKE '%' || #{keyword} || '%')
-	              </otherwise>
 	          </choose>
 	      </if>
 	  </where>
@@ -238,5 +236,11 @@
 	    FROM PRODUCT_QNA_ANSWER
 	    WHERE QNA_NO = #{qnaNo}
 	</select>
+	
+	<update id="updateProductQnaCount" parameterType="int">
+	    UPDATE PRODUCT_QNA
+	    SET CNT = NVL(CNT, 0) + 1
+	    WHERE QNA_NO = #{qnaNo}
+	</update>
 
 </mapper>

@@ -167,7 +167,13 @@ public class BoardService {
 	        
 	        map.put("offset", offset);
 	        map.put("limit", pageSize);
+	        
 	        List<Board> list = boardMapper.selectProductQnaList(map);
+	        
+	        for (Board qna : list) {
+	        	qna.setUserId(maskUserId(qna.getUserId()));
+			}
+	        
 	        int totalCount = boardMapper.countProductQna(map);	        
 	        int totalPage = (int) Math.ceil((double) totalCount / pageSize);
 
@@ -187,6 +193,8 @@ public class BoardService {
 		// TODO Auto-generated method stub
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
 		try {
+			boardMapper.updateProductQnaCount(qnaNo);
+			
 			Board info = boardMapper.selectProductQnaDetail(qnaNo);
 			resultMap.put("info", info);
 	        resultMap.put("result", "success");

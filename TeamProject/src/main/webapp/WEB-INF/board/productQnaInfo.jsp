@@ -196,7 +196,7 @@
                                 // ✅ 상품문의 상세조회
                                 fnLoadDetail() {
                                     $.ajax({
-                                        url: "/productQnaInfo.dox", // ✅ 수정
+                                        url: "/productQnaInfo.dox",
                                         type: "POST",
                                         dataType: "json",
                                         data: { 
@@ -211,7 +211,7 @@
                                 // ✅ 답변 조회
                                 fnLoadAnswer() {
                                     $.ajax({
-                                        url: "/productQnaAnswerInfo.dox", // ✅ 수정
+                                        url: "/productQnaAnswerInfo.dox",
                                         type: "POST",
                                         dataType: "json",
                                         data: { 
