@@ -130,6 +130,16 @@ public class BoardController {
 	    return new Gson().toJson(resultMap);
 	}
 	
+	@RequestMapping(value = "/productQnaList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String productQnaList(@RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<>();
+		
+	    resultMap = boardService.getProductQnaList(map);
+	    
+	    return new Gson().toJson(resultMap);
+	}
+	
 	
 }
 	

@@ -225,41 +225,81 @@ body {
   margin-right: auto;
 }
 
+/* 🌿 카테고리 버튼 */
+.btn-category {
+  background: linear-gradient(135deg, #5dbb63, #4caf50);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-category:hover {
+  background: linear-gradient(135deg, #4caf50, #1a5d1a);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* 🌿 메뉴 박스 */
 .category-menu {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 8px 0;
   background: #fff;
-  border: 1px solid #ccc;
+  border-radius: 8px;
+  border: 1px solid #ddd;
   position: absolute;
-  top: 100%;
+  top: 110%;
   left: 0;
-  min-width: 200px;
+  min-width: 240px;
   display: none;
   z-index: 1000;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.25s ease;
 }
 
 .category-container:hover .category-menu {
   display: block;
 }
 
-/* 1단: 대분류 */
+/* 🌿 1단 대분류 */
 .category-menu > li {
   position: relative;
 }
+
 .category-menu > li > a {
-  display: block;
-  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
   color: #333;
-  text-decoration: none;
   font-weight: 500;
-}
-.category-menu > li:hover > a {
-  background: #5dbb63;
-  color: white;
+  text-decoration: none;
+  transition: all 0.25s ease;
 }
 
-/* 2단: 중분류 */
+.category-menu > li > a:hover {
+  background: #f3ebd3;
+  color: #1a5d1a;
+  font-weight: 600;
+  transform: translateX(3px);
+}
+
+/* 🌿 아이콘 (대분류 앞 이미지) */
+.category-menu > li > a img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* 🌿 2단 중분류 */
 .category-menu li ul {
   display: none;
   position: absolute;
@@ -267,30 +307,54 @@ body {
   left: 100%;
   min-width: 200px;
   background: #fff;
-  border: 1px solid #ccc;
-  z-index: 1100;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+
 .category-menu li:hover > ul {
   display: block;
 }
 
-/* 3단: 소분류 */
+/* 🌿 3단 소분류 */
 .category-menu li ul li ul {
   left: 100%;
   top: 0;
 }
+
 .category-menu li ul a {
-  padding: 8px 15px;
-  color: #333;
   display: block;
+  padding: 10px 15px;
+  color: #555;
   text-decoration: none;
-}
-.category-menu li ul li:hover > a {
-  background: #4caf50;
-  color: #fff;
-  text-decoration: none;
+  font-size: 14px;
+  transition: 0.25s;
 }
 
+.category-menu li ul a:hover {
+  background: #eaf6eb;
+  color: #1a5d1a;
+}
+
+/* 🌿 불필요한 표시 제거 */
+.category-menu li > ul::before,
+.category-menu li::marker {
+  content: none !important;
+  display: none !important;
+}
+
+/* 🌿 등장 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 /* ========================================= */
 /* 📱 반응형 Header 영역 */
 @media (max-width: 1200px) {

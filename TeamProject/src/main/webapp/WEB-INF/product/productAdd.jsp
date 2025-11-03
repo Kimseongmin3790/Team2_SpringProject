@@ -295,6 +295,7 @@
                                         alert("✅ 등록 완료! productNo = " + pno);
                                         document.getElementById('productForm').reset();
                                         this.detailFiles = [];
+                                        location.href="<%= request.getContextPath() %>/main.do";
                                     } catch (e) {
                                         console.error(e);
                                         alert("❌ 업로드 실패");
