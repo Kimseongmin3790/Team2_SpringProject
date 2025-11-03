@@ -183,8 +183,44 @@ public class BoardService {
 	    return resultMap;
 	}
 	
-	public boolean checkPassword(Integer inquiryNo, String pw) {		
+	public HashMap<String, Object> getProductQnaInfo(Integer qnaNo, HttpSession session) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
+		try {
+			Board info = boardMapper.selectProductQnaDetail(qnaNo);
+			resultMap.put("info", info);
+	        resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> getQnaAnswer(Integer qnaNo) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
+		try {
+	        Answer answer = boardMapper.selectQnaAnswer(qnaNo);
+	        
+	        resultMap.put("info", answer);
+	        resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
+	public boolean inquiryCheckPassword(Integer inquiryNo, String pw) {		
 		String dbPw = boardMapper.selectInquiryPwd(inquiryNo);
+		return dbPw != null && dbPw.equals(pw);
+	}
+	
+	public boolean qnaCheckPassword(Integer qnaNo, String pw) {		
+		String dbPw = boardMapper.selectQnaPwd(qnaNo);
 		return dbPw != null && dbPw.equals(pw);
 	}
 	

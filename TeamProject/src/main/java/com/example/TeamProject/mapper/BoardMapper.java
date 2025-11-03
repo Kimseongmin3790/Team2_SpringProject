@@ -40,4 +40,10 @@ public interface BoardMapper {
 	List<Board> selectProductQnaList(HashMap<String, Object> map);
 	// 상품문의 글 카운트(페이지네이션용)
 	int countProductQna(HashMap<String, Object> map);
+	// 상품문의 상세내용 조회
+	Board selectProductQnaDetail(int qnaNo);
+	// 잠금 상품문의 비밀번호 확인
+	String selectQnaPwd(int qnaNo);
+	// 상품문의 답변 글 조회
+	Answer selectQnaAnswer(int qnaNo);
 }
