@@ -20,6 +20,46 @@
             <link rel="stylesheet" href="${path}/resources/css/footer.css">
 
             <style>
+                .product-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    max-width: 1400px;
+                    margin: 40px auto 10px;
+                    padding: 0 20px;
+                    box-sizing: border-box;
+                }
+
+                .product-header h2 {
+                    font-size: 22px;
+                    color: #1a5d1a;
+                    font-weight: 700;
+                }
+
+                .btn-add-product {
+                    background-color: #5dbb63;
+                    color: #fff;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 10px 18px;
+                    font-size: 15px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: 0.3s ease;
+                }
+
+                .btn-add-product:hover {
+                    background-color: #1a5d1a;
+                    transform: translateY(-2px);
+                }
+
+                .btn-add-product i {
+                    font-size: 14px;
+                }
+
                 .product-page {
                     display: flex;
                     flex-direction: row;
@@ -114,6 +154,7 @@
                     display: flex;
                     flex-direction: column;
                     justify-content: space-between;
+                    transition: transform 0.25s ease, box-shadow 0.25s ease;
                 }
 
                 .product-card:hover {
@@ -194,6 +235,16 @@
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                 <div id="app">
+
+                    <div class="product-header">
+                        <h2>상품 목록</h2>
+                        <c:if test="${sessionScope.sessionStatus eq 'SELLER' or sessionScope.sessionStatus eq 'ADMIN'}">
+                            <button class="btn-add-product" id="btnAddProduct">
+                                <i class="fa-solid fa-plus"></i> 상품 등록
+                            </button>
+                        </c:if>
+                    </div>
+
                     <main class="product-page">
                         <!-- ✅ 왼쪽 필터 -->
                         <aside class="filter-sidebar">
@@ -244,7 +295,8 @@
 
                         <!-- ✅ 오른쪽 상품 목록 -->
                         <section class="product-list">
-                            <div class="product-card" v-for="p in productList" :key="p.productNo">
+                            <div class="product-card" v-for="p in productList" :key="p.productNo"
+                                @click="fnMoveInfo(p.productNo)">
                                 <img :src="p.imagePath" :alt="p.pname">
                                 <div class="product-info">
                                     <h4>{{ p.pname }}</h4>
@@ -377,11 +429,18 @@
                                             console.error("필터 요청 실패");
                                         }
                                     });
+                                },
+                                fnMoveInfo(productNo) {
+                                    location.href = this.path + "/productInfo.do?productNo=" + productNo;
                                 }
                             },
                             mounted() {
                                 this.fnLoadMain();
                                 this.fnList();
+
+                                $("#btnAddProduct").click(function () {
+                                    location.href = "${path}/product/add.do";
+                                });
                             }
                         });
                         app.mount("#app");
