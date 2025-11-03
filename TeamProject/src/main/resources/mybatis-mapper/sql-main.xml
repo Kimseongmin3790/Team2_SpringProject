@@ -5,11 +5,8 @@
 <mapper namespace="com.example.TeamProject.mapper.MainMapper">
     
     <select id="selectMainBanners" resultType="com.example.TeamProject.model.Banner">
-        SELECT 
-            IMAGE_ID AS id,           '메인 배너' AS title,     IMAGE_URL AS imageUrl,    '#' AS linkUrl            FROM PRODUCT_IMAGE 
-        WHERE IS_THUMBNAIL = 'Y' 
-        AND ROWNUM &lt;= 3
-        ORDER BY SORT_ORDER, IMAGE_ID
+        SELECT *
+            FROM MAIN_BANNER 
     </select>
     
     <select id="selectProducers" resultType="com.example.TeamProject.model.Producer">

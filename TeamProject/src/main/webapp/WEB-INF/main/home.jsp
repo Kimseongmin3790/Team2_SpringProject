@@ -329,6 +329,31 @@
                 </div>
             </section>
 
+            <section class="best-product-section">
+                <h3>이번 주 베스트</h3>
+                
+                <div v-if="loadingBest">
+                    <p>베스트 상품 정보를 불러오는 중입니다...</p>
+                </div>
+                
+                <div v-else-if="errorBest">
+                    <p style="color: red;">{{ errorBest }}</p>
+                </div>
+
+                <div v-else class="product-list">
+                    <div class="product-card" v-for="item in bestProducts" :key="item.id" @click="fnGoProductDetail(item.id)" style="cursor:pointer;">
+                        <div class="product-image-placeholder"></div>
+                        <p class="product-category">{{ item.category }}</p>
+                        <p class="product-name">{{ item.name }}</p>
+                        <p class="product-price">{{ item.price.toLocaleString() }}원</p>
+                    </div>
+                    
+                    <div v-if="bestProducts.length === 0">
+                        <p>이번 주 베스트 상품이 아직 등록되지 않았습니다.</p>
+                    </div>
+                </div>
+            </section>
+
             <section class="producer-section">
                 <h3>아그리콜라 입점업체</h3>
                 <p>당신과 바로 이어지는 아그리콜라 입점 업체를 소개합니다.</p>
@@ -354,30 +379,7 @@
                 </div>
             </section>
 
-            <section class="best-product-section">
-                <h3>이번 주 베스트</h3>
-                
-                <div v-if="loadingBest">
-                    <p>베스트 상품 정보를 불러오는 중입니다...</p>
-                </div>
-                
-                <div v-else-if="errorBest">
-                    <p style="color: red;">{{ errorBest }}</p>
-                </div>
-
-                <div v-else class="product-list">
-                    <div class="product-card" v-for="item in bestProducts" :key="item.id" @click="fnGoProductDetail(item.id)" style="cursor:pointer;">
-                        <div class="product-image-placeholder"></div>
-                        <p class="product-category">{{ item.category }}</p>
-                        <p class="product-name">{{ item.name }}</p>
-                        <p class="product-price">{{ item.price.toLocaleString() }}원</p>
-                    </div>
-                    
-                    <div v-if="bestProducts.length === 0">
-                        <p>이번 주 베스트 상품이 아직 등록되지 않았습니다.</p>
-                    </div>
-                </div>
-            </section>
+            
 
             <div class="quick-remote">
                 <button id="scrollToTop">
