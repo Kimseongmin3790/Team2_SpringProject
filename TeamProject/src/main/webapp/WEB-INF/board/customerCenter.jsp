@@ -6,7 +6,7 @@
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>커뮤니티 | AGRICOLA</title>
+            <title>고객센터 | AGRICOLA</title>
 
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -526,15 +526,12 @@
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                 <div id="app">
-                    <h1 class="title">커뮤니티</h1>
+                    <h1 class="title">고객센터</h1>
 
                     <!-- ✅ 탭 메뉴 -->
                     <ul class="tab-menu">
                         <li class="${param.tab eq 'notice' || empty param.tab ? 'active' : ''}">
                             <a href="?tab=notice">공지사항</a>
-                        </li>
-                        <li class="${param.tab eq 'faq' ? 'active' : ''}">
-                            <a href="?tab=faq">자주하는질문</a>
                         </li>
                         <li class="${param.tab eq 'qna' ? 'active' : ''}">
                             <a href="?tab=qna">상품문의</a>
@@ -599,17 +596,6 @@
                             </button>
                             <button :disabled="page === totalPage" @click="fnChangePage(page + 1)">다음</button>
                         </div>
-                    </c:if>
-
-                    <!-- ✅ FAQ 탭 (기존 JSTL 그대로) -->
-                    <c:if test="${param.tab eq 'faq'}">
-                        <h3>자주하는 질문</h3>
-                        <c:forEach var="f" items="${faqList}">
-                            <div style="margin-bottom:15px;">
-                                <strong>Q. ${f.question}</strong><br>
-                                <span style="color:#555;">A. ${f.answer}</span>
-                            </div>
-                        </c:forEach>
                     </c:if>
 
                     <!-- ✅ 상품문의 (검색창 + 페이지네이션 완전 동일 구조) -->

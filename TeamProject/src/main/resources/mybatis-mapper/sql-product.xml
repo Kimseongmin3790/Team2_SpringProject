@@ -54,4 +54,34 @@
 		NVL(I.SORT_ORDER, 9999),
 		I.IMAGE_ID
 	</select>
+	
+	<select id="selectRecommendList" resultType="com.example.TeamProject.model.Product">
+		SELECT
+        P.PRODUCT_NO,
+        P.PNAME,
+        P.PRICE,
+        P.STOCK,
+        I.IMAGE_URL
+	    FROM PRODUCT P
+	    LEFT JOIN PRODUCT_IMAGE I 
+	        ON P.PRODUCT_NO = I.PRODUCT_NO 
+	       AND I.IS_THUMBNAIL = 'Y'
+	    WHERE P.RECOMMEND = 'Y'
+	    ORDER BY P.PRODUCT_NO DESC
+	</select>
+	
+	<select id="selectNewList" resultType="com.example.TeamProject.model.Product">
+		SELECT
+	        P.PRODUCT_NO,
+	        P.PNAME,
+	        P.PRICE,
+	        P.STOCK,
+	        I.IMAGE_URL
+	    FROM PRODUCT P
+	    LEFT JOIN PRODUCT_IMAGE I 
+	        ON P.PRODUCT_NO = I.PRODUCT_NO 
+	       AND I.IS_THUMBNAIL = 'Y'
+	    WHERE P.PRODUCT_STATUS = 'SELLING'
+	    ORDER BY P.CDATETIME DESC
+	</select>
 </mapper>

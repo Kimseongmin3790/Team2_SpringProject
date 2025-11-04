@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.TeamProject.dao.MainService;
-import com.google.gson.Gson; 
+import com.google.gson.Gson;
+
+import jakarta.servlet.http.HttpSession; 
 
 @Controller
 @RequestMapping("/")
@@ -108,5 +110,40 @@ public class MainController {
         model.addAttribute("list", new Gson().toJson(resultMap.get("list")));
         return "main/search"; // => /WEB-INF/views/product/search.jsp
     }
+	
+	// 9. 로그인 유저 좌표 데이터 응답
+	@RequestMapping(value = "/main/data/userLocation.dox", method = RequestMethod.POST)
+	@ResponseBody
+	public HashMap<String, Object> getUserLocation(HttpSession session) {
+	    HashMap<String, Object> result = new HashMap<>();
+	    String userId = (String) session.getAttribute("sessionId"); // 세션에 저장된 로그인 아이디
+
+	    try {
+	        if (userId != null) {
+	            // ✅ DB에서 사용자 좌표 조회
+	            HashMap<String, Object> userLoc = mainService.selectUserLocation(userId);
+
+	            if (userLoc != null) {
+	                result.put("login", true);
+	                result.put("lat", userLoc.get("LAT"));
+	                result.put("lng", userLoc.get("LNG"));
+	            } else {
+	                // 사용자 위치 정보가 DB에 없는 경우
+	                result.put("login", true);
+	                result.put("lat", null);
+	                result.put("lng", null);
+	            }
+	        } else {
+	            // 로그인 안 한 경우
+	            result.put("login", false);
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        result.put("login", false);
+	        result.put("error", "DB 조회 중 오류 발생: " + e.getMessage());
+	    }
+
+	    return result;
+	}
 
 }
