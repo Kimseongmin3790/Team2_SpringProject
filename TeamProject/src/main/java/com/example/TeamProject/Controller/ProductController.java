@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.TeamProject.dao.ProductService;
+import com.example.TeamProject.dao.ReviewService;
 import com.google.gson.Gson;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +31,9 @@ public class ProductController {
 
 	@Autowired
 	ProductService productService;
+	
+	@Autowired
+	ReviewService reviewService;
 
 	@RequestMapping("/product/add.do")
 	public String add(Model model) {
@@ -47,6 +52,21 @@ public class ProductController {
 	public String payment(Model model) {
 		return "product/payment";
 	}
+	
+	
+	 // 상품 리뷰 데이터를 JSON으로 반환 (productInfo.jsp에서 AJAX로 호출)
+	 @GetMapping(value = "/product/reviews/partial.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	 @ResponseBody
+	 public ResponseEntity<Map<String, Object>> getProductReviewsPartial( @RequestParam("productNo") int productNo) {
+
+	     Map<String, Object> reviewData = reviewService.getProductReviews(productNo);
+
+	     if (reviewData == null || reviewData.isEmpty()) {
+	         return ResponseEntity.ok(new HashMap<>());
+	     }
+
+	     return ResponseEntity.ok(reviewData);
+	 }
 	
 	@RequestMapping(value = "/product-view.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody

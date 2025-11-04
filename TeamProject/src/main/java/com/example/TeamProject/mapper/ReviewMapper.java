@@ -2,6 +2,7 @@ package com.example.TeamProject.mapper;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.Review;
@@ -28,4 +29,8 @@ public interface ReviewMapper {
     int deleteSpecificReviewImages(List<Integer> imageNos);
     // 리뷰 삭제
     int deleteReview(HashMap<String, Object> params);
+    // 상품별 리뷰목록 가져오기
+    List<Map<String, Object>> selectReviewsByProductNo(int productNo);
+    // 특정 리뷰의 이미지 URL 목록을 가져오는 메서드 추가
+    List<String> selectReviewImageUrlsByReviewNo(int reviewNo);
 }

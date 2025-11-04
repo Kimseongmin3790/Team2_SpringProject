@@ -1,8 +1,9 @@
 package com.example.TeamProject.model;
 
-import lombok.Data;
+import java.util.Date;
+import java.util.List;
 
-import java.util.Date; 
+import lombok.Data; 
 
 @Data
 public class Review {
@@ -22,5 +23,6 @@ public class Review {
     
     private String sellerName;
     private String orderdate;
+    private List<String> reviewImages; // 리뷰에 첨부된 이미지 URL 목록
     
 }
