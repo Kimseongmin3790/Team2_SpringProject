@@ -34,8 +34,15 @@ public class ReviewController {
 
         return "board/reviewWrite";
     }
+    
+    @RequestMapping(value = "/reviewUpdate.do", method = RequestMethod.GET)
+    public String showReviewUpdatePage(@RequestParam("reviewNo") int reviewNo, Model model) {
+        model.addAttribute("reviewNo", reviewNo);
+        return "board/reviewEdit";
+    }
 
     
+    // 리뷰 작성
     @RequestMapping(value = "/review/write.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
     @ResponseBody
     public String submitReview(@RequestParam HashMap<String, Object> params,
@@ -53,4 +60,64 @@ public class ReviewController {
 
         return new Gson().toJson(resultMap);
     }
+    
+    @RequestMapping(value = "/review/data.dox", method = RequestMethod.GET, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String getReviewData(@RequestParam HashMap<String, Object> params) throws Exception {
+    	
+    	HashMap<String, Object> resultMap = reviewService.getReviewProductInfo(params);
+    	
+    	return new Gson().toJson(resultMap);
+    }
+    
+    // 사용자 리뷰 목록 가져오기
+    @RequestMapping(value = "/review/list.dox", method = RequestMethod.GET, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String getReviews(HttpSession session) throws Exception {
+        String userId = (String) session.getAttribute("sessionId");
+        HashMap<String, Object> resultMap = reviewService.getReviewsByUserId(userId);
+        return new Gson().toJson(resultMap);
+    }
+    
+    // 리뷰 상세 정보 가져오기 (수정 페이지)
+    @RequestMapping(value = "/review/detail.dox", method = RequestMethod.GET, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String getReviewDetail(@RequestParam("reviewNo") int reviewNo) throws Exception {
+        HashMap<String, Object> resultMap = reviewService.getReviewDetail(reviewNo);
+        return new Gson().toJson(resultMap);
+    }
+    
+    // 리뷰 수정
+    @RequestMapping(value = "/review/update.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String updateReview(@RequestParam HashMap<String, Object> params,
+    @RequestParam(value = "newImages", required = false) List<MultipartFile> newImages,
+	@RequestParam(value = "deletedImageNos", required = false) String deletedImageNosJson, HttpSession session, HttpServletRequest request) throws Exception {
+	
+    	String userId = (String) session.getAttribute("sessionId");
+		params.put("userId", userId);
+					
+		String uploadPath = request.getServletContext().getRealPath("/resources/uploads/review-images/");
+					
+					
+		HashMap<String, Object> resultMap = reviewService.updateReview(params, newImages, deletedImageNosJson, uploadPath);
+					
+		return new Gson().toJson(resultMap);
+	}
+    
+    // 리뷰 삭제
+    @RequestMapping(value = "/review/delete.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String deleteReview(@RequestParam("reviewNo") int reviewNo, HttpSession session) throws Exception {
+        String userId = (String) session.getAttribute("sessionId");
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("reviewNo", reviewNo);
+        params.put("userId", userId);
+
+        HashMap<String, Object> resultMap = reviewService.deleteReview(params);
+
+        return new Gson().toJson(resultMap);
+    }
+       
 }

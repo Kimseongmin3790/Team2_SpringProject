@@ -16,6 +16,7 @@
         <result property="deliverAddr" column="DELIVER_ADDR"/>
         <result property="memo" column="MEMO"/>
         <result property="uDatetime" column="UDATETIME"/>
+        <result property="imageUrl" column="IMAGEURL"/>
 
         <collection property="items" ofType="com.example.TeamProject.model.OrderItem"
                     select="selectOrderItemsByOrderNo" column="ORDER_NO"/>
@@ -49,17 +50,19 @@
     </select>
 
     <!-- 특정 주문 번호에 해당하는 상품 목록을 조회하는 서브 쿼리 -->
-    <select id="selectOrderItemsByOrderNo" resultMap="orderItemResultMap">
-        SELECT
-            OI.ORDER_ITEM_NO,
-            OI.ORDER_NO,
-            OI.PRODUCT_NO,
-            OI.QUANTITY,
-            OI.PRICE,
-            P.PNAME
-        FROM ORDER_ITEM OI
-        JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
-        WHERE OI.ORDER_NO = #{orderNo}
-    </select>
+    <select id="selectOrderItemsByOrderNo" resultType="com.example.TeamProject.model.OrderItem">
+	    SELECT
+	        OI.ORDER_ITEM_NO,
+	        OI.ORDER_NO,
+	        OI.PRODUCT_NO,
+	        OI.QUANTITY,
+	        OI.PRICE,
+	        P.PNAME AS productName,
+	        (SELECT PI.IMAGE_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = P.PRODUCT_NO AND PI.IS_THUMBNAIL = 'Y' AND ROWNUM = 1) AS imageUrl,
+	        (SELECT COUNT(*) FROM REVIEW R WHERE R.ORDER_ITEM_NO = OI.ORDER_ITEM_NO) AS hasReview
+	    FROM ORDER_ITEM OI
+	    JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
+	    WHERE OI.ORDER_NO = #{orderNo}
+	</select>
 
 </mapper>

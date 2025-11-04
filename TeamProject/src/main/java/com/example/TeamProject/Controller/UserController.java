@@ -68,11 +68,11 @@ public class UserController {
         return "jusoPopup";
     }
 	
-	@RequestMapping("/buyerMyPage.do") 
-    public String buyerMyPage(Model model) throws Exception{
-
-        return "user/buyerMypage";
-    }
+	 @RequestMapping("/buyerMyPage.do")
+	 public String buyerMyPage(Model model, @RequestParam(value = "tab", required = false, defaultValue ="cart") String tab) throws Exception{
+	     model.addAttribute("activeTab", tab);
+	     return "user/buyerMypage";
+	 }
 	
 	@RequestMapping("/sellerMyPage.do") 
     public String sellerMyPage(Model model) throws Exception{
@@ -86,6 +86,7 @@ public class UserController {
         return "user/cart";
     }
 	
+    	
 	@RequestMapping(value = "/join.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String join(Model model, @RequestParam HashMap<String, Object> map) throws Exception {

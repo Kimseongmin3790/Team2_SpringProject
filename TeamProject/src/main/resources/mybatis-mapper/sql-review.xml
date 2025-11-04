@@ -4,6 +4,7 @@
 
 <mapper namespace="com.example.TeamProject.mapper.ReviewMapper">
 
+	
     <!-- 리뷰 등록 -->
     <insert id="insertReview" parameterType="com.example.TeamProject.model.Review"
             useGeneratedKeys="true" keyProperty="reviewNo">
@@ -28,5 +29,107 @@
             #{imageNo}, #{reviewNo}, #{imageUrl}, SYSDATE, SYSDATE
         )
     </insert>
+    
+    <select id="selectReviewProductInfo" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+	    SELECT
+	        P.PNAME AS PNAME,
+	        U.NAME AS SELLERNAME,
+	        (SELECT PI.IMAGE_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = P.PRODUCT_NO AND PI.IS_THUMBNAIL= 'Y' AND ROWNUM = 1) AS IMAGEURL,
+	        TO_CHAR(O.ORDERDATE, 'YYYY.MM.DD') AS ORDERDATE
+	    FROM
+	        PRODUCT P
+	    LEFT JOIN
+	        USERS U ON P.SELLER_ID = U.USER_ID
+	    LEFT JOIN
+	        ORDER_ITEM OI ON P.PRODUCT_NO = OI.PRODUCT_NO
+	    LEFT JOIN
+	        ORDERS O ON OI.ORDER_NO = O.ORDER_NO
+	    WHERE
+	        P.PRODUCT_NO = #{productNo}
+	        AND OI.ORDER_ITEM_NO = #{orderItemNo}
+	</select>
+	
+	    <select id="selectReviewsByUserId" parameterType="string" resultType="com.example.TeamProject.model.Review">
+        SELECT
+            R.REVIEW_NO,
+            R.USER_ID,
+            R.PRODUCT_NO,
+            R.ORDER_ITEM_NO,
+            R.RATING,
+            R.CONTENT,
+            TO_CHAR(R.CREATED_AT, 'YYYY.MM.DD') AS cdate, 
+            P.PNAME AS productName, 
+            (SELECT PI.IMAGE_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = R.PRODUCT_NO AND PI.IS_THUMBNAIL = 'Y' AND ROWNUM = 1) AS imageUrl
+        FROM
+            REVIEW R
+        JOIN
+            PRODUCT P ON R.PRODUCT_NO = P.PRODUCT_NO
+        WHERE
+            R.USER_ID = #{userId}
+        ORDER BY
+            R.CREATED_AT DESC
+    </select>
+    
+        <select id="selectReviewDetailByReviewNo" parameterType="int" resultType="com.example.TeamProject.model.Review">
+        SELECT
+            R.REVIEW_NO,
+            R.USER_ID,
+            R.PRODUCT_NO,
+            R.ORDER_ITEM_NO,
+            R.RATING,
+            R.CONTENT,
+            TO_CHAR(R.CREATED_AT, 'YYYY.MM.DD') AS cdate,
+            P.PNAME AS productName,
+            U.NAME AS sellerName,
+            (SELECT PI.IMAGE_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = P.PRODUCT_NO AND PI.IS_THUMBNAIL = 'Y' AND ROWNUM = 1) AS imageUrl,
+            TO_CHAR(O.ORDERDATE, 'YYYY.MM.DD') AS orderdate
+        FROM
+            REVIEW R
+        JOIN
+            PRODUCT P ON R.PRODUCT_NO = P.PRODUCT_NO
+        LEFT JOIN
+            USERS U ON P.SELLER_ID = U.USER_ID
+        LEFT JOIN
+            ORDER_ITEM OI ON R.ORDER_ITEM_NO = OI.ORDER_ITEM_NO AND R.PRODUCT_NO = OI.PRODUCT_NO
+        LEFT JOIN
+            ORDERS O ON OI.ORDER_NO = O.ORDER_NO
+        WHERE
+            R.REVIEW_NO = #{reviewNo}
+    </select>
+
+    <select id="selectReviewImagesByReviewNo" parameterType="int" resultType="com.example.TeamProject.model.ReviewImage">
+	    SELECT
+	        IMAGE_NO,
+	        IMAGE_URL
+	    FROM
+	        REVIEW_IMAGE
+	    WHERE
+	        REVIEW_NO = #{reviewNo}
+	    ORDER BY
+	        CDATETIME ASC
+	</select>
+    
+    <update id="updateReview" parameterType="hashmap">
+       UPDATE REVIEW
+       SET
+           RATING = #{rating},
+           CONTENT = #{content},
+           UDATETIME = SYSDATE
+       WHERE
+           REVIEW_NO = #{reviewNo}
+   </update>
+
+	<delete id="deleteSpecificReviewImages">
+	     DELETE FROM REVIEW_IMAGE
+	     WHERE IMAGE_NO IN
+	     <foreach item="imageNo" collection="list" open="(" separator="," close=")">
+	         #{imageNo}
+	     </foreach>
+	</delete>
+	
+	<delete id="deleteReview" parameterType="hashmap">
+	    DELETE FROM REVIEW
+	    WHERE REVIEW_NO = #{reviewNo} AND USER_ID = #{userId}
+	</delete>
 
 </mapper>

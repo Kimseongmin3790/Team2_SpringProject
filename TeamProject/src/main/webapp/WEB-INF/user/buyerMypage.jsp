@@ -567,13 +567,15 @@
                                         </div>
                                     </div>
                                     <div class="cart-item order-item-divider" v-for="item in order.items" :key="item.orderItemNo">
-                                        <div class="cart-item-image"></div>
+                                        <img :src="item.imageUrl" alt="상품 이미지" class="cart-item-image" v-if="item.imageUrl">
+                                        <div class="cart-item-image" v-else></div>
                                         <div class="cart-item-info">
                                             <h3>{{ item.productName }}</h3>
                                             <p>수량: {{ item.quantity }}개</p>
                                             <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p>
                                         </div>
-                                        <button class="btn btn-outline-success btn-sm" @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button>
+                                        <button v-if="item.hasReview === 0" class="btn btn-outline-success btn-sm" @click= "fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button>
+                                        <button v-else class="btn btn-outline btn-sm" disabled>리뷰작성 완료</button> 
                                         <button class="btn btn-outline btn-sm text-danger">환불신청</button>
                                     </div>
                                 </div>
@@ -585,22 +587,33 @@
 
                             <!-- 리뷰 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'reviews' }">
-                                <div class="card" v-for="review in reviews" :key="review.id">
-                                    <div class="review-item">
-                                        <div class="cart-item-image"></div>
-                                        <div class="review-content">
-                                            <div class="review-header">
-                                                <h3>{{ review.productName }}</h3>
-                                                <div class="stars">★★★★★</div>
+                                <div v-if="reviews.length > 0">
+                                    <div class="card" v-for="review in reviews" :key="review.reviewNo"> 
+                                        <div class="review-item">
+                                            <!-- 리뷰 상품 이미지 -->
+                                            <img :src="review.imageUrl" alt="상품 이미지" class="cart-item-image" v-if="review.imageUrl">
+                                            <div class="cart-item-image" v-else></div>
+
+                                            <div class="review-content">
+                                                <div class="review-header">
+                                                    <h3>{{ review.productName }}</h3>
+                                                    <div class="stars">
+                                                        <span v-for="n in 5" :key="n">{{ n <= review.rating ? '★' : '☆' }}</span>
+                                                    </div>
+                                                </div>
+                                                <p class="review-date">{{ review.cdate }}</p>
+                                                <p class="review-text">{{ review.content }}</p>
                                             </div>
-                                            <p class="review-date">{{ review.date }}</p>
-                                            <p class="review-text">{{ review.content }}</p>
-                                        </div>
-                                        <div class="order-actions">
-                                            <button class="btn btn-outline btn-sm">수정</button>
-                                            <button class="btn btn-outline btn-sm text-danger">삭제</button>
+                                            <div class="order-actions">
+                                                <button class="btn btn-outline btn-sm" @click="fnUpdateReview(review.reviewNo)">수정</button>
+                                                <button class="btn btn-outline btn-sm text-danger" @click="fnDeleteReview(review.reviewNo)">삭제</button>
+                                            </div>
                                         </div>
                                     </div>
+                                </div>
+                                <!-- 리뷰가 없을 경우 -->
+                                <div v-else class="card">
+                                    <p class="text-center text-muted">작성한 리뷰가 없습니다.</p>
                                 </div>
                             </div>
 
@@ -675,7 +688,7 @@
                 data() {
                     return {
                         userId: "${sessionId}",
-                        activeTab: 'cart',
+                        activeTab: '${activeTab}',
                         userName: "",
                         userEmail: "",
                         cartItems: [
@@ -697,6 +710,17 @@
                         return this.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                     }
                 },
+
+                watch: {
+                    activeTab(newTab, oldTab) {
+                        if (newTab === 'orders') {
+                            this.fnLoadOrders();
+                        } else if (newTab === 'reviews') {
+                            this.fnLoadReviews();
+                        }
+                    }
+                },
+
                 methods: {
                     increaseQuantity(item) {
                         item.quantity++;
@@ -892,13 +916,53 @@
                         });
                     },
                     fnWriteReview(productNo, orderItemNo) {
-                        console.log("productNo:", productNo, "orderItemNo:", orderItemNo);
-
                         const url = contextPath + "/reviewWrite.do?productNo=" + encodeURIComponent(productNo) 
                                     + "&orderItemNo=" + encodeURIComponent(orderItemNo);
-
-                        console.log("생성된 URL:", url);
                         location.href = url;
+                    },
+                    fnLoadReviews() {
+                        let self = this;
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/review/list.dox",
+                            type: "GET",
+                            dataType: "json",
+                            success: function(response) {
+                                if (response.result === "success") {
+                                    self.reviews = response.list;
+                                    console.log("Loaded Reviews:", self.reviews);
+                                } else {
+                                    alert("리뷰 목록을 불러오는 데 실패했습니다.");
+                                }
+                            },
+                            error: function() {
+                                alert("리뷰 목록 조회 중 오류가 발생했습니다.");
+                            }
+                        });
+                    },
+                    fnUpdateReview(reviewNo) {
+                        window.location.href = '${pageContext.request.contextPath}/reviewUpdate.do?reviewNo=' + reviewNo;
+                    },
+                    fnDeleteReview(reviewNo) {
+                        if (confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
+                            const self = this;
+                            $.ajax({
+                                url: "${pageContext.request.contextPath}/review/delete.dox",
+                                type: "POST", 
+                                data: { reviewNo: reviewNo },
+                                dataType: "json",
+                                success: function(response) {
+                                    if (response.result === "success") {
+                                        alert('리뷰가 삭제되었습니다.');
+                                        self.fnLoadReviews();
+                                    } else {
+                                        alert('리뷰 삭제에 실패했습니다: ' + response.message);
+                                    }
+                                },
+                                error: function() {
+                                    alert('리뷰 삭제 중 오류가 발생했습니다.');
+                                }
+                            });
+                        }
                     },
 
                     // ✅ 판매자 마커 표시
@@ -919,7 +983,11 @@
                 mounted() {
                     let self = this;
                     self.fnUserInfo();
-                    self.fnLoadOrders();              
+                    if (self.activeTab === 'orders') {
+                        self.fnLoadOrders();
+                    } else if (self.activeTab === 'reviews') {
+                        self.fnLoadReviews();
+                    }             
                 }
             })
             window.vueObj = app.mount('#app');
