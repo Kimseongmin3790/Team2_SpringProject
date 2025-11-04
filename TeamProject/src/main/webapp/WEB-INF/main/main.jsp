@@ -520,18 +520,38 @@
                 loadProducers() {
                   const self = this;
 
+                  // ✅ 1. 로그인 여부 및 위치 정보 확인
+                  $.ajax({
+                    url: "/main/data/userLocation.dox",
+                    type: "POST",
+                    dataType: "json",
+                    success(res) {
+                      if (res.login && res.lat && res.lng) {
+                        console.log("✅ 로그인 사용자 위치 사용:", res.lat, res.lng);
+                        self.fnLoadProducerList(res.lat, res.lng);
+                      } else {
+                        console.log("⚠️ 비로그인 또는 위치 정보 없음 → 브라우저 위치 사용");
+                        self.loadLocationFromBrowser();
+                      }
+                    },
+                    error() {
+                      console.warn("❌ 사용자 위치 불러오기 실패, 브라우저 위치로 대체");
+                      self.loadLocationFromBrowser();
+                    }
+                  });
+                },
+
+                // ✅ 2. 비로그인 시 브라우저 위치
+                loadLocationFromBrowser() {
+                  const self = this;
                   if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
-                      function (pos) {
-                        const lat = pos.coords.latitude;
-                        const lng = pos.coords.longitude;
-                        console.log("✅ 위치 허용:", lat, lng);
-
-                        self.fnLoadProducerList(lat, lng);
+                      (pos) => {
+                        self.fnLoadProducerList(pos.coords.latitude, pos.coords.longitude);
                       },
-                      function (err) {
+                      (err) => {
                         console.warn("⚠️ 위치 접근 실패:", err.message);
-                        // 서울 기본좌표
+                        // 기본 서울 좌표
                         self.fnLoadProducerList(37.5665, 126.9780);
                       }
                     );
@@ -616,7 +636,7 @@
                 },
 
                 goSeller(userId) {
-                  location.href="/seller/detail.do?sellerId=" + userId;
+                  location.href = "/seller/detail.do?sellerId=" + userId;
                 },
 
                 /* ------------ 슬라이드 ------------ */

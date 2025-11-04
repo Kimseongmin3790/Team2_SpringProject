@@ -21,7 +21,7 @@
 		        P.RECOMMEND,
 		        I.IMAGE_URL
 		    FROM PRODUCT P
-		    INNER JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO
+		    LEFT JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO
 		    WHERE P.RECOMMEND = 'Y'
 		    ORDER BY P.CDATETIME DESC
 		)
@@ -138,6 +138,12 @@
 	       AND I.IS_THUMBNAIL = 'Y'
 	    WHERE LOWER(P.PNAME) LIKE '%' || LOWER(#{keyword}) || '%'
 	       OR LOWER(P.PINFO) LIKE '%' || LOWER(#{keyword}) || '%'
+	</select>
+	
+	<select id="selectUserLocation" parameterType="string" resultType="hashmap">
+		SELECT LAT, LNG
+		FROM USERS
+		WHERE USER_ID = #{userId}
 	</select>
 
 </mapper>

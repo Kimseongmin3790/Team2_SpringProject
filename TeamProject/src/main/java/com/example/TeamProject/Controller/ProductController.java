@@ -43,16 +43,38 @@ public class ProductController {
 		return "product/productInfo";
 	}
 	
-	@RequestMapping("/product/payment.do")
-	public String payment(Model model) {
-		return "product/payment";
+	@RequestMapping("/product/recommendList.do")
+	public String recommendList(Model model) {
+		return "product/recommendList";
 	}
+	
+	@RequestMapping("/product/newList.do")
+	public String newList(Model model) {
+		return "product/newList";
+	}
+	
 	
 	@RequestMapping(value = "/product-view.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String productView(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = productService.getProduct(map);
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/recommendList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String recommendList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = productService.getRecommendList(map);
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/newList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String newList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = productService.getNewList(map);
 		return new Gson().toJson(resultMap);
 	}
 

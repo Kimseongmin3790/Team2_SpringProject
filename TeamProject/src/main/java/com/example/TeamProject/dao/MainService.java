@@ -3,6 +3,7 @@ package com.example.TeamProject.dao;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,9 @@ import com.example.TeamProject.model.BestProduct; // 베스트 상품 데이터�
 
 @Service
 public class MainService {
+	
+	@Autowired
+	SqlSession sqlSession;
 	
 	@Autowired
 	MainMapper mainMapper; // DB 연결을 위한 Mapper
@@ -113,5 +117,10 @@ public class MainService {
 		}
 		
 		return resultMap;
+	}
+	
+	// 7. 유저 좌표 조회
+	public HashMap<String, Object> selectUserLocation(String userId) throws Exception {
+	    return new HashMap<>(mainMapper.selectUserLocation(userId));
 	}
 }

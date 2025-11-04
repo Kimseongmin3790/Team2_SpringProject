@@ -26,7 +26,7 @@
                 <div class="search-section">
                     <div class="search-bar">
                         <i class="fa fa-search"></i>
-                        <input type="text" placeholder="검색창" id="searchInput">
+                        <input type="text" placeholder="상품 이름이나 상품 설명으로 검색 가능합니다" id="searchInput">
                     </div>
                     <button class="btn-search" id="btnSearch">검색</button>
                 </div>
@@ -82,8 +82,8 @@
                 <nav class="nav-menu">
                     <a href="${path}/main.do">홈</a>
                     <a href="${path}/productCategory.do">상품목록</a>               
-                    <a href="${path}/review/list">베스트</a>
-                    <a href="${path}/board.do">커뮤니티</a>
+                    <a href="${path}/product/recommendList.do">베스트</a>
+                    <a href="${path}/board.do">고객센터</a>
                     <a href="${path}/event">상품후기</a>
                 </nav>
             </div>
