@@ -43,6 +43,11 @@ public class ProductController {
 		return "product/productInfo";
 	}
 	
+	@RequestMapping("/product/payment.do")
+	public String payment(Model model) {
+		return "product/payment";
+	}
+	
 	@RequestMapping(value = "/product-view.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String productView(Model model, @RequestParam HashMap<String, Object> map) throws Exception {

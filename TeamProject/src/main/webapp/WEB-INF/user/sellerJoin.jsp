@@ -540,9 +540,10 @@
                             formData.append("bankName", self.bankName);
                             formData.append("account", self.account);
                             if (self.file) formData.append("bizLicense", self.file);
+                            formData.append("userAddr", self.userAddr);
 
                             $.ajax({
-                                url: "fileUpload.dox",
+                                url: "sellerJoin.dox",
                                 type: "POST",
                                 dataType: "json",
                                 data: formData,

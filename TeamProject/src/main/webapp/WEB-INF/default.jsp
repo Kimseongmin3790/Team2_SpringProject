@@ -54,7 +54,7 @@
                         // 변수 - (key : value)
                         sessionId: "${sessionId}"
                     };
-                }, // 
+                },
                 methods: {
                     // 함수(메소드) - (key : function())
                     fnList: function () {

@@ -11,6 +11,7 @@
       <script src="https://code.jquery.com/jquery-3.7.1.js"
         integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
       <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+      <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=78c3fbd5be4327cf3319a04cf0a379c4&libraries=services"></script>
 
       <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
       <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
@@ -323,6 +324,22 @@
         .btn-more:hover {
           background-color: #4ba954;
         }
+
+        .btn-map-detail {
+          margin-top: 5px;
+          padding: 5px 10px;
+          border: none;
+          background: #5dbb63;
+          color: white;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 12px;
+          transition: background 0.3s;
+        }
+
+        .btn-map-detail:hover {
+          background: #4ba954;
+        }
       </style>
     </head>
 
@@ -354,6 +371,22 @@
               </div>
             </section>
 
+            <!-- 🧑‍🌾 입점업체 -->
+            <section class="main-section">
+              <h2>내 주변 농부</h2>
+              <p class="section-desc">가장 가까운 생산자를 찾아보세요. ※ 위치 권한 없으면 기본으로 서울시청으로 지정됩니다</p>
+              <div id="map" style="width:100%;height:400px;border-radius:12px;margin-bottom:40px;"></div>
+
+              <div class="producer-list">
+                <div class="producer-card" v-for="p in producers" :key="p.userId" @click="goSeller(p.userId)">
+                  <div class="producer-logo" :style="{ backgroundImage: 'url(' + p.profileImg + ')' }"></div>
+                  <strong>{{ p.businessName }}</strong>
+                  <p>{{ p.addrDo }} {{ p.addrCity }}</p>
+                  <p v-if="p.distance">📍 {{ p.distance }}km</p>
+                </div>
+              </div>
+            </section>
+
             <!-- 🌾 추천 섹션 -->
             <section class="main-section">
               <div class="section-header">
@@ -368,21 +401,6 @@
                   <div class="product-info">
                     <h4>{{ p.pname }}</h4>
                     <p>{{ p.pinfo }}</p>
-                    <span class="product-price">{{ p.price.toLocaleString() }}원</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <!-- 🌟 베스트 -->
-            <section class="main-section">
-              <h2>이번 주 베스트 상품</h2>
-              <div class="product-grid">
-                <div class="product-card" v-for="p in best" :key="p.id">
-                  <img :src="fullUrl(p.image)" alt="">
-                  <div class="product-info">
-                    <h4>{{ p.name }}</h4>
-                    <p>{{ p.desc }}</p>
                     <span class="product-price">{{ p.price.toLocaleString() }}원</span>
                   </div>
                 </div>
@@ -409,19 +427,6 @@
               </div>
             </section>
 
-            <!-- 🧑‍🌾 입점업체 -->
-            <section class="main-section">
-              <h2>입점 농가 / 생산자</h2>
-              <p class="section-desc">믿고 거래할 수 있는 아그리콜라의 파트너를 만나보세요.</p>
-              <div class="producer-list">
-                <div class="producer-card" v-for="p in producers" :key="p.userId">
-                  <div class="producer-logo" :style="{ backgroundImage: 'url(' + p.profileImg + ')' }"></div>
-                  <strong>{{ p.businessName }}</strong>
-                  <p>{{ p.addrDo }} {{ p.addrCity }}</p>
-                </div>
-              </div>
-            </section>
-
             <!-- 🔝 맨위/아래 리모컨 -->
             <div class="quick-remote">
               <button @click="scrollTop">🔝<br>맨 위로</button>
@@ -444,8 +449,13 @@
                   producers: [],
                   loading: true,
                   error: null,
-                  index: 0, auto: null,
-                  dragging: false, startX: 0, deltaX: 0, width: 0
+                  index: 0,
+                  auto: null,
+                  dragging: false,
+                  startX: 0,
+                  deltaX: 0,
+                  width: 0,
+                  topFarmers: []
                 };
               },
               methods: {
@@ -459,7 +469,6 @@
                 loadAll() {
                   this.loadBanners();
                   this.loadRecommend();
-                  this.loadBest();
                   this.loadNew();
                   this.loadProducers();
                 },
@@ -493,14 +502,6 @@
                   });
                 },
 
-                loadBest() {
-                  this.best = [
-                    { id: 1, name: "꿀고구마", desc: "달콤한 자연의 맛", price: 11900, image: "/resources/img/main/fresh.png" },
-                    { id: 2, name: "한라봉", desc: "비타민C 가득", price: 14500, image: "/resources/img/main/deal.png" },
-                    { id: 3, name: "쌀 20kg", desc: "갓 도정한 햅쌀", price: 43800, image: "/resources/img/main/delivery.png" }
-                  ];
-                },
-
                 loadNew() {
                   const self = this;
                   $.ajax({
@@ -518,18 +519,104 @@
 
                 loadProducers() {
                   const self = this;
+
+                  if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                      function (pos) {
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        console.log("✅ 위치 허용:", lat, lng);
+
+                        self.fnLoadProducerList(lat, lng);
+                      },
+                      function (err) {
+                        console.warn("⚠️ 위치 접근 실패:", err.message);
+                        // 서울 기본좌표
+                        self.fnLoadProducerList(37.5665, 126.9780);
+                      }
+                    );
+                  } else {
+                    console.warn("❌ 위치정보 지원 안 함");
+                    self.fnLoadProducerList(37.5665, 126.9780);
+                  }
+                },
+
+                fnLoadProducerList(lat, lng) {
+                  const self = this;
                   $.ajax({
-                    url: "/main/data/sellerList.dox",  // ✅ DB 호출 주소
-                    type: "POST",                                  // .dox는 POST 방식 사용
+                    url: "/main/data/sellerList.dox",
+                    type: "POST",
+                    data: { lat, lng },
                     dataType: "json",
                     success(res) {
-                      console.log(res);
-                      self.producers = res.list || [];             // ✅ 백엔드 응답의 list로 바인딩
+                      console.log("✅ 생산자 목록:", res);
+                      self.producers = res.list || [];
+                      self.$nextTick(() => {
+                        self.showMap(lat, lng, self.producers);
+                      });
                     },
                     error(xhr, status, err) {
-                      console.error("입점 농가 로드 실패:", err);
+                      console.error("❌ 생산자 목록 로드 실패:", err);
                     }
                   });
+                },
+
+                showMap(lat, lng, list) {
+                  const container = document.getElementById("map");
+                  const map = new kakao.maps.Map(container, {
+                    center: new kakao.maps.LatLng(lat, lng),
+                    level: 6
+                  });
+
+                  // ✅ 내 위치 마커
+                  const userMarker = new kakao.maps.Marker({
+                    position: new kakao.maps.LatLng(lat, lng),
+                    map: map
+                  });
+                  const userInfo = new kakao.maps.InfoWindow({
+                    content: "<div style='padding:5px;'>내 위치</div>"
+                  });
+                  userInfo.open(map, userMarker);
+
+                  // ✅ 판매자 마커 표시
+                  list.forEach((p) => {
+                    if (!p.lat || !p.lng) return;
+
+                    const pos = new kakao.maps.LatLng(p.lat, p.lng);
+                    const marker = new kakao.maps.Marker({ position: pos, map: map });
+
+                    // 거리값 처리
+                    const distanceText =
+                      typeof p.distance === "number" && !isNaN(p.distance)
+                        ? p.distance.toFixed(1) + "km"
+                        : "거리 정보 없음";
+
+                    // ✅ InfoWindow HTML (문자열 연결 방식)
+                    const html =
+                      "<div style='padding:10px;width:180px;line-height:1.5;font-size:13px;'>" +
+                      "<strong style='font-size:14px;color:#1a5d1a;'>" +
+                      (p.businessName || "이름 없음") +
+                      "</strong><br>" +
+                      (p.addrDo || "") +
+                      " " +
+                      (p.addrCity || "") +
+                      "<br>📍 " +
+                      distanceText +
+                      "<br>" +
+                      // ✅ 상세 페이지 버튼 추가
+                      "<button class='btn-map-detail' onclick=\"location.href='/seller/detail.do?sellerId=" + p.userId + "'\">상세보기</button>" +
+                      "</div>";
+
+                    const info = new kakao.maps.InfoWindow({ content: html });
+
+                    kakao.maps.event.addListener(marker, "click", function () {
+                      info.open(map, marker);
+                    });
+                  });
+                },
+
+                goSeller(userId) {
+                  location.href="/seller/detail.do?sellerId=" + userId;
                 },
 
                 /* ------------ 슬라이드 ------------ */
@@ -635,7 +722,11 @@
 
                 fnGoNewList() {
                   location.href = this.path + "/product/newList.do";
-                }
+                },
+
+                fnGoTopSellerList() {
+                  location.href = this.path + "/seller/topList.do"; // ✅ 더보기 페이지로 이동
+                },
               },
               mounted() {
                 this.loadAll();

@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.TeamProject.dao.MainService;
@@ -27,8 +28,15 @@ public class MainController {
 	public String main() throws Exception {
 		return "main/main";
 	}
+	
+	// 2. 판매자 페이지 JSP 반환 메서드
+	@GetMapping("/seller/detail.do")
+	public String sellerDetail() throws Exception {
+		return "main/sellerDetail";
+	}
+	
 
-	// 2. 메인 배너 데이터 응답
+	// 3. 메인 배너 데이터 응답
 	@RequestMapping(value = "/main/data/banners", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String getMainBannersData() throws Exception {
@@ -40,7 +48,7 @@ public class MainController {
 		return new Gson().toJson(list); 
 	}
 	
-	// 3. 메인 추천 데이터 응답
+	// 4. 메인 추천 데이터 응답
 	@RequestMapping(value = "/main/data/recommend.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String getRecommendProducts() throws Exception {
@@ -50,7 +58,7 @@ public class MainController {
         return new Gson().toJson(resultMap);
     }
 	
-	// 4. 메인 신상품 데이터 응답
+	// 5. 메인 신상품 데이터 응답
 	@RequestMapping(value = "/main/data/newList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String newList() throws Exception {
@@ -60,14 +68,45 @@ public class MainController {
         return new Gson().toJson(resultMap);
     }
 	
-	// 5. 메인 입점 농가 데이터 응답
-		@RequestMapping(value = "/main/data/sellerList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-	    @ResponseBody
-	    public String sellerList() throws Exception {
-			HashMap<String, Object> resultMap = new HashMap<>();
-			
-	        resultMap = mainService.selectSellerList();
-	        return new Gson().toJson(resultMap);
-	    }
+	// 6. 메인 입점 농가 데이터 응답
+	@RequestMapping(value = "/main/data/sellerList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String sellerList(@RequestParam(required = false) Double lat, @RequestParam(required = false) Double lng) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<>();
+		HashMap<String, Object> map = new HashMap<>();
+		if (lat == null || lng == null) {
+			lat = 37.5665;
+			lng = 126.9780;
+		}
+		
+		map.put("lat", lat);
+		map.put("lng", lng);
+		
+        resultMap = mainService.selectSellerList(map);
+        return new Gson().toJson(resultMap);
+    }
+	
+	// 7. 판매자 상세 데이터 응답
+	@RequestMapping(value = "/seller/detailData.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String sellerInfo(@RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<>();
+		
+        resultMap = mainService.getSellerDetail(map);
+        return new Gson().toJson(resultMap);
+    }
+	
+	// 8. 검색 데이터 응답
+	@RequestMapping(value = "/search", method = RequestMethod.GET)
+    public String search(@RequestParam("keyword") String keyword, Model model) throws Exception {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("keyword", keyword);
+        
+        HashMap<String, Object> resultMap = mainService.getSearchList(map);
+        
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("list", new Gson().toJson(resultMap.get("list")));
+        return "main/search"; // => /WEB-INF/views/product/search.jsp
+    }
 
 }

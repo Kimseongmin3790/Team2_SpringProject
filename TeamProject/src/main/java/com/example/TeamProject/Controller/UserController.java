@@ -1,8 +1,13 @@
 package com.example.TeamProject.Controller;
 
+import java.io.File;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,11 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.TeamProject.dao.OrderService;
 import com.example.TeamProject.dao.UserService;
 import com.google.gson.Gson;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -106,13 +113,93 @@ public class UserController {
 		return new Gson().toJson(resultMap);
 	}
 	
-	@RequestMapping(value = "/sellerJoin.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@RequestMapping("sellerJoin.dox")
 	@ResponseBody
-	public String sellerJoin(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap = userService.addSeller(map);
-		
-		return new Gson().toJson(resultMap);
+	public ResponseEntity<Map<String, Object>> sellerJoin(
+	    @RequestParam("farmName") String farmName,
+	    @RequestParam("bizNo") String bizNo,
+	    @RequestParam("bankName") String bankName,
+	    @RequestParam("account") String account,
+	    @RequestParam("userAddr") String userAddr,
+	    @RequestParam("bizLicense") MultipartFile bizLicense,
+	    @RequestParam("userId") String userId,
+	    HttpServletRequest request) {
+
+	    Map<String, Object> response = new HashMap<>();
+
+	    // ✅ 파일 업로드 처리
+	    String fileWebPath = null;
+	    if (bizLicense != null && !bizLicense.isEmpty()) {
+	        try {
+	            String uploadDir = request.getServletContext().getRealPath("/resources/uploads/licenses");
+	            File dir = new File(uploadDir);
+	            if (!dir.exists()) dir.mkdirs();
+
+	            String originalFilename = bizLicense.getOriginalFilename();
+	            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+	            String savedFileName = genSaveFileName(extName);
+
+	            File serverFile = new File(uploadDir, savedFileName);
+	            bizLicense.transferTo(serverFile);
+
+	            fileWebPath = "/resources/uploads/licenses/" + savedFileName;
+	        } catch (Exception e) {
+	            System.out.println("파일 업로드 중 오류 발생: " + e.getMessage());
+	            response.put("status", "error");
+	            response.put("message", "파일 업로드 중 오류가 발생했습니다.");
+	            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	        }
+	    } else {
+	        response.put("status", "fail");
+	        response.put("message", "사업자 등록증 파일이 필요합니다.");
+	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	    }
+
+	    try {
+	        // ✅ 주소 → 좌표 변환
+	        double[] coords = userService.getCoordinatesFromAddress(userAddr);
+	        double lat = coords[0];
+	        double lng = coords[1];
+
+	        // ✅ DB 저장용 데이터 구성
+	        HashMap<String, Object> sellerData = new HashMap<>();
+	        sellerData.put("userId", userId);
+	        sellerData.put("businessName", farmName);
+	        sellerData.put("businessNumber", bizNo);
+	        sellerData.put("bankName", bankName);
+	        sellerData.put("account", account);
+	        sellerData.put("userAddr", userAddr);
+	        sellerData.put("lat", lat);
+	        sellerData.put("lng", lng);
+	        sellerData.put("businessLi", fileWebPath);
+	        sellerData.put("verified", "N");
+
+	        // ✅ DB insert 실행
+	        userService.addSeller(sellerData);
+
+	        response.put("status", "success");
+	        response.put("message", "판매자 회원가입이 완료되었습니다!");
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+
+	    } catch (Exception e) {
+	        System.out.println("DB 저장 중 오류 발생: " + e.getMessage());
+	        response.put("status", "error");
+	        response.put("message", "데이터 저장 중 오류가 발생했습니다.");
+	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	}
+
+	// 파일명 생성 메서드
+	private String genSaveFileName(String extName) {
+	    Calendar calendar = Calendar.getInstance();
+	    return calendar.get(Calendar.YEAR)
+	        + String.valueOf(calendar.get(Calendar.MONTH) + 1)
+	        + calendar.get(Calendar.DATE)
+	        + calendar.get(Calendar.HOUR)
+	        + calendar.get(Calendar.MINUTE)
+	        + calendar.get(Calendar.SECOND)
+	        + calendar.get(Calendar.MILLISECOND)
+	        + extName;
 	}
 	
 	@RequestMapping(value = "/check.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")

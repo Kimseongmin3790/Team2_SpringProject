@@ -50,7 +50,7 @@
         </div>
 
         <div class="footer-right">
-            <a href="${path}/locationMap.do"><img src="${path}/resources/img/footer-icon/naver.png" alt="naver"></a>
+            <a href="#"><img src="${path}/resources/img/footer-icon/naver.png" alt="naver"></a>
             <a href="#"><img src="${path}/resources/img/footer-icon/instagram.webp" alt="instagram"></a>
         </div>
     </div>

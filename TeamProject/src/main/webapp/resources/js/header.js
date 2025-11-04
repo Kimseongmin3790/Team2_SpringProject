@@ -61,7 +61,8 @@ $(document).ready(function () {
             alert("검색어를 입력하세요!");
             return;
         }
-        location.href = path + "/search?keyword=" + encodeURIComponent(keyword);
+		
+		location.href = path + "/search?keyword=" + encodeURIComponent(keyword);
     });
 
     $("#btnLogout").on("click", function () {
