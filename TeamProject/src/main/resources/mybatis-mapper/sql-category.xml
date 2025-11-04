@@ -20,7 +20,7 @@
             NVL(IMG.IMAGE_URL, '/resources/img/category/noimage.jpg') AS filePath
         FROM PRODUCT P
         LEFT JOIN PRODUCT_IMAGE IMG
-            ON P.PRODUCT_NO = IMG.PRODUCT_NO
+            ON P.PRODUCT_NO = IMG.PRODUCT_NO AND IMG.IS_THUMBNAIL = 'Y'
         ORDER BY P.PRODUCT_NO
     </select>
 
