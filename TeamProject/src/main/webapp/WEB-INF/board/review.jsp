@@ -1,39 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<!DOCTYPE html>
-<html lang="ko">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>상품 리뷰 - 농수산물 직거래 장터</title>
-    <script src="https://code.jquery.com/jquery-3.7.1.js"
-        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            color: #333;
-            background-color: #f9fafb;
-        }
-
-        #app {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
         .content {
             flex: 1;
         }
@@ -202,13 +169,6 @@
             display: flex;
             gap: 1rem;
             margin-bottom: 1rem;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
         }
 
         .user-info {
@@ -400,13 +360,7 @@
             }
         }
     </style>
-</head>
-
-<body>
-    <!-- 공통 헤더 -->
-    <%@ include file="/WEB-INF/views/common/header.jsp" %>
-    
-    <div id="app">
+    <div id="review-app">
         <main class="content">
             <!-- Page Header -->
             <div class="page-header">
@@ -422,8 +376,8 @@
                         <div class="rating-overview">
                             <div class="rating-number">{{ averageRating }}</div>
                             <div class="stars">
-                                <svg v-for="n in 5" :key="n" class="star filled" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                <svg v-for="n in 5" :key="n" class="star" :class="{filled: n <=Math.round(averageRating), empty: n > Math.round(averageRating)}" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.142 9.27l6.91-1.01L12 2z"/>
                                 </svg>
                             </div>
                             <div class="rating-count">{{ totalReviews }}개 리뷰</div>
@@ -433,11 +387,11 @@
                             <div v-for="rating in [5, 4, 3, 2, 1]" :key="rating" class="rating-bar-row">
                                 <div class="rating-bar-stars">
                                     <svg v-for="n in rating" :key="n" class="star filled" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L714.14 2 9.27l6.91-1.01L12 2z"/>
                                     </svg>
                                 </div>
                                 <div class="rating-bar-bg">
-                                    <div class="rating-bar-fill" :style="{width: getRatingPercentage(rating) + '%'}"></div>
+                                    <div class="rating-bar-fill" :style="{width: getRatingPercentage(rating) +'%'}"></div>
                                 </div>
                                 <div class="rating-bar-count">{{ getRatingCount(rating) }}</div>
                             </div>
@@ -447,32 +401,32 @@
 
                 <!-- Filters -->
                 <div class="filters">
-                    <button 
-                        class="filter-btn" 
+                    <button
+                        class="filter-btn"
                         :class="{active: currentFilter === 'all'}"
                         @click="currentFilter = 'all'">
                         전체 리뷰
                     </button>
-                    <button 
-                        class="filter-btn" 
+                    <button
+                        class="filter-btn"
                         :class="{active: currentFilter === 'photo'}"
                         @click="currentFilter = 'photo'">
                         📷 포토 리뷰
                     </button>
-                    <button 
-                        class="filter-btn" 
+                    <button
+                        class="filter-btn"
                         :class="{active: currentFilter === '5'}"
                         @click="currentFilter = '5'">
                         ⭐ 5점
                     </button>
-                    <button 
-                        class="filter-btn" 
+                    <button
+                        class="filter-btn"
                         :class="{active: currentFilter === '4'}"
                         @click="currentFilter = '4'">
                         ⭐ 4점
                     </button>
-                    <button 
-                        class="filter-btn" 
+                    <button
+                        class="filter-btn"
                         :class="{active: currentFilter === 'latest'}"
                         @click="currentFilter = 'latest'">
                         최신순
@@ -484,39 +438,34 @@
                     <div v-for="review in filteredReviews" :key="review.reviewNo" class="review-card">
                         <!-- Review Header -->
                         <div class="review-header">
-                            <img :src="review.userAvatar" :alt="review.userName" class="user-avatar">
                             <div class="user-info">
                                 <div class="user-name-row">
-                                    <span class="user-name">{{ review.userName }}</span>
-                                    <span v-if="review.isVerifiedPurchase" class="verified-badge">구매 인증</span>
+                                    <span class="user-name">{{ review.userId }}</span>
                                 </div>
                                 <div class="review-meta">
                                     <div class="review-stars">
-                                        <svg v-for="n in 5" :key="n" 
-                                            class="star" 
+                                        <svg v-for="n in 5" :key="n"
+                                            class="star"
                                             :class="{filled: n <= review.rating, empty: n > review.rating}"
-                                            viewBox="0 0 24 24" 
+                                            viewBox="0 0 24 24"
                                             fill="currentColor">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.183.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                                         </svg>
                                     </div>
-                                    <span class="review-date">{{ review.createdAt }}</span>
+                                    <span class="review-date">{{ formatDate(review.createdAt) }}</span>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Product Name -->
-                        <div class="product-name">{{ review.productName }}</div>
 
                         <!-- Review Content -->
                         <p class="review-content">{{ review.content }}</p>
 
                         <!-- Review Images -->
                         <div v-if="review.images && review.images.length > 0" class="review-images">
-                            <img 
-                                v-for="(image, index) in review.images" 
+                            <img
+                                v-for="(image, index) in review.images"
                                 :key="index"
-                                :src="image" 
+                                :src="image"
                                 :alt="'리뷰 이미지 ' + (index + 1)"
                                 class="review-image"
                                 @click="openImageModal(image)">
@@ -526,13 +475,13 @@
                         <div class="review-actions">
                             <button class="action-btn" @click="toggleRecommend(review)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                                    <path d="M14 9V5a3 0 0 0-3-3l-4 9v11h11.28a2 0 0 0 2-1.7l1.38-9a2 0 00-2-2.3zM7 22H4a2 0 0 1-2-2v-7a2 0 0 1 2-2h3"/>
                                 </svg>
                                 도움돼요 {{ review.recommend }}
                             </button>
                             <button class="action-btn">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    <path d="M21 15a2 0 0 1-2 2H7l-4 4V5a2 0 0 1 2-2h14a2 0 0 1 2 2z"/>
                                 </svg>
                                 댓글
                             </button>
@@ -555,100 +504,49 @@
             </div>
         </div>
     </div>
-    
-    <!-- 공통 푸터 -->
-    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
-</body>
-
-</html>
 
 <script>
-    const app = Vue.createApp({
+    console.log("review.jsp 스크립트 실행됨!");
+
+    const reviewApp = Vue.createApp({
         data() {
             return {
                 sessionId: "${sessionId}",
                 currentFilter: 'all',
                 modalImage: null,
-                averageRating: 4.8,
-                totalReviews: 1234,
+                averageRating: 0,
+                totalReviews: 0,
                 ratingDistribution: {
-                    5: 925,
-                    4: 247,
-                    3: 42,
-                    2: 15,
-                    1: 5
+                    5: 0,
+                    4: 0,
+                    3: 0,
+                    2: 0,
+                    1: 0
                 },
-                reviews: [
-                    {
-                        reviewNo: 1,
-                        userId: "user123",
-                        userName: "김철수",
-                        userAvatar: "${pageContext.request.contextPath}/resources/images/user-avatar.jpg",
-                        productNo: 101,
-                        productName: "제주 감귤 5kg",
-                        rating: 5,
-                        recommend: 24,
-                        content: "정말 신선하고 맛있어요! 배송도 빠르고 포장도 꼼꼼하게 되어있었습니다. 가족들이 모두 좋아해서 재구매 의사 100%입니다. 감귤이 하나하나 크고 당도도 높아서 아이들이 정말 좋아합니다.",
-                        images: [
-                            "${pageContext.request.contextPath}/resources/images/fresh-tangerines.jpg",
-                            "${pageContext.request.contextPath}/resources/images/tangerine-box.jpg",
-                            "${pageContext.request.contextPath}/resources/images/tangerine-close-up.jpg"
-                        ],
-                        createdAt: "2024-01-15",
-                        isVerifiedPurchase: true
-                    },
-                    {
-                        reviewNo: 2,
-                        userId: "user456",
-                        userName: "이영희",
-                        userAvatar: "${pageContext.request.contextPath}/resources/images/user-avatar-2.jpg",
-                        productNo: 102,
-                        productName: "유기농 쌀 10kg",
-                        rating: 4,
-                        recommend: 18,
-                        content: "쌀알이 윤기나고 밥맛이 좋습니다. 유기농이라 안심하고 먹을 수 있어요. 다만 배송이 조금 늦어진 점은 아쉬웠습니다.",
-                        images: [
-                            "${pageContext.request.contextPath}/resources/images/organic-rice.jpg"
-                        ],
-                        createdAt: "2024-01-14",
-                        isVerifiedPurchase: true
-                    },
-                    {
-                        reviewNo: 3,
-                        userId: "user789",
-                        userName: "박민수",
-                        userAvatar: "${pageContext.request.contextPath}/resources/images/user-avatar-3.jpg",
-                        productNo: 103,
-                        productName: "딸기 2kg",
-                        rating: 5,
-                        recommend: 32,
-                        content: "딸기가 정말 크고 달아요! 아이들이 너무 좋아합니다. 다음에도 꼭 주문할게요. 포장도 정말 잘 되어있어서 하나도 상하지 않았습니다.",
-                        images: [
-                            "${pageContext.request.contextPath}/resources/images/fresh-strawberries.jpg",
-                            "${pageContext.request.contextPath}/resources/images/strawberry-basket.jpg"
-                        ],
-                        createdAt: "2024-01-13",
-                        isVerifiedPurchase: true
-                    }
-                ]
+                reviews: []
             };
         },
         computed: {
             filteredReviews() {
-                let filtered = this.reviews;
-                
-                if (this.currentFilter === 'photo') {
+                let self = this;
+                let filtered = self.reviews;
+
+                if (self.currentFilter === 'photo') {
                     filtered = filtered.filter(r => r.images && r.images.length > 0);
-                } else if (this.currentFilter === '5' || this.currentFilter === '4') {
+                } else if (self.currentFilter === '5' || self.currentFilter === '4') {
                     filtered = filtered.filter(r => r.rating === parseInt(this.currentFilter));
+                } else if (self.currentFilter === 'latest') { // 이 부분 추가
+                    filtered = filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 }
-                
+
                 return filtered;
             }
         },
         methods: {
             getRatingPercentage(rating) {
-                return (this.ratingDistribution[rating] / this.totalReviews) * 100;
+                let self = this;
+                if (self.totalReviews === 0) return 0;
+                return (self.ratingDistribution[rating] / self.totalReviews) * 100;
             },
             getRatingCount(rating) {
                 return this.ratingDistribution[rating];
@@ -666,31 +564,54 @@
                 alert('더 많은 리뷰를 불러옵니다.');
                 // 실제로는 AJAX로 추가 리뷰 데이터를 가져옴
             },
+            formatDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            },
             fnLoadReviews() {
                 let self = this;
-                let param = {
-                    productNo: 101 // 상품 번호
-                };
+                const urlParams = new URLSearchParams(window.location.search);
+                const productNo = urlParams.get('productNo');
+
+                console.log("fnLoadReviews 호출됨. productNo:", productNo);
+
+                if (!productNo) {
+                    alert("상품 번호가 없습니다.");
+                    return;
+                }
                 $.ajax({
-                    url: "${pageContext.request.contextPath}/review/list",
-                    dataType: "json",
-                    type: "POST",
-                    data: param,
-                    success: function (data) {
-                        self.reviews = data.reviews;
-                        self.averageRating = data.averageRating;
-                        self.totalReviews = data.totalReviews;
-                        self.ratingDistribution = data.ratingDistribution;
+                    url: "${pageContext.request.contextPath}/product/reviews/partial.do",
+                    dataType: "json", // JSON 응답을 기대
+                    type: "GET",
+                    data: { productNo: productNo },
+                    success: function (response) {
+                        // 컨트롤러에서 반환된 JSON 데이터를 Vue 데이터 속성에 할당
+                        if (response && response.result === "success") {
+                            self.reviews = response.reviews || [];
+                            self.averageRating = response.averageRating || 0;
+                            self.totalReviews = response.totalReviews || 0;
+                            self.ratingDistribution = response.ratingDistribution || { 5:0,4:0,3:0,2:0,1:0 };
+                        } else {
+                            alert("리뷰 데이터를 불러오는 데 실패했습니다.");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("리뷰 목록 조회 중 오류 발생:", status, error, xhr.responseText);
+                        alert("리뷰 목록 조회 중 오류가 발생했습니다.");
                     }
                 });
             }
         },
         mounted() {
             let self = this;
-            // 실제 환경에서는 서버에서 리뷰 데이터를 가져옴
-            // self.fnLoadReviews();
+            self.fnLoadReviews();
         }
     });
 
-    app.mount('#app');
+    reviewApp.mount('#review-app');
+    console.log("reviewApp 마운트 시도 완료!");
 </script>

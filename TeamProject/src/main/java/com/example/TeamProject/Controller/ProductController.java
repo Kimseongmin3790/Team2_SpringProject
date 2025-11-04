@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.TeamProject.dao.ProductService;
+import com.example.TeamProject.dao.ReviewService;
 import com.google.gson.Gson;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +32,9 @@ public class ProductController {
 
 	@Autowired
 	ProductService productService;
+	
+	@Autowired
+	ReviewService reviewService;
 
 	@RequestMapping("/product/add.do")
 	public String add(Model model) {

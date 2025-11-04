@@ -1,9 +1,12 @@
 package com.example.TeamProject.dao;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -248,6 +251,84 @@ public class ReviewService {
         return resultMap;
     }
     
-    
+    // 상품별 리뷰 목록 가져오기 (이미지 URL 추가 로직 포함)
+    public HashMap<String, Object> getProductReviews(int productNo) { // 기존 메서드 이름 유지
+        HashMap<String, Object> resultMap = new HashMap<>();
+        try {
+            // 1. 특정 상품의 리뷰 목록을 가져옵니다. (이제 List<Map<String, Object>>를 반환)
+            List<Map<String, Object>> rawReviewList = reviewMapper.selectReviewsByProductNo(productNo);
 
+            // 2. 각 리뷰에 이미지 URL 목록을 추가하고 통계를 계산합니다.
+            List<Map<String, Object>> processedReviews = new ArrayList<>();
+            int totalReviews = rawReviewList.size();
+            double sumRatings = 0;
+            Map<Integer, Integer> ratingDistribution = new HashMap<>();
+            for (int i = 1; i <= 5; i++) {
+                ratingDistribution.put(i, 0); // 1점부터 5점까지 초기화
+            }
+
+            for (Map<String, Object> review : rawReviewList) {
+                // 해당 리뷰의 이미지 URL 목록을 가져와 추가
+                // Integer reviewNo = (Integer) review.get("REVIEW_NO"); // <-- 이 부분이 문제일 수 있습니다.
+                Integer reviewNo = null;
+                Object reviewNoObj = review.get("REVIEW_NO");
+                if (reviewNoObj instanceof BigDecimal) {
+                    reviewNo = ((BigDecimal) reviewNoObj).intValue();
+                } else if (reviewNoObj instanceof Integer) {
+                    reviewNo = (Integer) reviewNoObj;
+                }
+
+                List<String> imageUrls = new ArrayList<>();
+                if (reviewNo != null) {
+                    imageUrls = reviewMapper.selectReviewImageUrlsByReviewNo(reviewNo);
+                }
+                review.put("images", imageUrls); // "images" 키로 이미지 URL 리스트 추가
+
+                processedReviews.add(review); // 이미 Map 형태이므로 그대로 추가
+
+                // 통계 계산 (RATING 처리 부분은 그대로 유지)
+                Object ratingObj = review.get("RATING");
+                int rating = 0; // 기본값 설정
+                if (ratingObj != null) {
+                    if (ratingObj instanceof BigDecimal) {
+                        rating = ((BigDecimal) ratingObj).intValue();
+                    } else if (ratingObj instanceof Integer) {
+                        rating = (Integer) ratingObj;
+                    } else {
+                        try {
+                            rating = Integer.parseInt(String.valueOf(ratingObj));
+                        } catch (NumberFormatException e) {
+                            System.err.println("Error parsing RATING to int: " + ratingObj + " - " +e.getMessage());
+                        }
+                    }
+                }
+                sumRatings += rating;
+                if (rating >= 1 && rating <= 5) {
+                    ratingDistribution.put(rating, ratingDistribution.get(rating) + 1);
+                }
+            }
+
+            double averageRating = (totalReviews > 0) ? (sumRatings / totalReviews) : 0;
+            averageRating = Math.round(averageRating * 10.0) / 10.0; // 소수점 첫째 자리까지 반올림
+
+            resultMap.put("result", "success");
+            resultMap.put("reviews", processedReviews); // "reviews" 키로 변경
+            resultMap.put("averageRating", averageRating);
+            resultMap.put("totalReviews", totalReviews);
+            resultMap.put("ratingDistribution", ratingDistribution);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resultMap.put("result", "fail");
+            resultMap.put("message", e.getMessage());
+            // 오류 발생 시 클라이언트에서 처리할 수 있도록 빈 리스트나 기본값으로 채워 반환
+            resultMap.put("reviews", new ArrayList<>());
+            resultMap.put("averageRating", 0.0);
+            resultMap.put("totalReviews", 0);
+            resultMap.put("ratingDistribution", new HashMap<Integer, Integer>() {{
+                put(5, 0); put(4, 0); put(3, 0); put(2, 0); put(1, 0);
+            }});
+        }
+        return resultMap;
+    }
 }

@@ -24,6 +24,7 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService; 
 
+
     @RequestMapping(value = "/reviewWrite.do", method = RequestMethod.GET)
     public String showReviewWritePage(@RequestParam("productNo") int productNo,
                                       @RequestParam("orderItemNo") int orderItemNo,
@@ -40,6 +41,8 @@ public class ReviewController {
         model.addAttribute("reviewNo", reviewNo);
         return "board/reviewEdit";
     }
+    
+    
 
     
     // 리뷰 작성
@@ -119,5 +122,14 @@ public class ReviewController {
 
         return new Gson().toJson(resultMap);
     }
+    
+    // 상품별 리뷰 목록 가져오기
+    @RequestMapping(value = "/product/reviews.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getProductReviews(@RequestParam("productNo") int productNo) throws Exception {
+        HashMap<String, Object> resultMap = reviewService.getProductReviews(productNo);
+        return new Gson().toJson(resultMap);
+    }
+
        
 }

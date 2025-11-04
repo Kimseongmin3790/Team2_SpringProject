@@ -25,10 +25,18 @@
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
             <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
                 html,
                 body {
                     height: 100%;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                     margin: 0;
+                    color: #333;
+                    background-color: #f9fafb;
                 }
 
                 #app {
@@ -819,55 +827,7 @@
                         </div>
 
                         <section id="re">
-                            <div>
-                                리뷰
-                                <div style="text-align:right;">
-                                    <a href="javascript:;" style="padding:0 8px; text-decoration:none;">추천순</a>
-                                    <span
-                                        style="display:inline-block; width:1px; height:12px; background:#ccc; vertical-align:middle;"></span>
-                                    <a href="javascript:;" style="padding:0 8px; text-decoration:none;">최신순</a>
-                                    <span
-                                        style="display:inline-block; width:1px; height:12px; background:#ccc; vertical-align:middle;"></span>
-                                    <a href="javascript:;" style="padding:0 8px; text-decoration:none;">별점 높은순</a>
-                                    <span
-                                        style="display:inline-block; width:1px; height:12px; background:#ccc; vertical-align:middle;"></span>
-                                    <a href="javascript:;" style="padding:0 8px; text-decoration:none;">별점 낮은순</a>
-                                </div>
-                                <hr>
-                                <div class="review-row">
-                                    <div id="view" class="review-card">
-                                        <div style="display:flex;justify-content:space-between;">
-                                            <div style="padding:15px 20px;">권혁준</div>
-                                            <div style="padding:15px 20px;">2025.09.30</div>
-                                        </div>
-                                        <div style="display:flex;">
-                                            <div style="padding:0 20px;">구매옵션</div>
-                                            <div>가성비 B급 3kg (10~12미)</div>
-                                        </div>
-                                    </div>
-                                    <div class="review-body">
-                                        <div style="padding:8px 0; letter-spacing:4px; white-space:nowrap;">★★★★★</div>
-                                        <div class="comment-text">맛있네요</div>
-
-                                        <a href="#" class="iconbtn" @click.prevent="toggleComments"
-                                            :aria-expanded="String(commentOpen)" aria-controls="cmt-1">
-                                            <span aria-hidden="true" style="margin-right:6px;">{{ commentOpen ? '▲' :
-                                                '▼' }}</span>
-                                            <span>댓글</span>
-                                            <em class="count">{{ commentCount }}</em>
-                                        </a>
-
-                                        <section id="cmt-1" v-show="commentOpen" class="comments">
-                                            <div v-if="comments.length===0" class="muted">댓글이 없습니다.</div>
-                                            <div v-else>
-                                                <div v-for="c in comments" :key="c.id" class="comment-line">{{ c.text }}
-                                                </div>
-                                            </div>
-                                        </section>
-                                    </div>
-                                </div>
-                                <hr class="review-sep">
-                            </div>
+                            <%@ include file="/WEB-INF/board/review.jsp" %>
                         </section>
 
                         <section id="qa">
@@ -1202,7 +1162,8 @@
                             { id: 1, text: '고객님, 소중한 리뷰 감사드립니다. 다음에도 찾아주세요! 😊' }
                         ];
                         this.commentCount = this.comments.length;
-                    }
+                    },
+                    
                 },
                 mounted() {
                     this.fnInfo();
@@ -1219,6 +1180,7 @@
                         history.replaceState(null, '', location.pathname + location.search);
                     }
                     window.addEventListener('pageshow', (e) => { if (e.persisted) window.location.reload(); });
+                    
                 },
                 beforeUnmount() { document.removeEventListener('click', this._docHandler); }
             });

@@ -4,6 +4,36 @@
 
 <mapper namespace="com.example.TeamProject.mapper.ReviewMapper">
 
+	    <!-- 리뷰 목록 조회를 위한 resultMap -->
+    <resultMap id="productReviewListResultMap" type="com.example.TeamProject.model.Review">
+        <id property="reviewNo" column="REVIEW_NO"/>
+        <result property="userId" column="USER_ID"/>
+        <result property="productNo" column="PRODUCT_NO"/>
+        <result property="orderItemNo" column="ORDER_ITEM_NO"/>
+        <result property="rating" column="RATING"/>
+        <result property="content" column="CONTENT"/>
+        <result property="createdAt" column="CREATEDAT"/> 
+        <result property="productName" column="PRODUCTNAME"/>
+        <result property="imageUrl" column="IMAGEURL"/>
+        <collection property="reviewImages" ofType="string" select="selectReviewImageUrlsByReviewNo" column="REVIEW_NO"/> 
+    </resultMap>
+    
+    <!-- 리뷰 상세 조회를 위한 resultMap -->
+    <resultMap id="reviewDetailResultMap" type="com.example.TeamProject.model.Review">
+	    <id property="reviewNo" column="REVIEW_NO"/>
+	    <result property="userId" column="USER_ID"/>
+	    <result property="productNo" column="PRODUCT_NO"/>
+	    <result property="orderItemNo" column="ORDER_ITEM_NO"/>
+	    <result property="rating" column="RATING"/>
+	    <result property="content" column="CONTENT"/>
+	    <result property="cdate" column="CDATE"/> 
+	    <result property="productName" column="PRODUCTNAME"/>
+	    <result property="imageUrl" column="IMAGEURL"/> 
+	    <result property="sellerName" column="SELLERNAME"/> 
+	    <result property="orderdate" column="ORDERDATE"/> 
+	</resultMap>
+
+
 	
     <!-- 리뷰 등록 -->
     <insert id="insertReview" parameterType="com.example.TeamProject.model.Review"
@@ -49,6 +79,7 @@
 	        AND OI.ORDER_ITEM_NO = #{orderItemNo}
 	</select>
 	
+		<!-- 사용자 ID로 리뷰 목록 조회 -->
 	    <select id="selectReviewsByUserId" parameterType="string" resultType="com.example.TeamProject.model.Review">
         SELECT
             R.REVIEW_NO,
@@ -70,7 +101,8 @@
             R.CREATED_AT DESC
     </select>
     
-        <select id="selectReviewDetailByReviewNo" parameterType="int" resultType="com.example.TeamProject.model.Review">
+    	<!-- 리뷰 상세 조회 -->
+    <select id="selectReviewDetailByReviewNo" parameterType="int" resultType="com.example.TeamProject.model.Review">
         SELECT
             R.REVIEW_NO,
             R.USER_ID,
@@ -97,6 +129,7 @@
             R.REVIEW_NO = #{reviewNo}
     </select>
 
+	<!-- 리뷰에 첨부된 이미지 목록 조회 -->
     <select id="selectReviewImagesByReviewNo" parameterType="int" resultType="com.example.TeamProject.model.ReviewImage">
 	    SELECT
 	        IMAGE_NO,
@@ -108,7 +141,8 @@
 	    ORDER BY
 	        CDATETIME ASC
 	</select>
-    
+	
+    <!-- 리뷰 수정 -->
     <update id="updateReview" parameterType="hashmap">
        UPDATE REVIEW
        SET
@@ -119,6 +153,7 @@
            REVIEW_NO = #{reviewNo}
    </update>
 
+	<!-- 선택된 이미지만 삭제 -->
 	<delete id="deleteSpecificReviewImages">
 	     DELETE FROM REVIEW_IMAGE
 	     WHERE IMAGE_NO IN
@@ -127,9 +162,42 @@
 	     </foreach>
 	</delete>
 	
+	<!-- 리뷰 삭제 -->
 	<delete id="deleteReview" parameterType="hashmap">
 	    DELETE FROM REVIEW
 	    WHERE REVIEW_NO = #{reviewNo} AND USER_ID = #{userId}
 	</delete>
+	
+	<!-- 상품별 리뷰 목록 조회 -->
+	<select id="selectReviewsByProductNo" parameterType="int" resultType="map">
+	    SELECT
+	        REVIEW_NO,
+	        USER_ID,
+	        PRODUCT_NO,
+	        ORDER_ITEM_NO,
+	        RATING,
+	        RECOMMEND,
+	        CONTENT,
+	        TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT, 
+	        UDATETIME
+	    FROM
+	        REVIEW
+	    WHERE
+	        PRODUCT_NO = #{productNo}
+	    ORDER BY
+	        CREATED_AT DESC
+	</select>
+	
+	<!-- 특정 리뷰의 이미지 URL 목록을 가져오는 SQL -->
+	<select id="selectReviewImageUrlsByReviewNo" parameterType="int" resultType="string">
+	    SELECT
+	        IMAGE_URL
+	    FROM
+	        REVIEW_IMAGE
+	    WHERE
+	        REVIEW_NO = #{reviewNo}
+	    ORDER BY
+	        CDATETIME ASC
+	</select>
 
 </mapper>
