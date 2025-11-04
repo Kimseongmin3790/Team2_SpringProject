@@ -10,6 +10,7 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+            <script src="/resources/js/page-change.js"></script>
             <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
@@ -17,26 +18,33 @@
                 .w-100 {
                     width: 100%;
                 }
+
                 .mt-1 {
                     margin-top: 1rem;
                 }
+
                 .btn.text-danger {
                     color: #ef4444;
                 }
+
                 .text-center {
                     text-align: center;
                 }
+
                 .text-muted {
                     color: #6b7280;
                 }
+
                 .order-item-divider {
                     margin-top: 1rem;
                     border-top: 1px solid #f3f4f6;
                     padding-top: 1rem;
                 }
+
                 .icon-warning {
                     font-size: 1.5rem;
                 }
+
                 * {
                     margin: 0;
                     padding: 0;
@@ -431,7 +439,7 @@
                 }
 
                 /* 반응형 */
-               @media (max-width: 768px) {
+                @media (max-width: 768px) {
                     .tabs-list {
                         grid-template-columns: repeat(2, 1fr);
                     }
@@ -444,6 +452,7 @@
                         max-width: 100%;
                     }
                 }
+
                 /* 에러 메시지 */
                 .error-message {
                     color: #dc2626;
@@ -451,34 +460,96 @@
                     font-weight: 500;
                     margin-top: 0.25rem;
                 }
+
                 .btn-outline-success {
                     background-color: white;
                     color: #22c55e;
-                    border: 1px solid #22c55e; 
+                    border: 1px solid #22c55e;
                 }
+
                 .btn-outline-success:hover {
-                    background-color: #22c55e; 
-                    color: white; 
+                    background-color: #22c55e;
+                    color: white;
                 }
 
                 .btn-outline-info {
                     background-color: white;
-                    color: #3b82f6; 
-                    border: 1px solid #3b82f6; 
+                    color: #3b82f6;
+                    border: 1px solid #3b82f6;
                 }
+
                 .btn-outline-info:hover {
-                    background-color: #3b82f6; 
-                    color: white; 
+                    background-color: #3b82f6;
+                    color: white;
                 }
+
                 .order-header-actions {
                     display: flex;
                     flex-direction: row;
                     align-items: center;
                     gap: 0.75rem;
                 }
-                
+
+                .cart-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+
+                /* 이미지는 고정 폭/높이 + 줄어들지 않게 */
+                .cart-item-image {
+                    width: 80px;
+                    height: 80px;
+                    background-color: #f3f4f6;
+                    border-radius: 8px;
+                    flex-shrink: 0;
+                }
+
+                /* 이미지+텍스트만 클릭되도록 하되, 우측 버튼을 오른쪽으로 밀어냄 */
+                .cart-link {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    flex: 1;
+                    /* ← 이게 포인트! */
+                    min-width: 0;
+                    text-decoration: none;
+                    color: inherit;
+                }
+
+                .cart-link:hover,
+                .cart-link:visited {
+                    text-decoration: none;
+                    color: inherit;
+                }
+
+                .cart-link:focus {
+                    outline: none;
+                }
+
+                /* 우측 액션들 약간 간격 */
+                .quantity-control {
+                    margin-left: 1rem;
+                }
+
+                .cart-item .btn-danger {
+                    margin-left: .5rem;
+                }
+
+                /* 반응형에서 줄바꿈 방지 (선택) */
+                @media (max-width: 480px) {
+                    .cart-item {
+                        flex-wrap: wrap;
+                    }
+
+                    .quantity-control,
+                    .cart-item .btn-danger {
+                        margin-top: .5rem;
+                    }
+                }
             </style>
         </head>
+
         <body>
             <div id="app">
                 <!-- 공통 헤더 -->
@@ -515,24 +586,30 @@
                                 </button>
                             </div>
 
-                            <!-- 카트 탭 -->
+                            <!-- 장바구니 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'cart' }">
-                                <div class="card" v-for="item in cartItems" :key="item.id">
+                                <div class="card" v-for="item in cartItems" :key="item.cartNo">
                                     <div class="cart-item">
-                                        <div class="cart-item-image"></div>
-                                        <div class="cart-item-info">
-                                            <h3>{{ item.name }}</h3>
-                                            <p>{{ item.description }}</p>
-                                            <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p>
-                                        </div>
+                                        <a href="javascript:;" @click="fnBack(item.productNo)" class="cart-link">
+                                            <div class="cart-item-image">
+                                                <img :src="item.thumbPath" alt=""
+                                                    style="width:100%;height:100%;object-fit:cover;border-radius:8px;">
+                                            </div>
+                                            <div class="cart-item-info">
+                                                <h3>{{ item.pName }}</h3>
+                                                <p class="cart-item-price">{{ Number(item.price||0).toLocaleString() }}원
+                                                </p>
+                                            </div>
+                                        </a>
                                         <div class="quantity-control">
-                                            <button class="quantity-btn" @click="decreaseQuantity(item)">-</button>
+                                            <button class="quantity-btn" @click="changeQty(item, -1)">-</button>
                                             <span class="quantity-value">{{ item.quantity }}</span>
-                                            <button class="quantity-btn" @click="increaseQuantity(item)">+</button>
+                                            <button class="quantity-btn" @click="changeQty(item, +1)">+</button>
                                         </div>
                                         <button class="btn btn-danger btn-sm" @click="removeFromCart(item)">삭제</button>
                                     </div>
                                 </div>
+
                                 <div class="order-summary">
                                     <div class="card">
                                         <div class="summary-row">
@@ -567,15 +644,14 @@
                                         </div>
                                     </div>
                                     <div class="cart-item order-item-divider" v-for="item in order.items" :key="item.orderItemNo">
-                                        <img :src="item.imageUrl" alt="상품 이미지" class="cart-item-image" v-if="item.imageUrl">
-                                        <div class="cart-item-image" v-else></div>
+                                        <div class="cart-item-image"></div>
                                         <div class="cart-item-info">
                                             <h3>{{ item.productName }}</h3>
                                             <p>수량: {{ item.quantity }}개</p>
                                             <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p>
                                         </div>
-                                        <button v-if="item.hasReview === 0" class="btn btn-outline-success btn-sm" @click= "fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button>
-                                        <button v-else class="btn btn-outline btn-sm" disabled>리뷰작성 완료</button> 
+                                        <button class="btn btn-outline-success btn-sm"
+                                            @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button>
                                         <button class="btn btn-outline btn-sm text-danger">환불신청</button>
                                     </div>
                                 </div>
@@ -622,7 +698,8 @@
                                 <div class="card profile-form">
                                     <div class="form-group">
                                         <label class="form-label">이름</label>
-                                        <input type="text" class="form-input readonly-input" v-model="profile.name" disabled>
+                                        <input type="text" class="form-input readonly-input" v-model="profile.name"
+                                            disabled>
                                     </div>
                                     <div class="form-group" v-if="loginType === 'NORMAL'">
                                         <label class="form-label">이메일</label>
@@ -630,22 +707,28 @@
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">전화번호 ('-' 없이 숫자만 입력)</label>
-                                        <input type="tel" class="form-input" v-model="profile.phone" placeholder="'-' 없이 숫자만 입력">
+                                        <input type="tel" class="form-input" v-model="profile.phone"
+                                            placeholder="'-' 없이 숫자만 입력">
                                         <div v-if="errors.phone" class="error-message">{{ errors.phone }}</div>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">주소 : <button @click="fnAddr">주소검색</button></label>
-                                        <input type="text" class="form-input" v-model="profile.address" placeholder="주소 검색 버튼으로 입력해주세요" disabled>
+                                        <input type="text" class="form-input" v-model="profile.address"
+                                            placeholder="주소 검색 버튼으로 입력해주세요" disabled>
                                     </div>
                                     <div class="form-group" v-if="loginType === 'NORMAL'">
                                         <label class="form-label">비밀번호 변경</label>
-                                        <input type="password" class="form-input" placeholder="새 비밀번호" v-model="profile.newPassword">
-                                        <div v-if="errors.newPassword" class="error-message">{{ errors.newPassword }}</div>
+                                        <input type="password" class="form-input" placeholder="새 비밀번호"
+                                            v-model="profile.newPassword">
+                                        <div v-if="errors.newPassword" class="error-message">{{ errors.newPassword }}
+                                        </div>
                                     </div>
                                     <div class="form-group" v-if="loginType === 'NORMAL'">
                                         <label class="form-label">비밀번호 확인</label>
-                                        <input type="password" class="form-input" placeholder="새 비밀번호 확인" v-model="profile.confirmPassword">
-                                        <div v-if="errors.confirmPassword" class="error-message">{{ errors.confirmPassword }}</div>
+                                        <input type="password" class="form-input" placeholder="새 비밀번호 확인"
+                                            v-model="profile.confirmPassword">
+                                        <div v-if="errors.confirmPassword" class="error-message">{{
+                                            errors.confirmPassword }}</div>
                                     </div>
                                     <div class="form-actions">
                                         <button class="btn btn-primary" @click="saveProfile">저장하기</button>
@@ -691,23 +774,22 @@
                         activeTab: '${activeTab}',
                         userName: "",
                         userEmail: "",
-                        cartItems: [
-                            { id: 1, name: '제주 감귤 5kg', description: '신선한 제주 감귤', price: 25000, quantity: 1 },
-                            { id: 2, name: '유기농 사과 3kg', description: '무농약 유기농 사과', price: 30000, quantity: 1 },
-                            { id: 3, name: '제철 딸기 2kg', description: '달콤한 제철 딸기', price: 20000, quantity: 1 }
-                        ],
+                        cartItems: [],           // ← 서버 데이터로 채움
                         shippingFee: 3000,
                         orders: [],
                         reviews: [],
                         profile: {},
                         loginType: '',
-                        
-                        errors: {},
+                        errors: {}
                     };
                 },
                 computed: {
                     totalPrice() {
-                        return this.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                        return (this.cartItems || []).reduce((sum, it) => {
+                            const price = Number(it.price || 0);
+                            const qty = Number(it.quantity || 0);
+                            return sum + (price * qty);
+                        }, 0);
                     }
                 },
 
@@ -764,6 +846,11 @@
                             }
                         });
                     },
+
+                    fnBack: function (productNo) {
+                        pageChange('/productInfo.do', { productNo });
+                    },
+
                     // 프로필 저장 로직
                     saveProfile() {
                         let self = this;
@@ -806,20 +893,20 @@
                             profileData.password = self.profile.newPassword;
                         }
 
-                         $.ajax({
+                        $.ajax({
                             url: "${pageContext.request.contextPath}/updateProfile.dox",
                             type: "POST",
                             contentType: "application/json; charset=utf-8",
                             dataType: "json",
                             data: JSON.stringify(profileData),
-                            success: function(response) {
+                            success: function (response) {
                                 if (response.result === 'success') {
                                     alert('회원정보가 성공적으로 수정되었습니다.');
                                 } else {
                                     alert('정보 수정에 실패했습니다.');
                                 }
                             },
-                            error: function() {
+                            error: function () {
                                 alert('회원정보 수정 중 오류가 발생했습니다.');
                             }
                         });
@@ -836,33 +923,33 @@
                     confirmWithdrawal: function () {
                         let self = this;
                         if (confirm('정말로 계정을 탈퇴하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 상품과 주문 정보가 삭제됩니다.')) {
-                            
+
                             let withdrawalData = {};
                             let proceedWithdrawal = false;
-                            
-                            if (self.loginType === 'NORMAL') { 
-                            let passwordConfirm = prompt('탈퇴를 진행하려면 현재 비밀번호를 입력하세요:');
-                            if (passwordConfirm) {
-                                withdrawalData.password = passwordConfirm;
-                                proceedWithdrawal = true;
-                            } else if (passwordConfirm === null) {
-                                alert('탈퇴가 취소되었습니다.');
-                                return; 
-                            } else {
-                                alert('비밀번호를 입력해야 탈퇴할 수 있습니다.');
-                                return; 
-                            }
 
-                            } else if (self.loginType === 'SOCIAL') { 
+                            if (self.loginType === 'NORMAL') {
+                                let passwordConfirm = prompt('탈퇴를 진행하려면 현재 비밀번호를 입력하세요:');
+                                if (passwordConfirm) {
+                                    withdrawalData.password = passwordConfirm;
+                                    proceedWithdrawal = true;
+                                } else if (passwordConfirm === null) {
+                                    alert('탈퇴가 취소되었습니다.');
+                                    return;
+                                } else {
+                                    alert('비밀번호를 입력해야 탈퇴할 수 있습니다.');
+                                    return;
+                                }
+
+                            } else if (self.loginType === 'SOCIAL') {
                                 let finalConfirm = prompt('소셜 로그인 계정입니다. 탈퇴를 진행하려면 "탈퇴"를 입력하세요:');
                                 if (finalConfirm === '탈퇴') {
                                     proceedWithdrawal = true;
                                 } else if (finalConfirm === null) {
                                     alert('탈퇴가 취소되었습니다.');
-                                    return; 
+                                    return;
                                 } else {
                                     alert('정확히 "탈퇴"를 입력해야 합니다.');
-                                    return; 
+                                    return;
                                 }
                             } else { // 로그인 유형을 알 수 없는 경우 (예외 처리)
                                 alert('로그인 유형을 알 수 없어 탈퇴를 진행할 수 없습니다.');
@@ -871,15 +958,15 @@
 
                             if (proceedWithdrawal) {
                                 $.ajax({
-                                    url: "${pageContext.request.contextPath}/user/withdrawal.dox", 
+                                    url: "${pageContext.request.contextPath}/user/withdrawal.dox",
                                     dataType: "json",
                                     type: "POST",
                                     contentType: "application/json; charset=utf-8",
-                                    data: JSON.stringify(withdrawalData), 
+                                    data: JSON.stringify(withdrawalData),
                                     success: function (response) {
                                         if (response.result === 'success') {
                                             alert('회원 계정이 성공적으로 탈퇴되었습니다.');
-                                            location.href = '${pageContext.request.contextPath}/'; 
+                                            location.href = '${pageContext.request.contextPath}/';
                                         } else {
                                             alert(response.message || '계정 탈퇴 중 오류가 발생했습니다.');
                                         }
@@ -888,9 +975,81 @@
                                         alert('서버와 통신 중 오류가 발생했습니다.');
                                     }
                                 });
-                            }    
+                            }
                         }
                     },
+
+                    /* 장바구니 목록 불러오기 */
+                    fnLoadCart: function () {
+                        let self = this;
+                        let param = {
+                            userId: self.userId
+                        };
+                        $.ajax({
+                            url: "/cart/list.dox",
+                            type: "POST",
+                            dataType: "json",
+                            data: param,
+                            success: function (data) {
+                                if (data.result == 'success') {
+                                    self.cartItems = data.list || [];
+                                } else {
+                                    alert('장바구니 불러오기 실패');
+                                }
+                            },
+                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                        });
+                    },
+
+                    /* 수량 변경(+/-1) */
+                    changeQty: function (item, diff) {
+                        const next = Number(item.quantity || 0) + diff;
+                        if (next < 1) {
+                            return;
+                        }
+                        let self = this;
+                        $.ajax({
+                            url: "/cart/qty.dox",
+                            type: "POST",
+                            dataType: "json",
+                            data: { cartNo: item.cartNo, userId: self.userId, quantity: next },
+                            success: function (res) {
+                                if (res.result === 'success') {
+                                    item.quantity = next; // 화면 즉시 반영
+                                } else {
+                                    alert('수량 변경 실패');
+                                }
+                            },
+                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                        });
+                    },
+
+                    /* 항목 삭제 */
+                    removeFromCart(item) {
+                        if (!confirm('삭제하시겠습니까?')) {
+                            return;
+                        }
+                        let self = this;
+                        let param = {
+                            cartNo: item.cartNo,
+                            userId: self.userId
+                        };
+                        $.ajax({
+                            url: "/cart/remove.dox",
+                            type: "POST",
+                            dataType: "json",
+                            data: param,
+                            success: function (data) {
+                                if (data.result == 'success') {
+                                    self.cartItems = self.cartItems.filter(x => x.cartNo !== item.cartNo);
+                                } else {
+                                    alert('삭제 실패');
+                                }
+                            },
+                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                        });
+                    },
+
                     fnLoadOrders() {
                         let self = this;
                         $.ajax({
@@ -916,8 +1075,12 @@
                         });
                     },
                     fnWriteReview(productNo, orderItemNo) {
-                        const url = contextPath + "/reviewWrite.do?productNo=" + encodeURIComponent(productNo) 
-                                    + "&orderItemNo=" + encodeURIComponent(orderItemNo);
+                        console.log("productNo:", productNo, "orderItemNo:", orderItemNo);
+
+                        const url = contextPath + "/reviewWrite.do?productNo=" + encodeURIComponent(productNo)
+                            + "&orderItemNo=" + encodeURIComponent(orderItemNo);
+
+                        console.log("생성된 URL:", url);
                         location.href = url;
                     },
                     fnLoadReviews() {
@@ -983,11 +1146,8 @@
                 mounted() {
                     let self = this;
                     self.fnUserInfo();
-                    if (self.activeTab === 'orders') {
-                        self.fnLoadOrders();
-                    } else if (self.activeTab === 'reviews') {
-                        self.fnLoadReviews();
-                    }             
+                    self.fnLoadOrders();
+                    self.fnLoadCart();
                 }
             })
             window.vueObj = app.mount('#app');

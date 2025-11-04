@@ -1,10 +1,12 @@
 package com.example.TeamProject.mapper;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.example.TeamProject.model.Cart;
 import com.example.TeamProject.model.User;
 
 @Mapper
@@ -33,5 +35,16 @@ public interface UserMapper {
 	void updateProfile(HashMap<String, Object> map);
 	// 사용자 계정 탈퇴
 	int updateUserStatus(@Param("userId") String userId, @Param("status") String status);
-	
+	// 같은 상품이 이미 있으면 수량만 증가
+	int updateCartQty(HashMap<String, Object> map);
+	//없으면 새로 추가
+	int insertCart(HashMap<String, Object> map);
+	// 장바구니 리스트
+	List<Cart> selectCartList(HashMap<String, Object> map);
+	// 장바구니 합계
+	int selectCartTotal(HashMap<String, Object> map);
+	//
+	int updateQty(HashMap<String, Object> map);
+	//
+	int deleteCartItem(HashMap<String, Object> map);
 }

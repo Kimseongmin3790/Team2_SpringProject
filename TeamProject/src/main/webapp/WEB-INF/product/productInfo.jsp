@@ -18,6 +18,7 @@
                     window.Kakao.init('8e779c5d556d3d49da94596f97d290c4');
                 }
             </script>
+            <script src="/resources/js/page-change.js"></script>
 
             <!-- 공통 헤더/푸터 CSS -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
@@ -729,7 +730,8 @@
                                     <div style="margin: 24px 0 0;">
                                         <div class="actions">
                                             <button @click="fnPurchase" class="btn btn-primary">구매하기</button>
-                                            <button @click="fnBasket" class="btn btn-outline">장바구니</button>
+                                            <button @click="fnBasket(info.productNo, qty)"
+                                                class="btn btn-outline">장바구니</button>
                                             <button @click="fnChat" class="btn btn-ghost">실시간 문의</button>
                                             <button @click="fnWish" class="btn btn-like">찜</button>
                                         </div>
@@ -914,6 +916,7 @@
                         week: false, before: false,
                         liked: false,
 
+                        userId: "${sessionId}",
                         productNo: "${productNo}",
                         info: {},
                         fileList: [],
@@ -965,7 +968,7 @@
                     // 상품/이미지 로드
                     fnInfo() {
                         let self = this;
-                        const param = {
+                        let param = {
                             productNo: self.productNo
                         };
 
@@ -1156,7 +1159,34 @@
 
                     // CTA
                     fnPurchase() { /* TODO */ },
-                    fnBasket() { /* TODO */ },
+
+                    fnBasket: function (productNo, qty) {
+                        let self = this;
+                        if (!self.selected || (self.qty | 0) <= 0) {
+                            alert("옵션 선택 후 수량을 확인해 주세요.");
+                            return;
+                        }
+                        let param = {
+                            userId: self.userId,
+                            productNo: productNo,
+                            quantity: qty
+                        };
+                        $.ajax({
+                            url: '/cart/add.dox',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: param,
+                            success: function (data) {
+                                if (data.result == 'success') {
+                                    pageChange('/buyerMyPage.do', {productNo}); // 장바구니로 이동
+                                } else {
+                                    alert('장바구니 담기 실패');
+                                }
+                            },
+                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                        });
+                    },
+
                     fnWish() { /* TODO */ },
                     fnChat() { console.log('fnChat clicked'); },
 
