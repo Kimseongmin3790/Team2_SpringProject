@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>신선마켓</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <!-- 공통 헤더 -->
+    <div th:replace="~{fragments/header :: headerFragment}"></div>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        <!-- 1. 히어로 섹션 (메인 배너) -->
+        <section class="hero-section">
+            <div class="hero-slide">
+                <p>가장 신선한 제철 상품을 만나보세요!</p>
+            </div>
+        </section>
+
+        <!-- 2. MD 추천 상품 -->
+        <section class="product-section">
+            <h2>MD 추천 상품</h2>
+            <div class="product-list">
+                <!-- 상품 카드가 여기에 들어갑니다. -->
+                <div class="product-card">상품 1</div>
+                <div class="product-card">상품 2</div>
+                <div class="product-card">상품 3</div>
+                <div class="product-card">상품 4</div>
+            </div>
+        </section>
+
+        <!-- 3. 마감 임박 특가 -->
+        <section class="product-section urgent-sale">
+            <h2>마감 임박 특가</h2>
+            <div class="product-list">
+                <div class="product-card">특가 상품 1</div>
+                <div class="product-card">특가 상품 2</div>
+            </div>
+        </section>
+
+        <!-- 4. 생산자 이야기 -->
+        <section class="producer-section">
+            <h2>생산자 이야기</h2>
+            <div class="producer-card">
+                <p>"정직한 땀으로 키웠습니다" - 해남 김농부</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 공통 푸터 -->
+    <div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+</body>
+</html>
