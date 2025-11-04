@@ -26,94 +26,135 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class UserController {
-	
+
 	@Autowired
 	UserService userService;
-	
+
 	@Autowired
 	OrderService orderService;
-	
-	@RequestMapping("/login.do") 
-    public String login(Model model) throws Exception{
 
-        return "user/login"; 
-    }
-	
-	@RequestMapping("/chooseJoin.do") 
-    public String chooseJoin(Model model) throws Exception{
+	@RequestMapping("/login.do")
+	public String login(Model model) throws Exception {
 
-        return "user/chooseJoin"; 
-    }
-	
-	@RequestMapping("/userJoin.do") 
-    public String join(Model model) throws Exception{
+		return "user/login";
+	}
 
-        return "user/userJoin"; 
-    }
-	
-	@RequestMapping("/sellerJoin.do") 
-    public String sellerJoin(Model model) throws Exception{
+	@RequestMapping("/chooseJoin.do")
+	public String chooseJoin(Model model) throws Exception {
 
-        return "user/sellerJoin"; 
-    }
-	
-	@RequestMapping("/findId.do") 
-    public String findId(Model model) throws Exception{
+		return "user/chooseJoin";
+	}
 
-        return "user/findId"; 
-    }
-	
-	@RequestMapping("/findPwd.do") 
-    public String findPwd(Model model) throws Exception{
+	@RequestMapping("/userJoin.do")
+	public String join(Model model) throws Exception {
 
-        return "user/findPwd"; 
-    }
-	
-	@RequestMapping("/addr.do") 
-    public String addr(Model model) throws Exception{
+		return "user/userJoin";
+	}
 
-        return "jusoPopup";
-    }
-	
-	 @RequestMapping("/buyerMyPage.do")
+	@RequestMapping("/sellerJoin.do")
+	public String sellerJoin(Model model) throws Exception {
+
+		return "user/sellerJoin";
+	}
+
+	@RequestMapping("/findId.do")
+	public String findId(Model model) throws Exception {
+
+		return "user/findId";
+	}
+
+	@RequestMapping("/findPwd.do")
+	public String findPwd(Model model) throws Exception {
+
+		return "user/findPwd";
+	}
+
+	@RequestMapping("/addr.do")
+	public String addr(Model model) throws Exception {
+
+		return "jusoPopup";
+	}
+
+	@RequestMapping("/buyerMyPage.do")
 	 public String buyerMyPage(Model model, @RequestParam(value = "tab", required = false, defaultValue ="cart") String tab) throws Exception{
 	     model.addAttribute("activeTab", tab);
 	     return "user/buyerMypage";
 	 }
-	
-	@RequestMapping("/sellerMyPage.do") 
-    public String sellerMyPage(Model model) throws Exception{
 
-        return "user/sellerMyPage";
-    }
-	
-	@RequestMapping("/cart.do") 
-    public String cart(Model model) throws Exception{
+	@RequestMapping("/sellerMyPage.do")
+	public String sellerMyPage(Model model) throws Exception {
 
-        return "user/cart";
-    }
+		return "user/sellerMyPage";
+	}
+
+	@RequestMapping("/cart.do")
+	public String cart(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
+			throws Exception {
+		System.out.println(map.get("productNo"));
+		request.setAttribute("productNo", map.get("productNo"));
+
+		return "user/cart";
+	}
 	
-    	
+	
 	@RequestMapping(value = "/join.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String join(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		
-		// 주소 → 좌표 변환
-	    String addr = (String) map.get("userAddr");
-	    double[] coords = userService.getCoordinatesFromAddress(addr);
-	    double lat = coords[0];
-	    double lng = coords[1];
 
-	    map.put("lat", lat);
-	    map.put("lng", lng);
-		
+		// 주소 → 좌표 변환
+		String addr = (String) map.get("userAddr");
+		double[] coords = userService.getCoordinatesFromAddress(addr);
+		double lat = coords[0];
+		double lng = coords[1];
+
+		map.put("lat", lat);
+		map.put("lng", lng);
+
 		resultMap = userService.addUser(map);
-		
+
 		return new Gson().toJson(resultMap);
 	}
 	
-	@RequestMapping("sellerJoin.dox")
+	// 장바구니 추가
+	@RequestMapping(value = "/cart/add.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String addCart(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = userService.addCart(map);
+
+		return new Gson().toJson(resultMap);
+	}
+
+	// 장바구니 목록
+	@RequestMapping(value = "/cart/list.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String cartList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = userService.getCartList(map);
+
+		return new Gson().toJson(resultMap);
+	}
+
+	// 수량 변경
+	@RequestMapping(value = "/cart/qty.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String cartQty(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = userService.updateQty(map);
+		return new Gson().toJson(resultMap);
+	}
+
+	// 항목 삭제
+	@RequestMapping(value = "/cart/remove.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String cartRemove(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = userService.removeItem(map);
+		return new Gson().toJson(resultMap);
+	}
+
+	@RequestMapping(value = "/sellerJoin.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> sellerJoin(
 	    @RequestParam("farmName") String farmName,
@@ -201,74 +242,74 @@ public class UserController {
 	        + calendar.get(Calendar.MILLISECOND)
 	        + extName;
 	}
-	
+
 	@RequestMapping(value = "/check.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String check(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = userService.idCheck(map);
-		
+
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	@RequestMapping(value = "/login.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String login(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = userService.login(map);
-		
+
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	@RequestMapping(value = "/logout.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String logout(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		
+
 		resultMap = userService.logout(map);
-		
+
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	@RequestMapping(value = "/findId.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String findId(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = userService.findId(map);
-		
+
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	@RequestMapping(value = "/findPwdSendCode.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String findPwd(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-        
+
 		resultMap = userService.findPwd(map);
-		
+
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	@RequestMapping(value = "/findPwdReset.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String findPwdReset(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-        
+
 		resultMap = userService.resetPwd(map);
-		
+
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	// 로그인 유저 정보 가져오기
 	@RequestMapping(value = "/userInfo.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-		public String getUserProfile(HttpSession session) throws Exception {
-			String userId = (String) session.getAttribute("sessionId");
-			HashMap<String, Object> resultMap = userService.getUserProfile(userId);
-			
-			return new Gson().toJson(resultMap);
-			}
-	
+	public String getUserProfile(HttpSession session) throws Exception {
+		String userId = (String) session.getAttribute("sessionId");
+		HashMap<String, Object> resultMap = userService.getUserProfile(userId);
+
+		return new Gson().toJson(resultMap);
+	}
+
 	// 회원 정보 수정
 	@RequestMapping(value = "/updateProfile.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
@@ -276,20 +317,20 @@ public class UserController {
 		String userId = (String) session.getAttribute("sessionId");
 		map.put("userId", userId);
 		HashMap<String, Object> resultMap = userService.updateProfile(map);
-		
+
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	// 회원 탈퇴 로직
 	@RequestMapping(value = "/user/withdrawal.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String withdrawUser(@RequestBody HashMap<String, Object> map, HttpSession session) throws Exception {
-		
-		HashMap<String, Object> resultMap = userService.withdrawUser(map, session); 
-		
+
+		HashMap<String, Object> resultMap = userService.withdrawUser(map, session);
+
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	// 계정 복구
 	@RequestMapping(value = "/user/recover.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
@@ -297,16 +338,16 @@ public class UserController {
 		HashMap<String, Object> resultMap = userService.recoverUser(map);
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	// 주문목록 가져오기
-    @RequestMapping(value = "/myPage/orders.dox", method = RequestMethod.GET, produces ="application/json;charset=UTF-8")
-    @ResponseBody
-    public String getOrderHistory(HttpSession session) throws Exception {
-        String userId = (String) session.getAttribute("sessionId");
+	@RequestMapping(value = "/myPage/orders.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String getOrderHistory(HttpSession session) throws Exception {
+		String userId = (String) session.getAttribute("sessionId");
 
-        HashMap<String, Object> resultMap = orderService.getOrderHistory(userId);
+		HashMap<String, Object> resultMap = orderService.getOrderHistory(userId);
 
-        return new Gson().toJson(resultMap);
-    }
-	
+		return new Gson().toJson(resultMap);
+	}
+
 }

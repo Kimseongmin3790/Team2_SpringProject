@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,6 +37,12 @@ public class ProductController {
 		return "product/productAdd";
 	}
 
+	@RequestMapping("/productCategory.do")
+	public String productCategory(Model model) throws Exception {
+
+		return "product/categoryMain";
+	}
+
 	@RequestMapping("/productInfo.do")
 	public String info(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
 			throws Exception {
@@ -53,7 +61,20 @@ public class ProductController {
 		return "product/newList";
 	}
 	
-	
+	@GetMapping("/category/{categoryNo}") // header dropdwon에서 보내온 categoryNo 받기
+	public String categoryMain(@PathVariable("categoryNo") int categoryNo, Model model) {
+		model.addAttribute("categoryNo", categoryNo);
+		return "product/categoryMain"; // categoryMain.jsp 경로 (변경 시 맞게 수정)
+	}
+
+	@RequestMapping(value = "/categoryProductList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String categoryProductList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = productService.getProductAndCategoryList(map);
+		return new Gson().toJson(resultMap);
+	}
+
 	@RequestMapping(value = "/product-view.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String productView(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
@@ -191,4 +212,5 @@ public class ProductController {
 		imageData.put("isThumbnail", isThumbnail);
 		productService.insertProductImage(imageData);
 	}
+
 }
