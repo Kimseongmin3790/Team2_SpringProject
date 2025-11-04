@@ -14,4 +14,13 @@ public class Review {
     private int recommend;
     private String content;
     private Date createdAt; 
+    private Date uDatetime;
+    
+    private String productName;
+    private String cdate;
+    private String imageUrl;
+    
+    private String sellerName;
+    private String orderdate;
+    
 }

@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>리뷰 작성 - AGRICOLA</title>
+    <title>리뷰 수정 - AGRICOLA</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js"
         integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -400,17 +400,21 @@
 
                 <!-- Image Upload -->
                 <div class="form-section">
-                    <label class="form-label">사진 첨부 (선택)</label>
-                    <div class="image-grid">
-                        <div v-for="(image, index) in images" :key="index" class="image-item">
-                            <img :src="image.preview" class="image-preview" style="width:100%; height:100%; object-fit:cover;">
-                            <button class="image-remove" @click="removeImage(index)">×</button>
-                        </div>
-                        <label v-if="images.length < 5" class="image-upload-label">
+            <label class="form-label">사진 첨부 (선택)</label>
+            <div class="image-grid">
+                <!-- 기존 이미지 표시 -->
+                <div v-for="(image, index) in images" :key="'old-'+image.imageNo" class="image-item">
+                    <img :src="image.imageUrl" class="image-preview" style="width:100%; height:100%; object-fit:cover;">
+                    <button class="image-remove" @click="removeImage(index)">×</button>
+                </div>
+                <!-- 새로 추가할 이미지 미리보기 -->
+                <div v-for="(item, index) in newImageFiles" :key="'new-'+index" class="image-item">
+                    <img :src="item.previewUrl" class="image-preview" style="width:100%; height:100%; object-fit:cover;">
+                    <button class="image-remove" @click="removeNewImage(index)">×</button>
+                </div>
+                        <label v-if="(images.length + newImageFiles.length) < 5" class="image-upload-label">
                             <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" 
-                                />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                             </svg>
                             <span class="upload-count">{{ images.length }}/5</span>
                             <input 
@@ -445,7 +449,7 @@
                         :disabled="!canSubmit"
                         @click="submitReview"
                     >
-                        리뷰 등록
+                        리뷰 수정
                     </button>
                 </div>
             </div>
@@ -463,8 +467,9 @@
         data() {
             return {
                 sessionId: "${sessionId}",
-                productNo: "${param.productNo}",
-                orderItemNo: "${param.orderItemNo}",
+                reviewNo: "${param.reviewNo}",
+                productNo: "",
+                orderItemNo: "",
                 product: { 
                     name: '',
                     sellerName: '',
@@ -474,7 +479,10 @@
                 rating: 0,
                 hoverRating: 0,
                 content: "",
-                images: []
+                images: [], // 기존 이미지
+                newImageFiles: [], // 새로 추가할 이미지
+                deletedImageNos: [] // 삭제할 기존 이미지
+
             };
         },
         computed: {
@@ -488,30 +496,72 @@
                 let self = this;
                 const files = event.target.files;
                 if (files) {
-                    const remainingSlots = 5 - self.images.length;
-                    const filesToAdd = Math.min(files.length, remainingSlots);
-                    
-                    for (let i = 0; i < filesToAdd; i++) {
-                        let self = this;
-                        // 실제 구현에서는 파일을 서버에 업로드하고 URL을 받아와야 합니다
-                        self.images.push({
-                            file: files[i],
-                            preview: URL.createObjectURL(files[i])
+                    Array.from(files).forEach(file => {
+                        self.newImageFiles.push({
+                            file: file,
+                            previewUrl: URL.createObjectURL(file)
                         });
-                    }
+                    });
                 }
-                // 파일 입력 초기화
                 event.target.value = '';
             },
             removeImage(index) {
                 let self = this;
+                // 기존 이미지를 삭제하는 경우
+                const imageToRemove = self.images[index];
+                if (imageToRemove && imageToRemove.imageNo) {
+                    self.deletedImageNos.push(imageToRemove.imageNo);
+                }
                 self.images.splice(index, 1);
             },
-            cancel() {
-                if (confirm('작성 중인 리뷰가 삭제됩니다. 취소하시겠습니까?')) {
-                    // 리뷰 목록 페이지로 이동
-                    window.location.href = '${pageContext.request.contextPath}/buyerMyPage.do?tab=orders';
+            removeNewImage(index) {
+                let self = this;
+                const fileToRemove = self.newImageFiles[index];
+                
+                if (fileToRemove && fileToRemove.previewUrl) {
+                    URL.revokeObjectURL(fileToRemove.previewUrl);
                 }
+                self.newImageFiles.splice(index, 1);
+            },
+            cancel() {
+                if (confirm('리뷰 수정을 취소하시겠습니까?')) {
+                    window.location.href = '${pageContext.request.contextPath}/buyerMyPage.do?tab=reviews';
+                }
+            },
+            fetchReviewDetails() {
+                const self = this;
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/review/detail.dox",
+                    type: "GET",
+                    data: { reviewNo: self.reviewNo },
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.result === "success" && response.data) {
+                            const reviewData = response.data;
+                            self.productNo = reviewData.productNo;
+                            self.orderItemNo = reviewData.orderItemNo;
+                            self.rating = reviewData.rating;
+                            self.content = reviewData.content;
+                          
+                            if (response.data.images && response.data.images.length > 0) {
+                                self.images = response.data.images;
+                            }
+                            
+                            self.product.name = reviewData.productName;
+                            self.product.sellerName = reviewData.sellerName;
+                            self.product.imageUrl = reviewData.productImageUrl; 
+                            self.product.purchaseDate = reviewData.orderdate;
+
+                        } else {
+                            alert("리뷰 정보를 불러오는 데 실패했습니다.");
+                            window.location.href = '${pageContext.request.contextPath}/buyerMyPage.do?tab=reviews'; 
+                        }
+                    },
+                    error: function() {
+                        alert("리뷰 정보 조회 중 오류가 발생했습니다.");
+                        window.location.href = '${pageContext.request.contextPath}/buyerMyPage.do?tab=reviews'; 
+                    }
+                });
             },
             fetchReviewData() {
                 const self = this;
@@ -546,28 +596,36 @@
                 }
 
                 const formData = new FormData();
-                formData.append('productNo', self.productNo); 
-                formData.append('orderItemNo', self.orderItemNo); 
+                formData.append('reviewNo', self.reviewNo);
                 formData.append('rating', self.rating);
                 formData.append('content', self.content);
                 
                 // 이미지 파일 추가
-                self.images.forEach((image, index) => {
-                    formData.append('images', image.file);
+                self.newImageFiles.forEach(file => {
+                    formData.append('newImages', file.file);
                 });
 
+                if (self.deletedImageNos.length > 0) {
+                    formData.append('deletedImageNos', JSON.stringify(self.deletedImageNos));
+                }
+
+
                 $.ajax({
-                    url: "${pageContext.request.contextPath}/review/write.dox",
+                    url: "${pageContext.request.contextPath}/review/update.dox",
                     type: "POST",
                     data: formData,
                     processData: false,
                     contentType: false,
                     success: function(data) {
-                        alert('리뷰가 등록되었습니다.');
-                        window.location.href = '${pageContext.request.contextPath}/buyerMyPage.do?tab=reviews';
+                         if(data.result === "success") {
+                            alert('리뷰가 수정되었습니다.');
+                            window.location.href = '${pageContext.request.contextPath}/buyerMyPage.do?tab=reviews';
+                        } else {
+                            alert('리뷰 수정에 실패했습니다: ' + data.message);
+                        }
                     },
                     error: function(xhr, status, error) {
-                        alert('리뷰 등록에 실패했습니다. 다시 시도해주세요.');
+                        alert('리뷰 수정 중 오류가 발생했습니다');
                         console.error('Error:', error);
                     }
                 });
@@ -576,7 +634,12 @@
         },
         mounted() {
             let self = this;
-            self.fetchReviewData();
+            if (self.reviewNo) {
+                self.fetchReviewDetails();
+            } else {
+                alert("수정할 리뷰 번호가 없습니다.");
+                window.location.href = '${pageContext.request.contextPath}/buyerMyPage.do?tab=reviews';
+            }
         }
     });
 
