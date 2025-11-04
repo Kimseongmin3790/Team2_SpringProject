@@ -64,6 +64,12 @@ $(document).ready(function () {
 		
 		location.href = path + "/search?keyword=" + encodeURIComponent(keyword);
     });
+	
+	$("#searchInput").on("keypress", function (e) {
+	    if (e.which === 13) { // 13 = Enter key
+	        $("#btnSearch").click();
+	    }
+	});
 
     $("#btnLogout").on("click", function () {
         if (confirm("로그아웃 하시겠습니까?")) {
@@ -110,7 +116,7 @@ $(document).ready(function () {
 	            location.href = path + "/login.do";
 	            return;
 	        } else {
-				location.href = path + "/cart.do";
+				location.href = path + "/buyerMyPage.do";
 			}
 				        
 	    });

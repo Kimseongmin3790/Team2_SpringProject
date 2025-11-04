@@ -278,7 +278,7 @@
                                         sellerId: this.sessionId,
                                         categoryNo: Number(this.leaf),
                                         pname: $('input[name="pname"]').val().trim(),
-                                        pinfo: "사진만 등록",
+                                        pinfo: $('textarea[name="pinfo"]').val().trim(),
                                         price: $('input[name="price"]').val(),
                                         stock: $('input[name="stock"]').val(),
                                         unit: this.unit,

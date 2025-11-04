@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,6 +41,12 @@ public class ProductController {
 		return "product/productAdd";
 	}
 
+	@RequestMapping("/productCategory.do")
+	public String productCategory(Model model) throws Exception {
+
+		return "product/categoryMain";
+	}
+
 	@RequestMapping("/productInfo.do")
 	public String info(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
 			throws Exception {
@@ -48,31 +55,51 @@ public class ProductController {
 		return "product/productInfo";
 	}
 	
-	@RequestMapping("/product/payment.do")
-	public String payment(Model model) {
-		return "product/payment";
+	@RequestMapping("/product/recommendList.do")
+	public String recommendList(Model model) {
+		return "product/recommendList";
 	}
 	
+	@RequestMapping("/product/newList.do")
+	public String newList(Model model) {
+		return "product/newList";
+	}
 	
-	 // 상품 리뷰 데이터를 JSON으로 반환 (productInfo.jsp에서 AJAX로 호출)
-	 @GetMapping(value = "/product/reviews/partial.do", produces = MediaType.APPLICATION_JSON_VALUE)
-	 @ResponseBody
-	 public ResponseEntity<Map<String, Object>> getProductReviewsPartial( @RequestParam("productNo") int productNo) {
+	@GetMapping("/category/{categoryNo}") // header dropdwon에서 보내온 categoryNo 받기
+	public String categoryMain(@PathVariable("categoryNo") int categoryNo, Model model) {
+		model.addAttribute("categoryNo", categoryNo);
+		return "product/categoryMain"; // categoryMain.jsp 경로 (변경 시 맞게 수정)
+	}
 
-	     Map<String, Object> reviewData = reviewService.getProductReviews(productNo);
+	@RequestMapping(value = "/categoryProductList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String categoryProductList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = productService.getProductAndCategoryList(map);
+		return new Gson().toJson(resultMap);
+	}
 
-	     if (reviewData == null || reviewData.isEmpty()) {
-	         return ResponseEntity.ok(new HashMap<>());
-	     }
-
-	     return ResponseEntity.ok(reviewData);
-	 }
-	
 	@RequestMapping(value = "/product-view.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String productView(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = productService.getProduct(map);
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/recommendList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String recommendList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = productService.getRecommendList(map);
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/newList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String newList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = productService.getNewList(map);
 		return new Gson().toJson(resultMap);
 	}
 
@@ -189,4 +216,5 @@ public class ProductController {
 		imageData.put("isThumbnail", isThumbnail);
 		productService.insertProductImage(imageData);
 	}
+
 }

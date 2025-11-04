@@ -263,7 +263,7 @@
             margin-left: 1rem;
         }
         .comment-count-badge {
-            color: #5dbb63;/
+            color: #5dbb63;
             font-size: 0.8rem; 
             font-weight: 600;
             margin-left: 5px; 

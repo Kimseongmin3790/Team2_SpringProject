@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
 import com.example.TeamProject.model.Main;       // 배너 모델
 import com.example.TeamProject.model.Producer;   // 입점 업체 모델
 import com.example.TeamProject.model.Product;
@@ -32,4 +34,7 @@ public interface MainMapper {
     
     // 검색 결과 조회(제목, 내용)
     List<Product> selectSearchList(HashMap<String, Object> map);
+    
+    // 유저 좌표 조회
+    HashMap<String, Object> selectUserLocation(@Param("userId") String userId);
 }

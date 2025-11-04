@@ -13,6 +13,7 @@
             <!-- ✅ jQuery + Vue -->
             <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+            <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
 
             <!-- ✅ 공통 CSS -->
             <link rel="stylesheet" href="${path}/resources/css/header.css">
@@ -245,15 +246,6 @@
                                 <input type="text" v-model="shipping.detail" placeholder="상세주소" style="width:100%;">
                             </div>
 
-                            <!-- 포인트 -->
-                            <div class="box">
-                                <h3>포인트</h3>
-                                <div class="point-input">
-                                    <input type="number" v-model.number="usedPoint" min="0" :max="userPoint">
-                                    <button class="btn" @click="applyPoint">전액사용</button>
-                                </div>
-                                <small>사용 가능 포인트: {{ userPoint.toLocaleString() }}P</small>
-                            </div>
                         </section>
 
                         <!-- 우측 -->
@@ -267,14 +259,6 @@
                                     포인트 사용 <span>-{{ usedPoint.toLocaleString() }}원</span><br>
                                     <hr>
                                     총 결제금액 <span>{{ finalPrice.toLocaleString() }}원</span>
-                                </div>
-                            </div>
-
-                            <!-- 결제 수단 -->
-                            <div class="box">
-                                <h3>결제수단</h3>
-                                <div v-for="(m, i) in payMethods" :key="i" class="payment-option">
-                                    <label><input type="radio" v-model="selectedMethod" :value="m"> {{ m }}</label>
                                 </div>
                             </div>
 
@@ -304,8 +288,6 @@
                                     shipping: { recipient: "", phone: "", zip: "", address: "", detail: "" },
                                     userPoint: 1000,
                                     usedPoint: 0,
-                                    payMethods: ["간편결제 (신용카드)", "계좌이체", "무통장입금", "휴대폰결제"],
-                                    selectedMethod: "간편결제 (신용카드)",
                                     agree: false
                                 };
                             },
@@ -322,8 +304,55 @@
                                         alert("약관에 동의해주세요.");
                                         return;
                                     }
-                                    alert("총 " + this.finalPrice.toLocaleString() + "원 결제가 완료되었습니다!");
-                                    location.href = this.path + "/orderComplete.do";
+
+                                    // PortOne 객체 생성
+                                    const IMP = window.IMP;
+                                    IMP.init("impxxxxxxx"); // ⚠️ 여기에 본인 가맹점 식별코드 넣기 (예: imp12345678)
+
+                                    const paymentData = {
+                                        pg: "html5_inicis", // 결제 PG사: inicis, kakaopay, toss 등
+                                        pay_method: "card", // 결제수단
+                                        merchant_uid: "ORD" + new Date().getTime(), // 고유 주문번호
+                                        name: "AGRICOLA 테스트 결제", // 결제명
+                                        amount: 100, // ⚠️ 일단 테스트로 100원 하드코딩
+                                        buyer_email: this.buyer.email,
+                                        buyer_name: this.buyer.name,
+                                        buyer_tel: this.buyer.phone,
+                                        buyer_addr: this.shipping.address,
+                                        buyer_postcode: this.shipping.zip
+                                    };
+
+                                    IMP.request_pay(paymentData, (rsp) => {
+                                        if (rsp.success) {
+                                            $.ajax({
+                                                url: "${path}/payment/verify.dox",
+                                                type: "POST",
+                                                dataType: "json",
+                                                data: {
+                                                    impUid: rsp.imp_uid,
+                                                    merchantUid: rsp.merchant_uid,
+                                                    buyerId: "test1234",
+                                                    receivName: "김성민",
+                                                    receivPhone: "010-1234-5678",
+                                                    deliverAddr: "서울특별시 중구 을지로 100",
+                                                    memo: "부재 시 문 앞에 놓아주세요"
+                                                },
+                                                success: function (data) {
+                                                    if (data.result == "success") {
+                                                        alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
+                                                        location.href="${path}/product/payment.do";
+                                                    } else {
+                                                        alert("결제 저장 실패:" + data.message);
+                                                    }
+                                                },
+                                                error: function () {
+                                                    alert("서버 통신 오류");
+                                                }
+                                            });
+                                        } else {
+                                            alert("결제 실패: " + rsp.error_msg);
+                                        }
+                                    });
                                 }
                             }
                         });
