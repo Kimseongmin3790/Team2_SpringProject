@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.example.TeamProject.mapper.AdminMapper;
 import com.example.TeamProject.mapper.ProductMapper;
 import com.example.TeamProject.model.Product;
+import com.example.TeamProject.model.ProductCategory;
 
 @Service
 public class ProductService {
@@ -64,4 +65,20 @@ public class ProductService {
 		}
 		return resultMap;
 	}
+	
+	public HashMap<String, Object> getProductAndCategoryList(HashMap<String, Object> map) {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+        try {
+            List<Product> products = productMapper.selectProductList(map);
+            List<ProductCategory> categories = productMapper.selectCategoryList(map);
+            resultMap.put("list", products);
+            resultMap.put("categories", categories);
+            resultMap.put("result", "success");
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+            System.out.println(e.getMessage());
+        }
+        return resultMap;
+    }
+	
 }
