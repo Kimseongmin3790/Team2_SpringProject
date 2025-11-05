@@ -44,5 +44,44 @@
         WHERE
             s.USER_ID = #{userId}
     </select>
+    
+    <!--농가정보수정-->
+    <update id="updateSellerInfo" parameterType="com.example.TeamProject.model.SellerVO">
+	    UPDATE SELLER_INFO
+	    SET
+	        BUSINESS_NAME = #{businessName} 
+	    WHERE USER_ID = #{userId}
+	</update>
+	
+	 <!-- 사용자 정보 수정 -->
+	 <update id="updateUserInfo" parameterType="com.example.TeamProject.model.User">
+	     UPDATE USERS
+	     SET
+	         NAME = #{name, jdbcType=VARCHAR},  
+	         ADDRESS = #{address, jdbcType=VARCHAR}, 
+	         UDATETIME = SYSDATE
+	     WHERE USER_ID = #{userId}
+	 </update>
+	 
+	<!-- 사용자 전화번호(USERS.PHONE) 업데이트 쿼리 -->
+	<update id="updateUserPhone" parameterType="com.example.TeamProject.model.User">
+	    UPDATE USERS
+	    SET
+	        PHONE = #{phone, jdbcType=VARCHAR},
+	        UDATETIME = SYSDATE
+	    WHERE USER_ID = #{userId}
+	</update>
+	
+	<!-- 판매자 계좌 정보(SELLER_INFO.ACCOUNT, BANKNAME) 업데이트 쿼리 -->
+	<update id="updateSellerAccountInfo" parameterType="com.example.TeamProject.model.SellerVO">
+	    UPDATE SELLER_INFO
+	    SET
+	        ACCOUNT = #{account, jdbcType=VARCHAR},
+	        BANKNAME = #{bankName, jdbcType=VARCHAR}
+	    WHERE USER_ID = #{userId}
+	</update>
+	 
+	 
+	 
 
 </mapper>
