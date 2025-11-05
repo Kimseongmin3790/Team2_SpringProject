@@ -280,28 +280,6 @@
                     margin: 0 8px;
                     color: #aaa;
                 }
-
-                /* ===== 모바일 대응 ===== */
-                @media (max-width: 1000px) {
-                    .product-category-page {
-                        flex-direction: column;
-                        padding: 0 20px;
-                    }
-
-                    .sidebar {
-                        position: static;
-                        flex: 1;
-                        margin-bottom: 30px;
-                    }
-
-                    .grid-item {
-                        aspect-ratio: 1 / 1;
-                    }
-
-                    body {
-                        font-size: 17px;
-                    }
-                }
             </style>
 
         <body>
@@ -345,7 +323,8 @@
                             <h3>가격</h3>
                             <ul>
                                 <li v-for="(range, index) in priceRanges" :key="index"
-                                    :class="{ active: selectedPriceRange === index }" @click="selectedPriceRange = index">
+                                    :class="{ active: selectedPriceRange === index }"
+                                    @click="selectedPriceRange = index">
                                     {{ range.label }}
                                 </li>
                             </ul>
@@ -417,243 +396,245 @@
                                     <div>{{ p.pName }}</div>
                                     <div>{{p.pInfo}}</div>
                                     <div class="price">{{ p.price.toLocaleString() }}원</div>
-                                </a>
+                                    </a>
+                                </div>
+                                <div v-if="filteredProducts.length === 0">등록된 상품이 없습니다.</div>
                             </div>
-                            <div v-if="filteredProducts.length === 0">등록된 상품이 없습니다.</div>
                         </div>
                     </div>
                 </div>
+                    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
         </body>
 
         </html>
 
-        <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
-            <script>
-                const SERVER_CATEGORY_NO = '<c:out value="${categoryNo}" default="" />';
-                const app = Vue.createApp({
-                    data() {
+
+        <script>
+            const SERVER_CATEGORY_NO = '<c:out value="${categoryNo}" default="" />';
+            const app = Vue.createApp({
+                data() {
+                    return {
+                        categoryList: [],
+                        productList: [],
+                        selectedParent: '',
+                        selectedChild: '',
+                        selectedSub: '',
+                        viewLevel: 'parent',
+                        // 서버가 넘겨주는 초기 진입 카테고리(없으면 빈 문자열)
+                        initialCategoryNo: '${categoryNo}',
+
+                        priceRanges: [
+                            { label: '5,000원 미만', min: 0, max: 5000 },
+                            { label: '5,000원 ~ 10,000원', min: 5000, max: 10000 },
+                            { label: '10,000원 ~ 20,000원', min: 10000, max: 20000 },
+                            { label: '20,000원 ~ 30,000원', min: 20000, max: 30000 },
+                            { label: '30,000원 이상', min: 30000, max: Infinity }
+                        ],
+                        selectedPriceRange: null
+                    };
+                },
+                computed: {
+                    parentCategories() {
+                        return this.categoryList.filter(c => c.parentCategoryNo === '');
+                    },
+
+                    filteredProducts() {
+                        let result = this.productList || [];
+                        console.log('------ ', this.productList && this.productList[0]);
+                        console.log('현재 선택된 가격범위 index:', this.selectedPriceRange);
+                        console.log('현재 선택된 가격범위 값:', this.priceRanges[this.selectedPriceRange]);
+
+                        //기존 카테고리
+                        if (this.selectedSub) {
+                            result = result.filter(
+                                (p) => Number(p.categoryNo) === Number(this.selectedSub));
+                        }
+
+                        //가격 필터 추가
+                        if (this.selectedPriceRange !== null && this.selectedPriceRange !== undefined) {
+                            const range = this.priceRanges[this.selectedPriceRange];
+                            result = result.filter((p) => {
+                                const price = Number(p.price);
+                                if (isNaN(price)) return false; //가격정보 없으면 제외
+                                return price >= range.min && price < range.max;
+                            });
+                        }
+
+                        console.log('필터 적용 후 상품 수:', result.length);
+                        return result;
+                    },
+
+                    breadcrumb() {
+                        const r = [];
+                        if (this.selectedParent) r.push(this.getCategoryName(this.selectedParent));
+                        if (this.selectedChild) r.push(this.getCategoryName(this.selectedChild));
+                        if (this.selectedSub) r.push(this.getCategoryName(this.selectedSub));
+                        return r;
+                    }
+                },
+                methods: {
+                    normalize(c) {
                         return {
-                            categoryList: [],
-                            productList: [],
-                            selectedParent: '',
-                            selectedChild: '',
-                            selectedSub: '',
-                            viewLevel: 'parent',
-                            // 서버가 넘겨주는 초기 진입 카테고리(없으면 빈 문자열)
-                            initialCategoryNo: '${categoryNo}',
-
-                            priceRanges: [
-                                { label: '5,000원 미만', min: 0, max: 5000 },
-                                { label: '5,000원 ~ 10,000원', min: 5000, max: 10000 },
-                                { label: '10,000원 ~ 20,000원', min: 10000, max: 20000 },
-                                { label: '20,000원 ~ 30,000원', min: 20000, max: 30000 },
-                                { label: '30,000원 이상', min: 30000, max: Infinity }
-                            ],
-                            selectedPriceRange: null
+                            categoryNo: String(c.categoryNo),
+                            parentCategoryNo: (c.parentCategoryNo == null || String(c.parentCategoryNo).trim() === '' || String(c.parentCategoryNo) === '0')
+                                ? '' : String(c.parentCategoryNo),
+                            categoryName: c.categoryName || '',
+                            imageUrl: c.imageUrl || ''
                         };
                     },
-                    computed: {
-                        parentCategories() {
-                            return this.categoryList.filter(c => c.parentCategoryNo === '');
-                        },
 
-                        filteredProducts() {
-                            let result = this.productList || [];
-                            console.log('------ ',this.productList && this.productList[0]);
-                            console.log('현재 선택된 가격범위 index:', this.selectedPriceRange);
-                            console.log('현재 선택된 가격범위 값:', this.priceRanges[this.selectedPriceRange]);
+                    fnList() {
+                        $.ajax({
+                            url: "/categoryProductList.dox",
+                            dataType: "json",
+                            type: "POST",
+                            success: (data) => {
+                                this.categoryList = (data.categories || []).map(this.normalize);
+                                this.productList = (data.list || []).map(p => ({ ...p, categoryNo: String(p.categoryNo) }));
 
-                            //기존 카테고리
-                            if (this.selectedSub) {
-                                result = result.filter(
-                                    (p) => Number(p.categoryNo) === Number(this.selectedSub));
+                                // 1) 해시가 있으면 해시로 복원 (쿼리 무시)
+                                if (this.applyFromHash()) return;
+
+                                // 2) 해시 없으면 쿼리(initialCategoryNo)로 시작
+                                this.applyInitialCategory();
+                                this.writeHash(); // 현재 상태를 URL에 기록 (해시만)
                             }
-
-                            //가격 필터 추가
-                            if (this.selectedPriceRange !== null && this.selectedPriceRange !== undefined) {
-                                const range = this.priceRanges[this.selectedPriceRange];
-                                result = result.filter((p) => {
-                                    const price = Number(p.price);
-                                    if(isNaN(price)) return false; //가격정보 없으면 제외
-                                    return price >= range.min && price < range.max;
-                                });
-                            }
-
-                            console.log('필터 적용 후 상품 수:', result.length);
-                            return result;
-                        },
-
-                        breadcrumb() {
-                            const r = [];
-                            if (this.selectedParent) r.push(this.getCategoryName(this.selectedParent));
-                            if (this.selectedChild) r.push(this.getCategoryName(this.selectedChild));
-                            if (this.selectedSub) r.push(this.getCategoryName(this.selectedSub));
-                            return r;
-                        }
-                    },
-                    methods: {
-                        normalize(c) {
-                            return {
-                                categoryNo: String(c.categoryNo),
-                                parentCategoryNo: (c.parentCategoryNo == null || String(c.parentCategoryNo).trim() === '' || String(c.parentCategoryNo) === '0')
-                                    ? '' : String(c.parentCategoryNo),
-                                categoryName: c.categoryName || '',
-                                imageUrl: c.imageUrl || ''
-                            };
-                        },
-
-                        fnList() {
-                            $.ajax({
-                                url: "/categoryProductList.dox",
-                                dataType: "json",
-                                type: "POST",
-                                success: (data) => {
-                                    this.categoryList = (data.categories || []).map(this.normalize);
-                                    this.productList = (data.list || []).map(p => ({ ...p, categoryNo: String(p.categoryNo) }));
-
-                                    // 1) 해시가 있으면 해시로 복원 (쿼리 무시)
-                                    if (this.applyFromHash()) return;
-
-                                    // 2) 해시 없으면 쿼리(initialCategoryNo)로 시작
-                                    this.applyInitialCategory();
-                                    this.writeHash(); // 현재 상태를 URL에 기록 (해시만)
-                                }
-                            });
-                        },
-
-                        writeHash() {
-                            const q = new URLSearchParams();
-
-                            if (this.selectedParent) q.set('p', this.selectedParent);
-                            if (this.selectedChild) q.set('c', this.selectedChild);
-                            if (this.selectedSub) q.set('s', this.selectedSub);
-                            q.set('v', this.viewLevel);
-                            const newHash = '#' + q.toString();
-
-                            if (location.hash !== newHash) {
-                                history.replaceState(null, '', location.pathname + newHash);
-                            }
-                        },
-
-                        applyFromHash() {
-                            const raw = (location.hash || '').replace(/^#/, '');
-                            if (!raw) return false;
-
-                            const qs = new URLSearchParams(raw);
-                            const p = qs.get('p') || '';
-                            const c = qs.get('c') || '';
-                            const s = qs.get('s') || '';
-                            const v = qs.get('v') || 'parent';
-
-                            const has = (no) => this.categoryList.some(x => x.categoryNo === String(no));
-                            const okP = p && has(p);
-                            const okC = c && has(c);
-                            const okS = s && has(s);
-
-                            this.selectedParent = okP ? String(p) : '';
-                            this.selectedChild = okP && okC ? String(c) : '';
-                            this.selectedSub = okP && okC && okS ? String(s) : '';
-
-                            if (okP && okC && okS && (v === 'product' || v === 'sub')) this.viewLevel = 'product';
-                            else if (okP && okC && v !== 'parent') this.viewLevel = 'sub';
-                            else if (okP) this.viewLevel = 'child';
-                            else this.viewLevel = 'parent';
-
-                            return true;
-                        },
-
-                        getChildCategories(parentNo) {
-                            const pid = String(parentNo || '');
-                            return this.categoryList.filter(c => c.parentCategoryNo === pid);
-                        },
-                        getCategoryName(no) {
-                            const cat = this.categoryList.find(c => c.categoryNo === String(no));
-                            return cat ? cat.categoryName : '';
-                        },
-
-                        toggleParent(no) {
-                            const id = String(no);
-                            if (this.selectedParent === id) {
-                                this.selectedParent = ''; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'parent';
-                            } else {
-                                this.selectedParent = id; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child';
-                            }
-                            this.writeHash();
-                        },
-                        toggleChild(no) {
-                            const id = String(no);
-                            if (this.selectedChild === id) {
-                                this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child';
-                            } else {
-                                this.selectedChild = id; this.selectedSub = ''; this.viewLevel = 'sub';
-                            }
-                            this.writeHash();
-                        },
-                        selectSub(no) {
-                            this.selectedSub = String(no);
-                            this.viewLevel = 'product';
-                            this.writeHash();
-                        },
-                        goToLevel(index) {
-                            if (index === 0) { this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child'; }
-                            else if (index === 1) { this.selectedSub = ''; this.viewLevel = 'sub'; }
-                            this.writeHash();
-                        },
-
-                        fnView(productNo) {
-                            pageChange("/productInfo.do", { productNo });
-                        },
-
-                        applyInitialCategory() {
-                            const no = this.initialCategoryNo ? String(this.initialCategoryNo) : '';
-                            if (!no) { this.selectedParent = ''; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'parent'; return; }
-
-                            const target = this.categoryList.find(c => c.categoryNo === no);
-                            if (!target) { this.selectedParent = ''; this.viewLevel = 'parent'; return; }
-
-                            if (target.parentCategoryNo === '') {
-                                // 대분류
-                                this.selectedParent = target.categoryNo;
-                                this.viewLevel = 'child';
-                            } else {
-                                const parent = this.categoryList.find(c => c.categoryNo === target.parentCategoryNo);
-                                if (parent && parent.parentCategoryNo === '') {
-                                    // 중분류
-                                    this.selectedParent = parent.categoryNo;
-                                    this.selectedChild = target.categoryNo;
-                                    this.viewLevel = 'sub';
-                                } else if (parent && parent.parentCategoryNo !== '') {
-                                    // 소분류
-                                    const top = this.categoryList.find(c => c.categoryNo === parent.parentCategoryNo);
-                                    this.selectedParent = top ? top.categoryNo : '';
-                                    this.selectedChild = parent.categoryNo;
-                                    this.selectedSub = target.categoryNo;
-                                    this.viewLevel = 'product';
-                                }
-                            }
-                        },
-
-                        readCategoryNoFromURL() {
-                            // 해시 우선 사용하므로 여기서는 보조 수단
-                            const qs = new URLSearchParams(location.search);
-                            const v = qs.get('categoryNo');
-                            if (v) return String(v);
-                            const segs = location.pathname.split('/').filter(Boolean);
-                            const last = segs[segs.length - 1];
-                            if (last && /^\d+$/.test(last)) return String(last);
-                            return '';
-                        },
-                        goToProductRegister() { window.location.href = '/product/add.do'; }
+                        });
                     },
 
-                    mounted() {
-                        if (!this.initialCategoryNo) {
-                            this.initialCategoryNo = this.readCategoryNoFromURL();
+                    writeHash() {
+                        const q = new URLSearchParams();
+
+                        if (this.selectedParent) q.set('p', this.selectedParent);
+                        if (this.selectedChild) q.set('c', this.selectedChild);
+                        if (this.selectedSub) q.set('s', this.selectedSub);
+                        q.set('v', this.viewLevel);
+                        const newHash = '#' + q.toString();
+
+                        if (location.hash !== newHash) {
+                            history.replaceState(null, '', location.pathname + newHash);
                         }
-                        window.addEventListener('hashchange', () => this.applyFromHash());
-                        this.fnList();
+                    },
+
+                    applyFromHash() {
+                        const raw = (location.hash || '').replace(/^#/, '');
+                        if (!raw) return false;
+
+                        const qs = new URLSearchParams(raw);
+                        const p = qs.get('p') || '';
+                        const c = qs.get('c') || '';
+                        const s = qs.get('s') || '';
+                        const v = qs.get('v') || 'parent';
+
+                        const has = (no) => this.categoryList.some(x => x.categoryNo === String(no));
+                        const okP = p && has(p);
+                        const okC = c && has(c);
+                        const okS = s && has(s);
+
+                        this.selectedParent = okP ? String(p) : '';
+                        this.selectedChild = okP && okC ? String(c) : '';
+                        this.selectedSub = okP && okC && okS ? String(s) : '';
+
+                        if (okP && okC && okS && (v === 'product' || v === 'sub')) this.viewLevel = 'product';
+                        else if (okP && okC && v !== 'parent') this.viewLevel = 'sub';
+                        else if (okP) this.viewLevel = 'child';
+                        else this.viewLevel = 'parent';
+
+                        return true;
+                    },
+
+                    getChildCategories(parentNo) {
+                        const pid = String(parentNo || '');
+                        return this.categoryList.filter(c => c.parentCategoryNo === pid);
+                    },
+                    getCategoryName(no) {
+                        const cat = this.categoryList.find(c => c.categoryNo === String(no));
+                        return cat ? cat.categoryName : '';
+                    },
+
+                    toggleParent(no) {
+                        const id = String(no);
+                        if (this.selectedParent === id) {
+                            this.selectedParent = ''; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'parent';
+                        } else {
+                            this.selectedParent = id; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child';
+                        }
+                        this.writeHash();
+                    },
+                    toggleChild(no) {
+                        const id = String(no);
+                        if (this.selectedChild === id) {
+                            this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child';
+                        } else {
+                            this.selectedChild = id; this.selectedSub = ''; this.viewLevel = 'sub';
+                        }
+                        this.writeHash();
+                    },
+                    selectSub(no) {
+                        this.selectedSub = String(no);
+                        this.viewLevel = 'product';
+                        this.writeHash();
+                    },
+                    goToLevel(index) {
+                        if (index === 0) { this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child'; }
+                        else if (index === 1) { this.selectedSub = ''; this.viewLevel = 'sub'; }
+                        this.writeHash();
+                    },
+
+                    fnView(productNo) {
+                        pageChange("/productInfo.do", { productNo });
+                    },
+
+                    applyInitialCategory() {
+                        const no = this.initialCategoryNo ? String(this.initialCategoryNo) : '';
+                        if (!no) { this.selectedParent = ''; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'parent'; return; }
+
+                        const target = this.categoryList.find(c => c.categoryNo === no);
+                        if (!target) { this.selectedParent = ''; this.viewLevel = 'parent'; return; }
+
+                        if (target.parentCategoryNo === '') {
+                            // 대분류
+                            this.selectedParent = target.categoryNo;
+                            this.viewLevel = 'child';
+                        } else {
+                            const parent = this.categoryList.find(c => c.categoryNo === target.parentCategoryNo);
+                            if (parent && parent.parentCategoryNo === '') {
+                                // 중분류
+                                this.selectedParent = parent.categoryNo;
+                                this.selectedChild = target.categoryNo;
+                                this.viewLevel = 'sub';
+                            } else if (parent && parent.parentCategoryNo !== '') {
+                                // 소분류
+                                const top = this.categoryList.find(c => c.categoryNo === parent.parentCategoryNo);
+                                this.selectedParent = top ? top.categoryNo : '';
+                                this.selectedChild = parent.categoryNo;
+                                this.selectedSub = target.categoryNo;
+                                this.viewLevel = 'product';
+                            }
+                        }
+                    },
+
+                    readCategoryNoFromURL() {
+                        // 해시 우선 사용하므로 여기서는 보조 수단
+                        const qs = new URLSearchParams(location.search);
+                        const v = qs.get('categoryNo');
+                        if (v) return String(v);
+                        const segs = location.pathname.split('/').filter(Boolean);
+                        const last = segs[segs.length - 1];
+                        if (last && /^\d+$/.test(last)) return String(last);
+                        return '';
+                    },
+                    goToProductRegister() { window.location.href = '/product/add.do'; }
+                },
+
+                mounted() {
+                    if (!this.initialCategoryNo) {
+                        this.initialCategoryNo = this.readCategoryNoFromURL();
                     }
-                });
-                app.mount("#app");
-            </script>
+                    window.addEventListener('hashchange', () => this.applyFromHash());
+                    this.fnList();
+                }
+            });
+            app.mount("#app");
+        </script>

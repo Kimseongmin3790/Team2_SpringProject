@@ -80,7 +80,7 @@ $(document).ready(function() {
 
    // 메시지 추가 함수
    function appendMessage(sender, text) {
-       $("#chatbot-messages").append(`<div class='msg ${sender}'>${text}</div>`);
+       $("#chatbot-messages").append(`<div class='chat-msg ${sender}'>${text}</div>`);
        $("#chatbot-messages").scrollTop($("#chatbot-messages")[0].scrollHeight);
    }
 
