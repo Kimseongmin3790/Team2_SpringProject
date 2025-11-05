@@ -222,6 +222,21 @@ public class BoardService {
 		return resultMap;
 	}
 	
+	public HashMap<String, Object> productQnaInsert(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
+		try {
+	        boardMapper.productQnaInsert(map);
+	        
+	        resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
 	public boolean inquiryCheckPassword(Integer inquiryNo, String pw) {		
 		String dbPw = boardMapper.selectInquiryPwd(inquiryNo);
 		return dbPw != null && dbPw.equals(pw);

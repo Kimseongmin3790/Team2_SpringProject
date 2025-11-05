@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.ProductCategory;
+import com.example.TeamProject.model.ProductQuestions;
 
 
 
@@ -28,4 +29,6 @@ public interface ProductMapper {
 	List<Product> selectProductList(HashMap<String, Object> map);
 	// 상품 카테고리
     List<ProductCategory> selectCategoryList(HashMap<String, Object> map);
+    // 상품문의 글 목록
+    List<ProductQuestions> selectProductQuestions(HashMap<String, Object> map);
 }
