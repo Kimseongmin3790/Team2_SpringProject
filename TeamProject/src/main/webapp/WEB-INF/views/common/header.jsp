@@ -58,9 +58,6 @@
                         <a href="javascript:;" id="btnMyPage" title="마이페이지" data-status="${sessionScope.sessionStatus}">
                             <i class="fa-solid fa-user"></i>
                         </a>
-                        <a href="javascript:;" id="btnFavorite" title="찜한상품">
-                            <i class="fa-solid fa-heart"></i>
-                        </a>
                         <a href="javascript:;" id="btnCart" title="장바구니" data-status="${sessionScope.sessionStatus}">
                             <i class="fa-solid fa-cart-shopping"></i>
                         </a>
@@ -84,7 +81,6 @@
                     <a href="${path}/productCategory.do">상품목록</a>               
                     <a href="${path}/product/recommendList.do">베스트</a>
                     <a href="${path}/board.do">고객센터</a>
-                    <a href="${path}/event">상품후기</a>
                 </nav>
             </div>
 

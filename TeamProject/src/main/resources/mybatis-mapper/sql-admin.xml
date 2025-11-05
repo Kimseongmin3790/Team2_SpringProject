@@ -41,9 +41,7 @@
 		FROM PRODUCT P 
 		INNER JOIN PRODUCT_CATEGORY C   ON P.CATEGORY_NO = C.CATEGORY_NO
         LEFT JOIN PRODUCT_CATEGORY C2   ON C.PARENT_CATEGORY_NO = C2.CATEGORY_NO
-        LEFT JOIN PRODUCT_CATEGORY C3   ON C2.PARENT_CATEGORY_NO = C3.CATEGORY_NO
-        
-        		        
+        LEFT JOIN PRODUCT_CATEGORY C3   ON C2.PARENT_CATEGORY_NO = C3.CATEGORY_NO                		        
 	</select>
 	
 	 <!-- 대분류: 부모가 없음 -->
@@ -103,6 +101,12 @@
 		  ORDER BY distance ASC
 		)
 	</select>
+	
+	<update id="updateRecommend">
+		UPDATE PRODUCT
+			SET RECOMMEND = #{recommend}
+		WHERE PRODUCT_NO = #{productNo}
+	</update>
 	
 	
 </mapper>

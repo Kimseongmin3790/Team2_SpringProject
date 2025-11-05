@@ -14,6 +14,7 @@ public class Product {
 	private String unit;
 	private String origin;
 	private String cdate;
+	private String recommend;
 	private String productStatus;
 	private String c1;
 	private String c2;
