@@ -108,4 +108,12 @@
         LEFT JOIN CATEGORY_IMAGE I ON C.CATEGORY_NO = I.CATEGORY_NO
         ORDER BY C.CATEGORY_NO
     </select>
+    
+    <select id="selectProductQuestions" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductQuestions">
+    	SELECT Q.TITLE, Q.USER_ID, Q.STATUS, TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD') AS REG_DATE, A.CONTENT AS ANSWER, Q.IS_SECRET, P.SELLER_ID
+		FROM PRODUCT_QNA Q
+		JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
+		LEFT JOIN PRODUCT_QNA_ANSWER A ON Q.QNA_NO = A.QNA_NO
+		WHERE Q.PRODUCT_NO = #{productNo}
+    </select>
 </mapper>

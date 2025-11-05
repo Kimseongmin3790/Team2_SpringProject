@@ -48,4 +48,6 @@ public interface BoardMapper {
 	String selectQnaPwd(int qnaNo);
 	// 상품문의 답변 글 조회
 	Answer selectQnaAnswer(int qnaNo);
+	// 상품문의 글 작성
+	int productQnaInsert(HashMap<String, Object> map);
 }
