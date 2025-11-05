@@ -162,6 +162,23 @@
                     padding: 20px;
                     color: #777;
                 }
+
+                .btn-back {
+                    background: none;
+                    border: 1px solid #ccc;
+                    color: #333;
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: 0.2s;
+                }
+
+                .btn-back:hover {
+                    background: #e8f5e9;
+                    border-color: #4caf50;
+                    color: #1a5d1a;
+                }
             </style>
         </head>
 
@@ -169,7 +186,10 @@
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
                 <div id="app">
                     <div class="admin-container">
-                        <h2 class="admin-title">회원관리</h2>
+                        <div class="admin-header">
+                            <button class="btn-back" @click="fnGoBack">이전</button>
+                            <h2 class="admin-title">회원관리</h2>
+                        </div>
 
                         <!-- 검색 -->
                         <div class="member-filter">
@@ -247,6 +267,16 @@
                                 },
                             },
                             methods: {
+                                fnGoBack() {
+                                    if (document.referrer && document.referrer !== location.href) {
+                                        // ✅ 이전 페이지로 이동
+                                        history.back();
+                                    } else {
+                                        // ✅ 이전 페이지 정보가 없으면 관리자 메인으로
+                                        location.href = this.path + "/admin/dashboard.do";
+                                    }
+                                },
+                                
                                 fnUserList: function () {
                                     let self = this;
                                     let param = {};

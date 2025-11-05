@@ -29,4 +29,5 @@ public class Product {
 	
 	private String sellerName;
 	private String orderdate;
+	private String isActive;
 }
