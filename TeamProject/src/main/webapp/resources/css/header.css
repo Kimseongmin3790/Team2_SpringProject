@@ -258,6 +258,7 @@ body {
 .category-container {
 	position: relative;
 	margin-right: auto;
+	padding-bottom: 4px;
 }
 
 /* 🌿 카테고리 버튼 */
@@ -291,11 +292,11 @@ body {
 	border-radius: 8px;
 	border: 1px solid #ddd;
 	position: absolute;
-	top: 110%;
+	top: 100%;
 	left: 0;
 	min-width: 240px;
 	display: none;
-	z-index: 1000;
+	z-index: 2000;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 	animation: fadeIn 0.25s ease;
 }
