@@ -454,7 +454,8 @@
                             const last = segs[segs.length - 1];
                             if (last && /^\d+$/.test(last)) return String(last);
                             return '';
-                        }
+                        },
+                        goToProductRegister() { window.location.href = '/product/add.do'; }
                     },
 
                     mounted() {
