@@ -11,7 +11,7 @@ public class Cart {
 	private String quantity;
 	private String addedAt;
 	private String pName;
-	private String price;
+	private int price;
 	private String lineTotal;
 	private String thumbPath;
 }

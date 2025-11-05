@@ -7,11 +7,11 @@
 	<insert id="insertProduct" parameterType="hashmap" useGeneratedKeys="true" keyColumn="PRODUCT_NO" keyProperty="productNo">
 	    INSERT INTO PRODUCT (
 	        PRODUCT_NO, SELLER_ID, CATEGORY_NO, PNAME, PINFO,
-	        PRICE, STOCK, UNIT, ORIGIN, CDATETIME, UDATETIME,
+	        PRICE, ORIGIN, CDATETIME, UDATETIME,
 	        RECOMMEND, PRODUCT_STATUS
 	    ) VALUES (
 	        PRODUCT_SEQ.NEXTVAL, #{sellerId}, #{categoryNo}, #{pname}, #{pinfo},
-	        #{price}, #{stock}, #{unit}, #{origin}, SYSDATE, SYSDATE,
+	        #{price}, #{origin}, SYSDATE, SYSDATE,
 	        #{recommend}, #{productStatus}
 	    )
 	</insert>
@@ -74,7 +74,7 @@
 	<select id="selectProductList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
 		SELECT
 		P.PRODUCT_NO AS productNo, P.SELLER_ID AS sellerId, P.CATEGORY_NO AS categoryNo,
-		P.PNAME AS pname, P.PINFO AS pinfo, P.PRICE AS price,
+		P.PNAME AS pName, P.PINFO AS pInfo, P.PRICE AS price,
 		P.PRODUCT_STATUS AS productStatus, TO_CHAR(P.CDATETIME, 'YYYY-MM-DD') AS cdate,
 		NVL(IMG.IMAGE_URL, '/resources/img/category/noimage.jpg') AS filePath
 		FROM PRODUCT P
@@ -107,5 +107,13 @@
         FROM PRODUCT_CATEGORY C
         LEFT JOIN CATEGORY_IMAGE I ON C.CATEGORY_NO = I.CATEGORY_NO
         ORDER BY C.CATEGORY_NO
+    </select>
+    
+    <select id="selectProductQuestions" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductQuestions">
+    	SELECT Q.TITLE, Q.USER_ID, Q.STATUS, TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD') AS REG_DATE, A.CONTENT AS ANSWER, Q.IS_SECRET, P.SELLER_ID
+		FROM PRODUCT_QNA Q
+		JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
+		LEFT JOIN PRODUCT_QNA_ANSWER A ON Q.QNA_NO = A.QNA_NO
+		WHERE Q.PRODUCT_NO = #{productNo}
     </select>
 </mapper>

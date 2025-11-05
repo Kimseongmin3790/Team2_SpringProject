@@ -464,6 +464,21 @@
                 padding: 0.5rem;
             }
         }
+        /* 비활성화된 필드 스타일 */
+        .non-editable-field {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background-color: #e9ecef; /* 연한 회색 배경 */
+            color: #6c757d; /* 회색 텍스트 */
+        }
+
+        /* 비활성화된 필드 설명 텍스트 스타일 */
+        .non-editable-text {
+            font-size: 0.875rem; /* 작은 글씨 */
+            color: #6b7280; /* 회색 텍스트 */
+            margin-top: 0.25rem; /* 위쪽 여백 */
+        }
     </style>
 </head>
 
@@ -621,35 +636,36 @@
                 <!-- 농가 정보 -->
                 <div v-show="activeTab === 'farm'" class="tab-content">
                     <h2 style="margin-bottom: 1.5rem; color: #111827;">농가 정보</h2>
-                    
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">농가명</div>
-                            <div class="info-value">{{ farmInfo.name }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">대표자명</div>
-                            <div class="info-value">{{ farmInfo.owner }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">농가 위치</div>
-                            <div class="info-value">{{ farmInfo.location }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">농가 소개</div>
-                            <div class="info-value">{{ farmInfo.description }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">인증 현황</div>
-                            <div class="cert-badges">
-                                <span v-for="cert in farmInfo.certifications" :key="cert" class="cert-badge">
-                                    {{ cert }}
-                                </span>
+
+                    <form @submit.prevent="updateFarmInfo">
+                        <div class="info-grid">
+                            <div class="form-group">
+                                <label class="form-label">농가명</label>
+                                <input type="text" class="form-input" v-model="farmInfo.name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">대표자명</label>
+                                <input type="text" class="form-input" v-model="farmInfo.owner">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">농가 위치</label>
+                                <input type="text" class="form-input" v-model="farmInfo.location">
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">농가 소개</div>
+                                <div class="info-value">{{ farmInfo.description }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">인증 현황</div>
+                                <div class="cert-badges">
+                                    <span v-for="cert in farmInfo.certifications" :key="cert" class="cert-badge">
+                                        {{ cert }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <button class="btn btn-primary" style="margin-top: 2rem;" @click="editFarmInfo">농가 정보 수정</button>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 2rem;">농가 정보 저장</button>
+                    </form>
                 </div>
 
                 <!-- 리뷰 -->
@@ -676,7 +692,12 @@
                     <form @submit.prevent="updateProfile">
                         <div class="form-group">
                             <label class="form-label">이메일</label>
-                            <input type="email" class="form-input" v-model="profile.email" readonly>
+                            <div class="info-value non-editable-field">
+                                {{ profile.email }}
+                            </div>
+                            <p class="non-editable-text">
+                                이메일은 변경할 수 없습니다.
+                            </p>
                         </div>
                         <div class="form-group">
                             <label class="form-label">연락처</label>
@@ -684,7 +705,12 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">사업자등록번호</label>
-                            <input type="text" class="form-input" v-model="profile.businessNumber" readonly>
+                            <div class="info-value non-editable-field">
+                                {{ profile.businessNumber }}
+                            </div>
+                            <p class="non-editable-text">
+                                사업자등록번호 변경은 관리자에게 문의해주세요.
+                            </p>
                         </div>
                         <div class="form-group">
                             <label class="form-label">계좌번호</label>
@@ -748,10 +774,10 @@
                     accountNumber: '123-456-789012'
                 },
                 farmInfo: {
-                    name: '행복농장',
-                    owner: '김농부',
-                    location: '경기도 양평군 양평읍',
-                    description: '3대째 이어온 친환경 농법으로 건강한 농산물을 재배하고 있습니다.',
+                    name: '',
+                    owner: '',
+                    location: '',
+                    description: '3대째 이어온 친환경 농법으로 건강한 농산물을 재배하고 있습니다.', // db 추가 ?
                     certifications: ['GAP 인증', '유기농 인증', '친환경 인증']
                 },
                 reviews: [
@@ -779,8 +805,21 @@
                 return '';
             },
             goToPage: function(page) {
-                alert(page + ' 페이지로 이동합니다.');
-                // 실제 구현시: location.href = '${pageContext.request.contextPath}/' + page;
+                let path = '';
+                if (page === 'product-register') {
+                    path = '${pageContext.request.contextPath}/product/add.do';
+                } else if (page === 'order-manage') {
+                    // 주문 관리 페이지 경로를 여기에 지정하세요. (예: /seller/orders.do)
+                } else if (page === 'delivery-manage') {
+                    // 배송 상태 변경 페이지 경로를 여기에 지정하세요. (예: /seller/delivery.do)      
+                }
+
+                if (path) {
+                    window.location.href = path;
+                } else {
+                    // 정의되지 않은 페이지에 대한 처리 (선택 사항)
+                    alert(page + ' 페이지는 아직 경로가 정의되지 않았습니다.');
+                }
             },
             requestSettlement: function() {
                 if (confirm('정산을 신청하시겠습니까?')) {
@@ -802,9 +841,33 @@
                     });
                 }
             },
-            editFarmInfo: function() {
-                alert('농가 정보 수정 페이지로 이동합니다.');
-                // 실제 구현시: location.href = '${pageContext.request.contextPath}/seller/farm/edit';
+            updateFarmInfo: function() {
+                if (confirm('농가 정보를 수정하시겠습니까?')) {
+                    let self = this;
+                    let param = {
+                        businessName: self.farmInfo.name,
+                        "user.name": self.farmInfo.owner, 
+                        "user.address": self.farmInfo.location
+                    };
+
+                    $.ajax({
+                        url: "${pageContext.request.contextPath}/seller/farm/update.dox", 
+                        dataType: "json",
+                        type: "POST",
+                        data: param,
+                        success: function(response) {
+                            if (response.result === 'success') {
+                                alert('농가 정보가 성공적으로 수정되었습니다.');
+                            } else {
+                                alert('농가 정보 수정에 실패했습니다: ' + response.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert('농가 정보 수정 중 오류가 발생했습니다.');
+                            console.error("AJAX Error: ", status, error);
+                        }
+                    });
+                }
             },
             replyToReview: function(reviewId) {
                 let reply = prompt('답글을 입력하세요:');
@@ -832,17 +895,21 @@
                 if (confirm('회원정보를 수정하시겠습니까?')) {
                     let self = this;
                     let param = {
-                        phone: self.profile.phone,
-                        accountNumber: self.profile.accountNumber,
+                        "user.phone": self.profile.phone,  
+                        account: self.profile.accountNumber,
                         bankName: self.profile.bankName
                     };
                     $.ajax({
-                        url: "${pageContext.request.contextPath}/seller/profile/update",
+                        url: "${pageContext.request.contextPath}/seller/profile/update.dox", 
                         dataType: "json",
                         type: "POST",
                         data: param,
                         success: function(data) {
-                            alert('회원정보가 수정되었습니다.');
+                            if (data.result === 'success') {
+                                alert('회원정보가 수정되었습니다.');
+                            } else {
+                                alert('회원정보 수정 중 오류가 발생했습니다: ' + data.message);
+                            }
                         },
                         error: function() {
                             alert('회원정보 수정 중 오류가 발생했습니다.');
@@ -870,12 +937,40 @@
                         });
                     }
                 }
-            }
+            },
+            loadFarmInfo: function() {
+                let self = this;
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/seller/info.dox",
+                    dataType: "json",
+                    type: "GET",
+                    success: function(response) {
+                        if (response.result === 'success') {
+                            let sellerData = response.sellerInfo;
+                            self.farmInfo.name = sellerData.businessName;
+                            
+                            if (sellerData.user) { 
+                                self.farmInfo.owner = sellerData.user.name;
+                                self.farmInfo.location = sellerData.user.address;
+                            }
+                            // description과 certifications는 DB에 없으므로 기존 값을 유지하거나 다른 방식으로 처리해야 합니다.
+                        } else {
+                            alert('판매자 정보를 불러오는데 실패했습니다: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('판매자 정보를 불러오는 중 오류가 발생했습니다.');
+                        console.error("AJAX Error: ", status, error);
+                    }
+                });
+            },
+
+
         },
         mounted() {
             let self = this;
-            // 페이지 로드시 필요한 데이터 로드
-            // self.loadDashboardData();
+            // self.loadDashboardData(); 대시보드 추후 
+            self.loadFarmInfo();
         }
     });
 

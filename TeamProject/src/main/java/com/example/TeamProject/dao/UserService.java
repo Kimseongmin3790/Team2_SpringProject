@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.TeamProject.mapper.UserMapper;
 import com.example.TeamProject.model.Cart;
+import com.example.TeamProject.model.SellerVO;
 import com.example.TeamProject.model.User;
 
 import jakarta.servlet.http.HttpSession;
@@ -42,6 +43,9 @@ public class UserService {
 
 	@Autowired
 	MailService mailService;
+	
+	@Autowired 
+	SellerService sellerService;
 
 	public HashMap<String, Object> addUser(HashMap<String, Object> map) {
 		// TODO Auto-generated method stub
@@ -119,6 +123,27 @@ public class UserService {
 					session.setAttribute("sessionName", user.getName());
 					session.setAttribute("sessionLat", user.getLat());
 					session.setAttribute("sessionLng", user.getLng());
+					
+					// --- VERIFIED 상태 확인 및 세션 저장 로직 추가 ---
+					if ("SELLER".equals(user.getUserRole())) {
+					    // SellerService를 통해 판매자 정보 조회 
+					    HashMap<String, Object> sellerResult = sellerService.getSellerInfoForMyPage(user.getUserId());
+					    String verifiedStatus = "N"; // 기본값은 'N'으로 설정
+
+
+					    if ("success".equals(sellerResult.get("result"))) {
+					        SellerVO sellerVO = (SellerVO) sellerResult.get("sellerInfo");
+					 
+					        if (sellerVO != null && sellerVO.getVerified() != null) {
+					            verifiedStatus = sellerVO.getVerified();	            
+					        }
+					    }
+					    session.setAttribute("sellerVerifiedStatus", verifiedStatus);
+					    
+					} else {
+					    session.removeAttribute("sellerVerifiedStatus");
+					 
+					}							
 				} else {
 					message = "비밀번호가 일치하지 않습니다";
 					result = "fail";
@@ -130,7 +155,6 @@ public class UserService {
 			resultMap.put("msg", message);
 			resultMap.put("result", result);
 		} catch (Exception e) {
-			// TODO: handle exception
 			resultMap.put("result", "fail");
 		}
 		return resultMap;

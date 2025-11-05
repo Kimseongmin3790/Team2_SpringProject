@@ -7,13 +7,14 @@ public class Product {
 	private int productNo;
 	private String sellerId;
 	private String categoryNo;
-	private String pname;
-	private String pinfo;
+	private String pName;
+	private String pInfo;
 	private int price;
 	private int stock;
 	private String unit;
 	private String origin;
 	private String cdate;
+	private String recommend;
 	private String productStatus;
 	private String c1;
 	private String c2;
@@ -28,4 +29,5 @@ public class Product {
 	
 	private String sellerName;
 	private String orderdate;
+	private String isActive;
 }

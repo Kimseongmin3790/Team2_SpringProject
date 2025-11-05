@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.TeamProject.dao.ReviewService;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -23,7 +24,6 @@ public class ReviewController {
 
     @Autowired
     private ReviewService reviewService; 
-
 
     @RequestMapping(value = "/reviewWrite.do", method = RequestMethod.GET)
     public String showReviewWritePage(@RequestParam("productNo") int productNo,
@@ -126,10 +126,34 @@ public class ReviewController {
     // 상품별 리뷰 목록 가져오기
     @RequestMapping(value = "/product/reviews.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String getProductReviews(@RequestParam("productNo") int productNo) throws Exception {
-        HashMap<String, Object> resultMap = reviewService.getProductReviews(productNo);
+    public String getProductReviews(
+            @RequestParam("productNo") int productNo,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize, 
+            HttpSession session) throws Exception {
+
+        String userId = (String) session.getAttribute("sessionId");
+
+        // 서비스 호출 시 모든 파라미터 전달
+        HashMap<String, Object> resultMap = reviewService.getProductReviews(productNo, userId, page, pageSize);
+
+        Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
+        return gson.toJson(resultMap);
+    }
+    
+    // 리뷰 추천
+    @RequestMapping(value = "/review/toggleRecommend.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String toggleRecommend(
+            @RequestParam("reviewNo") int reviewNo,
+            @RequestParam("action") String action,
+            HttpSession session) {
+
+        String userId = (String) session.getAttribute("sessionId");
+
+        HashMap<String, Object> resultMap = reviewService.toggleRecommendStatus(reviewNo, userId, action);
+
         return new Gson().toJson(resultMap);
     }
-
-       
+ 
 }

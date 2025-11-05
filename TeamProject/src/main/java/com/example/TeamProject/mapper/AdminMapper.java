@@ -36,4 +36,6 @@ public interface AdminMapper {
 	List<ProductCategory> selectMidList(HashMap<String, Object> map);
 	// 카테고리 소분류
 	List<ProductCategory> selectLeafList(HashMap<String, Object> map);
+	// 상품 추천여부 업데이트
+	int updateRecommend(int productNo, String recommend);
 }

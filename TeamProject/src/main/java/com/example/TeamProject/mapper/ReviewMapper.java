@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.Review;
 import com.example.TeamProject.model.ReviewImage;
@@ -30,7 +32,22 @@ public interface ReviewMapper {
     // 리뷰 삭제
     int deleteReview(HashMap<String, Object> params);
     // 상품별 리뷰목록 가져오기
-    List<Map<String, Object>> selectReviewsByProductNo(int productNo);
+    List<Review> selectReviewsByProductNo(@Param("productNo") int productNo, @Param("offset") int offset, @Param("pageSize") int pageSize);
+    // 상품별 전체 리뷰 개수 조회
+    int countReviewsByProductNo(@Param("productNo") int productNo);
     // 특정 리뷰의 이미지 URL 목록을 가져오는 메서드 추가
     List<String> selectReviewImageUrlsByReviewNo(int reviewNo);
+    // 추천 기록 확인
+    boolean checkIfUserRecommended(@Param("reviewNo") int reviewNo, @Param("userId") String userId);
+    // 추천 기록 추가
+    int insertReviewRecommend(@Param("reviewNo") int reviewNo, @Param("userId") String userId);
+    // 추천 기록 삭제
+    int deleteReviewRecommend(@Param("reviewNo") int reviewNo, @Param("userId") String userId);
+    // 리뷰 추천 수 증가
+    int incrementReviewRecommend(int reviewNo);
+    // 리뷰 추천 수 감소
+    int decrementReviewRecommend(int reviewNo);
+    
+    List<Map<String, Object>> getRatingDistributionByProductNo(@Param("productNo") int productNo);
+    
 }

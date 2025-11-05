@@ -242,5 +242,12 @@
 	    SET CNT = NVL(CNT, 0) + 1
 	    WHERE QNA_NO = #{qnaNo}
 	</update>
+	
+	<insert id="productQnaInsert" parameterType="hashmap">
+		INSERT INTO PRODUCT_QNA	
+		VALUES(PRODUCT_QNA_SEQ.NEXTVAL, #{productNo}, #{userId}, #{title}, #{content}, #{isSecret}, #{password}, '답변대기', 0, SYSDATE, SYSDATE)
+	</insert>
+	
+	
 
 </mapper>

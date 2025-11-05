@@ -95,7 +95,7 @@ public class ReviewService {
                 resultMap.put("result", "success");
 
                 HashMap<String, Object> dataMap = new HashMap<>();
-                dataMap.put("pname", data.getPname());
+                dataMap.put("pname", data.getPName());
                 dataMap.put("sellerName", data.getSellerName());
                 dataMap.put("imageUrl", data.getImageUrl());
                 dataMap.put("orderdate", data.getOrderdate());
@@ -251,84 +251,114 @@ public class ReviewService {
         return resultMap;
     }
     
-    // 상품별 리뷰 목록 가져오기 (이미지 URL 추가 로직 포함)
-    public HashMap<String, Object> getProductReviews(int productNo) { // 기존 메서드 이름 유지
+    // 상품별 리뷰 목록 가져오기 
+    public HashMap<String, Object> getProductReviews(int productNo, String currentUserId, int page, int pageSize) {
         HashMap<String, Object> resultMap = new HashMap<>();
         try {
-            // 1. 특정 상품의 리뷰 목록을 가져옵니다. (이제 List<Map<String, Object>>를 반환)
-            List<Map<String, Object>> rawReviewList = reviewMapper.selectReviewsByProductNo(productNo);
+            // 1. 페이징을 위한 offset 계산
+            int offset = (page - 1) * pageSize;
 
-            // 2. 각 리뷰에 이미지 URL 목록을 추가하고 통계를 계산합니다.
-            List<Map<String, Object>> processedReviews = new ArrayList<>();
-            int totalReviews = rawReviewList.size();
-            double sumRatings = 0;
+            // 2. 해당 페이지의 리뷰 목록과 전체 리뷰 개수를 매퍼에서 가져옴
+            List<Review> reviewList = reviewMapper.selectReviewsByProductNo(productNo, offset, pageSize);
+            int totalReviews = reviewMapper.countReviewsByProductNo(productNo);
+
+            // 3. isRecommendedByMe 플래그 설정
+            if (currentUserId != null && !currentUserId.isEmpty()) {
+                for (Review review : reviewList) {
+                    boolean isRecommended = reviewMapper.checkIfUserRecommended(review.getReviewNo(), currentUserId);
+                    review.setRecommendedByMe(isRecommended);
+                }
+            }
+
+            // 4. 리뷰 통계 정보 계산
+            double averageRating = 0;
             Map<Integer, Integer> ratingDistribution = new HashMap<>();
             for (int i = 1; i <= 5; i++) {
-                ratingDistribution.put(i, 0); // 1점부터 5점까지 초기화
+                ratingDistribution.put(i, 0); // 1~5점까지 0으로 초기화
             }
 
-            for (Map<String, Object> review : rawReviewList) {
-                // 해당 리뷰의 이미지 URL 목록을 가져와 추가
-                // Integer reviewNo = (Integer) review.get("REVIEW_NO"); // <-- 이 부분이 문제일 수 있습니다.
-                Integer reviewNo = null;
-                Object reviewNoObj = review.get("REVIEW_NO");
-                if (reviewNoObj instanceof BigDecimal) {
-                    reviewNo = ((BigDecimal) reviewNoObj).intValue();
-                } else if (reviewNoObj instanceof Integer) {
-                    reviewNo = (Integer) reviewNoObj;
-                }
+            if (totalReviews > 0) {
+                // DB에서 별점 분포도 가져오기
+                List<Map<String, Object>> distributionList = reviewMapper.getRatingDistributionByProductNo(productNo);
+                long totalRatingSum = 0;
 
-                List<String> imageUrls = new ArrayList<>();
-                if (reviewNo != null) {
-                    imageUrls = reviewMapper.selectReviewImageUrlsByReviewNo(reviewNo);
-                }
-                review.put("images", imageUrls); // "images" 키로 이미지 URL 리스트 추가
+                for (Map<String, Object> item : distributionList) {
+              
+                    int rating = ((BigDecimal) item.get("RATING")).intValue();
+                    int count = ((BigDecimal) item.get("COUNT")).intValue();
 
-                processedReviews.add(review); // 이미 Map 형태이므로 그대로 추가
-
-                // 통계 계산 (RATING 처리 부분은 그대로 유지)
-                Object ratingObj = review.get("RATING");
-                int rating = 0; // 기본값 설정
-                if (ratingObj != null) {
-                    if (ratingObj instanceof BigDecimal) {
-                        rating = ((BigDecimal) ratingObj).intValue();
-                    } else if (ratingObj instanceof Integer) {
-                        rating = (Integer) ratingObj;
-                    } else {
-                        try {
-                            rating = Integer.parseInt(String.valueOf(ratingObj));
-                        } catch (NumberFormatException e) {
-                            System.err.println("Error parsing RATING to int: " + ratingObj + " - " +e.getMessage());
-                        }
-                    }
+                    ratingDistribution.put(rating, count);
+                    totalRatingSum += (long) rating * count;
                 }
-                sumRatings += rating;
-                if (rating >= 1 && rating <= 5) {
-                    ratingDistribution.put(rating, ratingDistribution.get(rating) + 1);
-                }
+                // 평균 평점 계산
+                averageRating = (double) totalRatingSum / totalReviews;
             }
 
-            double averageRating = (totalReviews > 0) ? (sumRatings / totalReviews) : 0;
-            averageRating = Math.round(averageRating * 10.0) / 10.0; // 소수점 첫째 자리까지 반올림
-
+            // 5. 최종 결과 resultMap에 담기
             resultMap.put("result", "success");
-            resultMap.put("reviews", processedReviews); // "reviews" 키로 변경
-            resultMap.put("averageRating", averageRating);
+            resultMap.put("reviews", reviewList);
             resultMap.put("totalReviews", totalReviews);
+            resultMap.put("totalCount", totalReviews);
+            resultMap.put("averageRating", averageRating);
             resultMap.put("ratingDistribution", ratingDistribution);
 
         } catch (Exception e) {
             e.printStackTrace();
             resultMap.put("result", "fail");
             resultMap.put("message", e.getMessage());
-            // 오류 발생 시 클라이언트에서 처리할 수 있도록 빈 리스트나 기본값으로 채워 반환
-            resultMap.put("reviews", new ArrayList<>());
-            resultMap.put("averageRating", 0.0);
-            resultMap.put("totalReviews", 0);
-            resultMap.put("ratingDistribution", new HashMap<Integer, Integer>() {{
-                put(5, 0); put(4, 0); put(3, 0); put(2, 0); put(1, 0);
-            }});
         }
         return resultMap;
     }
+   
+    // 리뷰 추천
+    @Transactional(rollbackFor = Exception.class)
+    public HashMap<String, Object> toggleRecommendStatus(int reviewNo, String userId, String action) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+        resultMap.put("result", "fail");
+
+        if (userId == null || userId.isEmpty()) {
+            resultMap.put("message", "로그인이 필요합니다.");
+            return resultMap;
+        }
+
+        try {
+            // 1. 사용자가 이미 추천했는지 확인 
+            boolean isRecommended = reviewMapper.checkIfUserRecommended(reviewNo, userId);
+
+            if ("increment".equals(action)) { // 추천 요청
+                if (isRecommended) {
+                    resultMap.put("message", "이미 추천한 리뷰입니다.");
+                    resultMap.put("result", "already_recommended"); 
+                } else {
+                    // 2. 추천 기록 추가 (매퍼 메서드 필요)
+                    reviewMapper.insertReviewRecommend(reviewNo, userId);
+                    // 3. 리뷰의 추천 수 증가 (매퍼 메서드 필요)
+                    reviewMapper.incrementReviewRecommend(reviewNo);
+                    resultMap.put("result", "success");
+                    resultMap.put("message", "리뷰를 추천했습니다.");
+                }
+            } else if ("decrement".equals(action)) { // 추천 취소 요청
+                if (!isRecommended) {
+                    resultMap.put("message", "추천하지 않은 리뷰입니다.");
+                    resultMap.put("result", "not_recommended"); 
+                } else {
+                    // 2. 추천 기록 삭제 
+                    reviewMapper.deleteReviewRecommend(reviewNo, userId);
+                    // 3. 리뷰의 추천 수 감소 
+                    reviewMapper.decrementReviewRecommend(reviewNo);
+                    resultMap.put("result", "success");
+                    resultMap.put("message", "리뷰 추천을 취소했습니다.");
+                }
+            } else {
+                resultMap.put("message", "유효하지 않은 action 값입니다.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resultMap.put("message", "추천 처리 중 오류 발생: " + e.getMessage());
+            throw new RuntimeException("리뷰 추천 처리 중 오류 발생", e); 
+        }
+        return resultMap;
+    }
+    
 }
