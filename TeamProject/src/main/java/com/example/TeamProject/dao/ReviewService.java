@@ -95,7 +95,7 @@ public class ReviewService {
                 resultMap.put("result", "success");
 
                 HashMap<String, Object> dataMap = new HashMap<>();
-                dataMap.put("pname", data.getPname());
+                dataMap.put("pname", data.getPName());
                 dataMap.put("sellerName", data.getSellerName());
                 dataMap.put("imageUrl", data.getImageUrl());
                 dataMap.put("orderdate", data.getOrderdate());
