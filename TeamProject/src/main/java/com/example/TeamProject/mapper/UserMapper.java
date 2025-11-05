@@ -43,7 +43,7 @@ public interface UserMapper {
 	List<Cart> selectCartList(HashMap<String, Object> map);
 	// 장바구니 합계
 	int selectCartTotal(HashMap<String, Object> map);
-	//
+	// 
 	int updateQty(HashMap<String, Object> map);
 	//
 	int deleteCartItem(HashMap<String, Object> map);

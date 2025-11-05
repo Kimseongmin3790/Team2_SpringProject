@@ -260,8 +260,8 @@
                                 <a class="grid-item" v-for="p in filteredProducts" href="javascript:;"
                                     @click="fnView(p.productNo)">
                                     <img :src="p.filePath || '/resources/img/category/noimage.jpg'" alt="상품 이미지">
-                                    <div>{{ p.pname }}</div>
-                                    <div>{{p.pinfo}}</div>
+                                    <div>{{ p.pName }}</div>
+                                    <div>{{p.pInfo}}</div>
                                     <div class="price">{{ p.price.toLocaleString() }}원</div>
                                 </a>
                             </div>
@@ -277,6 +277,7 @@
         <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
             <script>
+                const SERVER_CATEGORY_NO = '<c:out value="${categoryNo}" default="" />';
                 const app = Vue.createApp({
                     data() {
                         return {
@@ -286,16 +287,15 @@
                             selectedChild: '',
                             selectedSub: '',
                             viewLevel: 'parent',
-                            // 서버가 넘겨주는 초기 진입 카테고리(없으면 빈 문자열)
-                            initialCategoryNo: '${categoryNo}'
+                            initialCategoryNo: SERVER_CATEGORY_NO
                         };
                     },
                     computed: {
                         parentCategories() {
-                            return this.categoryList.filter(c => !c.parentCategoryNo);
+                            return this.categoryList.filter(c => c.parentCategoryNo === '');
                         },
                         filteredProducts() {
-                            return this.productList.filter(p => Number(p.categoryNo) === Number(this.selectedSub));
+                            return this.productList.filter(p => String(p.categoryNo) === String(this.selectedSub));
                         },
                         breadcrumb() {
                             const r = [];
@@ -306,39 +306,47 @@
                         }
                     },
                     methods: {
-                        // ---- 서버 데이터 로드 ----
-                        fnList : function() {
-                            let self = this;
+                        normalize(c) {
+                            return {
+                                categoryNo: String(c.categoryNo),
+                                parentCategoryNo: (c.parentCategoryNo == null || String(c.parentCategoryNo).trim() === '' || String(c.parentCategoryNo) === '0')
+                                    ? '' : String(c.parentCategoryNo),
+                                categoryName: c.categoryName || '',
+                                imageUrl: c.imageUrl || ''
+                            };
+                        },
+
+                        fnList() {
                             $.ajax({
                                 url: "/categoryProductList.dox",
                                 dataType: "json",
                                 type: "POST",
                                 success: (data) => {
-                                    self.categoryList = data.categories;
-                                    self.productList = data.list;
+                                    this.categoryList = (data.categories || []).map(this.normalize);
+                                    this.productList = (data.list || []).map(p => ({ ...p, categoryNo: String(p.categoryNo) }));
 
-                                    // 1) 해시에 상태가 있으면 그걸로 복원
-                                    if (self.applyFromHash()) return;
+                                    // 1) 해시가 있으면 해시로 복원 (쿼리 무시)
+                                    if (this.applyFromHash()) return;
 
-                                    // 2) 해시 없으면 서버가 준 initialCategoryNo로 세팅 (없으면 대분류)
-                                    self.applyInitialCategory();
-                                    self.writeHash(); // 현재 상태를 해시에 기록
+                                    // 2) 해시 없으면 쿼리(initialCategoryNo)로 시작
+                                    this.applyInitialCategory();
+                                    this.writeHash(); // 현재 상태를 URL에 기록 (해시만)
                                 }
                             });
                         },
 
-                        // ---- 해시 <-> 상태 동기화 ----
-                        writeHash: function() {
+                        writeHash() {
                             const q = new URLSearchParams();
                             if (this.selectedParent) q.set('p', this.selectedParent);
                             if (this.selectedChild) q.set('c', this.selectedChild);
                             if (this.selectedSub) q.set('s', this.selectedSub);
-                            q.set('v', this.viewLevel); // parent | child | sub | product
+                            q.set('v', this.viewLevel);
                             const newHash = '#' + q.toString();
                             if (location.hash !== newHash) {
-                                history.replaceState(null, '', location.pathname + location.search + newHash);
+                                history.replaceState(null, '', location.pathname + newHash);
                             }
                         },
+
                         applyFromHash() {
                             const raw = (location.hash || '').replace(/^#/, '');
                             if (!raw) return false;
@@ -349,138 +357,112 @@
                             const s = qs.get('s') || '';
                             const v = qs.get('v') || 'parent';
 
-                            // 값이 실제 목록에 존재하는지 간단 검증
-                            const has = (no) => this.categoryList.some(x => String(x.categoryNo) === String(no));
+                            const has = (no) => this.categoryList.some(x => x.categoryNo === String(no));
                             const okP = p && has(p);
                             const okC = c && has(c);
                             const okS = s && has(s);
 
-                            // 불일치 최소화: 순서대로 가능한 것만 반영
-                            this.selectedParent = okP ? p : '';
-                            this.selectedChild = okP && okC ? c : '';
-                            this.selectedSub = okP && okC && okS ? s : '';
+                            this.selectedParent = okP ? String(p) : '';
+                            this.selectedChild = okP && okC ? String(c) : '';
+                            this.selectedSub = okP && okC && okS ? String(s) : '';
 
-                            // viewLevel은 가능한 최대로 보정
-                            if (okP && okC && okS && (v === 'product' || v === 'sub')) {
-                                this.viewLevel = 'product';
-                            } else if (okP && okC && v !== 'parent') {
-                                this.viewLevel = 'sub';
-                            } else if (okP) {
-                                this.viewLevel = 'child';
-                            } else {
-                                this.viewLevel = 'parent';
-                            }
+                            if (okP && okC && okS && (v === 'product' || v === 'sub')) this.viewLevel = 'product';
+                            else if (okP && okC && v !== 'parent') this.viewLevel = 'sub';
+                            else if (okP) this.viewLevel = 'child';
+                            else this.viewLevel = 'parent';
+
                             return true;
                         },
 
-                        // ---- 트리 조작 ----
                         getChildCategories(parentNo) {
-                            return this.categoryList.filter(c => c.parentCategoryNo === parentNo);
+                            const pid = String(parentNo || '');
+                            return this.categoryList.filter(c => c.parentCategoryNo === pid);
                         },
                         getCategoryName(no) {
-                            const cat = this.categoryList.find(c => c.categoryNo === no);
+                            const cat = this.categoryList.find(c => c.categoryNo === String(no));
                             return cat ? cat.categoryName : '';
                         },
 
                         toggleParent(no) {
-                            if (this.selectedParent === no) {
-                                this.selectedParent = '';
-                                this.selectedChild = '';
-                                this.selectedSub = '';
-                                this.viewLevel = 'parent';
+                            const id = String(no);
+                            if (this.selectedParent === id) {
+                                this.selectedParent = ''; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'parent';
                             } else {
-                                this.selectedParent = no;
-                                this.selectedChild = '';
-                                this.selectedSub = '';
-                                this.viewLevel = 'child';
+                                this.selectedParent = id; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child';
                             }
                             this.writeHash();
                         },
                         toggleChild(no) {
-                            if (this.selectedChild === no) {
-                                this.selectedChild = '';
-                                this.selectedSub = '';
-                                this.viewLevel = 'child';
+                            const id = String(no);
+                            if (this.selectedChild === id) {
+                                this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child';
                             } else {
-                                this.selectedChild = no;
-                                this.selectedSub = '';
-                                this.viewLevel = 'sub';
+                                this.selectedChild = id; this.selectedSub = ''; this.viewLevel = 'sub';
                             }
                             this.writeHash();
                         },
                         selectSub(no) {
-                            this.selectedSub = no;
+                            this.selectedSub = String(no);
                             this.viewLevel = 'product';
                             this.writeHash();
                         },
                         goToLevel(index) {
-                            if (index === 0) {
-                                this.selectedChild = '';
-                                this.selectedSub = '';
-                                this.viewLevel = 'child';
-                            } else if (index === 1) {
-                                this.selectedSub = '';
-                                this.viewLevel = 'sub';
-                            }
+                            if (index === 0) { this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child'; }
+                            else if (index === 1) { this.selectedSub = ''; this.viewLevel = 'sub'; }
                             this.writeHash();
                         },
 
-                        // ---- 상세 진입 ----
                         fnView(productNo) {
                             pageChange("/productInfo.do", { productNo });
                         },
 
-                        // ---- 초기 진입 ----
                         applyInitialCategory() {
-                            const no = Number(this.initialCategoryNo);
-                            if (!no) { // 대분류부터
-                                this.selectedParent = '';
-                                this.selectedChild = '';
-                                this.selectedSub = '';
-                                this.viewLevel = 'parent';
-                                return;
-                            }
-                            const target = this.categoryList.find(c => Number(c.categoryNo) === no);
-                            if (!target) {
-                                this.selectedParent = '';
-                                this.viewLevel = 'parent';
-                                return;
-                            }
-                            if (!target.parentCategoryNo) {
+                            const no = this.initialCategoryNo ? String(this.initialCategoryNo) : '';
+                            if (!no) { this.selectedParent = ''; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'parent'; return; }
+
+                            const target = this.categoryList.find(c => c.categoryNo === no);
+                            if (!target) { this.selectedParent = ''; this.viewLevel = 'parent'; return; }
+
+                            if (target.parentCategoryNo === '') {
                                 // 대분류
-                                this.selectedParent = String(no);
+                                this.selectedParent = target.categoryNo;
                                 this.viewLevel = 'child';
                             } else {
                                 const parent = this.categoryList.find(c => c.categoryNo === target.parentCategoryNo);
-                                if (parent && !parent.parentCategoryNo) {
+                                if (parent && parent.parentCategoryNo === '') {
                                     // 중분류
-                                    this.selectedParent = String(parent.categoryNo);
-                                    this.selectedChild = String(no);
+                                    this.selectedParent = parent.categoryNo;
+                                    this.selectedChild = target.categoryNo;
                                     this.viewLevel = 'sub';
-                                } else if (parent && parent.parentCategoryNo) {
+                                } else if (parent && parent.parentCategoryNo !== '') {
                                     // 소분류
                                     const top = this.categoryList.find(c => c.categoryNo === parent.parentCategoryNo);
-                                    this.selectedParent = top ? String(top.categoryNo) : '';
-                                    this.selectedChild = String(parent.categoryNo);
-                                    this.selectedSub = String(no);
+                                    this.selectedParent = top ? top.categoryNo : '';
+                                    this.selectedChild = parent.categoryNo;
+                                    this.selectedSub = target.categoryNo;
                                     this.viewLevel = 'product';
                                 }
                             }
                         },
 
-                        goToProductRegister() { window.location.href = '/product/add.do'; }
+                        readCategoryNoFromURL() {
+                            // 해시 우선 사용하므로 여기서는 보조 수단
+                            const qs = new URLSearchParams(location.search);
+                            const v = qs.get('categoryNo');
+                            if (v) return String(v);
+                            const segs = location.pathname.split('/').filter(Boolean);
+                            const last = segs[segs.length - 1];
+                            if (last && /^\d+$/.test(last)) return String(last);
+                            return '';
+                        }
                     },
 
                     mounted() {
-                        let self = this;
-                        // 해시 변경으로 뒤/앞 이동 시 상태 자동 반영
-                        window.addEventListener('hashchange', () => {
-                            if (self.applyFromHash() === true) {
-                                // 해시에서 복원되면 화면만 갱신하면 됨
-                            }
-                        });
-                        // 데이터 로드 후 해시/초기값 적용
-                        self.fnList();
+                        if (!this.initialCategoryNo) {
+                            this.initialCategoryNo = this.readCategoryNoFromURL();
+                        }
+                        window.addEventListener('hashchange', () => this.applyFromHash());
+                        this.fnList();
                     }
                 });
                 app.mount("#app");
