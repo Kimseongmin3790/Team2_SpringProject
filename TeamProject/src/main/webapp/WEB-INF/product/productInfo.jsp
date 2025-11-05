@@ -30,6 +30,7 @@
                     padding: 0;
                     box-sizing: border-box;
                 }
+
                 html,
                 body {
                     height: 100%;
@@ -582,7 +583,8 @@
                 .thumb.active {
                     outline: 2px solid #000;
                 }
-             /* ======= 리뷰 ======= */
+
+                /* ======= 리뷰 ======= */
                 .content {
                     flex: 1;
                 }
@@ -864,12 +866,13 @@
                 .action-btn svg {
                     width: 16px;
                     height: 16px;
-                    fill: none;      
-                    stroke: #6b7280; 
+                    fill: none;
+                    stroke: #6b7280;
                     stroke-width: 2;
                 }
+
                 .action-btn.active svg {
-                    fill: var(--green-700);  
+                    fill: var(--green-700);
                     stroke: var(--green-700);
                 }
 
@@ -936,14 +939,14 @@
                 }
 
                 /* Responsive */
-                
+
                 @media (max-width: 768px) {
-                    .summary-content { 
+                    .summary-content {
                         flex-direction: column;
                     }
 
                     .rating-overview {
-                    border-right: none;
+                        border-right: none;
                         border-bottom: 1px solid #e5e7eb;
                         padding-right: 0;
                         padding-bottom: 1rem;
@@ -966,13 +969,13 @@
                             <!-- 왼쪽: 이미지 -->
                             <div class="prod-media" id="img">
                                 <div class="main-box">
-                                    <img :src="mainImageUrl" :alt="info.pName" @error="onImgError($event)">
+                                    <img :src="mainImageUrl" :alt="info.pname" @error="onImgError($event)">
                                 </div>
 
                                 <div class="thumbs" id="small-img">
                                     <button v-for="u in thumbImages" :key="u" class="thumb"
                                         :class="{ active: u === mainImageUrl }" @click="mainImageUrl = u">
-                                        <img :src="u" :alt="info.pName">
+                                        <img :src="u" :alt="info.pname">
                                     </button>
                                 </div>
                             </div>
@@ -980,7 +983,7 @@
                             <!-- 오른쪽: 정보 -->
                             <div class="prod-info" id="container">
                                 <div id="store">윤자네 수산</div>
-                                <div id="title">{{ info.pName }}</div>
+                                <div id="title">{{ info.pname }}</div>
 
                                 <div class="badge-row">
                                     <img src="<c:url value='/resources/img/sale.png'/>" style="width:62px;">
@@ -1086,7 +1089,7 @@
                                     <div class="selection-summary" v-if="selected" style="margin-top:12px">
                                         <div style="padding:8px 0;border-top:1px solid #eee">
                                             <div>
-                                                {{ info.pName }}
+                                                {{ info.pname }}
                                                 <button @click="removeProduct" style="margin-left:270px">삭제</button>
                                             </div>
                                             <hr
@@ -1141,7 +1144,7 @@
 
                         <div v-show="showDetail">
                             <div v-for="img in detailOnly" :key="img" class="detail-img-wrap">
-                                <img :src="img" :alt="info.pName || '상세 이미지'" class="detail-img cover" loading="lazy">
+                                <img :src="img" :alt="info.pname || '상세 이미지'" class="detail-img cover" loading="lazy">
                             </div>
 
                             <div>
@@ -1202,29 +1205,70 @@
                             <%@ include file="/WEB-INF/board/review.jsp" %>
                         </section>
 
-                        <section id="qa">
-                            <div>
-                                Q&amp;A
-                                <div>
-                                    <button>상품문의</button>
-                                    <button>실시간 문의</button>
+                        <section id="qa" style="margin-top:60px;">
+                            <div class="qa-container" style="max-width:900px; margin:0 auto; padding:40px 0;">
+                                <h2 style="font-size:24px; font-weight:700; margin-bottom:10px;">상품 문의</h2>
+                                <p style="color:#666; font-size:14px; line-height:1.6; margin-bottom:20px;">
+                                    상품에 대한 문의를 남기는 공간입니다. 배송·교환·환불 관련 문의는 1:1 문의를 이용해주세요.
+                                </p>
+
+                                <div style="text-align:right; margin-bottom:20px;">
+                                    <button @click="fnWriteQuestion"
+                                        style="padding:10px 20px; border:none; background:#5b21b6; color:#fff; border-radius:6px; cursor:pointer;">
+                                        문의하기
+                                    </button>
                                 </div>
-                                <div>
-                                    <table>
-                                        <tr>
-                                            <th>상태</th>
-                                            <th>제목</th>
-                                            <th>작성자</th>
-                                            <th>등록일</th>
+
+                                <table style="width:100%; border-collapse:collapse; font-size:14px;">
+                                    <thead style="border-bottom:2px solid #eee;">
+                                        <tr style="text-align:left; background:#fafafa;">
+                                            <th style="padding:12px;">제목</th>
+                                            <th style="padding:12px;">작성자</th>
+                                            <th style="padding:12px;">작성일</th>
+                                            <th style="padding:12px;">답변상태</th>
                                         </tr>
-                                        <tr>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
+                                    </thead>
+
+                                    <tbody>
+                                        <template v-for="(q, index) in qaList" :key="q.qnaNo">
+                                            <!-- 문의 본문 -->
+                                            <tr style="border-bottom:1px solid #f0f0f0;">
+                                                <td style="padding:12px; cursor:pointer;" @click="toggleAnswer(q)">
+                                                    <span v-if="!canViewQuestion(q)">🔒 비밀글입니다.</span>
+                                                    <span v-else> {{ q.title }} </span>
+                                                </td>
+                                                <td style="padding:12px;">{{ q.userId }}</td>
+                                                <td style="padding:12px;">{{ q.regDate }}</td>
+                                                <td style="padding:12px; color:#9333ea; font-weight:500;">
+                                                    {{ q.status }}
+                                                </td>
+                                            </tr>
+
+                                            <!-- 답변 표시 영역 -->
+                                            <tr v-if="q.showAnswer && canViewQuestion(q)">
+                                                <td colspan="4" style="background:#fafafa; padding:16px 24px;">
+                                                    <b style="color:#5b21b6;">문의 내용</b><br>
+                                                    <div style="margin-top:8px; white-space:pre-wrap;">{{ q.title }}
+                                                    </div>
+
+                                                    <div v-if="q.answer" style="margin-top:12px;">
+                                                        <b style="color:#5b21b6;">판매자 답변</b><br>
+                                                        <div style="margin-top:8px; white-space:pre-wrap;">{{
+                                                            q.answer }}</div>
+                                                    </div>
+                                                    <div v-else style="margin-top:8px; color:#888;">아직 답변이 등록되지 않았습니다.
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+
+                                        <tr v-if="qaList.length === 0">
+                                            <td colspan="4" style="text-align:center; padding:20px; color:#888;">
+                                                등록된 문의가 없습니다.
+                                            </td>
                                         </tr>
-                                    </table>
-                                </div>
+                                    </tbody>
+                                </table>
                             </div>
                         </section>
                     </main>
@@ -1277,13 +1321,15 @@
                             1: 0
                         },
                         reviews: [],
-                        currentFilter: 'all', 
+                        currentFilter: 'all',
                         modalImage: null,
 
                         currentPage: 1,
-                        pageSize: 5, 
-                        totalReviewCount: 0
+                        pageSize: 5,
+                        totalReviewCount: 0,
                         //============================
+
+                        qaList: []
                     }
                 },
                 computed: {
@@ -1314,7 +1360,7 @@
                         });
                     },
                     //====== 리뷰 ======
-                     filteredReviews() {
+                    filteredReviews() {
                         let self = this;
                         let reviewsToShow = [...self.reviews];
 
@@ -1548,7 +1594,7 @@
                             data: param,
                             success: function (data) {
                                 if (data.result == 'success') {
-                                    pageChange('/buyerMyPage.do', {productNo}); // 장바구니로 이동
+                                    pageChange('/buyerMyPage.do', { productNo }); // 장바구니로 이동
                                 } else {
                                     alert('장바구니 담기 실패');
                                 }
@@ -1582,16 +1628,16 @@
                     getRatingCount(rating) {
                         return this.ratingDistribution[rating];
                     },
-                     toggleRecommend(review) {
+                    toggleRecommend(review) {
                         let self = this;
                         if (review.isRecommended) {
                             review.recommend--;
                             review.isRecommended = false;
-                            self.sendRecommendRequest(review.reviewNo, 'decrement');       
+                            self.sendRecommendRequest(review.reviewNo, 'decrement');
                         } else {
                             review.recommend++;
                             review.isRecommended = true;
-                            self.sendRecommendRequest(review.reviewNo, 'increment');      
+                            self.sendRecommendRequest(review.reviewNo, 'increment');
                         }
                     },
                     openImageModal(image) {
@@ -1609,7 +1655,7 @@
                             return;
                         }
 
-                        self.currentPage++; 
+                        self.currentPage++;
 
                         $.ajax({
                             url: "${pageContext.request.contextPath}/product/reviews.dox",
@@ -1626,18 +1672,18 @@
                                         review.isRecommended = review.isRecommendedByMe;
                                         return review;
                                     });
-                               
+
                                     self.reviews.push(...reviewsWithState);
                                     self.totalReviewCount = response.totalCount || 0;
                                 } else {
                                     alert("리뷰 데이터를 불러오는 데 실패했습니다.");
-                                    self.currentPage--; 
+                                    self.currentPage--;
                                 }
                             },
-                            error: function(xhr, status, error) {
+                            error: function (xhr, status, error) {
                                 console.error("리뷰 목록 조회 중 오류 발생:", status, error, xhr.responseText);
                                 alert("리뷰 목록 조회 중 오류가 발생했습니다.");
-                                self.currentPage--; 
+                                self.currentPage--;
                             }
                         });
                     },
@@ -1661,10 +1707,10 @@
 
                         return final;
                     },
-   
+
                     fnLoadReviews() {
                         let self = this;
-        
+
                         const productNo = self.productNo;
                         if (!productNo) {
                             console.warn("리뷰 로드: productNo가 아직 없습니다.");
@@ -1677,7 +1723,7 @@
                             url: "${pageContext.request.contextPath}/product/reviews.dox",
                             dataType: "json",
                             type: "GET",
-                            data: { 
+                            data: {
                                 productNo: productNo,
                                 page: self.currentPage,
                                 pageSize: self.pageSize
@@ -1685,17 +1731,17 @@
                             success: function (response) {
                                 if (response && response.result === "success") {
                                     const reviewsWithState = response.reviews.map(review => {
-                                        review.isRecommended = review.isRecommendedByMe; 
+                                        review.isRecommended = review.isRecommendedByMe;
                                         return review;
                                     });
 
                                     self.reviews = reviewsWithState || [];
-                                    self.totalReviewCount = response.totalCount || 0; 
+                                    self.totalReviewCount = response.totalCount || 0;
                                 } else {
                                     alert("리뷰 데이터를 불러오는 데 실패했습니다.");
                                 }
                             },
-                            error: function(xhr, status, error) {
+                            error: function (xhr, status, error) {
                                 console.error("리뷰 목록 조회 중 오류 발생:", status, error, xhr.responseText);
                                 alert("리뷰 목록 조회 중 오류가 발생했습니다.");
                             }
@@ -1712,7 +1758,7 @@
                             type: "POST",
                             dataType: "json",
                             data: param,
-                            success: function(data) {
+                            success: function (data) {
                                 if (data.result === "success") {
                                     console.log("추천 상태 변경 성공:", data.message);
                                 } else {
@@ -1721,7 +1767,7 @@
                                         if (action === "increment") {
                                             targetReview.recommend--;
                                             targetReview.isRecommended = false;
-                                        } else { 
+                                        } else {
                                             targetReview.recommend++;
                                             targetReview.isRecommended = true;
                                         }
@@ -1729,7 +1775,7 @@
                                     alert("추천 처리 실패: " + data.message);
                                 }
                             },
-                            error: function(xhr, status, error) {
+                            error: function (xhr, status, error) {
                                 console.error("추천 처리 AJAX 오류:", status, error, xhr.responseText);
                                 alert("서버 통신 오류가 발생했습니다.");
                                 const targetReview = self.reviews.find(r => r.reviewNo === reviewNo);
@@ -1737,7 +1783,7 @@
                                     if (action === "increment") {
                                         targetReview.recommend--;
                                         targetReview.isRecommended = false;
-                                    } else { 
+                                    } else {
                                         targetReview.recommend++;
                                         targetReview.isRecommended = true;
                                     }
@@ -1745,10 +1791,56 @@
                             }
                         });
                     },
+
+                    fnLoadQA() {
+                        let self = this;
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/product/questions.dox",
+                            type: "GET",
+                            dataType: "json",
+                            data: {
+                                productNo: self.productNo
+                            },
+                            success: function (data) {
+                                if (data.result === "success") {
+                                    self.qaList = data.list.map(q => ({ ...q, showAnswer: false }));
+                                } else {
+                                    alert("상품문의 데이터를 불러오는데 실패했습니다");
+                                }
+                            }
+                        });
+                    },
+                    toggleAnswer(q) {
+                        if (q.isSecret === 'Y' && !this.canViewQuestion(q)) {
+                            alert("비밀글은 작성자 또는 판매자만 확인할 수 있습니다.");
+                            return;
+                        }
+                        q.showAnswer = !q.showAnswer;
+                    },
+                    fnWriteQuestion() {
+                        if (!this.userId) {
+                            alert("로그인 후 이용 가능합니다.");
+                            pageChange('/login.do');
+                            return;
+                        }
+                        pageChange('/productQna/write.do', { productNo: this.productNo, productName: this.info.pname });
+                    },
+                    canViewQuestion(q) {
+                        // 1. 비밀글 아닌 경우 → 누구나 열람 가능
+                        if (q.isSecret !== 'Y') return true;
+
+                        // 2. 작성자 본인 또는 판매자인 경우만 허용
+                        if (this.userId === q.userId) return true;
+                        if (this.userId === q.sellerId) return true;
+
+                        // 3. 그 외 사용자 → 비밀글 차단
+                        return false;
+                    },
                 },
                 mounted() {
                     this.fnInfo();
                     this.fnLoadReviews(); // 리뷰 
+                    this.fnLoadQA(); // 상품문의
                     this.shareTitle = (document.getElementById('title')?.textContent || document.title).trim();
 
                     this._docHandler = () => { this.ddOpen1 = false; this.ddOpen2 = false; this.shareOpen = false; };
@@ -1762,7 +1854,7 @@
                         history.replaceState(null, '', location.pathname + location.search);
                     }
                     window.addEventListener('pageshow', (e) => { if (e.persisted) window.location.reload(); });
-                    
+
                 },
                 beforeUnmount() { document.removeEventListener('click', this._docHandler); }
             });

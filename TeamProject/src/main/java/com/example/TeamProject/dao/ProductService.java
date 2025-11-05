@@ -10,6 +10,7 @@ import com.example.TeamProject.mapper.AdminMapper;
 import com.example.TeamProject.mapper.ProductMapper;
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.ProductCategory;
+import com.example.TeamProject.model.ProductQuestions;
 
 @Service
 public class ProductService {
@@ -107,6 +108,19 @@ public class ProductService {
             List<ProductCategory> categories = productMapper.selectCategoryList(map);
             resultMap.put("list", products);
             resultMap.put("categories", categories);
+            resultMap.put("result", "success");
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+            System.out.println(e.getMessage());
+        }
+        return resultMap;
+    }
+	
+	public HashMap<String, Object> getProductQuestions(HashMap<String, Object> map) {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+        try {
+            List<ProductQuestions> list = productMapper.selectProductQuestions(map);
+            resultMap.put("list", list);
             resultMap.put("result", "success");
         } catch (Exception e) {
             resultMap.put("result", "fail");
