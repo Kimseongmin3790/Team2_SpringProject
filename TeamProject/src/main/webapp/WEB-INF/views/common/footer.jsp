@@ -82,7 +82,24 @@
             </div>
         </div>
     </div>
+
+    <!-- ✅ 챗봇 박스 -->
+    <div id="chatbot-box" class="hidden">
+        <div id="chatbot-header">🌿 AGRICOLA 도우미</div>
+        <div id="chatbot-messages"></div>
+        <div id="chatbot-input">
+        <input type="text" id="chat-input" placeholder="무엇을 도와드릴까요?" />
+        <button id="chat-send">전송</button>
+        </div>
+    </div>
+
+    <!-- ✅ 말풍선 버튼 -->
+    <button id="chatbot-toggle">
+        💬
+    </button>
+
 </footer>
+
 
 <script>
     const CONTEXT_PATH = '${pageContext.request.contextPath}';

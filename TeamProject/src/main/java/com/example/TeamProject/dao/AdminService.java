@@ -170,4 +170,19 @@ public class AdminService {
 		return resultMap;
 	}
 	
+	public HashMap<String, Object> updateRecommend(int productNo, String recommend) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();			
+
+		try {
+			adminMapper.updateRecommend(productNo, recommend);			
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.TeamProject.dao.BoardService;
 import com.google.gson.Gson;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -49,6 +50,13 @@ public class BoardController {
     public String productQnaDetail(Model model) throws Exception{
 
         return "board/productQnaInfo"; 
+    }
+	
+	@RequestMapping("/productQna/write.do") 
+    public String productQnaWrite(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map) throws Exception{
+		request.setAttribute("productNo", map.get("productNo"));
+		request.setAttribute("productName", map.get("productName"));
+        return "board/productQnaWrite"; 
     }
 	
 	
@@ -177,6 +185,15 @@ public class BoardController {
 	public String productQnaAnswerInfo(Model model, @RequestParam int qnaNo) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = boardService.getQnaAnswer(qnaNo);
+		
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/productQnaInsert.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String productQnaInsert(@RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = boardService.productQnaInsert(map);
 		
 		return new Gson().toJson(resultMap);
 	}

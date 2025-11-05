@@ -145,6 +145,46 @@
                     padding: 20px;
                     color: #777;
                 }
+
+                .btn-back {
+                    background: none;
+                    border: 1px solid #ccc;
+                    color: #333;
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: 0.2s;
+                }
+
+                .btn-back:hover {
+                    background: #e8f5e9;
+                    border-color: #4caf50;
+                    color: #1a5d1a;
+                }
+
+                .btn-recommend {
+                    background: #5dbb63;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 5px 10px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    transition: 0.3s;
+                }
+
+                .btn-recommend:hover {
+                    background: #4ba954;
+                }
+
+                .btn-recommend.active {
+                    background: #c94c4c;
+                }
+
+                .btn-recommend.active:hover {
+                    background: #a83e3e;
+                }
             </style>
         </head>
 
@@ -152,7 +192,10 @@
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
                 <div id="app">
                     <div class="admin-container">
-                        <h2 class="admin-title">상품관리</h2>
+                        <div class="admin-header">
+                            <button class="btn-back" @click="fnGoBack">이전</button>
+                            <h2 class="admin-title">상품관리</h2>
+                        </div>
 
                         <!-- 검색 & 필터 -->
                         <div class="product-filter">
@@ -197,8 +240,8 @@
                                         <th>가격</th>
                                         <th>재고</th>
                                         <th>등록일</th>
+                                        <th>상품추천여부</th>
                                         <th>상태</th>
-                                        <th>관리</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -211,16 +254,12 @@
                                         <td>{{ item.stock }}</td>
                                         <td>{{ item.cdate }}</td>
                                         <td>
-                                            <span v-if="item.active === 'Y'"
-                                                style="color:#4caf50;font-weight:600;">활성</span>
-                                            <span v-else style="color:#c94c4c;font-weight:600;">비활성</span>
+                                            <button class="btn-recommend" :class="{ active: item.recommend === 'Y' }"
+                                                @click="fnToggleRecommend(item)">
+                                                {{ item.recommend === 'Y' ? '추천안하기' : '추천하기' }}
+                                            </button>
                                         </td>
-                                        <td>
-                                            <button v-if="item.active === 'Y'" class="btn-action off"
-                                                @click="fnUpdateStatus(item.productNo, 'N')">비활성화</button>
-                                            <button v-else class="btn-action"
-                                                @click="fnUpdateStatus(item.productNo, 'Y')">활성화</button>
-                                        </td>
+                                        <td>{{ item.productStatus }}</td>
                                     </tr>
                                     <tr v-if="filteredList.length === 0">
                                         <td colspan="8" class="no-data">등록된 상품이 없습니다.</td>
@@ -314,6 +353,16 @@
                                 },
                             },
                             methods: {
+                                fnGoBack() {
+                                    if (document.referrer && document.referrer !== location.href) {
+                                        // ✅ 이전 페이지로 이동
+                                        history.back();
+                                    } else {
+                                        // ✅ 이전 페이지 정보가 없으면 관리자 메인으로
+                                        location.href = this.path + "/admin/dashboard.do";
+                                    }
+                                },
+
                                 fnProductList() {
                                     const self = this;
                                     $.ajax({
@@ -330,9 +379,35 @@
                                         },
                                     });
                                 },
+
                                 fnSearch() {
                                     // computed 자동 반영
                                 },
+
+                                fnToggleRecommend(item) {
+                                    const self = this;
+                                    const newStatus = item.recommend === "Y" ? "N" : "Y";
+
+                                    $.ajax({
+                                        url: "/updateRecommend.dox",
+                                        type: "POST",
+                                        data: { 
+                                            productNo: item.productNo, 
+                                            recommend: newStatus 
+                                        },
+                                        dataType: "json",
+                                        success(res) {
+                                            if (res.result === "success") {
+                                                item.recommend = newStatus; // ✅ 즉시 화면 반영
+                                            } else {
+                                                alert("변경 실패");
+                                            }
+                                        },
+                                        error() {
+                                            alert("서버 오류로 변경할 수 없습니다.");
+                                        },
+                                    });
+                                }
                             },
                             mounted() {
                                 this.fnProductList();

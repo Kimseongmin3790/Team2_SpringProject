@@ -102,6 +102,14 @@ public class ProductController {
 		resultMap = productService.getNewList(map);
 		return new Gson().toJson(resultMap);
 	}
+	
+	@RequestMapping(value = "/product/questions.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String questions(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = productService.getProductQuestions(map);
+		return new Gson().toJson(resultMap);
+	}
 
 	@PostMapping(value = "/productUpload.dox", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody

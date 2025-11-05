@@ -55,12 +55,24 @@
                     </c:if>
 
                     <div class="icon-group">
-                        <a href="javascript:;" id="btnMyPage" title="마이페이지" data-status="${sessionScope.sessionStatus}">
-                            <i class="fa-solid fa-user"></i>
-                        </a>
-                        <a href="javascript:;" id="btnFavorite" title="찜한상품">
-                            <i class="fa-solid fa-heart"></i>
-                        </a>
+                       <c:if test="${not empty sessionId}">
+                            <!-- 일반 사용자 or 승인된 판매자만 마이페이지 표시 -->
+                            <c:choose>
+                                <c:when test="${sessionScope.sessionStatus eq 'SELLER'}">
+                                    <c:if test="${sessionScope.sellerVerifiedStatus eq 'Y'}">
+                                        <a href="javascript:;" id="btnMyPage" title="마이페이지" data-status="${sessionScope.sessionStatus}">
+                                            <i class="fa-solid fa-user"></i>
+                                        </a>
+                                    </c:if>
+                                </c:when>
+                                <c:otherwise>
+                                    <!-- 일반 사용자 -->
+                                    <a href="javascript:;" id="btnMyPage" title="마이페이지" data-status="${sessionScope.sessionStatus}">
+                                        <i class="fa-solid fa-user"></i>
+                                    </a>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:if>
                         <a href="javascript:;" id="btnCart" title="장바구니" data-status="${sessionScope.sessionStatus}">
                             <i class="fa-solid fa-cart-shopping"></i>
                         </a>
@@ -84,7 +96,6 @@
                     <a href="${path}/productCategory.do">상품목록</a>
                     <a href="${path}/product/recommendList.do">베스트</a>
                     <a href="${path}/board.do">고객센터</a>
-                    <a href="${path}/event">상품후기</a>
                 </nav>
             </div>
 

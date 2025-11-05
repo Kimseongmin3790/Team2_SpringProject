@@ -486,6 +486,7 @@
             return {
                 //선택 부분
                 sessionId: "${sessionId}",
+                userRole: "${sessionScope.sessionStatus}",
                 step: 1, // 1: 유형 선택, 2: 정보 입력
                 selectedType: null, // 'seller' 또는 'partner'
 
@@ -522,10 +523,16 @@
         methods: {
             handleTypeSelect(type) {
                 let self = this;
-                if (type === 'seller' && self.sessionId === "") {
-                    alert("판매자 입점 신청은 로그인이 필요합니다.");
-                    location.href = "/login.do"; 
-                    return; 
+                if (type === 'seller') {
+                    if (self.sessionId === "") {
+                        alert("판매자 입점 신청은 로그인이 필요합니다.");
+                        location.href = "/login.do";
+                        return;
+                    }
+                    if (self.userRole === 'SELLER') {
+                        alert("이미 판매자 회원입니다.");
+                        return;
+                    }
                 }
                 self.selectedType = type;
                 self.step = 2;
