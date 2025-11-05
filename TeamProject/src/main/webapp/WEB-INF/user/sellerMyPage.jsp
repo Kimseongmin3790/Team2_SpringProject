@@ -464,6 +464,21 @@
                 padding: 0.5rem;
             }
         }
+        /* 비활성화된 필드 스타일 */
+        .non-editable-field {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background-color: #e9ecef; /* 연한 회색 배경 */
+            color: #6c757d; /* 회색 텍스트 */
+        }
+
+        /* 비활성화된 필드 설명 텍스트 스타일 */
+        .non-editable-text {
+            font-size: 0.875rem; /* 작은 글씨 */
+            color: #6b7280; /* 회색 텍스트 */
+            margin-top: 0.25rem; /* 위쪽 여백 */
+        }
     </style>
 </head>
 
@@ -677,7 +692,12 @@
                     <form @submit.prevent="updateProfile">
                         <div class="form-group">
                             <label class="form-label">이메일</label>
-                            <input type="email" class="form-input" v-model="profile.email" readonly>
+                            <div class="info-value non-editable-field">
+                                {{ profile.email }}
+                            </div>
+                            <p class="non-editable-text">
+                                이메일은 변경할 수 없습니다.
+                            </p>
                         </div>
                         <div class="form-group">
                             <label class="form-label">연락처</label>
@@ -685,7 +705,12 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">사업자등록번호</label>
-                            <input type="text" class="form-input" v-model="profile.businessNumber" readonly>
+                            <div class="info-value non-editable-field">
+                                {{ profile.businessNumber }}
+                            </div>
+                            <p class="non-editable-text">
+                                사업자등록번호 변경은 관리자에게 문의해주세요.
+                            </p>
                         </div>
                         <div class="form-group">
                             <label class="form-label">계좌번호</label>
@@ -821,12 +846,12 @@
                     let self = this;
                     let param = {
                         businessName: self.farmInfo.name,
-                        ownerName: self.farmInfo.owner, 
-                        address: self.farmInfo.location
+                        "user.name": self.farmInfo.owner, 
+                        "user.address": self.farmInfo.location
                     };
 
                     $.ajax({
-                        url: "${pageContext.request.contextPath}/seller/farm/update", 
+                        url: "${pageContext.request.contextPath}/seller/farm/update.dox", 
                         dataType: "json",
                         type: "POST",
                         data: param,
@@ -870,17 +895,21 @@
                 if (confirm('회원정보를 수정하시겠습니까?')) {
                     let self = this;
                     let param = {
-                        phone: self.profile.phone,
-                        accountNumber: self.profile.accountNumber,
+                        "user.phone": self.profile.phone,  
+                        account: self.profile.accountNumber,
                         bankName: self.profile.bankName
                     };
                     $.ajax({
-                        url: "${pageContext.request.contextPath}/seller/profile/update",
+                        url: "${pageContext.request.contextPath}/seller/profile/update.dox", 
                         dataType: "json",
                         type: "POST",
                         data: param,
                         success: function(data) {
-                            alert('회원정보가 수정되었습니다.');
+                            if (data.result === 'success') {
+                                alert('회원정보가 수정되었습니다.');
+                            } else {
+                                alert('회원정보 수정 중 오류가 발생했습니다: ' + data.message);
+                            }
                         },
                         error: function() {
                             alert('회원정보 수정 중 오류가 발생했습니다.');
