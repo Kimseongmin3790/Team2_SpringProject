@@ -30,6 +30,7 @@
                     padding: 0;
                     box-sizing: border-box;
                 }
+
                 html,
                 body {
                     height: 100%;
@@ -607,7 +608,6 @@
 
                             <!-- 오른쪽: 정보 -->
                             <div class="prod-info" id="container">
-                                <div id="store">윤자네 수산</div>
                                 <div id="title">{{ info.pName }}</div>
 
                                 <div class="badge-row">
@@ -665,13 +665,11 @@
 
                                 <div v-if="fulfillment=='delivery'">
                                     <div><b>원산지</b> {{info.origin}}</div>
-                                    <div><b>구매혜택</b> 318 포인트 적립예정</div>
                                     <div><b>배송비</b> 3,000원 | 도서산간 배송비 추가</div>
                                     <div><b>배송 안내</b> 배송비 3,000원</div>
                                 </div>
                                 <div v-else>
                                     <div><b>원산지</b> {{info.origin}}</div>
-                                    <div><b>구매혜택</b> 318 포인트 적립예정</div>
                                 </div>
 
                                 <!-- 수령방법 -->
@@ -737,7 +735,8 @@
 
                                     <div style="margin: 24px 0 0;">
                                         <div class="actions">
-                                            <button @click="fnPurchase" class="btn btn-primary">구매하기</button>
+                                            <button @click="fnPurchase(info.productNo, qty)"
+                                                class="btn btn-primary">구매하기</button>
                                             <button @click="fnBasket(info.productNo, qty)"
                                                 class="btn btn-outline">장바구니</button>
                                             <button @click="fnChat" class="btn btn-ghost">실시간 문의</button>
@@ -867,7 +866,8 @@
             const app = Vue.createApp({
                 data() {
                     return {
-                        ddOpen1: false, ddOpen2: false,
+                        ddOpen1: false,
+                        ddOpen2: false,
                         fulfillment: 'delivery',
                         shareOpen: false,
                         shareUrl: window.location.href,
@@ -1107,7 +1107,15 @@
                     },
 
                     // 구매 선택
-                    pickProduct() { this.selected = true; if (this.qty < 1) this.qty = 1; this.ddOpen2 = false; this.recomputeTotal(); },
+                    pickProduct: function () {
+                        this.selected = true;
+                        if (this.qty < 1) {
+                            this.qty = 1;
+                        }
+                        this.ddOpen2 = false;
+                        this.recomputeTotal();
+                    },
+
                     removeProduct() { this.selected = false; this.qty = 0; this.recomputeTotal(); },
                     fnMinus() { if (!this.selected) return; if (this.qty > 1) { this.qty--; this.recomputeTotal(); } },
                     fnPlus() { if (!this.selected) return; this.qty++; this.recomputeTotal(); },
@@ -1118,10 +1126,27 @@
                     closeDetail() { this.showDetail = false; },
 
                     // CTA
-                    fnPurchase() { /* TODO */ },
+                    fnPurchase: function (productNo, qty, userId) {
+                        let self = this;
+                        if (!self.userId) {
+                            alert("로그인 후 이용바랍니다.");
+                            location.href = "http://localhost:8082/login.do";
+                            return;
+                        }
+                        if (!self.selected || (self.qty | 0) <= 0) {
+                            alert("옵션 선택 후 수량을 확인해 주세요.");
+                            return;
+                        }
+                        pageChange('/product/payment.do', { productNo, qty, userId:self.userId }); // 결제 페이지로 이동
+                    },
 
                     fnBasket: function (productNo, qty) {
                         let self = this;
+                        if (!self.userId) {
+                            alert("로그인 후 이용바랍니다.");
+                            location.href = "http://localhost:8082/login.do";
+                            return;
+                        }
                         if (!self.selected || (self.qty | 0) <= 0) {
                             alert("옵션 선택 후 수량을 확인해 주세요.");
                             return;
@@ -1138,7 +1163,7 @@
                             data: param,
                             success: function (data) {
                                 if (data.result == 'success') {
-                                    pageChange('/buyerMyPage.do', {productNo}); // 장바구니로 이동
+                                    pageChange('/buyerMyPage.do', { productNo }); // 장바구니로 이동
                                 } else {
                                     alert('장바구니 담기 실패');
                                 }
@@ -1163,7 +1188,7 @@
                         ];
                         this.commentCount = this.comments.length;
                     },
-                    
+
                 },
                 mounted() {
                     this.fnInfo();
@@ -1180,7 +1205,7 @@
                         history.replaceState(null, '', location.pathname + location.search);
                     }
                     window.addEventListener('pageshow', (e) => { if (e.persisted) window.location.reload(); });
-                    
+
                 },
                 beforeUnmount() { document.removeEventListener('click', this._docHandler); }
             });

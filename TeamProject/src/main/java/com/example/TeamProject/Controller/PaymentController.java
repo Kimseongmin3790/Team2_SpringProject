@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.TeamProject.dao.PaymentService;
 import com.google.gson.Gson;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Controller
 public class PaymentController {
 	
@@ -21,8 +23,31 @@ public class PaymentController {
 	PaymentService paymentService;
 	
 	@RequestMapping("/product/payment.do")
-	public String payment(Model model) {
+	public String payment(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
+			throws Exception {
+		System.out.println(map.get("productNo"));
+		request.setAttribute("productNo", map.get("productNo"));
+		System.out.println(map.get("userId"));
+		request.setAttribute("userId", map.get("userId"));
+		System.out.println(map.get("qty"));
+		request.setAttribute("qty", map.get("qty"));
 		return "product/payment";
+	}
+	
+	@RequestMapping(value = "/payment/list.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String cartList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = paymentService.getPaymentList(map);
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/payment/userInfo.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String userInfo(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = paymentService.getUserInfo(map);
+		return new Gson().toJson(resultMap);
 	}
 	
 	@RequestMapping(value = "/payment/verify.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")

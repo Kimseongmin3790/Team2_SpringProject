@@ -1,83 +1,91 @@
 .header {
-    background-color: #f5efd7;
-    padding: 10px 30px;
-    font-family: "Noto Sans KR", sans-serif;
-    width: 100%;
-    box-sizing: border-box;
+	background-color: #f5efd7;
+	padding: 10px 30px;
+	font-family: "Noto Sans KR", sans-serif;
+	width: 100%;
+	box-sizing: border-box;
 }
+
 body {
-    margin: 0;
-    padding: 0;
+	margin: 0;
+	padding: 0;
 }
 
 /* 상단 */
 .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 15px 60px;
-    box-sizing: border-box;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	padding: 15px 60px;
+	box-sizing: border-box;
 }
 
 /* ✅ PC에서는 모바일 버튼 안보이게 */
 .mobile-buttons {
-  display: none;
+	display: none;
 }
 
 /* 로고 */
 .logo {
-    display: flex;
-    align-items: center;
+	display: flex;
+	align-items: center;
 }
+
 .logo-img {
-    width: 146px;
-    height: auto;
+	width: 146px;
+	height: auto;
 }
+
 .logo-text {
-    font-size: 22px;
-    font-weight: 700;
-    color: #1a5d1a;
+	font-size: 22px;
+	font-weight: 700;
+	color: #1a5d1a;
 }
 
 /* 검색창 + 버튼 묶음 */
 .search-section {
-    display: flex;
-    align-items: center;
+	display: flex;
+	align-items: center;
 	justify-content: center;
-    gap: 8px; /* ✅ 검색창과 버튼 간격 */
+	gap: 8px;
+	/* ✅ 검색창과 버튼 간격 */
 	flex: 1;
 	max-width: 500px;
 }
+
 /* 검색창 */
 .search-bar {
-    display: flex;
-    align-items: center;
-    background: #4caf50;
-    border-radius: 25px;
-    padding: 6px 15px;
-    width: 100%;
+	display: flex;
+	align-items: center;
+	background: #4caf50;
+	border-radius: 25px;
+	padding: 6px 15px;
+	width: 100%;
 }
+
 .search-bar i {
-    color: white;
-    margin-right: 8px;
+	color: white;
+	margin-right: 8px;
 }
+
 .search-bar input {
-    flex: 1;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: white;
-    font-size: 14px;
-}
-.btn-search {
-    background: #5dbb63;
-    border: none;
-    color: white;
-    padding: 8px 18px;
-    border-radius: 25px;
+	flex: 1;
+	border: none;
+	outline: none;
+	background: transparent;
+	color: white;
 	font-size: 14px;
-    cursor: pointer;
+}
+
+.btn-search {
+	background: #5dbb63;
+	border: none;
+	color: white;
+	padding: 8px 18px;
+	border-radius: 25px;
+	font-size: 14px;
+	cursor: pointer;
 	transition: 0.3s;
 	height: 36px;
 	display: flex;
@@ -86,505 +94,560 @@ body {
 	white-space: nowrap;
 	line-height: 1;
 }
+
 .btn-search:hover {
-    background: #4ba954;
+	background: #4ba954;
 }
 
 /* 오른쪽 버튼 */
 .header-right {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
 }
-.btn-login, .btn-join, .btn-logout, .btn-admin {
-    background: #5dbb63;
-    border: none;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 5px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: 0.3s;
+
+.btn-login,
+.btn-join,
+.btn-logout,
+.btn-admin {
+	background: #5dbb63;
+	border: none;
+	color: white;
+	padding: 6px 12px;
+	border-radius: 5px;
+	font-size: 13px;
+	cursor: pointer;
+	transition: 0.3s;
 }
-.btn-login:hover, .btn-join:hover, .btn-logout:hover, .btn-admin:hover{
-    background: #4ba954;
+
+.btn-login:hover,
+.btn-join:hover,
+.btn-logout:hover,
+.btn-admin:hover {
+	background: #4ba954;
 }
+
 /* 로그인 / 로그아웃 / 회원가입 영역 */
 .login-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;  /* ✅ 버튼 사이 여백 추가 */
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	/* ✅ 버튼 사이 여백 추가 */
 }
+
 .admin-group {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
 }
+
 .btn-admin {
-  font-weight: 600;
-  margin-top: 3px; /* ✅ 위쪽 버튼들과 균형 맞춤 */
+	font-weight: 600;
+	margin-top: 3px;
+	/* ✅ 위쪽 버튼들과 균형 맞춤 */
 }
+
 .user-name {
-    color: #333;
-    font-weight: 500;
+	color: #333;
+	font-weight: 500;
 }
+
 .icon-group {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 20px;
 	padding: 10px;
 }
 
 .icon-group i {
-    font-size: 28px;           /* 아이콘 크기 */
-    color: #1a5d1a;            /* 기본 색상 */
-    transition: all 0.25s ease;
-    cursor: pointer;
+	font-size: 28px;
+	/* 아이콘 크기 */
+	color: #1a5d1a;
+	/* 기본 색상 */
+	transition: all 0.25s ease;
+	cursor: pointer;
 }
 
 .icon-group i:hover {
-    color: #5dbb63;            /* hover 색상 */
-    transform: scale(1.1);     /* 살짝 커지는 효과 */
+	color: #5dbb63;
+	/* hover 색상 */
+	transform: scale(1.1);
+	/* 살짝 커지는 효과 */
 }
 
 .btn-admin {
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 6px 12px;
-    margin-right: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s;
+	background-color: #4caf50;
+	color: white;
+	border: none;
+	border-radius: 6px;
+	padding: 6px 12px;
+	margin-right: 10px;
+	cursor: pointer;
+	transition: background-color 0.2s;
 }
 
 .btn-admin:hover {
-    background-color: #45a049;
+	background-color: #45a049;
 }
 
 /* 하단 메뉴 */
 .header-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: center;        
-    border-top: 1px solid #ddd;
-    padding: 10px 60px;
-    box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-top: 1px solid #ddd;
+	padding: 10px 60px;
+	box-sizing: border-box;
 	gap: 60px;
 }
+
 .btn-category {
-    background: #5dbb63;
-    border: none;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: 600;
+	background: #5dbb63;
+	border: none;
+	color: white;
+	padding: 5px 10px;
+	border-radius: 5px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	font-weight: 600;
 }
+
 .nav-menu {
-    display: flex;
-    gap: 60px; /* ✅ 메뉴 항목 간 간격 조정 (기본 60px로 넓게) */
+	display: flex;
+	gap: 60px;
+	/* ✅ 메뉴 항목 간 간격 조정 (기본 60px로 넓게) */
 	justify-content: center;
 	flex-grow: 1;
 }
+
 .nav-menu a {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-    font-size: 16px; 
-    position: relative;
-    padding-bottom: 3px;
-    transition: color 0.3s;
+	text-decoration: none;
+	color: #333;
+	font-weight: 500;
+	font-size: 16px;
+	position: relative;
+	padding-bottom: 3px;
+	transition: color 0.3s;
 }
+
 /* hover 시 밑줄 효과 */
 .nav-menu a::after {
-    content: "";
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: 0;
-    left: 0;
-    background-color: #1a5d1a;
-    transition: 0.3s;
+	content: "";
+	position: absolute;
+	width: 0;
+	height: 2px;
+	bottom: 0;
+	left: 0;
+	background-color: #1a5d1a;
+	transition: 0.3s;
 }
+
 .nav-menu a:hover::after {
-    width: 100%;
+	width: 100%;
 }
+
 .nav-menu a:hover {
-    color: #1a5d1a;
+	color: #1a5d1a;
 }
 
 /* ========== 3단 hover 드롭다운 ========== */
 .category-container {
-  position: relative;
-  margin-right: auto;
+	position: relative;
+	margin-right: auto;
 }
 
 /* 🌿 카테고리 버튼 */
 .btn-category {
-  background: linear-gradient(135deg, #5dbb63, #4caf50);
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.3s ease;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+	background: linear-gradient(135deg, #5dbb63, #4caf50);
+	color: white;
+	border: none;
+	padding: 8px 14px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	transition: all 0.3s ease;
+	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-category:hover {
-  background: linear-gradient(135deg, #4caf50, #1a5d1a);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+	background: linear-gradient(135deg, #4caf50, #1a5d1a);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* 🌿 메뉴 박스 */
 .category-menu {
-  list-style: none;
-  margin: 0;
-  padding: 8px 0;
-  background: #fff;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  position: absolute;
-  top: 110%;
-  left: 0;
-  min-width: 240px;
-  display: none;
-  z-index: 1000;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 0.25s ease;
+	list-style: none;
+	margin: 0;
+	padding: 8px 0;
+	background: #fff;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	position: absolute;
+	top: 110%;
+	left: 0;
+	min-width: 240px;
+	display: none;
+	z-index: 1000;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+	animation: fadeIn 0.25s ease;
 }
 
 
 .category-container:hover .category-menu {
-  display: block;
+	display: block;
 }
 
 /* 🌿 1단 대분류 */
-.category-menu > li {
-  position: relative;
+.category-menu>li {
+	position: relative;
 }
 
-.category-menu > li > a {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 18px;
-  color: #333;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.25s ease;
+.category-menu>li>a {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 18px;
+	color: #333;
+	font-weight: 500;
+	text-decoration: none;
+	transition: all 0.25s ease;
 }
 
-.category-menu > li > a:hover {
-  background: #f3ebd3;
-  color: #1a5d1a;
-  font-weight: 600;
-  transform: translateX(3px);
+.category-menu>li>a:hover {
+	background: #f3ebd3;
+	color: #1a5d1a;
+	font-weight: 600;
+	transform: translateX(3px);
 }
 
 /* 🌿 아이콘 (대분류 앞 이미지) */
-.category-menu > li > a img {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
+.category-menu>li>a img {
+	width: 20px;
+	height: 20px;
+	object-fit: contain;
 }
 
 /* 🌿 2단 중분류 */
 .category-menu li ul {
-  display: none;
-  position: absolute;
-  top: 0;
-  left: 100%;
-  min-width: 200px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 8px 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	display: none;
+	position: absolute;
+	top: 0;
+	left: 100%;
+	min-width: 200px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 8px 0;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.category-menu li:hover > ul {
-  display: block;
+.category-menu li:hover>ul {
+	display: block;
 }
 
 /* 🌿 3단 소분류 */
 .category-menu li ul li ul {
-  left: 100%;
-  top: 0;
+	left: 100%;
+	top: 0;
 }
 
 .category-menu li ul a {
-  display: block;
-  padding: 10px 15px;
-  color: #555;
-  text-decoration: none;
-  font-size: 14px;
-  transition: 0.25s;
+	display: block;
+	padding: 10px 15px;
+	color: #555;
+	text-decoration: none;
+	font-size: 14px;
+	transition: 0.25s;
 }
 
 .category-menu li ul a:hover {
-  background: #eaf6eb;
-  color: #1a5d1a;
+	background: #eaf6eb;
+	color: #1a5d1a;
 }
 
 /* 🌿 불필요한 표시 제거 */
-.category-menu li > ul::before,
+.category-menu li>ul::before,
 .category-menu li::marker {
-  content: none !important;
-  display: none !important;
+	content: none !important;
+	display: none !important;
 }
 
 /* 🌿 등장 애니메이션 */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+	from {
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
+
 /* ========================================= */
 /* 📱 반응형 Header 영역 */
 @media (max-width: 1200px) {
-  .header-top {
-    flex-wrap: wrap;
-    padding: 10px 30px;
-  }
+	.header-top {
+		flex-wrap: wrap;
+		padding: 10px 30px;
+	}
 
-  .search-section {
-    max-width: 400px;
-  }
+	.search-section {
+		max-width: 400px;
+	}
 
-  .icon-group i {
-    font-size: 24px;
-  }
+	.icon-group i {
+		font-size: 24px;
+	}
 }
 
 @media (max-width: 992px) {
-  .header-top {
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-  }
+	.header-top {
+		flex-direction: column;
+		align-items: center;
+		gap: 15px;
+	}
 
-  .search-section {
-    width: 90%;
-    max-width: none;
-    order: 3; /* 검색창 아래로 이동 */
-  }
+	.search-section {
+		width: 90%;
+		max-width: none;
+		order: 3;
+		/* 검색창 아래로 이동 */
+	}
 
-  .header-right {
-    flex-direction: row;
-    justify-content: center;
-    gap: 15px;
-  }
+	.header-right {
+		flex-direction: row;
+		justify-content: center;
+		gap: 15px;
+	}
 
-  .login-group {
-    gap: 8px;
-  }
+	.login-group {
+		gap: 8px;
+	}
 
-  .btn-login, .btn-join, .btn-logout, .btn-admin {
-    font-size: 12px;
-    padding: 5px 10px;
-  }
+	.btn-login,
+	.btn-join,
+	.btn-logout,
+	.btn-admin {
+		font-size: 12px;
+		padding: 5px 10px;
+	}
 
-  .icon-group {
-    gap: 15px;
-  }
+	.icon-group {
+		gap: 15px;
+	}
 
-  .logo-img {
-    width: 120px;
-  }
+	.logo-img {
+		width: 120px;
+	}
 
-  /* 하단 메뉴 줄이기 */
-  .header-bottom {
-    flex-direction: column;
-    gap: 15px;
-    padding: 10px 20px;
-  }
+	/* 하단 메뉴 줄이기 */
+	.header-bottom {
+		flex-direction: column;
+		gap: 15px;
+		padding: 10px 20px;
+	}
 
-  .nav-menu {
-    gap: 25px;
-    flex-wrap: wrap;
-  }
+	.nav-menu {
+		gap: 25px;
+		flex-wrap: wrap;
+	}
 }
 
 /* ✅ 모바일 (≤767px) */
 @media (max-width: 767px) {
-  .header {
-    padding: 10px 15px;
-  }
+	.header {
+		padding: 10px 15px;
+	}
 
-  .header-top {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
+	.header-top {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
 
-  /* 로고 중앙 */
-  .logo {
-    justify-content: center;
-  }
+	/* 로고 중앙 */
+	.logo {
+		justify-content: center;
+	}
 
-  /* 검색창 숨기기 (토글로 열기 가능하게 대비) */
-  .search-section {
-    display: none;
-  }
+	/* 검색창 숨기기 (토글로 열기 가능하게 대비) */
+	.search-section {
+		display: none;
+	}
 
-  /* 햄버거 버튼 추가 스타일 (btn-category 활용) */
-  .btn-category {
-    background: transparent;
-    border: none;
-    color: #1a5d1a;
-    font-size: 20px;
-    padding: 4px;
-  }
+	/* 햄버거 버튼 추가 스타일 (btn-category 활용) */
+	.btn-category {
+		background: transparent;
+		border: none;
+		color: #1a5d1a;
+		font-size: 20px;
+		padding: 4px;
+	}
 
-  /* nav 메뉴 숨기기 */
-  .nav-menu {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    background: #f5efd7;
-    padding: 20px 0;
-    border-top: 1px solid #ddd;
-  }
+	/* nav 메뉴 숨기기 */
+	.nav-menu {
+		display: none;
+		flex-direction: column;
+		align-items: center;
+		gap: 15px;
+		background: #f5efd7;
+		padding: 20px 0;
+		border-top: 1px solid #ddd;
+	}
 
-  /* ✅ 햄버거 클릭 시 표시되게 JS에서 toggle() 처리 */
-  .nav-menu.active {
-    display: flex;
-  }
+	/* ✅ 햄버거 클릭 시 표시되게 JS에서 toggle() 처리 */
+	.nav-menu.active {
+		display: flex;
+	}
 
-  .nav-menu a {
-    font-size: 15px;
-  }
+	.nav-menu a {
+		font-size: 15px;
+	}
 
-  .icon-group i {
-    font-size: 22px;
-  }
+	.icon-group i {
+		font-size: 22px;
+	}
 }
 
 /* 📱 320~425px 초소형 모바일 대응 */
 @media (max-width: 425px) {
 
-  /* 전체 여백 최소화 */
-  .header {
-    padding: 6px 10px;
-  }
+	/* 전체 여백 최소화 */
+	.header {
+		padding: 6px 10px;
+	}
 
-  .header-top {
-	flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
+	.header-top {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
 
-  /* 로고 */
-  .logo-img {
-    width: 100px;
-  }
-  
-  /* ✅ 모바일 버튼 그룹 (햄버거 + 돋보기) */
+	/* 로고 */
+	.logo-img {
+		width: 100px;
+	}
+
+	/* ✅ 모바일 버튼 그룹 (햄버거 + 돋보기) */
 	.mobile-buttons {
-	  display: flex;
-	  gap: 10px;
+		display: flex;
+		gap: 10px;
 	}
-	
+
 	.mobile-buttons button {
-	  background: none;
-	  border: none;
-	  color: #1a5d1a;
-	  font-size: 22px;
-	  cursor: pointer;
+		background: none;
+		border: none;
+		color: #1a5d1a;
+		font-size: 22px;
+		cursor: pointer;
 	}
 
-  /* 로그인 / 회원가입 버튼 */
-  .btn-login, .btn-join, .btn-logout, .btn-admin {
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 4px;
-  }
+	/* 로그인 / 회원가입 버튼 */
+	.btn-login,
+	.btn-join,
+	.btn-logout,
+	.btn-admin {
+		font-size: 11px;
+		padding: 4px 8px;
+		border-radius: 4px;
+	}
 
-  .header-right {
-    gap: 6px;
-  }
+	.header-right {
+		gap: 6px;
+	}
 
-  /* 아이콘 크기 조정 */
-  .icon-group {
-    gap: 10px;
-  }
+	/* 아이콘 크기 조정 */
+	.icon-group {
+		gap: 10px;
+	}
 
-  .icon-group i {
-    font-size: 20px;
-  }
+	.icon-group i {
+		font-size: 20px;
+	}
 
-  /* 검색창 완전 숨기기 (나중에 토글 버튼으로 열 수 있도록 대비) */
-  .search-section {
-      display: none;
-      width: 100%;
-      padding: 10px 0;
-    }
-/* 검색창 활성화 시 표시 */
-  .search-section.active {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-  .search-bar {
-      width: 90%;
-    }
+	/* 검색창 완전 숨기기 (나중에 토글 버튼으로 열 수 있도록 대비) */
+	.search-section {
+		display: none;
+		width: 100%;
+		padding: 10px 0;
+	}
 
-  /* 하단 메뉴 최소화 */
-  .header-bottom {
-    flex-direction: column;
-    padding: 8px 0;
-    gap: 10px;
-  }
+	/* 검색창 활성화 시 표시 */
+	.search-section.active {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+	}
 
-  .nav-menu {
-	display: none;
-    flex-direction: column;
-    align-items: center;
-    background: #f5efd7;
-    border-top: 1px solid #ddd;
-    padding: 15px 0;
-    gap: 12px;
-  }
-  .nav-menu.active {
-      display: flex;
-    }
+	.search-bar {
+		width: 90%;
+	}
 
-  .nav-menu a {
-    font-size: 13px;
-    padding: 5px 0;
-  }
-  
-  .icon-group i {
-      font-size: 20px;
-    }
+	/* 하단 메뉴 최소화 */
+	.header-bottom {
+		flex-direction: column;
+		padding: 8px 0;
+		gap: 10px;
+	}
 
-  /* 카테고리 버튼 */
-  .btn-category {
-    font-size: 14px;
-    padding: 4px 8px;
-  }
+	.nav-menu {
+		display: none;
+		flex-direction: column;
+		align-items: center;
+		background: #f5efd7;
+		border-top: 1px solid #ddd;
+		padding: 15px 0;
+		gap: 12px;
+	}
 
-  /* hover 효과 줄이기 (터치 최적화) */
-  .nav-menu a:hover::after {
-    width: 0;
-  }
+	.nav-menu.active {
+		display: flex;
+	}
+
+	.nav-menu a {
+		font-size: 13px;
+		padding: 5px 0;
+	}
+
+	.icon-group i {
+		font-size: 20px;
+	}
+
+	/* 카테고리 버튼 */
+	.btn-category {
+		font-size: 14px;
+		padding: 4px 8px;
+	}
+
+	/* hover 효과 줄이기 (터치 최적화) */
+	.nav-menu a:hover::after {
+		width: 0;
+	}
+}
+
+/* 확정 표시 */
+.category-menu.active {
+	display: block !important;
+}
+
+/* 레이어 겹침 방지 */
+.header {
+	position: relative;
+	z-index: 5;
+}
+
+#dropdownMenu {
+	position: absolute;
+	z-index: 9999;
 }

@@ -7,8 +7,8 @@ public class Product {
 	private int productNo;
 	private String sellerId;
 	private String categoryNo;
-	private String pname;
-	private String pinfo;
+	private String pName;
+	private String pInfo;
 	private int price;
 	private int stock;
 	private String unit;

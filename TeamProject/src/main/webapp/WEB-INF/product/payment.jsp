@@ -211,11 +211,12 @@
                             <!-- 상품 정보 -->
                             <div class="box">
                                 <h3>주문 상품 정보</h3>
-                                <div v-for="p in products" class="product-item">
-                                    <img :src="p.image" alt="상품이미지">
+                                <div class="product-item" v-for="p in products" :key="p.productNo">
+                                    <img :src="p.thumbPath" alt="상품이미지">
                                     <div class="product-info">
-                                        <div class="product-name">{{ p.name }}</div>
-                                        <div class="product-price">{{ p.price.toLocaleString() }}원</div>
+                                        <div class="product-name">{{ p.pName }}</div>
+                                        <div>수량 : {{p.quantity}}개</div>
+                                        <div class="product-price">{{ Number(p.price).toLocaleString() }}원</div>
                                     </div>
                                 </div>
                                 <div class="total-box">배송비 3,000원 포함</div>
@@ -243,7 +244,17 @@
                                 </div>
                                 <input type="text" v-model="shipping.address" placeholder="주소"
                                     style="width:100%; margin-bottom:8px;">
-                                <input type="text" v-model="shipping.detail" placeholder="상세주소" style="width:100%;">
+                                <input type="text" v-model="shipping.detail" placeholder="상세주소"
+                                    style="width:100%; margin-bottom: 8px;">
+                                <select v-model="requestValue" @change="updateRequestLabel"
+                                    :class="{ 'select-placeholder': !requestValue }">
+                                    <option v-if="!requestValue" hidden value="">배송 요청사항을 선택해주세요</option>
+                                    <option v-for="opt in requestOptions" :key="opt.value" :value="opt.value">
+                                        {{ opt.label }}
+                                    </option>
+                                </select>
+                                <input v-if="requestValue==='direct'" type="text" v-model="requestDirect"
+                                    placeholder="직접입력" />
                             </div>
 
                         </section>
@@ -276,88 +287,172 @@
                 </div>
 
                 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
-
-                    <script>
-                        const app = Vue.createApp({
-                            data() {
-                                return {
-                                    products: [
-                                        { name: "자연담은 유기농 쌀 5kg", price: 7900, image: "${path}/resources/img/sample_rice.jpg" }
-                                    ],
-                                    buyer: { name: "김성민", phone: "010-6453-7790", email: "sungmin3790@gmail.com" },
-                                    shipping: { recipient: "", phone: "", zip: "", address: "", detail: "" },
-                                    userPoint: 1000,
-                                    usedPoint: 0,
-                                    agree: false
-                                };
-                            },
-                            computed: {
-                                totalPrice() { return this.products.reduce((sum, p) => sum + p.price, 0); },
-                                finalPrice() { return this.totalPrice + 3000 - this.usedPoint; }
-                            },
-                            methods: {
-                                applyPoint() { this.usedPoint = this.userPoint; },
-                                searchAddress() { alert("주소찾기 기능은 추후 연결 예정입니다."); },
-                                editBuyer() { alert("주문자 정보 수정 기능은 추후 연결 예정입니다."); },
-                                fnPay() {
-                                    if (!this.agree) {
-                                        alert("약관에 동의해주세요.");
-                                        return;
-                                    }
-
-                                    // PortOne 객체 생성
-                                    const IMP = window.IMP;
-                                    IMP.init("impxxxxxxx"); // ⚠️ 여기에 본인 가맹점 식별코드 넣기 (예: imp12345678)
-
-                                    const paymentData = {
-                                        pg: "html5_inicis", // 결제 PG사: inicis, kakaopay, toss 등
-                                        pay_method: "card", // 결제수단
-                                        merchant_uid: "ORD" + new Date().getTime(), // 고유 주문번호
-                                        name: "AGRICOLA 테스트 결제", // 결제명
-                                        amount: 100, // ⚠️ 일단 테스트로 100원 하드코딩
-                                        buyer_email: this.buyer.email,
-                                        buyer_name: this.buyer.name,
-                                        buyer_tel: this.buyer.phone,
-                                        buyer_addr: this.shipping.address,
-                                        buyer_postcode: this.shipping.zip
-                                    };
-
-                                    IMP.request_pay(paymentData, (rsp) => {
-                                        if (rsp.success) {
-                                            $.ajax({
-                                                url: "${path}/payment/verify.dox",
-                                                type: "POST",
-                                                dataType: "json",
-                                                data: {
-                                                    impUid: rsp.imp_uid,
-                                                    merchantUid: rsp.merchant_uid,
-                                                    buyerId: "test1234",
-                                                    receivName: "김성민",
-                                                    receivPhone: "010-1234-5678",
-                                                    deliverAddr: "서울특별시 중구 을지로 100",
-                                                    memo: "부재 시 문 앞에 놓아주세요"
-                                                },
-                                                success: function (data) {
-                                                    if (data.result == "success") {
-                                                        alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
-                                                        location.href="${path}/product/payment.do";
-                                                    } else {
-                                                        alert("결제 저장 실패:" + data.message);
-                                                    }
-                                                },
-                                                error: function () {
-                                                    alert("서버 통신 오류");
-                                                }
-                                            });
-                                        } else {
-                                            alert("결제 실패: " + rsp.error_msg);
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                        app.mount("#app");
-                    </script>
         </body>
 
         </html>
+        <script>
+            const app = Vue.createApp({
+                data() {
+                    return {
+                        userId: "${userId}",
+                        productNo: "${productNo}",
+                        quantity: "${qty}",
+                        products: [],
+                        buyer: {},
+                        shipping: { recipient: "", phone: "", zip: "", address: "", detail: "" },
+                        userPoint: 1000,
+                        usedPoint: 0,
+                        agree: false,
+                        requestOptions: [
+                            { value: 'door', label: '문 앞에 놔주세요' },
+                            { value: 'guard', label: '경비실에 맡겨주세요' },
+                            { value: 'box', label: '택배함에 넣어주세요' },
+                            { value: 'call', label: '배송 전에 연락주세요' },
+                            { value: 'direct', label: '직접입력' },
+                        ],
+                        requestValue: '',
+                        requestLabel: '',
+                        requestDirect: '',
+
+                    };
+                },
+                computed: {
+                    totalPrice() { return this.products.reduce((sum, p) => sum + (p.price) * (p.quantity), 0); },
+                    finalPrice() { return this.totalPrice + 3000 - this.usedPoint; }
+                },
+                methods: {
+                    fnProduct: function () {
+                        let self = this;
+                        let param = {
+                            userId: self.userId,
+                            productNo: self.productNo,
+                            quantity: self.quantity
+                        };
+                        $.ajax({
+                            url: "/payment/list.dox",
+                            type: "POST",
+                            dataType: "json",
+                            data: param,
+                            success: function (data) {
+                                console.log(data.list);
+                                if (data.result == 'success') {
+                                    self.products = data.list || [];
+                                } else {
+                                    alert('불러오기 실패');
+                                }
+                            },
+                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                        });
+                    },
+
+                    fnUser: function () {
+                        let self = this;
+                        let param = {
+                            userId: self.userId,
+                            productNo: self.productNo,
+                            quantity: self.quantity
+                        };
+                        $.ajax({
+                            url: "/payment/userInfo.dox",
+                            type: "POST",
+                            dataType: "json",
+                            data: param,
+                            success: function (data) {
+                                console.log(data.info);
+                                if (data.result == 'success') {
+                                    self.buyer = data.info || [];
+                                } else {
+                                    alert('불러오기 실패');
+                                }
+                            },
+                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                        });
+                    },
+
+                    applyPoint() {
+                        this.usedPoint = this.userPoint;
+                    },
+
+                    searchAddress() {
+                        alert("주소찾기 기능은 추후 연결 예정입니다.");
+                    },
+
+                    editBuyer() {
+                        alert("주문자 정보 수정 기능은 추후 연결 예정입니다.");
+                    },
+
+                    updateRequestLabel() {
+                        const opt = this.requestOptions.find(o => o.value === this.requestValue);
+                        this.requestLabel = opt ? opt.label : '';
+                    },
+
+                    fnPay() {
+                        if (!this.agree) {
+                            alert("약관에 동의해주세요.");
+                            return;
+                        }
+
+                        const memo = this.requestValue === 'direct'
+                            ? (this.requestDirect || '').trim()
+                            : (this.requestLabel || '').trim();
+
+                        // PortOne 객체 생성
+                        const IMP = window.IMP;
+                        IMP.init("imp16634661"); // ⚠️ 여기에 본인 가맹점 식별코드 넣기 (예: imp12345678)
+
+                        const paymentData = {
+                            pg: "html5_inicis", // 결제 PG사: inicis, kakaopay, toss 등
+                            pay_method: "card", // 결제수단
+                            merchant_uid: "ORD" + new Date().getTime(), // 고유 주문번호
+                            name: this.products[0].pName, // 결제명
+                            amount: 1, // ⚠️ 일단 테스트로 100원 하드코딩
+                            buyer_email: this.buyer.email,
+                            buyer_name: this.buyer.name,
+                            buyer_tel: this.buyer.phone,
+                            buyer_addr: this.shipping.address,
+                            buyer_postcode: this.shipping.zip
+                        };
+
+                        IMP.request_pay(paymentData, (rsp) => {
+                            let self = this;
+                            if (rsp.success) {
+                                $.ajax({
+                                    url: "${path}/payment/verify.dox",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: {
+                                        impUid: rsp.imp_uid,
+                                        merchantUid: rsp.merchant_uid,
+                                        buyerId: this.buyer.userId,
+                                        receivName: this.buyer.name,
+                                        receivPhone: this.buyer.phone,
+                                        deliverAddr: this.buyer.address,
+                                        memo: memo
+                                    },
+                                    success: function (data) {
+                                        if (data.result == "success") {
+                                            alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
+                                            location.href = "${path}/product/payment.do";
+                                        } else {
+                                            alert("결제 저장 실패:" + data.message);
+                                        }
+                                    },
+                                    error: function () {
+                                        alert("서버 통신 오류");
+                                    }
+                                });
+                            } else {
+                                alert("결제 실패: " + rsp.error_msg);
+                            }
+                        });
+                    }
+                },
+                mounted() {
+                    let self = this;
+                    self.fnProduct();
+                    self.fnUser();
+                    this.updateRequestLabel(); // 한번 동기화
+                }
+            });
+            app.mount("#app");
+        </script>

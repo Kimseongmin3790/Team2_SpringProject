@@ -625,7 +625,7 @@
                                             <span class="price">{{ (totalPrice + shippingFee).toLocaleString()
                                                 }}원</span>
                                         </div>
-                                        <button class="btn btn-primary btn-lg w-100 mt-1">주문하기</button>
+                                        <button class="btn btn-primary btn-lg w-100 mt-1" @click="fnPurchase">구매하기</button>
                                     </div>
                                 </div>
                             </div>
@@ -845,6 +845,10 @@
                                 console.error("Error:", error);
                             }
                         });
+                    },
+
+                    fnPurchase : function(){
+                        
                     },
 
                     fnBack: function (productNo) {
