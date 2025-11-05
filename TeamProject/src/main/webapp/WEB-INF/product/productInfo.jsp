@@ -1609,7 +1609,7 @@
                             return;
                         }
 
-                        self.currentPage++; 
+                        self.currentPage++; // 다음 페이지로 이동
 
                         $.ajax({
                             url: "${pageContext.request.contextPath}/product/reviews.dox",
@@ -1626,18 +1626,18 @@
                                         review.isRecommended = review.isRecommendedByMe;
                                         return review;
                                     });
-                               
+                                    // 기존 리뷰 목록에 새로 불러온 리뷰들을 추가합니다.
                                     self.reviews.push(...reviewsWithState);
                                     self.totalReviewCount = response.totalCount || 0;
                                 } else {
                                     alert("리뷰 데이터를 불러오는 데 실패했습니다.");
-                                    self.currentPage--; 
+                                    self.currentPage--; // 실패 시 페이지 번호 되돌리기
                                 }
                             },
                             error: function(xhr, status, error) {
                                 console.error("리뷰 목록 조회 중 오류 발생:", status, error, xhr.responseText);
                                 alert("리뷰 목록 조회 중 오류가 발생했습니다.");
-                                self.currentPage--; 
+                                self.currentPage--; // 오류 시 페이지 번호 되돌리기
                             }
                         });
                     },
@@ -1691,6 +1691,9 @@
 
                                     self.reviews = reviewsWithState || [];
                                     self.totalReviewCount = response.totalCount || 0; 
+                                    self.averageRating = response.averageRating || 0;
+                                    self.totalReviews = response.totalReviews || 0;
+                                    self.ratingDistribution = response.ratingDistribution || { 5:0,4:0,3:0,2:0,1:0 };
                                 } else {
                                     alert("리뷰 데이터를 불러오는 데 실패했습니다.");
                                 }

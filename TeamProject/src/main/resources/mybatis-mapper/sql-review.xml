@@ -168,6 +168,7 @@
 	    WHERE REVIEW_NO = #{reviewNo} AND USER_ID = #{userId}
 	</delete>
 	
+	<!-- 특정 상품 리뷰 조회-->
 	<select id="selectReviewsByProductNo" parameterType="map" resultMap="productReviewListResultMap">
 	    SELECT
 	        REVIEW_NO,
@@ -238,6 +239,19 @@
 	    SET RECOMMEND = RECOMMEND - 1
 	    WHERE REVIEW_NO = #{reviewNo}
 	</update>
+	
+	<!-- 상품별 별점 분포도 조회 -->
+	<select id="getRatingDistributionByProductNo" parameterType="int" resultType="hashmap">
+	    SELECT
+	        RATING,
+	        COUNT(*) as COUNT
+	    FROM
+	        REVIEW
+	    WHERE
+	        PRODUCT_NO = #{productNo}
+	    GROUP BY
+	        RATING
+	</select>
 	
 
 </mapper>

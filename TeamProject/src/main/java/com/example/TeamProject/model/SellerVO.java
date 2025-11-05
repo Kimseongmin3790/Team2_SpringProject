@@ -14,4 +14,6 @@ public class SellerVO {
     private Double lat;
     private Double lng;
     private Double distance;    // 거리 (쿼리 결과용)
+    
+    private User user;  
 }

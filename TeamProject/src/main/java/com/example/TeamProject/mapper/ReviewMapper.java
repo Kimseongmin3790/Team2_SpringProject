@@ -2,6 +2,7 @@ package com.example.TeamProject.mapper;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -47,5 +48,6 @@ public interface ReviewMapper {
     // 리뷰 추천 수 감소
     int decrementReviewRecommend(int reviewNo);
     
+    List<Map<String, Object>> getRatingDistributionByProductNo(@Param("productNo") int productNo);
     
 }
