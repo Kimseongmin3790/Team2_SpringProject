@@ -80,10 +80,7 @@ public class CommonService {
             commonMapper.insertSellerInfo(sellerData);
         } catch (Exception e) {
             System.out.println("판매자 정보 등록 중 에러 발생: " + e.getMessage());
-            // 여기서 예외를 다시 던지거나, 혹은 상황에 맞게 처리할 수 있습니다.
-            // throw new RuntimeException("판매자 정보 등록에 실패했습니다.", e);
         }
     }
-    
     
 }

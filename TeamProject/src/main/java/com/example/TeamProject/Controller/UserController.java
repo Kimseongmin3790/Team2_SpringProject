@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.TeamProject.dao.OrderService;
+import com.example.TeamProject.dao.SellerService;
 import com.example.TeamProject.dao.UserService;
 import com.google.gson.Gson;
 
@@ -32,6 +34,9 @@ public class UserController {
 
 	@Autowired
 	OrderService orderService;
+	
+	 @Autowired
+	 private SellerService sellerService;
 
 	@RequestMapping("/login.do")
 	public String login(Model model) throws Exception {
@@ -81,11 +86,22 @@ public class UserController {
 	     return "user/buyerMypage";
 	 }
 
-	@RequestMapping("/sellerMyPage.do")
-	public String sellerMyPage(Model model) throws Exception {
+	 @RequestMapping("/sellerMyPage.do")
+	 public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes) throws Exception {
+	     String userId = (String) session.getAttribute("sessionId");
 
-		return "user/sellerMyPage";
-	}
+	  
+	     HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
+	     String resultStatus = (String) serviceResult.get("result");
+	     String message = (String) serviceResult.get("message"); 
+
+	     if ("success".equals(resultStatus)) {
+	         return "user/sellerMyPage";
+	     } else {
+	    	 redirectAttributes.addFlashAttribute("redirectMessage", message);
+	         return "redirect:/main.do";
+	     }
+	 }
 
 	@RequestMapping("/cart.do")
 	public String cart(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)

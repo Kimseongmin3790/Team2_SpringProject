@@ -345,7 +345,7 @@
 
     <body>
       <%@ include file="/WEB-INF/views/common/header.jsp" %>
-
+      
         <div id="app">
           <main class="content">
             <!-- 🌿 슬라이더 -->

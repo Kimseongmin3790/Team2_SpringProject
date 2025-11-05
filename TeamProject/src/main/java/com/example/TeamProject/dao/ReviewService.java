@@ -260,9 +260,9 @@ public class ReviewService {
 
             // 2. 해당 페이지의 리뷰 목록과 전체 리뷰 개수를 매퍼에서 가져옴
             List<Review> reviewList = reviewMapper.selectReviewsByProductNo(productNo, offset, pageSize);
-            int totalCount = reviewMapper.countReviewsByProductNo(productNo);
+            int totalReviews = reviewMapper.countReviewsByProductNo(productNo);
 
-            // 3. isRecommendedByMe 플래그 설정 
+            // 3. isRecommendedByMe 플래그 설정
             if (currentUserId != null && !currentUserId.isEmpty()) {
                 for (Review review : reviewList) {
                     boolean isRecommended = reviewMapper.checkIfUserRecommended(review.getReviewNo(), currentUserId);
@@ -270,9 +270,37 @@ public class ReviewService {
                 }
             }
 
+            // 4. 리뷰 통계 정보 계산
+            double averageRating = 0;
+            Map<Integer, Integer> ratingDistribution = new HashMap<>();
+            for (int i = 1; i <= 5; i++) {
+                ratingDistribution.put(i, 0); // 1~5점까지 0으로 초기화
+            }
+
+            if (totalReviews > 0) {
+                // DB에서 별점 분포도 가져오기
+                List<Map<String, Object>> distributionList = reviewMapper.getRatingDistributionByProductNo(productNo);
+                long totalRatingSum = 0;
+
+                for (Map<String, Object> item : distributionList) {
+              
+                    int rating = ((BigDecimal) item.get("RATING")).intValue();
+                    int count = ((BigDecimal) item.get("COUNT")).intValue();
+
+                    ratingDistribution.put(rating, count);
+                    totalRatingSum += (long) rating * count;
+                }
+                // 평균 평점 계산
+                averageRating = (double) totalRatingSum / totalReviews;
+            }
+
+            // 5. 최종 결과 resultMap에 담기
             resultMap.put("result", "success");
             resultMap.put("reviews", reviewList);
-            resultMap.put("totalCount", totalCount); 
+            resultMap.put("totalReviews", totalReviews);
+            resultMap.put("totalCount", totalReviews);
+            resultMap.put("averageRating", averageRating);
+            resultMap.put("ratingDistribution", ratingDistribution);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -332,6 +360,5 @@ public class ReviewService {
         }
         return resultMap;
     }
-    
     
 }
