@@ -164,20 +164,19 @@
                 }
 
                 .btn-back {
-                    background: none;
-                    border: 1px solid #ccc;
-                    color: #333;
-                    padding: 6px 12px;
-                    border-radius: 6px;
-                    font-size: 14px;
+                    background: #5dbb63;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 10px 20px;
+                    font-size: 15px;
                     cursor: pointer;
-                    transition: 0.2s;
+                    transition: 0.3s;
+                    margin-bottom: 25px;
                 }
 
                 .btn-back:hover {
-                    background: #e8f5e9;
-                    border-color: #4caf50;
-                    color: #1a5d1a;
+                    background: #4ba954;
                 }
             </style>
         </head>
