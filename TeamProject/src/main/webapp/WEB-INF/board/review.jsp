@@ -14,10 +14,20 @@
                 <div class="summary-card">
                     <div class="summary-content">
                         <div class="rating-overview">
-                            <div class="rating-number">{{ averageRating }}</div>
+                            <div class="rating-number">{{ averageRating.toFixed(2) }}</div>
                             <div class="stars">
-                                <svg v-for="n in 5" :key="n" class="star" :class="{filled: n <=Math.round(averageRating), empty: n > Math.round(averageRating)}" viewBox="0 0 24 24" fill="currentColor">
+                                <!-- 꽉 찬 별 -->
+                                <svg v-for="n in Math.floor(averageRating)" :key="'full-' + n" class="star filled" viewBox="0 0 24 24">
                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73-1.64 7.03z"/>
+                                </svg>
+                                <!-- 반쪽 별 -->
+                                <svg v-if="averageRating - Math.floor(averageRating) >= 0.5" class="star filled" viewBox="0 0 24 24">
+                                    <defs>
+                                        <clipPath id="halfStarClip">
+                                            <rect x="0" y="0" width="12" height="24" />
+                                        </clipPath>
+                                    </defs>
+                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73-1.64 7.03z" clip-path="url(#halfStarClip)"/>
                                 </svg>
                             </div>
                             <div class="rating-count">{{ totalReviews }}개 리뷰</div>
@@ -109,6 +119,40 @@
                                 :alt="'리뷰 이미지 ' + (index + 1)"
                                 class="review-image"
                                 @click="openImageModal(image)">
+                        </div>
+                        
+                         <!-- 판매자 답글 -->
+                        <div v-if="review.comments && review.comments.length > 0" class="seller-reply-container">
+                            <div v-for="comment in review.comments" :key="comment.commentNo" class="seller-reply-item">
+                                <div class="seller-reply-header">
+                                    <p class="seller-reply-author">{{ comment.userId }} (판매자)님의 답글:</p>
+
+                                    <div v-if="userId === comment.userId" class="seller-reply-actions">
+                                        <!-- 편집 모드가 아닐 때 -->
+                                        <template v-if="editingCommentNo !== comment.commentNo">
+                                            <button class="btn btn-info btn-sm" @click="editComment(comment)">수정</button>
+                                            <button class="btn btn-danger btn-sm" @click="deleteComment(comment.commentNo)">삭제</button>
+                                        </template>
+                                        <!-- 편집 모드일 때 -->
+                                        <template v-else>
+                                            <button class="btn btn-primary btn-sm" @click="saveEditedComment(comment)">저장</button>
+                                            <button class="btn btn-secondary btn-sm" @click="cancelEdit()">취소</button>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <div class="seller-reply-body">
+                                    <!-- 편집 모드가 아닐 때 -->
+                                    <template v-if="editingCommentNo !== comment.commentNo">
+                                        <p class="seller-reply-content">{{ comment.contents }}</p>
+                                        <p class="seller-reply-date">작성일: {{ comment.cDatetime }}</p>
+                                    </template>
+                                    <!-- 편집 모드일 때 -->
+                                    <template v-else>
+                                        <textarea v-model="comment.contents" class="form-textarea seller-reply-edit-input"></textarea>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Review Actions -->

@@ -469,16 +469,98 @@
             padding: 0.75rem;
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
-            background-color: #e9ecef; /* 연한 회색 배경 */
-            color: #6c757d; /* 회색 텍스트 */
+            background-color: #e9ecef;
+            color: #6c757d; 
         }
 
         /* 비활성화된 필드 설명 텍스트 스타일 */
         .non-editable-text {
-            font-size: 0.875rem; /* 작은 글씨 */
-            color: #6b7280; /* 회색 텍스트 */
-            margin-top: 0.25rem; /* 위쪽 여백 */
+            font-size: 0.875rem; 
+            color: #6b7280; 
+            margin-top: 0.25rem; 
         }
+
+        /* 리뷰 이미지 컨테이너 */
+        .review-images-container {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* 개별 리뷰 이미지 썸네일 */
+        .review-image-thumbnail {
+            width: 100px;
+            height: 100px;
+            object-fit: cover; 
+            border-radius: 0.25rem; 
+            border: 1px solid #e5e7eb; 
+        }
+        /* 리뷰 섹션 제목 */
+        .review-section-title {
+            margin-bottom: 1.5rem;
+            color: #111827;
+        }
+
+        /* 판매자 답글 컨테이너 */
+        .seller-reply-container {
+            margin-top: 1rem;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        /* 판매자 답글 작성자 */
+        .seller-reply-author {
+            font-weight: 600;
+            color: #16a34a;
+        }
+
+        /* 판매자 답글 내용 */
+        .seller-reply-content {
+            color: #374151;
+            margin-top: 0.5rem;
+        }
+
+        /* 판매자 답글 날짜 */
+        .seller-reply-date {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-top: 0.25rem;
+        }
+        .seller-reply-item {
+            display: flex;
+            justify-content: space-between; 
+            align-items: flex-start; 
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb; 
+        }
+
+        .seller-reply-item:last-child {
+            border-bottom: none; 
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+         /* 답글 버튼 그룹 */
+        .seller-reply-actions {
+            display: flex;
+            gap: 0.5rem; 
+            margin-left: 1rem; 
+        }
+
+        /* 답글 수정 입력 필드 */
+        .seller-reply-edit-input {
+            width: 100%; 
+            min-height: 60px; 
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
     </style>
 </head>
 
@@ -670,17 +752,41 @@
 
                 <!-- 리뷰 -->
                 <div v-show="activeTab === 'reviews'" class="tab-content">
-                    <h2 style="margin-bottom: 1.5rem; color: #111827;">리뷰 관리</h2>
-                    
+                    <h2 class="review-section-title">리뷰 관리</h2> 
+
                     <div v-for="review in reviews" :key="review.id" class="review-card">
                         <div class="review-header">
                             <div class="review-product">{{ review.productName }}</div>
                             <div class="review-rating">{{ '⭐'.repeat(review.rating) }}</div>
                         </div>
                         <div class="review-content">{{ review.content }}</div>
+                        <div v-if="review.reviewImages && review.reviewImages.length > 0" class="review-images-container">
+                            <img v-for="(imageUrl, index) in review.reviewImages" :key="index" :src="imageUrl" alt="리뷰 이미지" class="review-image-thumbnail">
+                        </div>
+                        <div v-if="review.comments && review.comments.length > 0" class="seller-reply-container">
+                            <div v-for="comment in review.comments" :key="comment.commentNo" class="seller-reply-item">
+                                <div class="seller-reply-body">
+                                    <p class="seller-reply-author">{{ comment.userId }} (판매자)님의 답글:</p>
+                                    <p v-if="editingCommentNo !== comment.commentNo" class="seller-reply-content">{{ comment.contents}}</p>
+                                    <textarea v-else v-model="comment.contents" class="form-textarea seller-reply-edit-input"></textarea>
+                                    <p class="seller-reply-date">작성일: {{ comment.cDatetime }}</p>
+                                </div>
+                                <div class="seller-reply-actions">
+                                    
+                                    <template v-if="editingCommentNo !== comment.commentNo">
+                                        <button class="btn btn-secondary btn-sm" @click="editComment(comment.commentNo)">수정</button>
+                                        <button class="btn btn-secondary btn-sm" @click="deleteComment(comment.commentNo)">삭제</button>
+                                    </template>
+                                    <template v-else>
+                                        <button class="btn btn-primary btn-sm" @click="saveEditedComment(comment)">저장</button>
+                                        <button class="btn btn-secondary btn-sm" @click="cancelEdit()">취소</button>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                         <div class="review-meta">
-                            <span>{{ review.userName }} · {{ review.date }}</span>
-                            <button class="btn btn-secondary" @click="replyToReview(review.id)">답글 작성</button>
+                            <span>작성자:  {{ review.userId }}  <br> 리뷰 날짜:  {{ review.cdate }}</span>
+                            <button class="btn btn-secondary" @click="replyToReview(review.reviewNo)">답글 작성</button>
                         </div>
                     </div>
                 </div>
@@ -780,18 +886,16 @@
                     description: '3대째 이어온 친환경 농법으로 건강한 농산물을 재배하고 있습니다.', // db 추가 ?
                     certifications: ['GAP 인증', '유기농 인증', '친환경 인증']
                 },
-                reviews: [
-                    { id: 1, productName: '유기농 토마토', rating: 5, content: '정말 신선하고 맛있어요! 다음에도 주문할게요.', userName: '김**', date: '2024-01-10' },
-                    { id: 2, productName: '친환경 쌀', rating: 4, content: '품질이 좋네요. 포장도 깔끔했습니다.', userName: '이**', date: '2024-01-08' },
-                    { id: 3, productName: '제주 감귤', rating: 5, content: '달고 맛있어요. 가족 모두 만족합니다.', userName: '박**', date: '2024-01-05' }
-                ],
+                reviews: [],
                 profile: {
                     email: 'farmer@example.com',
                     phone: '010-1234-5678',
                     businessNumber: '123-45-67890',
                     accountNumber: '123-456-789012',
                     bankName: '농협은행'
-                }
+                },
+                
+                editingCommentNo: null
             };
         },
         methods: {
@@ -869,21 +973,26 @@
                     });
                 }
             },
-            replyToReview: function(reviewId) {
+            replyToReview: function(reviewNo) {
                 let reply = prompt('답글을 입력하세요:');
-                if (reply) {
+                if (reply && reply.trim() !== '') {
                     let self = this;
                     let param = {
-                        reviewId: reviewId,
-                        reply: reply
+                        reviewNo: reviewNo,
+                        contents: reply
                     };
                     $.ajax({
-                        url: "${pageContext.request.contextPath}/seller/review/reply",
+                        url: "${pageContext.request.contextPath}/seller/review/addComment.dox",
                         dataType: "json",
                         type: "POST",
                         data: param,
-                        success: function(data) {
-                            alert('답글이 등록되었습니다.');
+                        success: function(response) {
+                            if(response.result === 'success') {
+                                alert('답글이 등록되었습니다.');      
+                                self.loadReviews();                
+                            } else {
+                                alert('답글 등록에 실패했습니다: ' + response.message);
+                            }
                         },
                         error: function() {
                             alert('답글 등록 중 오류가 발생했습니다.');
@@ -964,16 +1073,94 @@
                     }
                 });
             },
+            loadReviews: function() {
+                let self = this;
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/seller/reviews.dox", 
+                    dataType: "json",
+                    type: "GET",
+                    success: function(response) {
+                        self.reviews = response;
+                    },
+                    error: function(xhr, status, error) {
+                        alert('리뷰를 불러오는 중 오류가 발생했습니다.');
+                        console.error("AJAX Error: ", status, error);
+                    }
+                });
+            },
+            deleteComment: function(commentNo) {
+                if (confirm('정말로 이 답글을 삭제하시겠습니까?')) {
+                    let self = this;
+                    $.ajax({
+                        url: "${pageContext.request.contextPath}/seller/review/deleteComment.dox", 
+                        dataType: "json",
+                        type: "POST",
+                        data: {
+                            commentNo: commentNo 
+                        },
+                        success: function(response) {
+                            if (response.result === 'success') {
+                                alert('답글이 삭제되었습니다.');
+                                self.loadReviews(); 
+                            } else {
+                                alert('답글 삭제에 실패했습니다: ' + response.message);
+                            }
+                        },
+                        error: function() {
+                            alert('답글 삭제 중 오류가 발생했습니다.');
+                        }
+                    });
+                }
+            },
+            editComment: function(commentNo) {
+                let self = this;
+                self.editingCommentNo = commentNo; 
+            },
 
+            cancelEdit: function() {
+                let self = this;
+                self.editingCommentNo = null; 
+                self.loadReviews(); 
+            },
 
+            saveEditedComment: function(comment) {
+                let self = this;
+                
+                if (comment.contents.trim() === '') {
+                    alert('답글 내용을 입력해주세요.');
+                    return;
+                }
+                
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/seller/review/updateComment.dox",
+                    dataType: "json",
+                    type: "POST",
+                    data: {
+                        commentNo: comment.commentNo,
+                        contents: comment.contents
+                    },
+                    success: function(response) {
+                        if (response.result === 'success') {
+                            alert('답글이 수정되었습니다.');
+                            self.editingCommentNo = null; 
+                            self.loadReviews(); 
+                        } else {
+                            alert('답글 수정에 실패했습니다: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('답글 수정 중 오류가 발생했습니다.');
+                    }
+                });
+            },
         },
         mounted() {
             let self = this;
             // self.loadDashboardData(); 대시보드 추후 
             self.loadFarmInfo();
+            self.loadReviews();
         }
     });
 
     app.mount('#app');
 </script>
-

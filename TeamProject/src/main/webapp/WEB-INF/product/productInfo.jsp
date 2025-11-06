@@ -957,6 +957,81 @@
                         flex-wrap: nowrap;
                     }
                 }
+                /* 판매자 답글 컨테이너 */
+                .seller-reply-container {
+                    margin-top: 1rem;
+                    background-color: #f9fafb;
+                    border-radius: 0.5rem;
+                    padding: 1rem;
+                }
+
+                /* 판매자 답글 개별 항목 */
+                .seller-reply-item {
+                    padding-top: 0.5rem;
+                    padding-bottom: 0.5rem;
+                    border-bottom: 1px solid #e5e7eb;
+                }
+                
+                .seller-reply-header {
+                    display: flex;
+                    justify-content: space-between; /* 양쪽 끝으로 정렬 */
+                    align-items: center; /* 세로 중앙 정렬 */
+                    margin-bottom: 0.5rem; /* 내용과의 간격 */
+                }
+
+                .seller-reply-item:last-child {
+                    border-bottom: none;
+                }
+
+                /* 판매자 답글 작성자 */
+                .seller-reply-author {
+                    font-weight: 600;
+                    color: #16a34a;
+                    margin: 0;
+                }
+
+                /* 판매자 답글 내용 */
+                .seller-reply-content {
+                    color: #374151;
+                    margin-top: 0.5rem;
+                }
+
+                /* 판매자 답글 날짜 */
+                .seller-reply-date {
+                    font-size: 0.875rem;
+                    color: #6b7280;
+                    margin-top: 0.25rem;
+                }
+                .btn-info {
+                    background-color: #007bff; 
+                    color: white;
+                }
+                .btn-info:hover {
+                    background-color: #0056b3; 
+                }
+                .seller-reply-actions {
+                    display: flex;
+                    gap: 0.5rem;
+                }
+
+                .btn-sm {
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.875rem;
+                }
+                .btn-danger {
+                    background-color: #dc3545;
+                    color: white;
+                }
+                .btn-danger:hover {
+                    background-color: #c82333;
+                }
+                .btn-sm {
+                    height: auto; 
+                    min-width: 0; 
+                    padding: 4px 10px; 
+                    font-size: 13px;
+                    font-weight: 500; 
+                }
             </style>
         </head>
 
@@ -1326,6 +1401,8 @@
                         currentPage: 1,
                         pageSize: 5,
                         totalReviewCount: 0,
+
+                        editingCommentNo: null,
                         //============================
 
                         qaList: []
@@ -1817,6 +1894,76 @@
                                 }
                             }
                         });
+                    },
+                    editComment: function(comment) {
+                        let self = this;
+                        comment.originalContents = comment.contents;
+                        self.editingCommentNo = comment.commentNo; 
+                    },
+
+                    cancelEdit: function() {
+                        let self = this;
+                        const comment = this.reviews.flatMap(r => r.comments || []).find(c => c.commentNo === self.editingCommentNo);
+                        if (comment && comment.originalContents !== undefined) {
+                            comment.contents = comment.originalContents;
+                        }
+                        self.editingCommentNo = null; 
+                    },
+
+                    saveEditedComment: function(comment) {
+                        let self = this;
+
+                        if (comment.contents.trim() === '') {
+                            alert('답글 내용을 입력해주세요.');
+                            return;
+                        }
+
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/seller/review/updateComment.dox",
+                            dataType: "json",
+                            type: "POST",
+                            data: {
+                                commentNo: comment.commentNo,
+                                contents: comment.contents
+                            },
+                            success: function(response) {
+                                if (response.result === 'success') {
+                                    alert('답글이 수정되었습니다.');
+                                    self.editingCommentNo = null; 
+                                    self.fnLoadReviews(); 
+                                } else {
+                                    alert('답글 수정에 실패했습니다: ' + response.message);
+                                }
+                            },
+                            error: function() {
+                                alert('답글 수정 중 오류가 발생했습니다.');
+                            }
+                        });
+                    },
+
+                    deleteComment: function(commentNo) {
+                        if (confirm('정말로 이 답글을 삭제하시겠습니까?')) {
+                            let self = this;
+                            $.ajax({
+                                url: "${pageContext.request.contextPath}/seller/review/deleteComment.dox", 
+                                dataType: "json",
+                                type: "POST",
+                                data: {
+                                    commentNo: commentNo 
+                                },
+                                success: function(response) {
+                                    if (response.result === 'success') {
+                                        alert('답글이 삭제되었습니다.');
+                                        self.fnLoadReviews(); 
+                                    } else {
+                                        alert('답글 삭제에 실패했습니다: ' + response.message);
+                                    }
+                                },
+                                error: function() {
+                                    alert('답글 삭제 중 오류가 발생했습니다.');
+                                }
+                            });
+                        }
                     },
 
                     fnLoadQA() {

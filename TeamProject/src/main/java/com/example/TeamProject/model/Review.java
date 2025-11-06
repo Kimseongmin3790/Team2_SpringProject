@@ -26,4 +26,8 @@ public class Review {
     private List<String> reviewImages; // 리뷰에 첨부된 이미지 URL 목록
     private boolean isRecommendedByMe; // 리뷰 추천 여부 확인
     
+    private List<ReviewComment> comments;
+    
+    
+    
 }
