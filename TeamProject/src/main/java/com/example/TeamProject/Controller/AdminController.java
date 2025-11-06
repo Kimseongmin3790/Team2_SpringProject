@@ -35,8 +35,7 @@ public class AdminController {
     public String productManage(Model model) throws Exception{
 
         return "admin/productManage"; 
-    }
-		
+    }		
 	
 	@RequestMapping("/locationMap.do") 
     public String locationMap(Model model) throws Exception{
@@ -59,6 +58,15 @@ public class AdminController {
 	public String approveSeller(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = adminService.approveSeller(map);
+		
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/rejectSeller.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String rejectSeller(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = adminService.rejectSeller(map);
 		
 		return new Gson().toJson(resultMap);
 	}
@@ -137,6 +145,6 @@ public class AdminController {
 	    resultMap = adminService.updateRecommend(productNo, recommend);
 		
 		return new Gson().toJson(resultMap);
-	}
+	}		
 	
 }

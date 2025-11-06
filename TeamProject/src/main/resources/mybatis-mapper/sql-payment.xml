@@ -56,7 +56,7 @@
 	
 	<select id="selectPaymentList" parameterType="hashmap" resultType="com.example.TeamProject.model.Cart">
 	SELECT
-		P.PRODUCT_NO AS productNo,
+		P.PRODUCT_NO AS productNo, c.cart_no AS cartNo, c.product_no AS productNo, c.quantity AS quantity, c.fulfillment AS fulfillment, c.shipping_fee AS shippingFee,
 		  P.PNAME AS pName, NVL(P.PRICE,0) AS price, NVL(PI.THUMB_URL, '/resources/img/no-image.png') AS thumbPath,
 		  NVL(C.QUANTITY, NVL(#{quantity}, 1)) AS quantity   -- ★ CART 수량 우선, 없으면 요청 qty, 그것도 없으면 1
 		FROM PRODUCT P

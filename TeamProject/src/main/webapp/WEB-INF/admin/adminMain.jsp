@@ -44,12 +44,23 @@
 
                 /* 카드 그리드 */
                 .admin-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+                    display: flex;
+                    flex-wrap: wrap;
+                    /* 👉 줄바꿈 허용 */
+                    justify-content: center;
+                    /* 가운데 정렬 */
                     gap: 25px;
+                    /* 카드 간 간격 */
+                    margin-bottom: 40px;
                 }
 
                 .admin-card {
+                    flex: 1 1 calc(20% - 25px);
+                    /* 👉 5개 균등 (100% / 5) */
+                    max-width: 230px;
+                    /* 카드 최대 폭 */
+                    min-width: 200px;
+                    /* 너무 작아지지 않게 제한 */
                     background-color: #f3ebd3;
                     border-radius: 14px;
                     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
@@ -57,6 +68,8 @@
                     text-align: center;
                     cursor: pointer;
                     transition: 0.25s ease;
+                    box-sizing: border-box;
+                    /* 👉 padding 포함 폭 계산 */
                 }
 
                 .admin-card:hover {
@@ -84,10 +97,11 @@
                 /* 통계 영역 */
                 .admin-stats {
                     margin-top: 60px;
-                    display: flex;
-                    flex-wrap: wrap;
-                    justify-content: center;
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                    /* 4개 균등 */
                     gap: 25px;
+                    justify-items: center;
                 }
 
                 .admin-stat-box {
@@ -96,7 +110,9 @@
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
                     padding: 25px 40px;
                     text-align: center;
-                    min-width: 250px;
+                    min-width: 280px;
+                    width: 100%;
+                    box-sizing: border-box;
                 }
 
                 .admin-stat-box h4 {
@@ -117,12 +133,35 @@
                 .admin-bottom-space {
                     height: 40px;
                 }
+
+
+                /* ✅ 반응형 대응 */
+                @media (max-width: 1200px) {
+                    .admin-card {
+                        flex: 1 1 calc(33.33% - 25px);
+                        /* 👉 3개씩 */
+                    }
+                }
+
+                @media (max-width: 992px) {
+                    .admin-card {
+                        flex: 1 1 calc(50% - 25px);
+                        /* 👉 2개씩 */
+                    }
+                }
+
+                @media (max-width: 600px) {
+                    .admin-card {
+                        flex: 1 1 100%;
+                        /* 👉 1개씩 */
+                    }
+                }
             </style>
         </head>
 
         <body>
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
-            <div id="app">                
+                <div id="app">
 
                     <!-- ↓↓ 관리자 콘텐츠 래퍼 ↓↓ -->
                     <div class="admin-container">
@@ -132,27 +171,17 @@
                             <div class="admin-card" @click="goPage('memberManage.do')">
                                 <i class="fa-solid fa-users"></i>
                                 <h3>회원관리</h3>
-                                <p>회원 목록 / 판매자 인증 / 신고 처리</p>
+                                <p>회원 목록 / 판매자 인증</p>
                             </div>
                             <div class="admin-card" @click="goPage('productManage.do')">
                                 <i class="fa-solid fa-box-open"></i>
                                 <h3>상품관리</h3>
-                                <p>카테고리 관리 / 상품 활성화</p>
-                            </div>
-                            <div class="admin-card" @click="goPage('orderManage.do')">
-                                <i class="fa-solid fa-receipt"></i>
-                                <h3>주문·정산관리</h3>
-                                <p>거래내역 / 환불 승인 / 정산 처리</p>
+                                <p>카테고리 관리 / 상품 추천여부</p>
                             </div>
                             <div class="admin-card" @click="goPage('stats.do')">
                                 <i class="fa-solid fa-chart-line"></i>
                                 <h3>통계</h3>
-                                <p>매출 / 품목 / 가입자 추이</p>
-                            </div>
-                            <div class="admin-card" @click="goPage('contentManage.do')">
-                                <i class="fa-solid fa-clipboard-list"></i>
-                                <h3>콘텐츠관리</h3>
-                                <p>공지사항 / 문의게시판 관리</p>
+                                <p>회원/ 매출 / 품목 / 가입자 통계 및 추이</p>
                             </div>
                         </div>
 
@@ -176,45 +205,45 @@
                         </div>
 
                         <div class="admin-bottom-space"></div>
-                    </div>                
-            </div>
-            <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+                    </div>
+                </div>
+                <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
-            <script>
-                const app = Vue.createApp({
-                    data() {
-                        return {
-                            sessionId: "${sessionId}",
-                            stats: {}
-                        };
-                    },
-                    methods: {
-                        goPage(page) {
-                            const path = "${pageContext.request.contextPath}";
-                            location.href = path + "/admin/" + page;
-                        },
-                        fnLoadStats() {
-                            // this.stats = { members: 1342, products: 286, orders: 117 };
-                            let self = this;
-                            let param = {};
-                            $.ajax({
-                                url: "/dashboardCount.dox",
-                                dataType: "json",
-                                type: "POST",
-                                data: param,
-                                success: function (data) {
-                                    self.stats = data;
+                    <script>
+                        const app = Vue.createApp({
+                            data() {
+                                return {
+                                    sessionId: "${sessionId}",
+                                    stats: {}
+                                };
+                            },
+                            methods: {
+                                goPage(page) {
+                                    const path = "${pageContext.request.contextPath}";
+                                    location.href = path + "/admin/" + page;
+                                },
+                                fnLoadStats() {
+                                    // this.stats = { members: 1342, products: 286, orders: 117 };
+                                    let self = this;
+                                    let param = {};
+                                    $.ajax({
+                                        url: "/dashboardCount.dox",
+                                        dataType: "json",
+                                        type: "POST",
+                                        data: param,
+                                        success: function (data) {
+                                            self.stats = data;
+                                        }
+                                    });
                                 }
-                            });
-                        }
-                    },
-                    mounted() {
-                        let self = this;
-                        self.fnLoadStats();
-                    }
-                });
-                app.mount('#app');
-            </script>
+                            },
+                            mounted() {
+                                let self = this;
+                                self.fnLoadStats();
+                            }
+                        });
+                        app.mount('#app');
+                    </script>
         </body>
 
         </html>

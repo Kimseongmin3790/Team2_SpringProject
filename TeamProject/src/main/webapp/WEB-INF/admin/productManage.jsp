@@ -147,20 +147,19 @@
                 }
 
                 .btn-back {
-                    background: none;
-                    border: 1px solid #ccc;
-                    color: #333;
-                    padding: 6px 12px;
-                    border-radius: 6px;
-                    font-size: 14px;
+                    background: #5dbb63;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 10px 20px;
+                    font-size: 15px;
                     cursor: pointer;
-                    transition: 0.2s;
+                    transition: 0.3s;
+                    margin-bottom: 25px;
                 }
 
                 .btn-back:hover {
-                    background: #e8f5e9;
-                    border-color: #4caf50;
-                    color: #1a5d1a;
+                    background: #4ba954;
                 }
 
                 .btn-recommend {
@@ -238,6 +237,7 @@
                                         <th>상품명</th>
                                         <th>카테고리</th>
                                         <th>가격</th>
+                                        <th>단위</th>
                                         <th>재고</th>
                                         <th>등록일</th>
                                         <th>상품추천여부</th>
@@ -245,12 +245,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="item in filteredList" :key="item.productNo">
+                                    <tr v-for="(item, idx) in filteredList" :key="item.productNo + '-' + idx">
                                         <td>{{ item.productNo }}</td>
                                         <td>{{ item.sellerId }}</td>
-                                        <td>{{ item.pname }}</td>
+                                        <td>{{ item.pName }}</td>
                                         <td>{{ item.c1 }}</td>
                                         <td>{{ item.price.toLocaleString() }}원</td>
+                                        <td>{{ item.unit }}</td>
                                         <td>{{ item.stock }}</td>
                                         <td>{{ item.cdate }}</td>
                                         <td>
@@ -259,7 +260,9 @@
                                                 {{ item.recommend === 'Y' ? '추천안하기' : '추천하기' }}
                                             </button>
                                         </td>
-                                        <td>{{ item.productStatus }}</td>
+                                        <td v-if="item.productStatus === 'SOLDOUT'" style="color: red">{{
+                                            item.productStatus }}</td>
+                                        <td v-else>{{ item.productStatus }}</td>
                                     </tr>
                                     <tr v-if="filteredList.length === 0">
                                         <td colspan="8" class="no-data">등록된 상품이 없습니다.</td>
@@ -284,6 +287,7 @@
                                 };
                             },
                             computed: {
+
                                 parentCategories() {
                                     return this.categoryList.filter(c => !c.parentCategoryNo);
                                 },
@@ -303,52 +307,51 @@
                                     const kw = (this.keyword || "").trim().toLowerCase();
 
                                     return this.productList.filter(item => {
-                                        const itemCat = String(item.categoryNo); // 🔹 문자열로 통일
+                                        const itemCat = String(item.categoryNo);
 
-                                        // (1) 소분류 선택 시: 해당 categoryNo만
+                                        // ✅ (1) 카테고리 필터
                                         if (this.selectedSubCategory) {
                                             return itemCat === String(this.selectedSubCategory);
                                         }
 
-                                        // (2) 중분류만 선택된 경우: 해당 중분류의 모든 하위 소분류 포함
                                         if (this.selectedMiddleCategory) {
                                             const subCats = this.categoryList
                                                 .filter(c => String(c.parentCategoryNo) === String(this.selectedMiddleCategory))
                                                 .map(c => String(c.categoryNo));
-                                            subCats.push(String(this.selectedMiddleCategory)); // 중분류 자체도 포함
+                                            subCats.push(String(this.selectedMiddleCategory));
                                             return subCats.includes(itemCat);
                                         }
 
-                                        // (3) 대분류만 선택된 경우: 중분류/소분류 전체 포함
                                         if (this.selectedParentCategory) {
-                                            // 3-1) 중분류 목록
                                             const middleCats = this.categoryList.filter(
                                                 c => String(c.parentCategoryNo) === String(this.selectedParentCategory)
                                             );
-
-                                            // 3-2) 해당 중분류들의 하위 소분류 목록
                                             const subCats = this.categoryList.filter(c =>
                                                 middleCats.some(mid => String(mid.categoryNo) === String(c.parentCategoryNo))
                                             );
-
-                                            // 3-3) 모든 하위 카테고리 번호 합치기
                                             const allChildCats = [
                                                 ...middleCats.map(c => String(c.categoryNo)),
                                                 ...subCats.map(c => String(c.categoryNo)),
+                                                String(this.selectedParentCategory)
                                             ];
-
-                                            // 대분류 자체 카테고리에 상품이 있을 가능성도 포함
-                                            allChildCats.push(String(this.selectedParentCategory));
-
                                             return allChildCats.includes(itemCat);
                                         }
 
-                                        // (4) 상품명 검색
-                                        return !kw || (item.pname && item.pname.toLowerCase().includes(kw));
-                                    }).filter(item => {
-                                        // 🔹 5️⃣ 검색어 필터
-                                        const kw = this.keyword.trim().toLowerCase();
-                                        return !kw || (item.pname && item.pname.toLowerCase().includes(kw));
+                                        // ✅ (2) 검색어 필터
+                                        if (kw) {
+                                            // 부분일치 → 정확일치로 바꾸려면 === 로 변경
+                                            return item.pName && item.pName.toLowerCase().includes(kw);
+                                        }
+
+                                        return true; // 아무 조건도 없으면 전체 표시
+                                    });
+
+                                    // ✅ productNo 기준으로 중복 제거
+                                    const seen = new Set();
+                                    return filtered.filter(it => {
+                                        if (seen.has(it.productNo)) return false;
+                                        seen.add(it.productNo);
+                                        return true;
                                     });
                                 },
                             },
@@ -371,6 +374,10 @@
                                         dataType: "json",
                                         success(data) {
                                             if (data.result === "success") {
+                                                console.log(data);
+                                                self.productList = [];
+                                                self.categoryList = [];
+
                                                 self.productList = data.list;
                                                 self.categoryList = data.categories;
                                             } else {
@@ -381,7 +388,7 @@
                                 },
 
                                 fnSearch() {
-                                    // computed 자동 반영
+                                    this.$forceUpdate();
                                 },
 
                                 fnToggleRecommend(item) {
@@ -391,9 +398,9 @@
                                     $.ajax({
                                         url: "/updateRecommend.dox",
                                         type: "POST",
-                                        data: { 
-                                            productNo: item.productNo, 
-                                            recommend: newStatus 
+                                        data: {
+                                            productNo: item.productNo,
+                                            recommend: newStatus
                                         },
                                         dataType: "json",
                                         success(res) {

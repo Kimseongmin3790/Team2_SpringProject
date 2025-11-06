@@ -59,6 +59,10 @@
                     cursor: pointer;
                 }
 
+                .product-card:hover {
+                    transform: translateY(-3px);
+                }
+
                 .product-card img {
                     width: 100%;
                     height: 180px;
@@ -90,7 +94,7 @@
                             <div v-for="p in list" :key="p.productNo" class="product-card"
                                 @click="goInfo(p.productNo)">
                                 <img :src="p.imageUrl" alt="상품 이미지">
-                                <div class="product-name">{{ p.pname }}</div>
+                                <div class="product-name">{{ p.pName }}</div>
                                 <div class="product-price">{{ p.price.toLocaleString() }}원</div>
                             </div>
                         </div>

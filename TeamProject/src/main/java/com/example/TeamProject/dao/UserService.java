@@ -174,6 +174,26 @@ public class UserService {
 
 		return resultMap;
 	}
+	
+	public HashMap<String, Object> findIdByPhone(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			User user = userMapper.findIdByPhone(map);
+			if (user != null) {
+				resultMap.put("user", user);
+				resultMap.put("result", "success");
+			} else {
+				resultMap.put("result", "fail");
+			}
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+		}
+
+		return resultMap;
+	}
 
 	public HashMap<String, Object> findPwd(HashMap<String, Object> map) {
 		// TODO Auto-generated method stub
@@ -506,6 +526,20 @@ public class UserService {
 			int cnt = userMapper.deleteCartItem(map); 
 			resultMap.put("cnt", cnt);
 			resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+
+	public HashMap<String, Object> allRemoveItem(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			int cnt = userMapper.allDelete(map);
+			resultMap.put("result", "sucess");
 		} catch (Exception e) {
 			// TODO: handle exception
 			resultMap.put("result", "fail");
