@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.PaymentMapper">
+	
+	<insert id="insertOrder" parameterType="hashmap" useGeneratedKeys="false">
+	    <selectKey keyProperty="orderNo" order="BEFORE" resultType="int">
+	        SELECT ORDERS_SEQ.NEXTVAL FROM DUAL
+	    </selectKey>
+	    INSERT INTO ORDERS (
+	        ORDER_NO,
+	        TOTAL_PRICE,
+	        STATUS,
+	        RECEIV_NAME,
+	        RECEIV_PHONE,
+	        DELIVER_ADDR,
+	        MEMO,
+	        ORDERDATE,
+	        UDATETIME,
+	        BUYER_ID
+	    ) VALUES (
+	        #{orderNo},
+	        #{totalPrice},
+	        #{status},
+	        #{receivName},
+	        #{receivPhone},
+	        #{deliverAddr},
+	        #{memo},
+	        SYSDATE,
+	        SYSDATE,
+	        #{buyerId}
+	    )
+	</insert>
+	
+	
+	<insert id="insertPayment" parameterType="hashmap">
+	    INSERT INTO PAYMENT (
+	        PAYMENT_NO,
+	        ORDER_NO,
+	        PAYMENT_METHOD,
+	        PAYMENT_STATUS,
+	        TRANSACTION_NO,
+	        AMOUNT,
+	        PAID_AT
+	    ) VALUES (
+	        PAYMENT_SEQ.NEXTVAL,
+	        #{orderNo},
+	        #{paymentMethod},
+	        #{paymentStatus},
+	        #{transactionNo},
+	        #{amount},
+	        SYSDATE
+	    )
+	</insert>
+	
+	<select id="selectPaymentList" parameterType="hashmap" resultType="com.example.TeamProject.model.Cart">
+	SELECT
+		P.PRODUCT_NO AS productNo,
+		  P.PNAME AS pName, NVL(P.PRICE,0) AS price, NVL(PI.THUMB_URL, '/resources/img/no-image.png') AS thumbPath,
+		  NVL(C.QUANTITY, NVL(#{quantity}, 1)) AS quantity   -- ★ CART 수량 우선, 없으면 요청 qty, 그것도 없으면 1
+		FROM PRODUCT P
+		LEFT JOIN (
+		  SELECT PRODUCT_NO,
+		         DBMS_LOB.SUBSTR(IMAGE_URL, 4000, 1) AS THUMB_URL
+		  FROM (
+		    SELECT PI.*,
+		           ROW_NUMBER() OVER (
+		             PARTITION BY PRODUCT_NO
+		             ORDER BY CASE WHEN NVL(PI.IS_THUMBNAIL,'N')='Y' THEN 0 ELSE 1 END,
+		                      NVL(PI.SORT_ORDER, 999999),
+		                      PI.IMAGE_ID
+		           ) RN
+		    FROM PRODUCT_IMAGE PI
+		  )
+		  WHERE RN = 1
+		) PI ON PI.PRODUCT_NO = P.PRODUCT_NO
+		LEFT JOIN CART C
+		  ON C.PRODUCT_NO = P.PRODUCT_NO
+		 AND C.USER_ID    = #{userId}          -- ★ 현재 로그인 사용자 기준
+		WHERE P.PRODUCT_NO = #{productNo}
+	</select>
+	
+	<select id="selectUserInfo" parameterType="hashmap" resultType="com.example.TeamProject.model.User">
+		SELECT *
+		FROM USERS
+		WHERE USER_ID = #{userId}
+	</select>
+	
+</mapper>

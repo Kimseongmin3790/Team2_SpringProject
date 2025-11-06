@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.CategoryMapper">
+   
+    <select id="selectProductList" resultType="com.example.TeamProject.model.Product">
+        SELECT 
+            P.PRODUCT_NO      AS productNo,
+            P.SELLER_ID       AS sellerId,
+            P.CATEGORY_NO     AS categoryNo,
+            P.PNAME           AS pname,
+            P.PINFO			  AS pinfo,
+            P.PRICE           AS price,
+            P.STOCK           AS stock,
+            P.UNIT            AS unit,
+            P.PRODUCT_STATUS  AS productStatus,
+            TO_CHAR(P.CDATETIME, 'YYYY-MM-DD') AS cdate,
+            NVL(IMG.IMAGE_URL, '/resources/img/category/noimage.jpg') AS filePath
+        FROM PRODUCT P
+        LEFT JOIN PRODUCT_IMAGE IMG
+            ON P.PRODUCT_NO = IMG.PRODUCT_NO AND IMG.IS_THUMBNAIL = 'Y'
+        ORDER BY P.PRODUCT_NO
+    </select>
+
+   
+    <select id="selectCategoryList" resultType="com.example.TeamProject.model.ProductCategory">
+        SELECT 
+            C.CATEGORY_NO       AS categoryNo,
+            C.CATEGORY_NAME     AS categoryName,
+            C.PARENT_CATEGORY_NO AS parentCategoryNo,
+            NVL(I.IMAGE_URL, '/resources/img/category/noimage.png') AS imageUrl
+        FROM PRODUCT_CATEGORY C
+        LEFT JOIN CATEGORY_IMAGE I ON C.CATEGORY_NO = I.CATEGORY_NO
+        ORDER BY C.CATEGORY_NO
+    </select>
+
+</mapper>

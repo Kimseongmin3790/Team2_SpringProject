@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.BoardMapper">
+	
+	<select id="selectInquiryList" parameterType="hashmap" resultType="com.example.TeamProject.model.Board">
+	  	SELECT 
+	    INQUIRY_NO, 
+	    TITLE, 
+	    USER_ID, 
+	    TO_CHAR(CDATETIME, 'YYYY-MM-DD') AS REG_DATE,
+	    IS_SECRET, 
+	    STATUS,
+	    CNT
+	  FROM INQUIRY
+	  WHERE 1=1
+	    <if test="keyword != null and keyword != ''">
+	      <choose>
+	        <when test="searchType == 'title'">
+	          AND TITLE LIKE '%' || #{keyword} || '%'
+	        </when>
+	        <when test="searchType == 'content'">
+	          AND CONTENT LIKE '%' || #{keyword} || '%'
+	        </when>
+	        <when test="searchType == 'userId'">
+	          AND USER_ID LIKE '%' || #{keyword} || '%'
+	        </when>
+	        <otherwise>
+	          AND (TITLE LIKE '%' || #{keyword} || '%' OR CONTENT LIKE '%' || #{keyword} || '%')
+	        </otherwise>
+	      </choose>
+	    </if>
+	  ORDER BY INQUIRY_NO DESC
+	  OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+	</select>
+	
+	<select id="countInquiry" parameterType="hashmap" resultType="int">
+	  SELECT COUNT(*)
+	  FROM INQUIRY
+	  WHERE 1=1
+	    <if test="keyword != null and keyword != ''">
+	      <choose>
+	        <when test="searchType == 'title'">
+	          AND TITLE LIKE '%' || #{keyword} || '%'
+	        </when>
+	        <when test="searchType == 'content'">
+	          AND CONTENT LIKE '%' || #{keyword} || '%'
+	        </when>
+	        <when test="searchType == 'userId'">
+	          AND USER_ID LIKE '%' || #{keyword} || '%'
+	        </when>
+	      </choose>
+	    </if>
+	</select>
+	
+	<update id="updateInquiryCount" parameterType="int">
+	    UPDATE INQUIRY
+	    SET CNT = NVL(CNT, 0) + 1
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</update>
+	
+	<select id="selectInquiryDetail" parameterType="int" resultType="com.example.TeamProject.model.Board">
+	    SELECT 
+	        INQUIRY_NO,
+	        TITLE,
+	        CATEGORY,
+	        USER_ID,
+	        CONTENT,
+	        IS_SECRET,
+	        CNT,
+	        STATUS,
+	        TO_CHAR(CDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS REG_DATE
+	    FROM INQUIRY
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</select>
+	
+	<select id="selectInquiryPwd" parameterType="int" resultType="String">
+	    SELECT PASSWORD
+	    FROM INQUIRY
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</select>
+	
+	<select id="selectAnswer" parameterType="int" resultType="com.example.TeamProject.model.Answer">
+	    SELECT *
+	    FROM INQUIRY_ANSWER
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</select>
+	
+	<insert id="insertAnswer" parameterType="hashmap">
+	    INSERT INTO "INQUIRY_ANSWER" (
+	        ANSWER_NO, 
+	        INQUIRY_NO, 
+	        SELLER_ID, 
+	        CONTENT, 
+	        CDATETIME, 
+	        UDATETIME
+	    ) VALUES (
+	        ANSWER_SEQ.NEXTVAL, 
+	        #{inquiryNo}, 
+	        #{userId}, 
+	        #{content}, 
+	        SYSDATE, 
+	        SYSDATE
+	    )
+	</insert>
+	
+	<update id="updateInquiryStatusAnswered" parameterType="int">
+	    UPDATE INQUIRY
+	    SET STATUS = '답변완료',
+	        UDATETIME = SYSDATE
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</update>
+	
+	<insert id="insertInquiry" parameterType="hashmap">
+	    INSERT INTO INQUIRY (
+	        INQUIRY_NO, USER_ID, CATEGORY, TITLE, CONTENT, IS_SECRET, PASSWORD, STATUS, CNT, CDATETIME, UDATETIME
+	    ) VALUES (
+	        INQUIRY_SEQ.NEXTVAL,
+	        #{userId},
+	        #{category},
+	        #{title},
+	        #{content},
+	        #{isSecret},
+	        #{password},
+	        '대기',
+	        0,
+	        SYSDATE,
+	        SYSDATE
+	    )
+	</insert>
+	
+	<update id="updateInquiry" parameterType="hashmap">
+	    UPDATE INQUIRY
+	    SET 
+	        CATEGORY = #{category},
+	        TITLE = #{title},
+	        CONTENT = #{content},
+	        IS_SECRET = #{isSecret},
+	        PASSWORD = #{password},
+	        UDATETIME = SYSDATE
+	    WHERE INQUIRY_NO = #{inquiryNo}
+	</update>
+	
+	<delete id="deleteInquiryAnswer" parameterType="hashmap">
+	  DELETE FROM INQUIRY_ANSWER WHERE INQUIRY_NO = #{inquiryNo}
+	</delete>
+	
+	<delete id="deleteInquiry" parameterType="hashmap">
+	  DELETE FROM INQUIRY WHERE INQUIRY_NO = #{inquiryNo}
+	</delete>
+	
+	<select id="selectProductQnaList" parameterType="hashmap" resultType="com.example.TeamProject.model.Board">
+	  SELECT
+	    Q.QNA_NO,
+	    Q.TITLE,
+	    Q.USER_ID,
+	    TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD') AS REG_DATE,
+	    Q.STATUS,
+	    Q.IS_SECRET,
+	    Q.CNT,
+	    P.PNAME,
+	    I.IMAGE_URL AS THUMB_URL
+	  FROM PRODUCT_QNA Q
+	  JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
+	  LEFT JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO AND I.IS_THUMBNAIL = 'Y'
+	  <where>
+	      <if test="keyword != null and keyword != ''">
+	          <choose>
+	              <when test="searchType == 'title'">
+	                  AND Q.TITLE LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <when test="searchType == 'content'">
+	                  AND Q.CONTENT LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <when test="searchType == 'userId'">
+	                  AND Q.USER_ID LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <otherwise>
+	                  AND (Q.TITLE LIKE '%' || #{keyword} || '%' OR Q.CONTENT LIKE '%' || #{keyword} || '%')
+	              </otherwise>
+	          </choose>
+	      </if>
+	  </where>
+	  ORDER BY Q.QNA_NO DESC
+	  OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+	</select>
+	
+	<select id="countProductQna" parameterType="hashmap" resultType="int">
+	  SELECT COUNT(*)
+	  FROM PRODUCT_QNA Q
+	  JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
+	  <where>
+	      <if test="keyword != null and keyword != ''">
+	          <choose>
+	              <when test="searchType == 'title'">
+	                  AND Q.TITLE LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <when test="searchType == 'content'">
+	                  AND Q.CONTENT LIKE '%' || #{keyword} || '%'
+	              </when>
+	              <when test="searchType == 'userId'">
+	                  AND Q.USER_ID LIKE '%' || #{keyword} || '%'
+	              </when>
+	          </choose>
+	      </if>
+	  </where>
+	</select>
+	
+	<select id="selectProductQnaDetail" parameterType="int" resultType="com.example.TeamProject.model.Board">
+	    SELECT 
+		    Q.QNA_NO,
+		    Q.TITLE,
+		    Q.USER_ID,
+		    Q.CONTENT,
+		    Q.IS_SECRET,
+		    Q.CNT,
+		    Q.STATUS,
+		    TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS REG_DATE,
+		    P.PNAME,
+		    I.IMAGE_URL AS THUMB_URL
+		FROM PRODUCT_QNA Q
+		INNER JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
+		INNER JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO
+		WHERE I.IS_THUMBNAIL = 'Y' AND Q.QNA_NO = #{qnaNo}
+	</select>
+	
+	<select id="selectQnaPwd" parameterType="int" resultType="String">
+	    SELECT PASSWORD
+	    FROM PRODUCT_QNA
+	    WHERE QNA_NO = #{qnaNo}
+	</select>
+	
+	<select id="selectQnaAnswer" parameterType="int" resultType="com.example.TeamProject.model.Answer">
+	    SELECT *
+	    FROM PRODUCT_QNA_ANSWER
+	    WHERE QNA_NO = #{qnaNo}
+	</select>
+	
+	<update id="updateProductQnaCount" parameterType="int">
+	    UPDATE PRODUCT_QNA
+	    SET CNT = NVL(CNT, 0) + 1
+	    WHERE QNA_NO = #{qnaNo}
+	</update>
+	
+	<insert id="productQnaInsert" parameterType="hashmap">
+		INSERT INTO PRODUCT_QNA	
+		VALUES(PRODUCT_QNA_SEQ.NEXTVAL, #{productNo}, #{userId}, #{title}, #{content}, #{isSecret}, #{password}, '답변대기', 0, SYSDATE, SYSDATE)
+	</insert>
+	
+	
+
+</mapper>

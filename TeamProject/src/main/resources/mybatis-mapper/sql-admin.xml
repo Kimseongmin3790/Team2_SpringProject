@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.AdminMapper">
+	<select id="selectUserList" parameterType="hashmap" resultType="com.example.TeamProject.model.User">
+		SELECT U.USER_ID, U.EMAIL, U.NAME, U.PHONE, U.USER_ROLE, U.ADDRESS, U.STATUS, TO_CHAR(U.CDATETIME, 'YYYY-MM-DD') AS CDATETIME, TO_CHAR(U.USER_BIRTH, 'YYYY-MM-DD') AS USER_BIRTH, 
+		DECODE(U.USER_GENDER, 'M', '남성', '여성') AS USER_GENDER, S.VERIFIED
+		FROM USERS U 
+		LEFT JOIN SELLER_INFO S ON U.USER_ID = S.USER_ID
+	</select>
+	
+	<update id="approveSeller" parameterType="hashmap">
+		UPDATE SELLER_INFO
+		SET VERIFIED = 'Y'
+		WHERE USER_ID = #{userId}	
+	</update>
+	
+	<update id="rejectSeller" parameterType="hashmap">
+		UPDATE SELLER_INFO
+		SET VERIFIED = 'N'
+		WHERE USER_ID = #{userId}
+	</update>
+	
+	<select id="allUserCount" resultType="int">
+		SELECT COUNT(*) AS USERCOUNT
+		FROM USERS
+	</select>
+	
+	<select id="allProductCount" resultType="int">
+		SELECT COUNT(*) AS PRODUCTCOUNT
+		FROM PRODUCT
+	</select>
+	
+	<select id="todayOrders" resultType="int">
+		SELECT COUNT(*) AS TODAYORDER
+		FROM ORDERS
+		WHERE TRUNC(ORDERDATE) = TRUNC(SYSDATE)
+	</select>
+	
+	<select id="allOrdersCount" resultType="int">
+		SELECT COUNT(*)
+		FROM ORDERS
+	</select>
+	
+	<select id="selectProductList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+		SELECT P.*, C.CATEGORY_NAME AS C1, C2.CATEGORY_NAME AS C2, C3.CATEGORY_NAME AS C3, TO_CHAR(P.CDATETIME, 'YY-MM-DD') AS CDATE, O.STOCK_QTY AS STOCK, O.UNIT, O.IS_ACTIVE
+		FROM PRODUCT P 
+		INNER JOIN PRODUCT_CATEGORY C   ON P.CATEGORY_NO = C.CATEGORY_NO
+        LEFT JOIN PRODUCT_CATEGORY C2   ON C.PARENT_CATEGORY_NO = C2.CATEGORY_NO
+        LEFT JOIN PRODUCT_CATEGORY C3   ON C2.PARENT_CATEGORY_NO = C3.CATEGORY_NO
+        LEFT JOIN PRODUCT_OPTION O ON P.PRODUCT_NO = O.PRODUCT_NO                		        
+	</select>
+	
+	 <!-- 대분류: 부모가 없음 -->
+	 <select id="selectTopList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
+	   SELECT
+	     CATEGORY_NO, CATEGORY_NAME, PARENT_CATEGORY_NO
+	   FROM PRODUCT_CATEGORY
+	   WHERE PARENT_CATEGORY_NO IS NULL
+	   ORDER BY CATEGORY_NO
+	 </select>
+
+	 <!-- 중분류: 선택한 대분류의 직계 자식 -->
+	 <select id="selectMidList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
+	   SELECT
+	     CATEGORY_NO, CATEGORY_NAME, PARENT_CATEGORY_NO
+	   FROM PRODUCT_CATEGORY
+	   WHERE PARENT_CATEGORY_NO = #{topNo}
+	   ORDER BY CATEGORY_NO
+	 </select>
+
+	 <!-- 소분류: 선택한 중분류의 직계 자식 -->
+	 <select id="selectLeafList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
+	   SELECT
+	     CATEGORY_NO, CATEGORY_NAME, PARENT_CATEGORY_NO
+	   FROM PRODUCT_CATEGORY
+	   WHERE PARENT_CATEGORY_NO = #{midNo}
+	   ORDER BY CATEGORY_NO
+	 </select>
+	
+	<select id="selectCategoryList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
+		SELECT *
+		FROM PRODUCT_CATEGORY
+		ORDER BY CATEGORY_NO
+	</select>
+	
+	<select id="selectNearestSellers" parameterType="hashmap" resultType="com.example.TeamProject.model.SellerVO">
+	  	SELECT *
+		FROM (
+		  SELECT
+		    S.USER_ID AS userId,
+		    S.BUSINESS_NAME AS businessName,
+		    S.LAT AS lat,
+		    S.LNG AS lng,
+		    ROUND(
+		      (6371 * ACOS(
+		        LEAST(1, GREATEST(-1,
+		          COS((#{lat} * 3.141592653589793)/180)
+		        * COS((S.LAT * 3.141592653589793)/180)
+		        * COS((S.LNG * 3.141592653589793)/180 - (#{lng} * 3.141592653589793)/180)
+		        + SIN((#{lat} * 3.141592653589793)/180)
+		        * SIN((S.LAT * 3.141592653589793)/180)
+		        ))
+		      )), 3
+		    ) AS distance
+		  FROM SELLER_INFO S
+		  WHERE S.LAT IS NOT NULL AND S.LNG IS NOT NULL
+		  ORDER BY distance ASC
+		)
+	</select>
+	
+	<update id="updateRecommend">
+		UPDATE PRODUCT
+			SET RECOMMEND = #{recommend}
+		WHERE PRODUCT_NO = #{productNo}
+	</update>
+	
+	
+</mapper>
