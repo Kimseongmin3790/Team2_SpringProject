@@ -1044,13 +1044,13 @@
                             <!-- 왼쪽: 이미지 -->
                             <div class="prod-media" id="img">
                                 <div class="main-box">
-                                    <img :src="mainImageUrl" :alt="info.pname" @error="onImgError($event)">
+                                    <img :src="mainImageUrl" :alt="info.pName" @error="onImgError($event)">
                                 </div>
 
                                 <div class="thumbs" id="small-img">
                                     <button v-for="u in thumbImages" :key="u" class="thumb"
                                         :class="{ active: u === mainImageUrl }" @click="mainImageUrl = u">
-                                        <img :src="u" :alt="info.pname">
+                                        <img :src="u" :alt="info.pName">
                                     </button>
                                 </div>
                             </div>
@@ -1161,7 +1161,7 @@
                                     <div class="selection-summary" v-if="selected" style="margin-top:12px">
                                         <div style="padding:8px 0;border-top:1px solid #eee">
                                             <div>
-                                                {{ info.pname }}
+                                                {{ info.pName }}
                                                 <button @click="removeProduct" style="margin-left:270px">삭제</button>
                                             </div>
                                             <hr
@@ -1188,8 +1188,7 @@
                                                 class="btn btn-primary">구매하기</button>
                                             <button @click="fnBasket(info.productNo, qty)"
                                                 class="btn btn-outline">장바구니</button>
-                                            <button @click="fnChat" class="btn btn-ghost">실시간 문의</button>
-                                            <button @click="fnWish" class="btn btn-like">찜</button>
+                                            <button class="btn btn-ghost" @click="openChatWindowPost">실시간 문의</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1217,7 +1216,7 @@
 
                         <div v-show="showDetail">
                             <div v-for="img in detailOnly" :key="img" class="detail-img-wrap">
-                                <img :src="img" :alt="info.pname || '상세 이미지'" class="detail-img cover" loading="lazy">
+                                <img :src="img" :alt="info.pName || '상세 이미지'" class="detail-img cover" loading="lazy">
                             </div>
 
                             <div>
@@ -1669,7 +1668,7 @@
                             alert("옵션 선택 후 수량을 확인해 주세요.");
                             return;
                         }
-                        pageChange('/product/payment.do', { productNo, qty, userId:self.userId }); // 결제 페이지로 이동
+                        pageChange('/product/payment.do', { productNo, qty, userId: self.userId }); // 결제 페이지로 이동
                     },
 
                     fnBasket: function (productNo, qty) {
@@ -1683,10 +1682,13 @@
                             alert("옵션 선택 후 수량을 확인해 주세요.");
                             return;
                         }
+                        const fee = (this.fulfillment === 'delivery') ? 3000 : 0; // ★ 추가
                         let param = {
                             userId: self.userId,
                             productNo: productNo,
-                            quantity: qty
+                            quantity: qty,
+                            fulfillment: self.fulfillment,
+                            shippingFee: fee
                         };
                         $.ajax({
                             url: '/cart/add.dox',
@@ -1695,7 +1697,11 @@
                             data: param,
                             success: function (data) {
                                 if (data.result == 'success') {
-                                    pageChange('/buyerMyPage.do', { productNo }); // 장바구니로 이동
+                                    if (confirm("장바구니에 담겼습니다 장바구니로 이동하시겠습니까?")) {
+                                        pageChange('/buyerMyPage.do', { productNo }); // 장바구니로 이동
+                                    } else {
+                                        self.fnInfo();
+                                    }
                                 } else {
                                     alert('장바구니 담기 실패');
                                 }
@@ -1705,7 +1711,38 @@
                     },
 
                     fnWish() { /* TODO */ },
-                    fnChat() { console.log('fnChat clicked'); },
+                    openChatWindowPost() {
+                        const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
+                        const action = CTX + '/chatting.do';       // POST 받을 엔드포인트
+                        const winName = 'chatWin';
+                        const features = 'width=500,height=600,noopener,resizable=yes,scrollbars=yes';
+
+                        // 1) 빈 창(이름 있는 창) 먼저 띄움 → 팝업 차단 우회에 유리
+                        const w = window.open('', winName, features);
+                        if (!w) { alert('팝업이 차단되었습니다. 사이트 팝업 허용을 켜주세요.'); return; }
+
+                        // 2) 히든 폼 만들어서 그 창으로 POST 전송
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = action;
+                        form.target = winName;
+
+                        // 필요한 파라미터들
+                        const add = (k, v) => {
+                            const i = document.createElement('input');
+                            i.type = 'hidden'; i.name = k; i.value = v;
+                            form.appendChild(i);
+                        };
+                        add('sessionId', this.userId || 'guest');
+
+                        // (Spring Security에서 CSRF가 켜져 있으면 같이 전송)
+                        // add('_csrf', '${_csrf.token}');  // JSP에서 넣어두면 됨
+
+                        document.body.appendChild(form);
+                        form.submit();
+                        form.remove();
+                        try { w.focus(); } catch (e) { }
+                    },
 
                     // 댓글
                     toggleComments() {
@@ -1837,10 +1874,10 @@
                                     });
 
                                     self.reviews = reviewsWithState || [];
-                                    self.totalReviewCount = response.totalCount || 0; 
+                                    self.totalReviewCount = response.totalCount || 0;
                                     self.averageRating = response.averageRating || 0;
                                     self.totalReviews = response.totalReviews || 0;
-                                    self.ratingDistribution = response.ratingDistribution || { 5:0,4:0,3:0,2:0,1:0 };
+                                    self.ratingDistribution = response.ratingDistribution || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
                                 } else {
                                     alert("리뷰 데이터를 불러오는 데 실패했습니다.");
                                 }
@@ -1997,7 +2034,7 @@
                             pageChange('/login.do');
                             return;
                         }
-                        pageChange('/productQna/write.do', { productNo: this.productNo, productName: this.info.pname });
+                        pageChange('/productQna/write.do', { productNo: this.productNo, productName: this.info.pName });
                     },
                     canViewQuestion(q) {
                         // 1. 비밀글 아닌 경우 → 누구나 열람 가능

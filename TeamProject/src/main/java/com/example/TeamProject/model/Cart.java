@@ -14,4 +14,6 @@ public class Cart {
 	private int price;
 	private String lineTotal;
 	private String thumbPath;
+	private String fulfillment;
+	private String shippingFee;
 }

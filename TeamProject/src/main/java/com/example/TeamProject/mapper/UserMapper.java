@@ -45,6 +45,8 @@ public interface UserMapper {
 	int selectCartTotal(HashMap<String, Object> map);
 	// 
 	int updateQty(HashMap<String, Object> map);
-	//
+	// 장바구니 선택 삭제
 	int deleteCartItem(HashMap<String, Object> map);
+	// 장바구니 전체 삭제
+	int allDelete(HashMap<String, Object> map);
 }
