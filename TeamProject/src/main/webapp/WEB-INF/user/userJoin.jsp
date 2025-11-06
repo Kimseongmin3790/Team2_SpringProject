@@ -80,7 +80,8 @@
                     align-items: center;
                 }
 
-                .input-wrapper input {
+                .input-wrapper input,
+                .input-wrapper select {
                     flex: 1;
                     padding: 10px 12px;
                     border: 1px solid #ccc;
@@ -93,6 +94,12 @@
                     border-color: #5dbb63;
                     box-shadow: 0 0 5px rgba(93, 187, 99, 0.5);
                     outline: none;
+                }
+
+                .gender-options {
+                    display: flex;
+                    gap: 20px;
+                    align-items: center;
                 }
 
                 /* ======================= 버튼 ======================= */
@@ -245,6 +252,23 @@
                                 </div>
                             </div>
 
+                            <!-- ✅ 생년월일 -->
+                            <div class="input-group">
+                                <label><i class="fa-solid fa-cake-candles"></i> 생년월일</label>
+                                <div class="input-wrapper">
+                                    <input type="date" v-model="userBirth">
+                                </div>
+                            </div>
+
+                            <!-- ✅ 성별 -->
+                            <div class="input-group">
+                                <label><i class="fa-solid fa-venus-mars"></i> 성별</label>
+                                <div class="input-wrapper gender-options">
+                                    <label><input type="radio" value="M" v-model="userGender"> 남성</label>
+                                    <label><input type="radio" value="F" v-model="userGender"> 여성</label>
+                                </div>
+                            </div>
+
                             <!-- 이메일 -->
                             <div class="input-group">
                                 <label><i class="fa-solid fa-envelope"></i> 이메일</label>
@@ -280,14 +304,6 @@
                                     <span v-if="count > 0" class="timer-label-inline">
                                         {{ timer }}
                                     </span>
-                                </div>
-                            </div>
-
-                            <!-- 추천인 -->
-                            <div class="input-group">
-                                <label><i class="fa-solid fa-user-plus"></i> 추천인</label>
-                                <div class="input-wrapper">
-                                    <input type="text" v-model="userRecommend" placeholder="추천인 ID를 입력하세요">
                                 </div>
                             </div>
 
@@ -328,10 +344,11 @@
                                     userPwd: "",
                                     userPwdChk: "",
                                     userName: "",
+                                    userBirth: "",
+                                    userGender: "",
                                     userEmail: "",
                                     userAddr: "",
                                     userPhone: "",
-                                    userRecommend: "",
                                     agree: false,
                                     checkFlg: false,
                                     role: "BUYER",
@@ -373,6 +390,20 @@
                                         Swal.fire('⚠️', '모든 항목을 입력해주세요.', 'warning');
                                         return;
                                     }
+                                    // 생년월일 유효성 검사
+                                    const birthDate = new Date(self.userBirth);
+                                    const today = new Date();
+                                    const age = today.getFullYear() - birthDate.getFullYear();
+                                    if (age < 14) {
+                                        Swal.fire('⚠️', '14세 미만은 가입할 수 없습니다.', 'warning');
+                                        return;
+                                    }
+
+                                    // 성별 검사
+                                    if (self.userGender !== "M" && self.userGender !== "F") {
+                                        Swal.fire('⚠️', '성별을 선택해주세요.', 'warning');
+                                        return;
+                                    }
                                     if (!self.checkFlg) {
                                         Swal.fire('⚠️', '아이디 중복확인을 해주세요.', 'warning');
                                         return;
@@ -412,9 +443,15 @@
                                     $.ajax({
                                         url: "/join.dox", type: "POST", dataType: "json",
                                         data: {
-                                            userId: self.userId, userPwd: self.userPwd, userName: self.userName,
-                                            userEmail: self.userEmail, userAddr: self.userAddr, userPhone: self.userPhone,
-                                            userRecommend: self.userRecommend, userRole: self.role
+                                            userId: self.userId, 
+                                            userPwd: self.userPwd, 
+                                            userName: self.userName,
+                                            userBirth: self.userBirth,
+                                            userGender: self.userGender,
+                                            userEmail: self.userEmail, 
+                                            userAddr: self.userAddr, 
+                                            userPhone: self.userPhone,
+                                            userRole: self.role
                                         },
                                         success: function (data) {
                                             if (data.result == "success") {
@@ -469,7 +506,7 @@
                                         if (self.count <= 0) {
                                             clearInterval(self.timerInterval);
                                             this.timer = "00 : 00";
-                                            Swal.fire("⏰", "시간이 만료되었습니다.", "warning");                                            
+                                            Swal.fire("⏰", "시간이 만료되었습니다.", "warning");
                                         } else {
                                             let min = parseInt(self.count / 60);
                                             let sec = self.count % 60;

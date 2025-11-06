@@ -4,7 +4,8 @@
 
 <mapper namespace="com.example.TeamProject.mapper.AdminMapper">
 	<select id="selectUserList" parameterType="hashmap" resultType="com.example.TeamProject.model.User">
-		SELECT U.*, S.VERIFIED
+		SELECT U.USER_ID, U.EMAIL, U.NAME, U.PHONE, U.USER_ROLE, U.ADDRESS, U.STATUS, TO_CHAR(U.CDATETIME, 'YYYY-MM-DD') AS CDATETIME, TO_CHAR(U.USER_BIRTH, 'YYYY-MM-DD') AS USER_BIRTH, 
+		DECODE(U.USER_GENDER, 'M', '남성', '여성') AS USER_GENDER, S.VERIFIED
 		FROM USERS U 
 		LEFT JOIN SELLER_INFO S ON U.USER_ID = S.USER_ID
 	</select>
@@ -13,6 +14,12 @@
 		UPDATE SELLER_INFO
 		SET VERIFIED = 'Y'
 		WHERE USER_ID = #{userId}	
+	</update>
+	
+	<update id="rejectSeller" parameterType="hashmap">
+		UPDATE SELLER_INFO
+		SET VERIFIED = 'N'
+		WHERE USER_ID = #{userId}
 	</update>
 	
 	<select id="allUserCount" resultType="int">

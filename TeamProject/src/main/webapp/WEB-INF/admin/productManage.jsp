@@ -238,6 +238,7 @@
                                         <th>상품명</th>
                                         <th>카테고리</th>
                                         <th>가격</th>
+                                        <th>단위</th>
                                         <th>재고</th>
                                         <th>등록일</th>
                                         <th>상품추천여부</th>
@@ -248,9 +249,10 @@
                                     <tr v-for="item in filteredList" :key="item.productNo">
                                         <td>{{ item.productNo }}</td>
                                         <td>{{ item.sellerId }}</td>
-                                        <td>{{ item.pname }}</td>
+                                        <td>{{ item.pName }}</td>
                                         <td>{{ item.c1 }}</td>
                                         <td>{{ item.price.toLocaleString() }}원</td>
+                                        <td>{{ item.unit }}</td>
                                         <td>{{ item.stock }}</td>
                                         <td>{{ item.cdate }}</td>
                                         <td>
@@ -259,7 +261,8 @@
                                                 {{ item.recommend === 'Y' ? '추천안하기' : '추천하기' }}
                                             </button>
                                         </td>
-                                        <td>{{ item.productStatus }}</td>
+                                        <td v-if="item.productStatus === 'SOLDOUT'" style="color: red">{{ item.productStatus }}</td>
+                                        <td v-else>{{ item.productStatus }}</td>
                                     </tr>
                                     <tr v-if="filteredList.length === 0">
                                         <td colspan="8" class="no-data">등록된 상품이 없습니다.</td>
@@ -344,11 +347,11 @@
                                         }
 
                                         // (4) 상품명 검색
-                                        return !kw || (item.pname && item.pname.toLowerCase().includes(kw));
+                                        return !kw || (item.pName && item.pName.toLowerCase().includes(kw));
                                     }).filter(item => {
                                         // 🔹 5️⃣ 검색어 필터
                                         const kw = this.keyword.trim().toLowerCase();
-                                        return !kw || (item.pname && item.pname.toLowerCase().includes(kw));
+                                        return !kw || (item.pName && item.pName.toLowerCase().includes(kw));
                                     });
                                 },
                             },
