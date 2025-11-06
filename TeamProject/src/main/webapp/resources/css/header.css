@@ -218,7 +218,7 @@ body {
 
 .nav-menu {
 	display: flex;
-	gap: 60px;
+	gap: 90px;
 	/* ✅ 메뉴 항목 간 간격 조정 (기본 60px로 넓게) */
 	justify-content: center;
 	flex-grow: 1;

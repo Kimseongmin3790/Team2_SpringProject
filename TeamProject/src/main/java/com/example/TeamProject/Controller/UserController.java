@@ -324,6 +324,15 @@ public class UserController {
 
 		return new Gson().toJson(resultMap);
 	}
+	
+	@RequestMapping(value = "/findIdByPhone.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String findIdByPhone(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = userService.findIdByPhone(map);
+
+		return new Gson().toJson(resultMap);
+	}
 
 	@RequestMapping(value = "/findPwdSendCode.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody

@@ -290,7 +290,8 @@
                             <div class="input-group">
                                 <label><i class="fa-solid fa-mobile-screen"></i> 휴대폰 인증</label>
                                 <div class="input-wrapper">
-                                    <input type="text" v-model="userPhone" placeholder="-는 빼고 입력해주세요">
+                                    <input v-if="!joinFlg" type="text" v-model="userPhone" placeholder="-는 빼고 입력해주세요">
+                                    <input v-else type="text" v-model="userPhone" disabled>
                                     <button @click="fnSendCode">인증번호 전송</button>
                                 </div>
                             </div>

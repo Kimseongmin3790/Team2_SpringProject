@@ -35,6 +35,7 @@
                     flex-direction: column;
                     gap: 30px;
                     text-align: center;
+                    background: linear-gradient(to bottom right, #faf8f0, #f3ebd3);
                 }
 
                 .content h2 {

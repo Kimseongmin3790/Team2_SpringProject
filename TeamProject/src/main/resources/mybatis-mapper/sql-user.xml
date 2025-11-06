@@ -31,6 +31,12 @@
 		WHERE NAME = #{userName} AND EMAIL = #{userEmail}
 	</select>
 	
+	<select id="findIdByPhone" parameterType="hashmap" resultType="com.example.TeamProject.model.User">
+		SELECT *
+		FROM USERS
+		WHERE NAME = #{userName} AND PHONE = #{userPhone}
+	</select>
+	
 	<select id="findPwd" parameterType="hashmap" resultType="com.example.TeamProject.model.User">
 		SELECT *
 		FROM USERS
