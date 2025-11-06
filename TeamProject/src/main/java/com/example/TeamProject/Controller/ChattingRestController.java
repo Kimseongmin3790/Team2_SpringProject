@@ -24,7 +24,8 @@ public class ChattingRestController {
 
     // ✅ POST 로 페이지 진입 (너가 원한 형태)
     @PostMapping("/chatting.do")
-    public String chattingPage(Model model) {
+    public String chatting(@RequestParam String sessionId, Model model) {
+        model.addAttribute("sessionId", sessionId);
         return "chatMessage"; // /WEB-INF/views/chatMessage.jsp
     }
 
