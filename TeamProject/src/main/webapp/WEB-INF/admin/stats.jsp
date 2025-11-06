@@ -74,7 +74,7 @@
 
                 <div id="app">
                     <div class="stats-container">
-                        <button class="btn-back" @click="goBack">← 대시보드로 돌아가기</button>
+                        <button class="btn-back" @click="goBack">이전</button>
                         <h2>AGRICOLA 통계</h2>
 
                         <!-- 1️⃣ 회원 비율 -->

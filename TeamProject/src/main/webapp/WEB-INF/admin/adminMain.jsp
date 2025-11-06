@@ -171,27 +171,17 @@
                             <div class="admin-card" @click="goPage('memberManage.do')">
                                 <i class="fa-solid fa-users"></i>
                                 <h3>회원관리</h3>
-                                <p>회원 목록 / 판매자 인증 / 신고 처리</p>
+                                <p>회원 목록 / 판매자 인증</p>
                             </div>
                             <div class="admin-card" @click="goPage('productManage.do')">
                                 <i class="fa-solid fa-box-open"></i>
                                 <h3>상품관리</h3>
-                                <p>카테고리 관리 / 상품 활성화</p>
-                            </div>
-                            <div class="admin-card" @click="goPage('orderManage.do')">
-                                <i class="fa-solid fa-receipt"></i>
-                                <h3>주문·정산관리</h3>
-                                <p>거래내역 / 환불 승인 / 정산 처리</p>
+                                <p>카테고리 관리 / 상품 추천여부</p>
                             </div>
                             <div class="admin-card" @click="goPage('stats.do')">
                                 <i class="fa-solid fa-chart-line"></i>
                                 <h3>통계</h3>
-                                <p>매출 / 품목 / 가입자 추이</p>
-                            </div>
-                            <div class="admin-card" @click="goPage('contentManage.do')">
-                                <i class="fa-solid fa-clipboard-list"></i>
-                                <h3>콘텐츠관리</h3>
-                                <p>공지사항 / 문의게시판 관리</p>
+                                <p>회원/ 매출 / 품목 / 가입자 통계 및 추이</p>
                             </div>
                         </div>
 
