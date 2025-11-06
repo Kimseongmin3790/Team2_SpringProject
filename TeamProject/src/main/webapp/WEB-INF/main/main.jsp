@@ -396,7 +396,7 @@
               <p class="section-desc">아그리콜라가 엄선한 인기 상품을 만나보세요.</p>
 
               <div class="product-grid">
-                <div class="product-card" v-for="p in recommend" :key="p.productNo">
+                <div class="product-card" v-for="p in recommend" :key="p.productNo" @click="goInfo(p.productNo)">
                   <img :src="p.imageUrl" alt="">
                   <div class="product-info">
                     <h4>{{ p.pname }}</h4>
@@ -416,7 +416,7 @@
               <p class="section-desc">지금 막 수확된 신선한 농산물을 만나보세요.</p>
 
               <div class="product-grid">
-                <div class="product-card" v-for="p in newProducts" :key="p.productNo">
+                <div class="product-card" v-for="p in newProducts" :key="p.productNo" @click="goInfo(p.productNo)">
                   <img :src="p.imageUrl" alt="">
                   <div class="product-info">
                     <h4>{{ p.pname }}</h4>
@@ -747,6 +747,10 @@
                 fnGoTopSellerList() {
                   location.href = this.path + "/seller/topList.do"; // ✅ 더보기 페이지로 이동
                 },
+
+                goInfo(productNo) {
+                    location.href = this.path + "/productInfo.do?productNo=" + productNo;
+                }
               },
               mounted() {
                 this.loadAll();

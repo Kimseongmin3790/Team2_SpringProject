@@ -245,6 +245,12 @@
                     white-space: nowrap;
                     max-width: 250px;
                 }
+
+                .timer-label-inline {
+                    color: #e74c3c;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
             </style>
         </head>
 
@@ -288,6 +294,21 @@
                             </div>
 
                             <div class="input-group">
+                                <label><i class="fa-solid fa-cake-candles"></i> 생년월일</label>
+                                <div class="input-wrapper">
+                                    <input type="date" v-model="userBirth">
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label><i class="fa-solid fa-venus-mars"></i> 성별</label>
+                                <div class="input-wrapper gender-options">
+                                    <label><input type="radio" value="M" v-model="userGender"> 남성</label>
+                                    <label><input type="radio" value="F" v-model="userGender"> 여성</label>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
                                 <label><i class="fa-solid fa-envelope"></i> 이메일</label>
                                 <div class="input-wrapper">
                                     <input type="email" v-model="userEmail" placeholder="이메일 주소를 입력하세요">
@@ -303,9 +324,20 @@
                             </div>
 
                             <div class="input-group">
-                                <label><i class="fa-solid fa-mobile-screen"></i> 휴대폰</label>
+                                <label><i class="fa-solid fa-mobile-screen"></i> 휴대폰 인증</label>
                                 <div class="input-wrapper">
-                                    <input type="text" v-model="userPhone" placeholder="예: 010-1234-5678">
+                                    <input v-if="!joinFlg" type="text" v-model="userPhone" placeholder="01012345678">
+                                    <input v-else type="text" v-model="userPhone" disabled>
+                                    <button @click="fnSendCode">인증번호 전송</button>
+                                </div>
+                            </div>
+
+                            <div class="input-group" v-if="smsFlg">
+                                <label><i class="fa-solid fa-shield"></i> 인증번호 입력</label>
+                                <div class="input-wrapper">
+                                    <input type="text" v-model="verifyCode" placeholder="인증번호 6자리">
+                                    <button @click="fnVerifyCode">확인</button>
+                                    <span v-if="count > 0" class="timer-label-inline">{{ timer }}</span>
                                 </div>
                             </div>
 
@@ -317,6 +349,16 @@
                                     <label><i class="fa-solid fa-leaf"></i> 상호명 (농가명) </label>
                                     <div class="input-wrapper">
                                         <input type="text" v-model="farmName" placeholder="상호명 (농가명)을 입력하세요">
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label><i class="fa-solid fa-image"></i> 프로필 사진</label>
+                                    <div class="input-wrapper file-upload">
+                                        <input type="file" id="profileUpload" @change="fnProfileChange"
+                                            accept=".jpg,.jpeg,.png">
+                                        <label for="profileUpload" class="file-label">파일 선택</label>
+                                        <span class="file-name" v-if="profileName">{{ profileName }}</span>
                                     </div>
                                 </div>
 
@@ -395,10 +437,18 @@
                             userPwd: "",
                             userPwdChk: "",
                             userName: "",
+                            userBirth: "",
+                            userGender: "",
                             userEmail: "",
                             userAddr: "",
                             userPhone: "",
                             role: "SELLER",
+                            verifyCode: "",
+                            joinFlg: false,
+                            smsFlg: false,
+                            count: 0,
+                            timer: "",
+                            timerInterval: null,
 
                             // 판매자 회원가입 정보
                             farmName: "",
@@ -406,9 +456,11 @@
                             bankName: "",
                             account: "",
                             agree: false,
-                            checkFlg: false,                            
+                            checkFlg: false,
                             file: null,
-                            fileName: ""
+                            fileName: "",
+                            profile: null,
+                            profileName: "",
                         };
                     },
                     methods: {
@@ -436,6 +488,18 @@
                                 Swal.fire('⚠️', '모든 항목을 입력해주세요.', 'warning');
                                 return;
                             }
+                            const birthDate = new Date(self.userBirth);
+                            const today = new Date();
+                            const age = today.getFullYear() - birthDate.getFullYear();
+                            if (age < 14) {
+                                Swal.fire('⚠️', '14세 미만은 가입할 수 없습니다.', 'warning');
+                                return;
+                            }
+
+                            if (self.userGender !== "M" && self.userGender !== "F") {
+                                Swal.fire('⚠️', '성별을 선택해주세요.', 'warning');
+                                return;
+                            }
                             if (!self.checkFlg) {
                                 Swal.fire('⚠️', '아이디 중복확인을 해주세요.', 'warning');
                                 return;
@@ -459,9 +523,13 @@
                                 Swal.fire('⚠️', '이메일 형식에 맞게 입력해주세요.', 'warning');
                                 return;
                             }
-                            const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
+                            const phoneRegex = /^01[0-9]\d{3,4}\d{4}$/;
                             if (!phoneRegex.test(self.userPhone)) {
-                                Swal.fire('⚠️', '휴대폰 번호는 010-1234-5678 형태로 입력해주세요.', 'warning');
+                                Swal.fire('⚠️', '휴대폰 번호는 01012345678 형태로 입력해주세요.', 'warning');
+                                return;
+                            }
+                            if (!self.joinFlg) {
+                                Swal.fire('⚠️', '휴대폰 인증을 완료해야 판매자 등록이 가능합니다.', 'warning');
                                 return;
                             }
 
@@ -473,6 +541,8 @@
                                     userId: self.userId,
                                     userPwd: self.userPwd,
                                     userName: self.userName,
+                                    userBirth: self.userBirth,
+                                    userGender: self.userGender,
                                     userEmail: self.userEmail,
                                     userAddr: self.userAddr,
                                     userPhone: self.userPhone,
@@ -486,7 +556,7 @@
                                     }
                                 }
                             });
-                            
+
                         },
                         fnAddSeller() {
                             let self = this;
@@ -540,6 +610,7 @@
                             formData.append("bankName", self.bankName);
                             formData.append("account", self.account);
                             if (self.file) formData.append("bizLicense", self.file);
+                            if (self.profile) formData.append("profileImage", self.profile);
                             formData.append("userAddr", self.userAddr);
 
                             $.ajax({
@@ -555,7 +626,7 @@
                                         title: '판매자 회원가입 완료!',
                                         text: 'AGRICOLA와 함께 성장하세요 🌾',
                                         confirmButtonColor: '#5dbb63'
-                                    }).then(() => location.href = self.path + "/login.do");                                
+                                    }).then(() => location.href = self.path + "/login.do");
                                 },
                                 error: function (jqXHR, textStatus, errorThrown) {
                                     console.error("신청 실패:", textStatus, errorThrown);
@@ -575,6 +646,76 @@
                                 this.file = file;
                                 this.fileName = file.name;
                             }
+                        },
+                        fnProfileChange(event) {
+                            const file = event.target.files[0];
+                            if (file) {
+                                this.profile = file;
+                                this.profileName = file.name;
+                            }
+                        },
+                        fnSendCode() {
+                            let self = this;
+                            const phoneRegex = /^01[0-9]\d{7,8}$/;
+                            if (!phoneRegex.test(self.userPhone)) {
+                                Swal.fire('⚠️', '휴대폰 번호를 올바르게 입력해주세요.', 'warning');
+                                return;
+                            }
+                            $.ajax({
+                                url: self.path + "/send-one",
+                                type: "POST",
+                                dataType: "json",
+                                data: { phone: self.userPhone },
+                                success: function (data) {
+                                    if (data.result === "success" || data.res) {
+                                        Swal.fire('✅', '인증번호가 발송되었습니다.', 'success');
+                                        self.smsFlg = true;
+                                        self.fnTimer();
+                                    } else {
+                                        Swal.fire('❌', '문자 발송에 실패했습니다.', 'error');
+                                    }
+                                }
+                            });
+                        },
+                        fnVerifyCode() {
+                            let self = this;
+                            $.ajax({
+                                url: self.path + "/verify-code",
+                                type: "POST",
+                                dataType: "json",
+                                data: { phone: self.userPhone, code: self.verifyCode },
+                                success: function (data) {
+                                    if (data.result === "success") {
+                                        Swal.fire('✅', '휴대폰 인증이 완료되었습니다.', 'success');
+                                        self.joinFlg = true;
+                                        clearInterval(self.timerInterval);
+                                        self.timer = "";
+                                    } else {
+                                        Swal.fire('❌', '인증번호가 일치하지 않습니다.', 'error');
+                                    }
+                                }
+                            });
+                        },
+                        fnTimer: function () {
+                            let self = this;
+
+                            self.count = 180;
+
+                            self.timerInterval = setInterval(function () {
+                                if (self.count <= 0) {
+                                    clearInterval(self.timerInterval);
+                                    this.timer = "00 : 00";
+                                    Swal.fire("⏰", "시간이 만료되었습니다.", "warning");
+                                } else {
+                                    let min = parseInt(self.count / 60);
+                                    let sec = self.count % 60;
+                                    min = min < 10 ? "0" + min : min;
+                                    sec = sec < 10 ? "0" + sec : sec;
+                                    self.timer = min + " : " + sec;
+
+                                    self.count--;
+                                }
+                            }, 1000);
                         }
                     },
                     mounted() {

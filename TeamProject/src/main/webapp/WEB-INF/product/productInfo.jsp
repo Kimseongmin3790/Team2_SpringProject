@@ -6,6 +6,8 @@
         <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <meta name="_csrf_parameter" content="${_csrf.parameterName}">
+            <meta name="_csrf" content="${_csrf.token}">
             <title>상품 상세</title>
 
             <!-- 라이브러리 -->
@@ -957,6 +959,81 @@
                         flex-wrap: nowrap;
                     }
                 }
+                /* 판매자 답글 컨테이너 */
+                .seller-reply-container {
+                    margin-top: 1rem;
+                    background-color: #f9fafb;
+                    border-radius: 0.5rem;
+                    padding: 1rem;
+                }
+
+                /* 판매자 답글 개별 항목 */
+                .seller-reply-item {
+                    padding-top: 0.5rem;
+                    padding-bottom: 0.5rem;
+                    border-bottom: 1px solid #e5e7eb;
+                }
+                
+                .seller-reply-header {
+                    display: flex;
+                    justify-content: space-between; /* 양쪽 끝으로 정렬 */
+                    align-items: center; /* 세로 중앙 정렬 */
+                    margin-bottom: 0.5rem; /* 내용과의 간격 */
+                }
+
+                .seller-reply-item:last-child {
+                    border-bottom: none;
+                }
+
+                /* 판매자 답글 작성자 */
+                .seller-reply-author {
+                    font-weight: 600;
+                    color: #16a34a;
+                    margin: 0;
+                }
+
+                /* 판매자 답글 내용 */
+                .seller-reply-content {
+                    color: #374151;
+                    margin-top: 0.5rem;
+                }
+
+                /* 판매자 답글 날짜 */
+                .seller-reply-date {
+                    font-size: 0.875rem;
+                    color: #6b7280;
+                    margin-top: 0.25rem;
+                }
+                .btn-info {
+                    background-color: #007bff; 
+                    color: white;
+                }
+                .btn-info:hover {
+                    background-color: #0056b3; 
+                }
+                .seller-reply-actions {
+                    display: flex;
+                    gap: 0.5rem;
+                }
+
+                .btn-sm {
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.875rem;
+                }
+                .btn-danger {
+                    background-color: #dc3545;
+                    color: white;
+                }
+                .btn-danger:hover {
+                    background-color: #c82333;
+                }
+                .btn-sm {
+                    height: auto; 
+                    min-width: 0; 
+                    padding: 4px 10px; 
+                    font-size: 13px;
+                    font-weight: 500; 
+                }
             </style>
         </head>
 
@@ -969,13 +1046,13 @@
                             <!-- 왼쪽: 이미지 -->
                             <div class="prod-media" id="img">
                                 <div class="main-box">
-                                    <img :src="mainImageUrl" :alt="info.pname" @error="onImgError($event)">
+                                    <img :src="mainImageUrl" :alt="info.pName" @error="onImgError($event)">
                                 </div>
 
                                 <div class="thumbs" id="small-img">
                                     <button v-for="u in thumbImages" :key="u" class="thumb"
                                         :class="{ active: u === mainImageUrl }" @click="mainImageUrl = u">
-                                        <img :src="u" :alt="info.pname">
+                                        <img :src="u" :alt="info.pName">
                                     </button>
                                 </div>
                             </div>
@@ -1076,9 +1153,9 @@
                                             <span class="l1">수율 상세페이지 참조 (필수)</span>
                                         </button>
                                         <div class="dd-list" v-if="ddOpen2" @click.stop>
-                                            <div class="dd-opt" @click="pickProduct()">
-                                                <span class="l1">{{ info.stock }}{{ info.unit }}</span>
-                                                <span class="l2">￦{{ (info.price||0).toLocaleString() }}원</span>
+                                            <div class="dd-opt" @click="pickProduct()" v-for="item in options">
+                                                <span class="l1">{{ item.unit }}</span>
+                                                <span class="l2">￦{{ (info.price + item.addPrice||0).toLocaleString() }}원</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1086,7 +1163,7 @@
                                     <div class="selection-summary" v-if="selected" style="margin-top:12px">
                                         <div style="padding:8px 0;border-top:1px solid #eee">
                                             <div>
-                                                {{ info.pname }}
+                                                {{ info.pName }}
                                                 <button @click="removeProduct" style="margin-left:270px">삭제</button>
                                             </div>
                                             <hr
@@ -1113,8 +1190,7 @@
                                                 class="btn btn-primary">구매하기</button>
                                             <button @click="fnBasket(info.productNo, qty)"
                                                 class="btn btn-outline">장바구니</button>
-                                            <button @click="fnChat" class="btn btn-ghost">실시간 문의</button>
-                                            <button @click="fnWish" class="btn btn-like">찜</button>
+                                            <button class="btn btn-ghost" @click="openChatWindowPost">실시간 문의</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1142,7 +1218,7 @@
 
                         <div v-show="showDetail">
                             <div v-for="img in detailOnly" :key="img" class="detail-img-wrap">
-                                <img :src="img" :alt="info.pname || '상세 이미지'" class="detail-img cover" loading="lazy">
+                                <img :src="img" :alt="info.pName || '상세 이미지'" class="detail-img cover" loading="lazy">
                             </div>
 
                             <div>
@@ -1295,6 +1371,7 @@
                         productNo: "${productNo}",
                         info: {},
                         fileList: [],
+                        options: [],
 
                         selected: false,
                         qty: 0,
@@ -1326,6 +1403,8 @@
                         currentPage: 1,
                         pageSize: 5,
                         totalReviewCount: 0,
+
+                        editingCommentNo: null,
                         //============================
 
                         qaList: []
@@ -1395,7 +1474,7 @@
                             success: function (data) {
                                 self.info = data.info;
                                 self.fileList = data.fileList;
-
+                                self.options = data.options;
                                 // --- 도우미 ---
                                 const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
 
@@ -1592,7 +1671,7 @@
                             alert("옵션 선택 후 수량을 확인해 주세요.");
                             return;
                         }
-                        pageChange('/product/payment.do', { productNo, qty, userId:self.userId }); // 결제 페이지로 이동
+                        pageChange('/product/payment.do', { productNo, qty, userId: self.userId }); // 결제 페이지로 이동
                     },
 
                     fnBasket: function (productNo, qty) {
@@ -1606,10 +1685,13 @@
                             alert("옵션 선택 후 수량을 확인해 주세요.");
                             return;
                         }
+                        const fee = (this.fulfillment === 'delivery') ? 3000 : 0; // ★ 추가
                         let param = {
                             userId: self.userId,
                             productNo: productNo,
-                            quantity: qty
+                            quantity: qty,
+                            fulfillment: self.fulfillment,
+                            shippingFee: fee
                         };
                         $.ajax({
                             url: '/cart/add.dox',
@@ -1618,7 +1700,11 @@
                             data: param,
                             success: function (data) {
                                 if (data.result == 'success') {
-                                    pageChange('/buyerMyPage.do', { productNo }); // 장바구니로 이동
+                                    if (confirm("장바구니에 담겼습니다 장바구니로 이동하시겠습니까?")) {
+                                        pageChange('/buyerMyPage.do', { productNo }); // 장바구니로 이동
+                                    } else {
+                                        self.fnInfo();
+                                    }
                                 } else {
                                     alert('장바구니 담기 실패');
                                 }
@@ -1628,7 +1714,46 @@
                     },
 
                     fnWish() { /* TODO */ },
-                    fnChat() { console.log('fnChat clicked'); },
+                    openChatWindowPost() {
+                        const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
+                        const winName = 'chatWin';
+                        const features = 'width=500,height=600,resizable=yes,scrollbars=yes';
+
+                        // 1) 사용자 클릭 안에서 '즉시' 새 창 오픈 (차단 우회)
+                        const w = window.open('about:blank', winName, features);
+                        if (!w) {
+                            alert('팝업이 차단되었습니다. 브라우저에서 이 사이트 팝업을 허용해 주세요.');
+                            return;
+                        }
+
+                        // 2) 히든 폼 만들어서 그 창(target)으로 POST 전송
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = CTX + '/chatting.do';
+                        form.target = winName;
+
+                        const add = (name, value) => {
+                            const i = document.createElement('input');
+                            i.type = 'hidden';
+                            i.name = name;
+                            i.value = value;
+                            form.appendChild(i);
+                        };
+
+                        // 필요한 파라미터
+                        add('sessionId', this.userId || 'guest');
+
+                        // ▼ Spring Security CSRF (켜져 있다면 필수)
+                        const csrfName = document.querySelector('meta[name="_csrf_parameter"]')?.content;
+                        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+                        if (csrfName && csrfToken) add(csrfName, csrfToken);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                        form.remove();
+
+                        try { w.focus(); } catch (e) { }
+                    },
 
                     // 댓글
                     toggleComments() {
@@ -1760,10 +1885,10 @@
                                     });
 
                                     self.reviews = reviewsWithState || [];
-                                    self.totalReviewCount = response.totalCount || 0; 
+                                    self.totalReviewCount = response.totalCount || 0;
                                     self.averageRating = response.averageRating || 0;
                                     self.totalReviews = response.totalReviews || 0;
-                                    self.ratingDistribution = response.ratingDistribution || { 5:0,4:0,3:0,2:0,1:0 };
+                                    self.ratingDistribution = response.ratingDistribution || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
                                 } else {
                                     alert("리뷰 데이터를 불러오는 데 실패했습니다.");
                                 }
@@ -1818,6 +1943,76 @@
                             }
                         });
                     },
+                    editComment: function(comment) {
+                        let self = this;
+                        comment.originalContents = comment.contents;
+                        self.editingCommentNo = comment.commentNo; 
+                    },
+
+                    cancelEdit: function() {
+                        let self = this;
+                        const comment = this.reviews.flatMap(r => r.comments || []).find(c => c.commentNo === self.editingCommentNo);
+                        if (comment && comment.originalContents !== undefined) {
+                            comment.contents = comment.originalContents;
+                        }
+                        self.editingCommentNo = null; 
+                    },
+
+                    saveEditedComment: function(comment) {
+                        let self = this;
+
+                        if (comment.contents.trim() === '') {
+                            alert('답글 내용을 입력해주세요.');
+                            return;
+                        }
+
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/seller/review/updateComment.dox",
+                            dataType: "json",
+                            type: "POST",
+                            data: {
+                                commentNo: comment.commentNo,
+                                contents: comment.contents
+                            },
+                            success: function(response) {
+                                if (response.result === 'success') {
+                                    alert('답글이 수정되었습니다.');
+                                    self.editingCommentNo = null; 
+                                    self.fnLoadReviews(); 
+                                } else {
+                                    alert('답글 수정에 실패했습니다: ' + response.message);
+                                }
+                            },
+                            error: function() {
+                                alert('답글 수정 중 오류가 발생했습니다.');
+                            }
+                        });
+                    },
+
+                    deleteComment: function(commentNo) {
+                        if (confirm('정말로 이 답글을 삭제하시겠습니까?')) {
+                            let self = this;
+                            $.ajax({
+                                url: "${pageContext.request.contextPath}/seller/review/deleteComment.dox", 
+                                dataType: "json",
+                                type: "POST",
+                                data: {
+                                    commentNo: commentNo 
+                                },
+                                success: function(response) {
+                                    if (response.result === 'success') {
+                                        alert('답글이 삭제되었습니다.');
+                                        self.fnLoadReviews(); 
+                                    } else {
+                                        alert('답글 삭제에 실패했습니다: ' + response.message);
+                                    }
+                                },
+                                error: function() {
+                                    alert('답글 삭제 중 오류가 발생했습니다.');
+                                }
+                            });
+                        }
+                    },
 
                     fnLoadQA() {
                         let self = this;
@@ -1850,7 +2045,7 @@
                             pageChange('/login.do');
                             return;
                         }
-                        pageChange('/productQna/write.do', { productNo: this.productNo, productName: this.info.pname });
+                        pageChange('/productQna/write.do', { productNo: this.productNo, productName: this.info.pName });
                     },
                     canViewQuestion(q) {
                         // 1. 비밀글 아닌 경우 → 누구나 열람 가능

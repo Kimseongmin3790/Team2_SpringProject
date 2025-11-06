@@ -80,7 +80,8 @@
                     align-items: center;
                 }
 
-                .input-wrapper input {
+                .input-wrapper input,
+                .input-wrapper select {
                     flex: 1;
                     padding: 10px 12px;
                     border: 1px solid #ccc;
@@ -93,6 +94,12 @@
                     border-color: #5dbb63;
                     box-shadow: 0 0 5px rgba(93, 187, 99, 0.5);
                     outline: none;
+                }
+
+                .gender-options {
+                    display: flex;
+                    gap: 20px;
+                    align-items: center;
                 }
 
                 /* ======================= 버튼 ======================= */
@@ -245,6 +252,23 @@
                                 </div>
                             </div>
 
+                            <!-- ✅ 생년월일 -->
+                            <div class="input-group">
+                                <label><i class="fa-solid fa-cake-candles"></i> 생년월일</label>
+                                <div class="input-wrapper">
+                                    <input type="date" v-model="userBirth">
+                                </div>
+                            </div>
+
+                            <!-- ✅ 성별 -->
+                            <div class="input-group">
+                                <label><i class="fa-solid fa-venus-mars"></i> 성별</label>
+                                <div class="input-wrapper gender-options">
+                                    <label><input type="radio" value="M" v-model="userGender"> 남성</label>
+                                    <label><input type="radio" value="F" v-model="userGender"> 여성</label>
+                                </div>
+                            </div>
+
                             <!-- 이메일 -->
                             <div class="input-group">
                                 <label><i class="fa-solid fa-envelope"></i> 이메일</label>
@@ -264,15 +288,16 @@
 
                             <!-- 휴대폰 -->
                             <div class="input-group">
-                                <label>휴대폰 인증</label>
+                                <label><i class="fa-solid fa-mobile-screen"></i> 휴대폰 인증</label>
                                 <div class="input-wrapper">
-                                    <input type="text" v-model="userPhone" placeholder="-는 빼고 입력해주세요">
+                                    <input v-if="!joinFlg" type="text" v-model="userPhone" placeholder="-는 빼고 입력해주세요">
+                                    <input v-else type="text" v-model="userPhone" disabled>
                                     <button @click="fnSendCode">인증번호 전송</button>
                                 </div>
                             </div>
 
                             <div class="input-group" v-if="smsFlg">
-                                <label>인증번호</label>
+                                <label><i class="fa-solid fa-shield"></i>인증번호 입력</label>
                                 <div class="input-wrapper" style="display:flex; align-items:center; gap:10px;">
                                     <input type="text" v-model="verifyCode" placeholder="인증번호 입력">
                                     <button @click="fnVerifyCode">확인</button>
@@ -280,14 +305,6 @@
                                     <span v-if="count > 0" class="timer-label-inline">
                                         {{ timer }}
                                     </span>
-                                </div>
-                            </div>
-
-                            <!-- 추천인 -->
-                            <div class="input-group">
-                                <label><i class="fa-solid fa-user-plus"></i> 추천인</label>
-                                <div class="input-wrapper">
-                                    <input type="text" v-model="userRecommend" placeholder="추천인 ID를 입력하세요">
                                 </div>
                             </div>
 
@@ -328,10 +345,11 @@
                                     userPwd: "",
                                     userPwdChk: "",
                                     userName: "",
+                                    userBirth: "",
+                                    userGender: "",
                                     userEmail: "",
                                     userAddr: "",
                                     userPhone: "",
-                                    userRecommend: "",
                                     agree: false,
                                     checkFlg: false,
                                     role: "BUYER",
@@ -373,6 +391,20 @@
                                         Swal.fire('⚠️', '모든 항목을 입력해주세요.', 'warning');
                                         return;
                                     }
+                                    // 생년월일 유효성 검사
+                                    const birthDate = new Date(self.userBirth);
+                                    const today = new Date();
+                                    const age = today.getFullYear() - birthDate.getFullYear();
+                                    if (age < 14) {
+                                        Swal.fire('⚠️', '14세 미만은 가입할 수 없습니다.', 'warning');
+                                        return;
+                                    }
+
+                                    // 성별 검사
+                                    if (self.userGender !== "M" && self.userGender !== "F") {
+                                        Swal.fire('⚠️', '성별을 선택해주세요.', 'warning');
+                                        return;
+                                    }
                                     if (!self.checkFlg) {
                                         Swal.fire('⚠️', '아이디 중복확인을 해주세요.', 'warning');
                                         return;
@@ -412,9 +444,15 @@
                                     $.ajax({
                                         url: "/join.dox", type: "POST", dataType: "json",
                                         data: {
-                                            userId: self.userId, userPwd: self.userPwd, userName: self.userName,
-                                            userEmail: self.userEmail, userAddr: self.userAddr, userPhone: self.userPhone,
-                                            userRecommend: self.userRecommend, userRole: self.role
+                                            userId: self.userId,
+                                            userPwd: self.userPwd,
+                                            userName: self.userName,
+                                            userBirth: self.userBirth,
+                                            userGender: self.userGender,
+                                            userEmail: self.userEmail,
+                                            userAddr: self.userAddr,
+                                            userPhone: self.userPhone,
+                                            userRole: self.role
                                         },
                                         success: function (data) {
                                             if (data.result == "success") {
@@ -438,27 +476,30 @@
                                 },
                                 fnSendCode() {
                                     let self = this;
-                                    let param = {
-                                        // userPhone: self.userPhone;
-                                    };
-                                    // $.ajax({
-                                    //     url: "/send-one",
-                                    //     dataType: "json",
-                                    //     type: "POST",
-                                    //     data: param,
-                                    //     success: function (data) {
-                                    //         console.log(data);
-                                    //         if (data.res.statusCode == "2000") {
-                                    alert("문자 전송 완료");
-                                    self.ranStr = 123456; // data.ranStr;
-
-                                    self.smsFlg = true;
-                                    self.fnTimer();
-                                    //         } else {
-                                    //             alert("잠시 후 다시 시도해주세요.");
-                                    //         }
-                                    //     }
-                                    // });                                    
+                                    const phoneRegex = /^01[0-9]\d{7,8}$/;
+                                    if (!phoneRegex.test(self.userPhone)) {
+                                        Swal.fire('⚠️', '휴대폰 번호를 올바르게 입력해주세요.', 'warning');
+                                        return;
+                                    }
+                                    $.ajax({
+                                        url: self.path + "/send-one",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: { phone: self.userPhone },
+                                        success: function (data) {
+                                            console.log("문자 발송 결과:", data);
+                                            if (data.result === "success" || data.res) {
+                                                Swal.fire('✅', '인증번호가 발송되었습니다.', 'success');
+                                                self.smsFlg = true; // 인증번호 입력창 표시
+                                                self.fnTimer(); // 타이머 시작
+                                            } else {
+                                                Swal.fire('❌', '문자 발송 실패. 잠시 후 다시 시도해주세요.', 'error');
+                                            }
+                                        },
+                                        error: function () {
+                                            Swal.fire('❌', '서버 오류로 문자 전송에 실패했습니다.', 'error');
+                                        }
+                                    });
                                 },
                                 fnTimer: function () {
                                     let self = this;
@@ -469,7 +510,7 @@
                                         if (self.count <= 0) {
                                             clearInterval(self.timerInterval);
                                             this.timer = "00 : 00";
-                                            Swal.fire("⏰", "시간이 만료되었습니다.", "warning");                                            
+                                            Swal.fire("⏰", "시간이 만료되었습니다.", "warning");
                                         } else {
                                             let min = parseInt(self.count / 60);
                                             let sec = self.count % 60;
@@ -483,18 +524,35 @@
                                 },
                                 fnVerifyCode: function () {
                                     let self = this;
-                                    if (self.ranStr == self.verifyCode) {
-                                        alert("문자인증이 완료되었습니다.");
-                                        self.joinFlg = true;
 
-                                        if (this.timerInterval) {
-                                            clearInterval(this.timerInterval);
-                                            this.timer = "";   // 표시 제거
-                                        }
-
-                                    } else {
-                                        alert("문자인증에 실패했습니다.");
+                                    if (!self.verifyCode) {
+                                        Swal.fire('⚠️', '인증번호를 입력해주세요.', 'warning');
+                                        return;
                                     }
+
+                                    $.ajax({
+                                        url: self.path + "/verify-code",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: { phone: self.userPhone, code: self.verifyCode },
+                                        success: function (data) {
+                                            if (data.result === "success") {
+                                                Swal.fire('✅', '휴대폰 인증이 완료되었습니다.', 'success');
+                                                self.joinFlg = true;
+
+                                                // 타이머 중지
+                                                if (self.timerInterval) {
+                                                    clearInterval(self.timerInterval);
+                                                    self.timer = "";
+                                                }
+                                            } else {
+                                                Swal.fire('❌', '인증번호가 일치하지 않습니다.', 'error');
+                                            }
+                                        },
+                                        error: function () {
+                                            Swal.fire('❌', '서버 오류로 인증 확인에 실패했습니다.', 'error');
+                                        }
+                                    });
                                 }
                             },
                             mounted() {

@@ -90,10 +90,9 @@
                          :key="p.productNo"
                          @click="goProduct(p.productNo)">
                         <img :src="p.imageUrl" 
-                             :alt="p.pname">
-                        <h4>{{ p.pname }}</h4>
-                        <p>가격: {{ p.price }}원</p>
-                        <p>재고: {{ p.stock }}개</p>
+                             :alt="p.pName">
+                        <h4>{{ p.pName }}</h4>
+                        <p>가격: {{ p.price }}원</p>                        
                     </div>
                 </div>
             </div>

@@ -3,6 +3,7 @@ package com.example.TeamProject.Controller;
 import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.TeamProject.dao.OrderService;
 import com.example.TeamProject.dao.SellerService;
 import com.example.TeamProject.dao.UserService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,9 +37,9 @@ public class UserController {
 
 	@Autowired
 	OrderService orderService;
-	
-	 @Autowired
-	 private SellerService sellerService;
+
+	@Autowired
+	private SellerService sellerService;
 
 	@RequestMapping("/login.do")
 	public String login(Model model) throws Exception {
@@ -81,27 +84,28 @@ public class UserController {
 	}
 
 	@RequestMapping("/buyerMyPage.do")
-	 public String buyerMyPage(Model model, @RequestParam(value = "tab", required = false, defaultValue ="cart") String tab) throws Exception{
-	     model.addAttribute("activeTab", tab);
-	     return "user/buyerMypage";
-	 }
+	public String buyerMyPage(Model model,
+			@RequestParam(value = "tab", required = false, defaultValue = "cart") String tab) throws Exception {
+		model.addAttribute("activeTab", tab);
+		return "user/buyerMypage";
+	}
 
-	 @RequestMapping("/sellerMyPage.do")
-	 public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes) throws Exception {
-	     String userId = (String) session.getAttribute("sessionId");
+	@RequestMapping("/sellerMyPage.do")
+	public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes)
+			throws Exception {
+		String userId = (String) session.getAttribute("sessionId");
 
-	  
-	     HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
-	     String resultStatus = (String) serviceResult.get("result");
-	     String message = (String) serviceResult.get("message"); 
+		HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
+		String resultStatus = (String) serviceResult.get("result");
+		String message = (String) serviceResult.get("message");
 
-	     if ("success".equals(resultStatus)) {
-	         return "user/sellerMyPage";
-	     } else {
-	    	 redirectAttributes.addFlashAttribute("redirectMessage", message);
-	         return "redirect:/main.do";
-	     }
-	 }
+		if ("success".equals(resultStatus)) {
+			return "user/sellerMyPage";
+		} else {
+			redirectAttributes.addFlashAttribute("redirectMessage", message);
+			return "redirect:/main.do";
+		}
+	}
 
 	@RequestMapping("/cart.do")
 	public String cart(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
@@ -111,8 +115,7 @@ public class UserController {
 
 		return "user/cart";
 	}
-	
-	
+
 	@RequestMapping(value = "/join.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String join(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
@@ -131,13 +134,41 @@ public class UserController {
 
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	// 장바구니 추가
 	@RequestMapping(value = "/cart/add.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public String addCart(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap = userService.addCart(map);
+	public String addCart(Model model, @RequestParam HashMap<String, Object> map, HttpSession session)
+			throws Exception {
+
+		// 프론트에서 넘어온 수령방법 (기본값: delivery)
+		String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
+
+		// ★ 장바구니 저장 -> 서비스 결과 사용(여기서 cartNo를 받아옴)
+		HashMap<String, Object> resultMap = userService.addCart(map);
+
+		// cartNo 뽑기
+		Long cartNo = null;
+		Object cno = resultMap.get("cartNo");
+		if (cno instanceof Number) {
+			cartNo = ((Number) cno).longValue();
+		} else if (cno != null) {
+			try {
+				cartNo = Long.parseLong(String.valueOf(cno));
+			} catch (Exception ignore) {
+			}
+		}
+
+		// cartNo가 있으면 세션 맵(cartFulfillment)에 cartNo→fulfillment 저장
+		if (cartNo != null) {
+			@SuppressWarnings("unchecked")
+			Map<Long, String> fMap = (Map<Long, String>) session.getAttribute("cartFulfillment");
+			if (fMap == null) {
+				fMap = new HashMap<>();
+				session.setAttribute("cartFulfillment", fMap);
+			}
+			fMap.put(cartNo, "pickup".equalsIgnoreCase(fulfillment) ? "pickup" : "delivery");
+		}
 
 		return new Gson().toJson(resultMap);
 	}
@@ -170,6 +201,20 @@ public class UserController {
 		return new Gson().toJson(resultMap);
 	}
 
+	@RequestMapping(value = "/cart/Allremove.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String cartAllRemove(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		String json = map.get("selectItem").toString();
+		ObjectMapper mapper = new ObjectMapper();
+		List<Object> list = mapper.readValue(json, new TypeReference<List<Object>>() {
+		});
+		map.put("list", list);
+		System.out.println(map);
+		resultMap = userService.allRemoveItem(map);
+		return new Gson().toJson(resultMap);
+	}
+
 	@RequestMapping(value = "/sellerJoin.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> sellerJoin(
@@ -179,6 +224,7 @@ public class UserController {
 	    @RequestParam("account") String account,
 	    @RequestParam("userAddr") String userAddr,
 	    @RequestParam("bizLicense") MultipartFile bizLicense,
+	    @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
 	    @RequestParam("userId") String userId,
 	    HttpServletRequest request) {
 
@@ -211,6 +257,28 @@ public class UserController {
 	        response.put("message", "사업자 등록증 파일이 필요합니다.");
 	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	    }
+	    
+	    // ✅ 프로필사진 업로드 처리 (선택사항)
+	    String profileWebPath = null;
+	    if (profileImage != null && !profileImage.isEmpty()) {
+	        try {
+	            String uploadDir = request.getServletContext().getRealPath("/resources/uploads/profile");
+	            File dir = new File(uploadDir);
+	            if (!dir.exists()) dir.mkdirs();
+
+	            String originalFilename = profileImage.getOriginalFilename();
+	            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+	            String savedFileName = "profile_" + userId + "_" + genSaveFileName(extName);
+
+	            File serverFile = new File(uploadDir, savedFileName);
+	            profileImage.transferTo(serverFile);
+
+	            profileWebPath = "/resources/uploads/profile/" + savedFileName;
+	        } catch (Exception e) {
+	            System.out.println("프로필사진 업로드 오류: " + e.getMessage());
+	            // 프로필 업로드 실패해도 회원가입은 진행되게끔 처리
+	        }
+	    }
 
 	    try {
 	        // ✅ 주소 → 좌표 변환
@@ -229,6 +297,7 @@ public class UserController {
 	        sellerData.put("lat", lat);
 	        sellerData.put("lng", lng);
 	        sellerData.put("businessLi", fileWebPath);
+	        sellerData.put("profileImg", profileWebPath);
 	        sellerData.put("verified", "N");
 
 	        // ✅ DB insert 실행
@@ -248,15 +317,10 @@ public class UserController {
 
 	// 파일명 생성 메서드
 	private String genSaveFileName(String extName) {
-	    Calendar calendar = Calendar.getInstance();
-	    return calendar.get(Calendar.YEAR)
-	        + String.valueOf(calendar.get(Calendar.MONTH) + 1)
-	        + calendar.get(Calendar.DATE)
-	        + calendar.get(Calendar.HOUR)
-	        + calendar.get(Calendar.MINUTE)
-	        + calendar.get(Calendar.SECOND)
-	        + calendar.get(Calendar.MILLISECOND)
-	        + extName;
+		Calendar calendar = Calendar.getInstance();
+		return calendar.get(Calendar.YEAR) + String.valueOf(calendar.get(Calendar.MONTH) + 1)
+				+ calendar.get(Calendar.DATE) + calendar.get(Calendar.HOUR) + calendar.get(Calendar.MINUTE)
+				+ calendar.get(Calendar.SECOND) + calendar.get(Calendar.MILLISECOND) + extName;
 	}
 
 	@RequestMapping(value = "/check.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
@@ -270,10 +334,17 @@ public class UserController {
 
 	@RequestMapping(value = "/login.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public String login(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+	public String login(HttpSession session, Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = userService.login(map);
-
+		if ("success".equals(String.valueOf(resultMap.get("result")))) {
+			String uId = (String) session.getAttribute("sessionId"); // Service가 넣은 userId
+			String uName = (String) session.getAttribute("sessionName"); // Service가 넣은 userName
+				if (uId != null && !uId.isEmpty()) {
+					session.setAttribute("userId", uId); // 채팅 아이디으로 사용할 값
+					session.setAttribute("userName", uName); // 채팅 이름으로 사용할 값
+			}
+		}
 		return new Gson().toJson(resultMap);
 	}
 
@@ -292,6 +363,15 @@ public class UserController {
 	public String findId(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = userService.findId(map);
+
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/findIdByPhone.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String findIdByPhone(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = userService.findIdByPhone(map);
 
 		return new Gson().toJson(resultMap);
 	}

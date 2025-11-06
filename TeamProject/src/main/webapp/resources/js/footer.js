@@ -55,9 +55,9 @@ $(document).ready(function() {
        let answer = "";
 
        if (msg.includes("배송")) {
-           answer = "🚚 배송은 결제 후 2~3일 이내 도착합니다.<br>상세 조회는 <a href='" + CONTEXT_PATH + "/order/status.do'>여기</a>에서 확인하세요.";
+           answer = "🚚 배송은 결제 후 2~3일 이내 도착합니다.<br>상세 조회는 <a href='" + CONTEXT_PATH + "/buyerMyPage.do'>여기</a>에서 확인하세요.";
        } else if (msg.includes("환불") || msg.includes("취소")) {
-           answer = "💳 환불은 상품 회수 완료 후 2~5일 내 처리됩니다.<br>자세한 안내는 <a href='" + CONTEXT_PATH + "/customerService.do?tab=refund'>여기</a>에서 확인하세요.";
+           answer = "💳 환불은 상품 회수 완료 후 2~5일 내 처리됩니다.<br>자세한 안내는 <a href='" + CONTEXT_PATH + "/customerService.do?tab=faq'>여기</a>에서 확인하세요.";
        } else if (msg.includes("문의")) {
            answer = "📞 고객센터 1:1 문의는 <a href='" + CONTEXT_PATH + "/customerService.do?tab=inquiry'>이곳</a>에서 가능합니다.";
        } else if (msg.includes("입점") || msg.includes("제휴")) {
@@ -66,7 +66,9 @@ $(document).ready(function() {
            answer = "🎉 공지사항과 문의사항은 <a href='" + CONTEXT_PATH + "/board.do'>이곳</a>에서 확인하세요.";
        } else if (msg.includes("로그인")) {
            answer = "🔑 로그인은 <a href='" + CONTEXT_PATH + "/login.do'>여기</a>에서 할 수 있습니다.";
-       } else {
+       } else if (msg.includes("쌀")) {
+		   answer = "🌾 쌀은 <a href='" + CONTEXT_PATH + "/productCategory.do#p=10&c=100&s=1000&v=product'>여기</a>에서 찾으실 수 있습니다."
+	   } else {
            answer = "🤖 죄송해요, 아직 그 질문은 준비 중이에요.<br>예: '배송', '환불', '입점', '제휴', '공지' 등으로 물어보세요!";
        }
 

@@ -157,9 +157,8 @@
                             @click="goProduct(p.productNo)">
                             <img :src="fullUrl(p.imageUrl)" alt="">
                             <div class="product-info">
-                                <h4>{{ p.pname }}</h4>
-                                <span class="product-price">{{ p.price.toLocaleString() }}원</span>
-                                <p class="product-stock">재고 : {{ p.stock }}개</p>
+                                <h4>{{ p.pName }}</h4>
+                                <span class="product-price">{{ p.price.toLocaleString() }}원</span>                                
                             </div>
                         </div>
                     </div>

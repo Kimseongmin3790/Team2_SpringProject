@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.Review;
+import com.example.TeamProject.model.ReviewComment;
 import com.example.TeamProject.model.ReviewImage;
 
 
@@ -49,5 +50,16 @@ public interface ReviewMapper {
     int decrementReviewRecommend(int reviewNo);
     
     List<Map<String, Object>> getRatingDistributionByProductNo(@Param("productNo") int productNo);
+    // 판매자 ID로 리뷰 목록 조회
+    List<Review> selectReviewsBySellerId(String sellerId);
+    // 리뷰에 답글 추가
+    int insertReviewComment(ReviewComment reviewComment);
+    // 리뷰 답글 목록
+    List<ReviewComment> selectCommentsByReviewNo(int reviewNo);
+    // 답글 삭제
+    int deleteComment(HashMap<String, Object> params);
+    // 답글 수정
+    int updateComment(HashMap<String, Object> params);
     
+  
 }

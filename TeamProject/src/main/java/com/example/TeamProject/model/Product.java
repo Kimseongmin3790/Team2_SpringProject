@@ -31,8 +31,7 @@ public class Product {
 	private String orderdate;
 	private String isActive;
 	
-	private String rating;
-	private String businessName;
-	private String userId;
-	private String userName;
+	private String stockQty;
+	private int addPrice;	
+	
 }
