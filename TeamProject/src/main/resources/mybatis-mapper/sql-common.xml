@@ -44,7 +44,7 @@
 		SELECT *
 		FROM PRODUCT_CATEGORY
 	</select>
-	
+		
 	<!--입점 등록-->
 	 <insert id="insertSellerInfo" parameterType="hashmap">
      INSERT INTO SELLER_INFO (
