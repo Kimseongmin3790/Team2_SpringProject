@@ -74,8 +74,8 @@
                 .prod-media .main-box img {
                     width: 100%;
                     height: 100%;
-                    object-fit: contain;
-                    /* 이미지 비율 유지해서 맞춤 */
+                    object-fit: cover; 
+                    /* 이미지 비율 유지해서 맞춤 ; contain */
                     background: #fff;
                     /* 투명/폴백일 때도 하얀 배경 */
                 }

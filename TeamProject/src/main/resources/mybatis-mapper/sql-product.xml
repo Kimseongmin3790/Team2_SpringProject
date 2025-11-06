@@ -73,28 +73,49 @@
 	</select>
 	<select id="selectProductList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
 		SELECT
-		P.PRODUCT_NO AS productNo, P.SELLER_ID AS sellerId, P.CATEGORY_NO AS categoryNo,
-		P.PNAME AS pName, P.PINFO AS pInfo, P.PRICE AS price,
-		P.PRODUCT_STATUS AS productStatus, TO_CHAR(P.CDATETIME, 'YYYY-MM-DD') AS cdate,
-		NVL(IMG.IMAGE_URL, '/resources/img/category/noimage.jpg') AS filePath
-		FROM PRODUCT P
-		LEFT JOIN (
-		SELECT PRODUCT_NO, IMAGE_URL
-		FROM (
-		SELECT
-		PRODUCT_NO,
-		IMAGE_URL,
-		ROW_NUMBER() OVER (
-		PARTITION BY PRODUCT_NO
-		ORDER BY NVL(SORT_ORDER, 9999), IMAGE_ID
-		) AS RN
-		FROM PRODUCT_IMAGE
-		WHERE UPPER(TRIM(IS_THUMBNAIL)) = 'Y' -- ★ 썸네일만
-		)
-		WHERE RN = 1
-		) IMG
-		ON P.PRODUCT_NO = IMG.PRODUCT_NO
-		ORDER BY P.PRODUCT_NO
+        P.PRODUCT_NO       AS productNo,
+        P.SELLER_ID        AS sellerId,     -- 이미 user_id와 동일 의미
+        P.CATEGORY_NO      AS categoryNo,
+        P.PNAME            AS pName,
+        P.PINFO            AS pInfo,
+        P.PRICE            AS price,
+        P.ORIGIN	       AS origin,
+        P.PRODUCT_STATUS   AS productStatus,
+        TO_CHAR(P.CDATETIME, 'YYYY-MM-DD') AS cdate,
+        NVL(IMG.IMAGE_URL, '/resources/img/category/noimage.jpg') AS filePath,
+
+        -- USERS, SELLER_INFO, REVIEW 정보
+        U.NAME             AS userName,
+        SI.BUSINESS_NAME   AS businessName,
+        NVL(ROUND(R.RATING, 1), 0) AS rating
+
+	    FROM PRODUCT P
+	
+	    LEFT JOIN (
+	        SELECT PRODUCT_NO, IMAGE_URL
+	        FROM (
+	            SELECT
+	                PRODUCT_NO,
+	                IMAGE_URL,
+	                ROW_NUMBER() OVER (
+	                    PARTITION BY PRODUCT_NO
+	                    ORDER BY NVL(SORT_ORDER, 9999), IMAGE_ID
+	                ) AS RN
+	            FROM PRODUCT_IMAGE
+	            WHERE UPPER(TRIM(IS_THUMBNAIL)) = 'Y'
+	        )
+	        WHERE RN = 1
+	    ) IMG ON P.PRODUCT_NO = IMG.PRODUCT_NO
+	
+	    LEFT JOIN USERS U ON P.SELLER_ID = U.USER_ID
+	    LEFT JOIN SELLER_INFO SI ON U.USER_ID = SI.USER_ID
+	    LEFT JOIN (
+	        SELECT PRODUCT_NO, AVG(RATING) AS RATING
+	        FROM REVIEW
+	        GROUP BY PRODUCT_NO
+	    ) R ON P.PRODUCT_NO = R.PRODUCT_NO
+	
+	    ORDER BY P.PRODUCT_NO
     </select>
 
    

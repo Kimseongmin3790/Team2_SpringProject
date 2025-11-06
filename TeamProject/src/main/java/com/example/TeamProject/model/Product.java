@@ -30,4 +30,9 @@ public class Product {
 	private String sellerName;
 	private String orderdate;
 	private String isActive;
+	
+	private String rating;
+	private String businessName;
+	private String userId;
+	private String userName;
 }
