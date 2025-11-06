@@ -1151,9 +1151,9 @@
                                             <span class="l1">수율 상세페이지 참조 (필수)</span>
                                         </button>
                                         <div class="dd-list" v-if="ddOpen2" @click.stop>
-                                            <div class="dd-opt" @click="pickProduct()">
-                                                <span class="l1">{{ info.stock }}{{ info.unit }}</span>
-                                                <span class="l2">￦{{ (info.price||0).toLocaleString() }}원</span>
+                                            <div class="dd-opt" @click="pickProduct()" v-for="item in options">
+                                                <span class="l1">{{ item.unit }}</span>
+                                                <span class="l2">￦{{ (info.price + item.addPrice||0).toLocaleString() }}원</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1369,6 +1369,7 @@
                         productNo: "${productNo}",
                         info: {},
                         fileList: [],
+                        options: [],
 
                         selected: false,
                         qty: 0,
@@ -1471,7 +1472,7 @@
                             success: function (data) {
                                 self.info = data.info;
                                 self.fileList = data.fileList;
-
+                                self.options = data.options;
                                 // --- 도우미 ---
                                 const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
 

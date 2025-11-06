@@ -30,4 +30,8 @@ public class Product {
 	private String sellerName;
 	private String orderdate;
 	private String isActive;
+	
+	private String stockQty;
+	private int addPrice;	
+	
 }
