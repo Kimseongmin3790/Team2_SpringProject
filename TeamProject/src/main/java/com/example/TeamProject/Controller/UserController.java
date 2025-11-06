@@ -350,12 +350,9 @@ public class UserController {
 
 	@RequestMapping(value = "/logout.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public String logout(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-
-		resultMap = userService.logout(map);
-
-		return new Gson().toJson(resultMap);
+	public String logout(Model model, @RequestParam HashMap<String, Object> map, HttpSession session) throws Exception {
+	    HashMap<String, Object> resultMap = userService.logout(map, session);
+	    return new Gson().toJson(resultMap);
 	}
 
 	@RequestMapping(value = "/findId.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
