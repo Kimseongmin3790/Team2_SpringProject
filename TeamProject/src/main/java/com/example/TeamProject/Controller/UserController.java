@@ -89,6 +89,11 @@ public class UserController {
 	 @RequestMapping("/sellerMyPage.do")
 	 public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes) throws Exception {
 	     String userId = (String) session.getAttribute("sessionId");
+	     
+	     if (userId == null) {
+	    	    redirectAttributes.addFlashAttribute("redirectMessage", "로그인이 필요한 서비스입니다.");
+	    	    return "redirect:/login.do"; 
+	    	}
 
 	  
 	     HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);

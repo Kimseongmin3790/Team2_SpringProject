@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.TeamProject.mapper.ReviewMapper;
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.Review;
+import com.example.TeamProject.model.ReviewComment;
 import com.example.TeamProject.model.ReviewImage;
 import com.nimbusds.jose.shaded.gson.Gson;
 
@@ -260,15 +261,16 @@ public class ReviewService {
 
             // 2. 해당 페이지의 리뷰 목록과 전체 리뷰 개수를 매퍼에서 가져옴
             List<Review> reviewList = reviewMapper.selectReviewsByProductNo(productNo, offset, pageSize);
-            int totalReviews = reviewMapper.countReviewsByProductNo(productNo);
+            int totalReviews = reviewMapper.countReviewsByProductNo(productNo);        
 
-            // 3. isRecommendedByMe 플래그 설정
-            if (currentUserId != null && !currentUserId.isEmpty()) {
                 for (Review review : reviewList) {
-                    boolean isRecommended = reviewMapper.checkIfUserRecommended(review.getReviewNo(), currentUserId);
-                    review.setRecommendedByMe(isRecommended);
+                    if (currentUserId != null && !currentUserId.isEmpty()) {
+                        boolean isRecommended = reviewMapper.checkIfUserRecommended(review.getReviewNo(),currentUserId);
+                        review.setRecommendedByMe(isRecommended);
+                    }
+                    List<ReviewComment> comments = reviewMapper.selectCommentsByReviewNo(review.getReviewNo());
+                    review.setComments(comments);
                 }
-            }
 
             // 4. 리뷰 통계 정보 계산
             double averageRating = 0;
@@ -358,6 +360,121 @@ public class ReviewService {
             resultMap.put("message", "추천 처리 중 오류 발생: " + e.getMessage());
             throw new RuntimeException("리뷰 추천 처리 중 오류 발생", e); 
         }
+        return resultMap;
+    }
+    
+    // 해당 판매자 상품 리뷰 조회
+    public List<Review> getReviewsBySellerId(String sellerId) {
+        // 1. 판매자의 리뷰 목록을 기본 정보와 함께 가져옵니다.
+        List<Review> reviewList = reviewMapper.selectReviewsBySellerId(sellerId);
+
+        // 2. 각 리뷰에 해당하는 이미지 URL 목록을 조회하여 설정합니다.
+        for (Review review : reviewList) {
+            // review_no를 사용하여 해당 리뷰의 이미지들을 가져옵니다.
+            List<ReviewImage> images = reviewMapper.selectReviewImagesByReviewNo(review.getReviewNo());
+
+            // ReviewImage 객체 리스트에서 URL(String)만 추출하여 reviewImages 필드에 설정합니다.
+            List<String> imageUrls = new ArrayList<>();
+            for (ReviewImage img : images) {
+                imageUrls.add(img.getImageUrl());
+            }
+            review.setReviewImages(imageUrls);
+            
+            // 리뷰 답글 목록 
+            List<ReviewComment> comments = reviewMapper.selectCommentsByReviewNo(review.getReviewNo());
+            review.setComments(comments);
+            
+        }
+        return reviewList;
+    }
+    
+    // 리뷰 답글
+    @Transactional(rollbackFor = Exception.class)
+    public HashMap<String, Object> addCommentToReview(ReviewComment reviewComment) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+        try {
+            // DB에 답글을 삽입합니다.
+            reviewMapper.insertReviewComment(reviewComment);
+            resultMap.put("result", "success");
+
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+            resultMap.put("message", "답글 등록 중 오류가 발생했습니다: " + e.getMessage());
+            e.printStackTrace();
+            // 트랜잭션 롤백을 위해 예외를 다시 던져줍니다.
+            throw new RuntimeException(e);
+        }
+        return resultMap;
+    }
+    
+    // 답글 삭제
+    @Transactional(rollbackFor = Exception.class)
+    public HashMap<String, Object> deleteComment(int commentNo, String sellerId) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+
+        if (sellerId == null || sellerId.isEmpty()) {
+            resultMap.put("result", "fail");
+            resultMap.put("message", "로그인이 필요합니다.");
+            return resultMap;
+        }
+
+        try {
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("commentNo", commentNo);
+            params.put("userId", sellerId); 
+
+            int affectedRows = reviewMapper.deleteComment(params);
+
+            if (affectedRows > 0) {
+                resultMap.put("result", "success");
+            } else {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "답글을 삭제할 수 없습니다. (권한 없음)");
+            }
+
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+            resultMap.put("message", "답글 삭제 중 오류가 발생했습니다.");
+            e.printStackTrace();
+            throw new RuntimeException(e); // 트랜잭션 롤백
+        }
+
+        return resultMap;
+    }
+    
+    // 답글 수정
+    @Transactional(rollbackFor = Exception.class)
+    public HashMap<String, Object> updateComment(int commentNo, String contents, String sellerId) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+
+        if (sellerId == null || sellerId.isEmpty()) {
+            resultMap.put("result", "fail");
+            resultMap.put("message", "로그인이 필요합니다.");
+            return resultMap;
+        }
+
+        try {
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("commentNo", commentNo);
+            params.put("contents", contents);
+            params.put("userId", sellerId); 
+
+            int affectedRows = reviewMapper.updateComment(params);
+
+            if (affectedRows > 0) {
+                resultMap.put("result", "success");
+            } else {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "답글을 수정할 수 없습니다. (권한 없음)");
+            }
+
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+            resultMap.put("message", "답글 수정 중 오류가 발생했습니다.");
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
         return resultMap;
     }
     
