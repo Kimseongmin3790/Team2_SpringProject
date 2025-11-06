@@ -398,7 +398,7 @@
 
                         // PortOne 객체 생성
                         const IMP = window.IMP;
-                        IMP.init("impxxxxxxxx"); // ⚠️ 여기에 본인 가맹점 식별코드 넣기 (예: imp12345678)
+                        IMP.init("impxxxxxx"); // ⚠️ 여기에 본인 가맹점 식별코드 넣기 (예: imp12345678)
 
                         const paymentData = {
                             pg: "html5_inicis", // 결제 PG사: inicis, kakaopay, toss 등

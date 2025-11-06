@@ -913,7 +913,7 @@
                 if (page === 'product-register') {
                     path = '${pageContext.request.contextPath}/product/add.do';
                 } else if (page === 'order-manage') {
-                    // 주문 관리 페이지 경로를 여기에 지정하세요. (예: /seller/orders.do)
+                    path = '${pageContext.request.contextPath}/order/sellerList.do';
                 } else if (page === 'delivery-manage') {
                     // 배송 상태 변경 페이지 경로를 여기에 지정하세요. (예: /seller/delivery.do)      
                 }
@@ -1125,7 +1125,7 @@
 
             saveEditedComment: function(comment) {
                 let self = this;
-                
+
                 if (comment.contents.trim() === '') {
                     alert('답글 내용을 입력해주세요.');
                     return;
