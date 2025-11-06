@@ -529,4 +529,18 @@ public class UserService {
 		return resultMap;
 	}
 
+	public HashMap<String, Object> allRemoveItem(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			int cnt = userMapper.allDelete(map);
+			resultMap.put("result", "sucess");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+
 }

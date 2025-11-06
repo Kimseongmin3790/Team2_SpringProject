@@ -3,6 +3,7 @@ package com.example.TeamProject.Controller;
 import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.TeamProject.dao.OrderService;
 import com.example.TeamProject.dao.SellerService;
 import com.example.TeamProject.dao.UserService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,9 +37,9 @@ public class UserController {
 
 	@Autowired
 	OrderService orderService;
-	
-	 @Autowired
-	 private SellerService sellerService;
+
+	@Autowired
+	private SellerService sellerService;
 
 	@RequestMapping("/login.do")
 	public String login(Model model) throws Exception {
@@ -81,27 +84,28 @@ public class UserController {
 	}
 
 	@RequestMapping("/buyerMyPage.do")
-	 public String buyerMyPage(Model model, @RequestParam(value = "tab", required = false, defaultValue ="cart") String tab) throws Exception{
-	     model.addAttribute("activeTab", tab);
-	     return "user/buyerMypage";
-	 }
+	public String buyerMyPage(Model model,
+			@RequestParam(value = "tab", required = false, defaultValue = "cart") String tab) throws Exception {
+		model.addAttribute("activeTab", tab);
+		return "user/buyerMypage";
+	}
 
-	 @RequestMapping("/sellerMyPage.do")
-	 public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes) throws Exception {
-	     String userId = (String) session.getAttribute("sessionId");
+	@RequestMapping("/sellerMyPage.do")
+	public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes)
+			throws Exception {
+		String userId = (String) session.getAttribute("sessionId");
 
-	  
-	     HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
-	     String resultStatus = (String) serviceResult.get("result");
-	     String message = (String) serviceResult.get("message"); 
+		HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
+		String resultStatus = (String) serviceResult.get("result");
+		String message = (String) serviceResult.get("message");
 
-	     if ("success".equals(resultStatus)) {
-	         return "user/sellerMyPage";
-	     } else {
-	    	 redirectAttributes.addFlashAttribute("redirectMessage", message);
-	         return "redirect:/main.do";
-	     }
-	 }
+		if ("success".equals(resultStatus)) {
+			return "user/sellerMyPage";
+		} else {
+			redirectAttributes.addFlashAttribute("redirectMessage", message);
+			return "redirect:/main.do";
+		}
+	}
 
 	@RequestMapping("/cart.do")
 	public String cart(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
@@ -111,8 +115,7 @@ public class UserController {
 
 		return "user/cart";
 	}
-	
-	
+
 	@RequestMapping(value = "/join.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String join(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
@@ -131,13 +134,41 @@ public class UserController {
 
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	// 장바구니 추가
 	@RequestMapping(value = "/cart/add.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public String addCart(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap = userService.addCart(map);
+	public String addCart(Model model, @RequestParam HashMap<String, Object> map, HttpSession session)
+			throws Exception {
+
+		// 프론트에서 넘어온 수령방법 (기본값: delivery)
+		String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
+
+		// ★ 장바구니 저장 -> 서비스 결과 사용(여기서 cartNo를 받아옴)
+		HashMap<String, Object> resultMap = userService.addCart(map);
+
+		// cartNo 뽑기
+		Long cartNo = null;
+		Object cno = resultMap.get("cartNo");
+		if (cno instanceof Number) {
+			cartNo = ((Number) cno).longValue();
+		} else if (cno != null) {
+			try {
+				cartNo = Long.parseLong(String.valueOf(cno));
+			} catch (Exception ignore) {
+			}
+		}
+
+		// cartNo가 있으면 세션 맵(cartFulfillment)에 cartNo→fulfillment 저장
+		if (cartNo != null) {
+			@SuppressWarnings("unchecked")
+			Map<Long, String> fMap = (Map<Long, String>) session.getAttribute("cartFulfillment");
+			if (fMap == null) {
+				fMap = new HashMap<>();
+				session.setAttribute("cartFulfillment", fMap);
+			}
+			fMap.put(cartNo, "pickup".equalsIgnoreCase(fulfillment) ? "pickup" : "delivery");
+		}
 
 		return new Gson().toJson(resultMap);
 	}
@@ -170,93 +201,99 @@ public class UserController {
 		return new Gson().toJson(resultMap);
 	}
 
+	@RequestMapping(value = "/cart/Allremove.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String cartAllRemove(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		String json = map.get("selectItem").toString();
+		ObjectMapper mapper = new ObjectMapper();
+		List<Object> list = mapper.readValue(json, new TypeReference<List<Object>>() {
+		});
+		map.put("list", list);
+		System.out.println(map);
+		resultMap = userService.allRemoveItem(map);
+		return new Gson().toJson(resultMap);
+	}
+
 	@RequestMapping(value = "/sellerJoin.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> sellerJoin(
-	    @RequestParam("farmName") String farmName,
-	    @RequestParam("bizNo") String bizNo,
-	    @RequestParam("bankName") String bankName,
-	    @RequestParam("account") String account,
-	    @RequestParam("userAddr") String userAddr,
-	    @RequestParam("bizLicense") MultipartFile bizLicense,
-	    @RequestParam("userId") String userId,
-	    HttpServletRequest request) {
+	public ResponseEntity<Map<String, Object>> sellerJoin(@RequestParam("farmName") String farmName,
+			@RequestParam("bizNo") String bizNo, @RequestParam("bankName") String bankName,
+			@RequestParam("account") String account, @RequestParam("userAddr") String userAddr,
+			@RequestParam("bizLicense") MultipartFile bizLicense, @RequestParam("userId") String userId,
+			HttpServletRequest request) {
 
-	    Map<String, Object> response = new HashMap<>();
+		Map<String, Object> response = new HashMap<>();
 
-	    // ✅ 파일 업로드 처리
-	    String fileWebPath = null;
-	    if (bizLicense != null && !bizLicense.isEmpty()) {
-	        try {
-	            String uploadDir = request.getServletContext().getRealPath("/resources/uploads/licenses");
-	            File dir = new File(uploadDir);
-	            if (!dir.exists()) dir.mkdirs();
+		// ✅ 파일 업로드 처리
+		String fileWebPath = null;
+		if (bizLicense != null && !bizLicense.isEmpty()) {
+			try {
+				String uploadDir = request.getServletContext().getRealPath("/resources/uploads/licenses");
+				File dir = new File(uploadDir);
+				if (!dir.exists())
+					dir.mkdirs();
 
-	            String originalFilename = bizLicense.getOriginalFilename();
-	            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
-	            String savedFileName = genSaveFileName(extName);
+				String originalFilename = bizLicense.getOriginalFilename();
+				String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+				String savedFileName = genSaveFileName(extName);
 
-	            File serverFile = new File(uploadDir, savedFileName);
-	            bizLicense.transferTo(serverFile);
+				File serverFile = new File(uploadDir, savedFileName);
+				bizLicense.transferTo(serverFile);
 
-	            fileWebPath = "/resources/uploads/licenses/" + savedFileName;
-	        } catch (Exception e) {
-	            System.out.println("파일 업로드 중 오류 발생: " + e.getMessage());
-	            response.put("status", "error");
-	            response.put("message", "파일 업로드 중 오류가 발생했습니다.");
-	            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-	        }
-	    } else {
-	        response.put("status", "fail");
-	        response.put("message", "사업자 등록증 파일이 필요합니다.");
-	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-	    }
+				fileWebPath = "/resources/uploads/licenses/" + savedFileName;
+			} catch (Exception e) {
+				System.out.println("파일 업로드 중 오류 발생: " + e.getMessage());
+				response.put("status", "error");
+				response.put("message", "파일 업로드 중 오류가 발생했습니다.");
+				return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} else {
+			response.put("status", "fail");
+			response.put("message", "사업자 등록증 파일이 필요합니다.");
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}
 
-	    try {
-	        // ✅ 주소 → 좌표 변환
-	        double[] coords = userService.getCoordinatesFromAddress(userAddr);
-	        double lat = coords[0];
-	        double lng = coords[1];
+		try {
+			// ✅ 주소 → 좌표 변환
+			double[] coords = userService.getCoordinatesFromAddress(userAddr);
+			double lat = coords[0];
+			double lng = coords[1];
 
-	        // ✅ DB 저장용 데이터 구성
-	        HashMap<String, Object> sellerData = new HashMap<>();
-	        sellerData.put("userId", userId);
-	        sellerData.put("businessName", farmName);
-	        sellerData.put("businessNumber", bizNo);
-	        sellerData.put("bankName", bankName);
-	        sellerData.put("account", account);
-	        sellerData.put("userAddr", userAddr);
-	        sellerData.put("lat", lat);
-	        sellerData.put("lng", lng);
-	        sellerData.put("businessLi", fileWebPath);
-	        sellerData.put("verified", "N");
+			// ✅ DB 저장용 데이터 구성
+			HashMap<String, Object> sellerData = new HashMap<>();
+			sellerData.put("userId", userId);
+			sellerData.put("businessName", farmName);
+			sellerData.put("businessNumber", bizNo);
+			sellerData.put("bankName", bankName);
+			sellerData.put("account", account);
+			sellerData.put("userAddr", userAddr);
+			sellerData.put("lat", lat);
+			sellerData.put("lng", lng);
+			sellerData.put("businessLi", fileWebPath);
+			sellerData.put("verified", "N");
 
-	        // ✅ DB insert 실행
-	        userService.addSeller(sellerData);
+			// ✅ DB insert 실행
+			userService.addSeller(sellerData);
 
-	        response.put("status", "success");
-	        response.put("message", "판매자 회원가입이 완료되었습니다!");
-	        return new ResponseEntity<>(response, HttpStatus.OK);
+			response.put("status", "success");
+			response.put("message", "판매자 회원가입이 완료되었습니다!");
+			return new ResponseEntity<>(response, HttpStatus.OK);
 
-	    } catch (Exception e) {
-	        System.out.println("DB 저장 중 오류 발생: " + e.getMessage());
-	        response.put("status", "error");
-	        response.put("message", "데이터 저장 중 오류가 발생했습니다.");
-	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
+		} catch (Exception e) {
+			System.out.println("DB 저장 중 오류 발생: " + e.getMessage());
+			response.put("status", "error");
+			response.put("message", "데이터 저장 중 오류가 발생했습니다.");
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	// 파일명 생성 메서드
 	private String genSaveFileName(String extName) {
-	    Calendar calendar = Calendar.getInstance();
-	    return calendar.get(Calendar.YEAR)
-	        + String.valueOf(calendar.get(Calendar.MONTH) + 1)
-	        + calendar.get(Calendar.DATE)
-	        + calendar.get(Calendar.HOUR)
-	        + calendar.get(Calendar.MINUTE)
-	        + calendar.get(Calendar.SECOND)
-	        + calendar.get(Calendar.MILLISECOND)
-	        + extName;
+		Calendar calendar = Calendar.getInstance();
+		return calendar.get(Calendar.YEAR) + String.valueOf(calendar.get(Calendar.MONTH) + 1)
+				+ calendar.get(Calendar.DATE) + calendar.get(Calendar.HOUR) + calendar.get(Calendar.MINUTE)
+				+ calendar.get(Calendar.SECOND) + calendar.get(Calendar.MILLISECOND) + extName;
 	}
 
 	@RequestMapping(value = "/check.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
@@ -270,10 +307,17 @@ public class UserController {
 
 	@RequestMapping(value = "/login.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public String login(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+	public String login(HttpSession session, Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = userService.login(map);
-
+		if ("success".equals(String.valueOf(resultMap.get("result")))) {
+			String uId = (String) session.getAttribute("sessionId"); // Service가 넣은 userId
+			String uName = (String) session.getAttribute("sessionName"); // Service가 넣은 userName
+				if (uId != null && !uId.isEmpty()) {
+					session.setAttribute("userId", uId); // 채팅 아이디으로 사용할 값
+					session.setAttribute("userName", uName); // 채팅 이름으로 사용할 값
+			}
+		}
 		return new Gson().toJson(resultMap);
 	}
 

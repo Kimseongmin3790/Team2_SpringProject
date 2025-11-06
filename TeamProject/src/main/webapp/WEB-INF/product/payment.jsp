@@ -219,7 +219,9 @@
                                         <div class="product-price">{{ Number(p.price).toLocaleString() }}원</div>
                                     </div>
                                 </div>
-                                <div class="total-box">배송비 3,000원 포함</div>
+                                <div class="total-box">
+                                    배송비 {{ shippingFeeC.toLocaleString() }}원 포함
+                                </div>
                             </div>
 
                             <!-- 주문자 정보 -->
@@ -266,7 +268,7 @@
                                 <h3>주문 요약</h3>
                                 <div class="price-summary">
                                     상품금액 <span>{{ totalPrice.toLocaleString() }}원</span><br>
-                                    배송비 <span>3,000원</span><br>
+                                    배송비 <span>{{ shippingFeeC.toLocaleString() }}원</span><br> <!-- ✅ 동적 -->
                                     포인트 사용 <span>-{{ usedPoint.toLocaleString() }}원</span><br>
                                     <hr>
                                     총 결제금액 <span>{{ finalPrice.toLocaleString() }}원</span>
@@ -317,8 +319,20 @@
                     };
                 },
                 computed: {
-                    totalPrice() { return this.products.reduce((sum, p) => sum + (p.price) * (p.quantity), 0); },
-                    finalPrice() { return this.totalPrice + 3000 - this.usedPoint; }
+                    totalPrice() {
+                        return this.products.reduce((sum, p) => sum + (Number(p.price) || 0) * (Number(p.quantity) || 0), 0);
+                    },
+                    // A안: 단건 결제 - 상세에서 수령방법이 '택배'면 3,000, '방문'이면 0.
+                    // 지금은 param으로 fulfillment를 안 받으니, 임시로 3,000 고정 또는
+                    // products[0].fulfillment === 'delivery' ? 3000 : 0 로도 가능
+                    shippingFeeC() {
+                        // 단건이면 첫 상품 기준 / 다건이면 some(delivery)
+                        const hasDelivery = this.products.some(p => (p.fulfillment || 'delivery') === 'delivery');
+                        return hasDelivery ? 3000 : 0;
+                    },
+                    finalPrice() {
+                        return this.totalPrice + this.shippingFeeC - this.usedPoint;
+                    }
                 },
                 methods: {
                     fnProduct: function () {

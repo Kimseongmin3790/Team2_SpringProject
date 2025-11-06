@@ -125,50 +125,68 @@
     <!-- 없으면 새로 한 줄 추가 -->
     <insert id="insertCart" parameterType="hashmap">
         INSERT INTO CART
+        (CART_NO, PRODUCT_NO, USER_ID,  QUANTITY, FULFILLMENT, SHIPPING_FEE, ADDED_AT)
         VALUES
-        (CART_SEQ.NEXTVAL, #{productNo}, #{userId}, #{quantity}, SYSDATE)
+        (CART_SEQ.NEXTVAL, #{productNo}, #{userId}, #{quantity},#{fulfillment}, #{shippingFee}, SYSDATE)
     </insert>
     
     <!-- 목록 (상품과 조인해서 이름/가격/썸네일 포함) -->
   <select id="selectCartList" parameterType="hashmap" resultType="com.example.TeamProject.model.Cart">
-    SELECT C.CART_NO AS cartNo, C.PRODUCT_NO AS productNo, C.USER_ID AS userId,
-		      C.QUANTITY AS quantity, TO_CHAR(C.ADDED_AT, 'YYYY-MM-DD') AS addedAt,
-		      P.PNAME AS pName, P.PRICE AS price,
-		      /* CLOB(IMAGE_URL) → 문자열로 잘라서 가져오기, 없으면 기본 이미지 */
-		      NVL(PI.THUMB_URL, '/resources/img/no-image.png') AS thumbPath,
-		      (NVL(P.PRICE,0) * NVL(C.QUANTITY,0)) AS lineTotal
-		 FROM   CART C
-		 JOIN   PRODUCT  P  ON P.PRODUCT_NO = C.PRODUCT_NO
-		  /* 상품별 대표 이미지 1장만 선택 */
-		 LEFT JOIN (
-		      SELECT
-		          PRODUCT_NO,
-		          /* IMAGE_URL 이 CLOB 이라면 DBMS_LOB.SUBSTR로 4000자까지 꺼내기 */
-		          DBMS_LOB.SUBSTR(IMAGE_URL, 4000, 1) AS THUMB_URL
-		      FROM ( 
-		          SELECT
-		              PI.*,
-		              ROW_NUMBER() OVER (
-		                  PARTITION BY PRODUCT_NO
-		                  ORDER BY
-		                      CASE WHEN NVL(PI.IS_THUMBNAIL,'N') = 'Y' THEN 0 ELSE 1 END,
-		                      NVL(PI.SORT_ORDER, 999999),
-		                      PI.IMAGE_ID
-		              ) AS RN
-		          FROM PRODUCT_IMAGE PI
-		      )
-		      WHERE RN = 1
-		  ) PI ON PI.PRODUCT_NO = C.PRODUCT_NO
-		 WHERE  C.USER_ID = #{userId}
-		 ORDER BY C.CART_NO DESC
+		SELECT
+		C.CART_NO AS cartNo,
+		C.PRODUCT_NO AS productNo,
+		C.USER_ID AS userId,
+		C.QUANTITY AS quantity,
+		C.FULFILLMENT AS fulfillment, -- ✅ 프런트로 내려줌
+		TO_CHAR(C.ADDED_AT, 'YYYY-MM-DD') AS addedAt,
+		P.PNAME AS pName,
+		P.PRICE AS price,
+		NVL(PI.THUMB_URL, '/resources/img/no-image.png') AS thumbPath,
+		(NVL(P.PRICE,0) * NVL(C.QUANTITY,0)) AS lineTotal,
+		CASE -- ✅ 라인 배송비
+		WHEN NVL(C.FULFILLMENT, 'DELIVERY') IN ('VISIT','PICKUP') THEN 0
+		ELSE NVL(C.SHIPPING_FEE, 3000)
+		END AS shippingFee
+		FROM CART C
+		JOIN PRODUCT P ON P.PRODUCT_NO = C.PRODUCT_NO
+		LEFT JOIN (
+		SELECT PRODUCT_NO,
+		DBMS_LOB.SUBSTR(IMAGE_URL, 4000, 1) AS THUMB_URL
+		FROM (
+		SELECT PI.*,
+		ROW_NUMBER() OVER (
+		PARTITION BY PRODUCT_NO
+		ORDER BY CASE WHEN NVL(PI.IS_THUMBNAIL,'N')='Y' THEN 0 ELSE 1 END,
+		NVL(PI.SORT_ORDER, 999999),
+		PI.IMAGE_ID
+		) RN
+		FROM PRODUCT_IMAGE PI
+		) WHERE RN = 1
+		) PI ON PI.PRODUCT_NO = C.PRODUCT_NO
+		WHERE C.USER_ID = #{userId}
+		ORDER BY C.CART_NO DESC
   </select>
 
   <!-- 총액(상품합) -->
   <select id="selectCartTotal" parameterType="hashmap" resultType="int">
-    SELECT NVL(SUM(NVL(P.PRICE,0) * NVL(C.QUANTITY,0)), 0)
-    FROM CART C
-    INNER JOIN PRODUCT P ON P.PRODUCT_NO = C.PRODUCT_NO
-    WHERE C.USER_ID = #{userId}
+		SELECT
+		NVL(SUM(NVL(P.PRICE,0) * NVL(C.QUANTITY,0)), 0) AS productTotal,
+		NVL(SUM(
+		CASE
+		WHEN NVL(C.FULFILLMENT,'DELIVERY') IN ('VISIT','PICKUP') THEN 0
+		ELSE NVL(C.SHIPPING_FEE,3000)
+		END
+		), 0) AS shippingTotal,
+		NVL(SUM(NVL(P.PRICE,0) * NVL(C.QUANTITY,0)), 0)
+		+ NVL(SUM(
+		CASE
+		WHEN NVL(C.FULFILLMENT,'DELIVERY') IN ('VISIT','PICKUP') THEN 0
+		ELSE NVL(C.SHIPPING_FEE,3000)
+		END
+		), 0) AS grandTotal
+		FROM CART C
+		JOIN PRODUCT P ON P.PRODUCT_NO = C.PRODUCT_NO
+		WHERE C.USER_ID = #{userId}
   </select>
   
   <!-- 수량 변경 -->
@@ -185,5 +203,13 @@
      WHERE CART_NO = #{cartNo}
        AND USER_ID = #{userId}
   </delete>
+  
+  <delete id="allDelete" parameterType="hashmap">
+		DELETE FROM CART
+		WHERE CART_NO IN
+		<foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</delete>
 	
 </mapper>
