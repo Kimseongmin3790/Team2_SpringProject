@@ -164,20 +164,19 @@
                 }
 
                 .btn-back {
-                    background: none;
-                    border: 1px solid #ccc;
-                    color: #333;
-                    padding: 6px 12px;
-                    border-radius: 6px;
-                    font-size: 14px;
+                    background: #5dbb63;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 10px 20px;
+                    font-size: 15px;
                     cursor: pointer;
-                    transition: 0.2s;
+                    transition: 0.3s;
+                    margin-bottom: 25px;
                 }
 
                 .btn-back:hover {
-                    background: #e8f5e9;
-                    border-color: #4caf50;
-                    color: #1a5d1a;
+                    background: #4ba954;
                 }
             </style>
         </head>
@@ -203,6 +202,8 @@
                                     <tr>
                                         <th>회원ID</th>
                                         <th>이름</th>
+                                        <th>생년월일</th>
+                                        <th>성별</th>
                                         <th>주소</th>
                                         <th>이메일</th>
                                         <th>가입일</th>
@@ -218,6 +219,8 @@
                                     <tr v-for="item in filteredList">
                                         <td>{{ item.userId }}</td>
                                         <td>{{ item.name }}</td>
+                                        <td>{{ item.userBirth }}</td>
+                                        <td>{{ item.userGender }}</td>
                                         <td>{{ item.address }}</td>
                                         <td>{{ item.email }}</td>
                                         <td>{{ item.cdatetime }}</td>
@@ -227,12 +230,12 @@
                                         <td>{{ item.verified }}</td>
                                         <td>
                                             <!-- 🔹 판매자만 승인/거절 버튼 표시 -->
-                                            <template v-if="item.userRole === 'SELLER' && item.verified !== 'Y'">
+                                            <template v-if="item.userRole === 'SELLER' && item.verified === 'N'">
                                                 <button class="btn-action" @click="fnApprove(item.userId)">승인</button>
-                                                <button class="btn-action reject"
-                                                    @click="fnReject(item.userId)">거절</button>
                                             </template>
-                                            <!-- 신고된 회원만 신고 해제 -->
+                                            <template v-else-if="item.userRole === 'SELLER' && item.verified === 'Y'">
+                                                <button class="btn-action reject" @click="fnReject(item.userId)">승인취소</button>
+                                            </template>
                                         </td>                                        
                                         <td>{{ item.status }}</td>
                                     </tr>
@@ -323,18 +326,22 @@
 
                                 // 🔹 판매자 거절
                                 fnReject(userId) {
-                                    if (!confirm(userId + " 판매자 승인 요청을 거절하시겠습니까?")) return;
+                                    if (!confirm(userId + " 판매자 승인을 취소하시겠습니까?")) return;
                                     const self = this;
+                                    let param = {
+                                        userId: userId
+                                    };
                                     $.ajax({
-                                        url: "${pageContext.request.contextPath}/admin/rejectSeller.dox",
+                                        url: "/rejectSeller.dox",
+                                        dataType: "json",
                                         type: "POST",
-                                        data: { userId },
-                                        success: function (res) {
-                                            alert(res.message || "거절 완료");
+                                        data: param,
+                                        success: function (data) {
+                                            alert("취소 완료");
                                             self.fnUserList();
                                         },
                                         error: function () {
-                                            alert("거절 처리 중 오류가 발생했습니다.");
+                                            alert("취소 처리 중 오류가 발생했습니다.");
                                         },
                                     });
                                 },

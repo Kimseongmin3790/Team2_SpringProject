@@ -217,75 +217,102 @@ public class UserController {
 
 	@RequestMapping(value = "/sellerJoin.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> sellerJoin(@RequestParam("farmName") String farmName,
-			@RequestParam("bizNo") String bizNo, @RequestParam("bankName") String bankName,
-			@RequestParam("account") String account, @RequestParam("userAddr") String userAddr,
-			@RequestParam("bizLicense") MultipartFile bizLicense, @RequestParam("userId") String userId,
-			HttpServletRequest request) {
+	public ResponseEntity<Map<String, Object>> sellerJoin(
+	    @RequestParam("farmName") String farmName,
+	    @RequestParam("bizNo") String bizNo,
+	    @RequestParam("bankName") String bankName,
+	    @RequestParam("account") String account,
+	    @RequestParam("userAddr") String userAddr,
+	    @RequestParam("bizLicense") MultipartFile bizLicense,
+	    @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
+	    @RequestParam("userId") String userId,
+	    HttpServletRequest request) {
 
-		Map<String, Object> response = new HashMap<>();
+	    Map<String, Object> response = new HashMap<>();
 
-		// ✅ 파일 업로드 처리
-		String fileWebPath = null;
-		if (bizLicense != null && !bizLicense.isEmpty()) {
-			try {
-				String uploadDir = request.getServletContext().getRealPath("/resources/uploads/licenses");
-				File dir = new File(uploadDir);
-				if (!dir.exists())
-					dir.mkdirs();
+	    // ✅ 파일 업로드 처리
+	    String fileWebPath = null;
+	    if (bizLicense != null && !bizLicense.isEmpty()) {
+	        try {
+	            String uploadDir = request.getServletContext().getRealPath("/resources/uploads/licenses");
+	            File dir = new File(uploadDir);
+	            if (!dir.exists()) dir.mkdirs();
 
-				String originalFilename = bizLicense.getOriginalFilename();
-				String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
-				String savedFileName = genSaveFileName(extName);
+	            String originalFilename = bizLicense.getOriginalFilename();
+	            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+	            String savedFileName = genSaveFileName(extName);
 
-				File serverFile = new File(uploadDir, savedFileName);
-				bizLicense.transferTo(serverFile);
+	            File serverFile = new File(uploadDir, savedFileName);
+	            bizLicense.transferTo(serverFile);
 
-				fileWebPath = "/resources/uploads/licenses/" + savedFileName;
-			} catch (Exception e) {
-				System.out.println("파일 업로드 중 오류 발생: " + e.getMessage());
-				response.put("status", "error");
-				response.put("message", "파일 업로드 중 오류가 발생했습니다.");
-				return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-			}
-		} else {
-			response.put("status", "fail");
-			response.put("message", "사업자 등록증 파일이 필요합니다.");
-			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-		}
+	            fileWebPath = "/resources/uploads/licenses/" + savedFileName;
+	        } catch (Exception e) {
+	            System.out.println("파일 업로드 중 오류 발생: " + e.getMessage());
+	            response.put("status", "error");
+	            response.put("message", "파일 업로드 중 오류가 발생했습니다.");
+	            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	        }
+	    } else {
+	        response.put("status", "fail");
+	        response.put("message", "사업자 등록증 파일이 필요합니다.");
+	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	    }
+	    
+	    // ✅ 프로필사진 업로드 처리 (선택사항)
+	    String profileWebPath = null;
+	    if (profileImage != null && !profileImage.isEmpty()) {
+	        try {
+	            String uploadDir = request.getServletContext().getRealPath("/resources/uploads/profile");
+	            File dir = new File(uploadDir);
+	            if (!dir.exists()) dir.mkdirs();
 
-		try {
-			// ✅ 주소 → 좌표 변환
-			double[] coords = userService.getCoordinatesFromAddress(userAddr);
-			double lat = coords[0];
-			double lng = coords[1];
+	            String originalFilename = profileImage.getOriginalFilename();
+	            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+	            String savedFileName = "profile_" + userId + "_" + genSaveFileName(extName);
 
-			// ✅ DB 저장용 데이터 구성
-			HashMap<String, Object> sellerData = new HashMap<>();
-			sellerData.put("userId", userId);
-			sellerData.put("businessName", farmName);
-			sellerData.put("businessNumber", bizNo);
-			sellerData.put("bankName", bankName);
-			sellerData.put("account", account);
-			sellerData.put("userAddr", userAddr);
-			sellerData.put("lat", lat);
-			sellerData.put("lng", lng);
-			sellerData.put("businessLi", fileWebPath);
-			sellerData.put("verified", "N");
+	            File serverFile = new File(uploadDir, savedFileName);
+	            profileImage.transferTo(serverFile);
 
-			// ✅ DB insert 실행
-			userService.addSeller(sellerData);
+	            profileWebPath = "/resources/uploads/profile/" + savedFileName;
+	        } catch (Exception e) {
+	            System.out.println("프로필사진 업로드 오류: " + e.getMessage());
+	            // 프로필 업로드 실패해도 회원가입은 진행되게끔 처리
+	        }
+	    }
 
-			response.put("status", "success");
-			response.put("message", "판매자 회원가입이 완료되었습니다!");
-			return new ResponseEntity<>(response, HttpStatus.OK);
+	    try {
+	        // ✅ 주소 → 좌표 변환
+	        double[] coords = userService.getCoordinatesFromAddress(userAddr);
+	        double lat = coords[0];
+	        double lng = coords[1];
 
-		} catch (Exception e) {
-			System.out.println("DB 저장 중 오류 발생: " + e.getMessage());
-			response.put("status", "error");
-			response.put("message", "데이터 저장 중 오류가 발생했습니다.");
-			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	        // ✅ DB 저장용 데이터 구성
+	        HashMap<String, Object> sellerData = new HashMap<>();
+	        sellerData.put("userId", userId);
+	        sellerData.put("businessName", farmName);
+	        sellerData.put("businessNumber", bizNo);
+	        sellerData.put("bankName", bankName);
+	        sellerData.put("account", account);
+	        sellerData.put("userAddr", userAddr);
+	        sellerData.put("lat", lat);
+	        sellerData.put("lng", lng);
+	        sellerData.put("businessLi", fileWebPath);
+	        sellerData.put("profileImg", profileWebPath);
+	        sellerData.put("verified", "N");
+
+	        // ✅ DB insert 실행
+	        userService.addSeller(sellerData);
+
+	        response.put("status", "success");
+	        response.put("message", "판매자 회원가입이 완료되었습니다!");
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+
+	    } catch (Exception e) {
+	        System.out.println("DB 저장 중 오류 발생: " + e.getMessage());
+	        response.put("status", "error");
+	        response.put("message", "데이터 저장 중 오류가 발생했습니다.");
+	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
 	}
 
 	// 파일명 생성 메서드

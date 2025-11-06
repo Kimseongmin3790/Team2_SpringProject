@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.TeamProject.dao.ReviewService;
+import com.example.TeamProject.model.Review;
+import com.example.TeamProject.model.ReviewComment;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -155,5 +157,53 @@ public class ReviewController {
 
         return new Gson().toJson(resultMap);
     }
- 
+    // 판매자 상품 리뷰 조회
+    @RequestMapping(value = "/seller/reviews.dox", method = RequestMethod.GET, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String getSellerReviews(HttpSession session) {
+        String sellerId = (String) session.getAttribute("sessionId");
+
+        List<Review> reviewList = reviewService.getReviewsBySellerId(sellerId);
+     
+        Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
+        return gson.toJson(reviewList);
+    }
+    
+    // 리뷰 답글
+    @RequestMapping(value = "/seller/review/addComment.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String addReviewComment(ReviewComment reviewComment, HttpSession session) {
+        String sellerId = (String) session.getAttribute("sessionId");
+        reviewComment.setUserId(sellerId); 
+
+        HashMap<String, Object> resultMap = reviewService.addCommentToReview(reviewComment);
+     
+        return new Gson().toJson(resultMap);
+    }
+    // 답글 삭제
+    @RequestMapping(value = "/seller/review/deleteComment.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
+    		@ResponseBody
+    		public String deleteComment(@RequestParam("commentNo") int commentNo, HttpSession session) {
+    		    String sellerId = (String) session.getAttribute("sessionId");
+
+    		    // 서비스 호출 시, 삭제할 답글 번호와 현재 로그인한 사용자 ID를 함께 넘겨 권한을 확인할 수 있도록 함
+    		    HashMap<String, Object> resultMap = reviewService.deleteComment(commentNo, sellerId);
+
+    		    return new Gson().toJson(resultMap);
+    		}
+    
+   // 답글 수정
+    @RequestMapping(value = "/seller/review/updateComment.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
+    		@ResponseBody
+    		public String updateComment(@RequestParam("commentNo") int commentNo,
+    		                            @RequestParam("contents") String contents,
+    		                            HttpSession session) {
+    		    String sellerId = (String) session.getAttribute("sessionId");
+
+    		    
+    		    HashMap<String, Object> resultMap = reviewService.updateComment(commentNo, contents, sellerId);
+
+    		    return new Gson().toJson(resultMap);
+    		}
+      
 }

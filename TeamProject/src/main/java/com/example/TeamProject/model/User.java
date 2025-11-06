@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class User {
 	private String userId;
-	private String name;
+	private String name;	
 	private String password;
 	private String email;
 	private String phone;
@@ -17,5 +17,6 @@ public class User {
 	private String lat;
 	private String lng;
 	private String status;
-	
+	private String userBirth;
+	private String userGender;
 }

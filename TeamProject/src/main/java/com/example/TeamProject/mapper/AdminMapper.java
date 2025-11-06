@@ -16,6 +16,8 @@ public interface AdminMapper {
 	List<User> selectUserList(HashMap<String, Object> map);
 	// 판매자 승인
 	int approveSeller(HashMap<String, Object> map);
+	// 판매자 승인취소
+	int rejectSeller(HashMap<String, Object> map);
 	// 모든 유저 수
 	int allUserCount();
 	// 모든 상품 수

@@ -46,8 +46,8 @@
 		SELECT
         P.PRODUCT_NO,
         P.PNAME,
+        P.PINFO,
         P.PRICE,
-        P.STOCK,
         I.IMAGE_URL
 	    FROM PRODUCT P
 	    LEFT JOIN PRODUCT_IMAGE I 
@@ -62,7 +62,6 @@
 	        P.PRODUCT_NO,
 	        P.PNAME,
 	        P.PRICE,
-	        P.STOCK,
 	        I.IMAGE_URL
 	    FROM PRODUCT P
 	    LEFT JOIN PRODUCT_IMAGE I 
