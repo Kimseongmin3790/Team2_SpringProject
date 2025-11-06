@@ -4,11 +4,15 @@
 
     <head>
         <meta charset="UTF-8">
+        <meta name="_csrf" content="${_csrf.token}" />
+        <meta name="_csrf_header" content="${_csrf.headerName}" />
         <title>Chat</title>
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
         <script src="/webjars/sockjs-client/sockjs.min.js"></script>
         <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
         <style>
             #chat {
                 max-width: 720px;
@@ -60,8 +64,10 @@
             const app = Vue.createApp({
                 data() {
                     return {
-                        stomp: null, connected: false,
-                        username: "", userId: "",
+                        stomp: null,
+                        connected: false,
+                        username: "",
+                        userId: "",
                         roomId: "1",
                         draft: "",
                         messages: []

@@ -6,6 +6,8 @@
         <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <meta name="_csrf_parameter" content="${_csrf.parameterName}">
+            <meta name="_csrf" content="${_csrf.token}">
             <title>상품 상세</title>
 
             <!-- 라이브러리 -->
@@ -1636,34 +1638,42 @@
                     fnWish() { /* TODO */ },
                     openChatWindowPost() {
                         const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
-                        const action = CTX + '/chatting.do';       // POST 받을 엔드포인트
                         const winName = 'chatWin';
-                        const features = 'width=500,height=600,noopener,resizable=yes,scrollbars=yes';
+                        const features = 'width=500,height=600,resizable=yes,scrollbars=yes';
 
-                        // 1) 빈 창(이름 있는 창) 먼저 띄움 → 팝업 차단 우회에 유리
-                        const w = window.open('', winName, features);
-                        if (!w) { alert('팝업이 차단되었습니다. 사이트 팝업 허용을 켜주세요.'); return; }
+                        // 1) 사용자 클릭 안에서 '즉시' 새 창 오픈 (차단 우회)
+                        const w = window.open('about:blank', winName, features);
+                        if (!w) {
+                            alert('팝업이 차단되었습니다. 브라우저에서 이 사이트 팝업을 허용해 주세요.');
+                            return;
+                        }
 
-                        // 2) 히든 폼 만들어서 그 창으로 POST 전송
+                        // 2) 히든 폼 만들어서 그 창(target)으로 POST 전송
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = action;
+                        form.action = CTX + '/chatting.do';
                         form.target = winName;
 
-                        // 필요한 파라미터들
-                        const add = (k, v) => {
+                        const add = (name, value) => {
                             const i = document.createElement('input');
-                            i.type = 'hidden'; i.name = k; i.value = v;
+                            i.type = 'hidden';
+                            i.name = name;
+                            i.value = value;
                             form.appendChild(i);
                         };
+
+                        // 필요한 파라미터
                         add('sessionId', this.userId || 'guest');
 
-                        // (Spring Security에서 CSRF가 켜져 있으면 같이 전송)
-                        // add('_csrf', '${_csrf.token}');  // JSP에서 넣어두면 됨
+                        // ▼ Spring Security CSRF (켜져 있다면 필수)
+                        const csrfName = document.querySelector('meta[name="_csrf_parameter"]')?.content;
+                        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+                        if (csrfName && csrfToken) add(csrfName, csrfToken);
 
                         document.body.appendChild(form);
                         form.submit();
                         form.remove();
+
                         try { w.focus(); } catch (e) { }
                     },
 
