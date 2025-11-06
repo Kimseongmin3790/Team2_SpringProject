@@ -5,7 +5,7 @@
 <mapper namespace="com.example.TeamProject.mapper.UserMapper">
 	<insert id="insertUser" parameterType="hashmap">
 		INSERT INTO USERS
-		VALUES(#{userId}, #{userEmail}, #{hashPwd}, #{userName}, #{userPhone}, #{userRole}, #{userAddr}, SYSDATE, SYSDATE, 0, #{lat}, #{lng}, 'ACTIVE')
+		VALUES(#{userId}, #{userEmail}, #{hashPwd}, #{userName}, #{userPhone}, #{userRole}, #{userAddr}, SYSDATE, SYSDATE, 0, #{lat}, #{lng}, 'ACTIVE', #{userBirth}, #{userGender})
 	</insert>
 	
 	<insert id="insertSeller" parameterType="hashmap">

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.AdminDashboardMapper">
+	
+	<!-- 사용자 수 -->
+    <select id="selectUserCountByRole" resultType="com.example.TeamProject.model.AdminDashboard">
+        SELECT USER_ROLE, COUNT(*) AS CNT
+		FROM USERS
+		WHERE USER_ROLE IN ('SELLER', 'BUYER') AND STATUS = 'ACTIVE'
+		GROUP BY USER_ROLE
+    </select>
+    
+    <!-- ✅ 나이대 + 성별 통합 통계 -->
+    <select id="selectAgeGenderDistribution" resultType="com.example.TeamProject.model.AdminDashboard">
+	    SELECT 
+		    CASE 
+		        WHEN FLOOR(MONTHS_BETWEEN(SYSDATE, USER_BIRTH) / 12) &lt; 20 THEN '10대 이하'
+		        WHEN FLOOR(MONTHS_BETWEEN(SYSDATE, USER_BIRTH) / 12) BETWEEN 20 AND 29 THEN '20대'
+		        WHEN FLOOR(MONTHS_BETWEEN(SYSDATE, USER_BIRTH) / 12) BETWEEN 30 AND 39 THEN '30대'
+		        WHEN FLOOR(MONTHS_BETWEEN(SYSDATE, USER_BIRTH) / 12) BETWEEN 40 AND 49 THEN '40대'
+		        WHEN FLOOR(MONTHS_BETWEEN(SYSDATE, USER_BIRTH) / 12) BETWEEN 50 AND 59 THEN '50대'
+		        ELSE '60대 이상'
+		    END AS AGE_GROUP,
+		
+		    DECODE(USER_GENDER, 'M', '남자', '여자') AS USER_GENDER,
+		    COUNT(*) AS CNT
+		
+		FROM USERS
+		WHERE USER_BIRTH IS NOT NULL
+		  AND USER_GENDER IS NOT NULL
+		  AND ADDRESS NOT LIKE '%소셜 로그인 사용자%' -- 소셜 로그인 사용자 제외
+		
+		GROUP BY 
+		    CASE 
+		        WHEN FLOOR(MONTHS_BETWEEN(SYSDATE, USER_BIRTH) / 12) &lt; 20 THEN '10대 이하'
+		        WHEN FLOOR(MONTHS_BETWEEN(SYSDATE, USER_BIRTH) / 12) BETWEEN 20 AND 29 THEN '20대'
+		        WHEN FLOOR(MONTHS_BETWEEN(SYSDATE, USER_BIRTH) / 12) BETWEEN 30 AND 39 THEN '30대'
+		        WHEN FLOOR(MONTHS_BETWEEN(SYSDATE, USER_BIRTH) / 12) BETWEEN 40 AND 49 THEN '40대'
+		        WHEN FLOOR(MONTHS_BETWEEN(SYSDATE, USER_BIRTH) / 12) BETWEEN 50 AND 59 THEN '50대'
+		        ELSE '60대 이상'
+		    END,
+		    USER_GENDER
+		
+		ORDER BY 
+		    AGE_GROUP,
+		    USER_GENDER
+	</select>
+	
+	<!-- 지역 비율 -->
+    <select id="selectRegionRatio" resultType="com.example.TeamProject.model.AdminDashboard">
+        SELECT 
+		    CASE
+		        WHEN ADDRESS LIKE '%서울%' THEN '서울특별시'
+		        WHEN ADDRESS LIKE '%인천%' THEN '인천광역시'
+		        WHEN ADDRESS LIKE '%경기도%' THEN '경기도'
+		        WHEN ADDRESS LIKE '%부산%' THEN '부산광역시'
+		        WHEN ADDRESS LIKE '%전라%' THEN '전라도'
+		        WHEN ADDRESS LIKE '%경상%' THEN '경상도'
+		        WHEN ADDRESS LIKE '%대전%' THEN '대전광역시'
+		        ELSE '기타'
+		    END AS REGION,
+		    COUNT(*) AS CNT
+		FROM USERS
+		WHERE USER_ROLE = 'BUYER'
+		  AND STATUS = 'ACTIVE'
+		GROUP BY 
+		    CASE
+		        WHEN ADDRESS LIKE '%서울%' THEN '서울특별시'
+		        WHEN ADDRESS LIKE '%인천%' THEN '인천광역시'
+		        WHEN ADDRESS LIKE '%경기도%' THEN '경기도'
+		        WHEN ADDRESS LIKE '%부산%' THEN '부산광역시'
+		        WHEN ADDRESS LIKE '%전라%' THEN '전라도'
+		        WHEN ADDRESS LIKE '%경상%' THEN '경상도'
+		        WHEN ADDRESS LIKE '%대전%' THEN '대전광역시'
+		        ELSE '기타'
+		    END
+		ORDER BY CNT DESC
+    </select>
+    
+    <!-- 월별 매출 -->
+    <select id="selectSalesByMonth" parameterType="hashmap" resultType="com.example.TeamProject.model.AdminDashboard">
+        SELECT 
+		    TO_CHAR(ORDERDATE, 'YYYY-MM') AS ORDER_MONTH,
+		    SUM(TOTAL_PRICE) AS TOTAL_SALES
+		FROM ORDERS
+		WHERE STATUS LIKE '%완료%'
+		GROUP BY TO_CHAR(ORDERDATE, 'YYYY-MM')
+		ORDER BY ORDER_MONTH
+    </select>
+    
+    <!-- 신규 회원 추이 -->
+    <select id="selectNewUserTrend" parameterType="hashmap" resultType="com.example.TeamProject.model.AdminDashboard">
+        SELECT 
+		    TO_CHAR(CDATETIME, 'YYYY-MM') AS JOIN_MONTH,
+		    USER_ROLE,
+		    COUNT(*) AS CNT
+		FROM USERS
+		WHERE STATUS = 'ACTIVE'
+		  AND USER_ROLE IN ('BUYER', 'SELLER')
+		GROUP BY TO_CHAR(CDATETIME, 'YYYY-MM'), USER_ROLE
+		ORDER BY JOIN_MONTH, USER_ROLE
+    </select>
+    
+    <!-- 남녀 성별 통계 -->
+    <select id="selectGenderRatio" resultType="com.example.TeamProject.model.AdminDashboard">
+    	SELECT DECODE(USER_GENDER, 'M', '남자', '여자') AS USER_GENDER, COUNT(*) AS CNT
+		FROM USERS
+		WHERE USER_ROLE = 'BUYER' AND STATUS = 'ACTIVE' AND USER_GENDER IS NOT NULL
+		GROUP BY USER_GENDER
+    </select>
+</mapper>
