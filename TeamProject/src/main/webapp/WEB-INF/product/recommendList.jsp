@@ -56,6 +56,10 @@
                     text-align: center;
                     cursor: pointer;
                 }
+                
+                .product-card:hover {
+                    transform: translateY(-3px);
+                }
 
                 .product-card img {
                     width: 100%;

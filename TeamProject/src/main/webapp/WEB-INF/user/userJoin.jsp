@@ -288,7 +288,7 @@
 
                             <!-- 휴대폰 -->
                             <div class="input-group">
-                                <label>휴대폰 인증</label>
+                                <label><i class="fa-solid fa-mobile-screen"></i> 휴대폰 인증</label>
                                 <div class="input-wrapper">
                                     <input type="text" v-model="userPhone" placeholder="-는 빼고 입력해주세요">
                                     <button @click="fnSendCode">인증번호 전송</button>
@@ -296,7 +296,7 @@
                             </div>
 
                             <div class="input-group" v-if="smsFlg">
-                                <label>인증번호</label>
+                                <label><i class="fa-solid fa-shield"></i>인증번호 입력</label>
                                 <div class="input-wrapper" style="display:flex; align-items:center; gap:10px;">
                                     <input type="text" v-model="verifyCode" placeholder="인증번호 입력">
                                     <button @click="fnVerifyCode">확인</button>
@@ -443,13 +443,13 @@
                                     $.ajax({
                                         url: "/join.dox", type: "POST", dataType: "json",
                                         data: {
-                                            userId: self.userId, 
-                                            userPwd: self.userPwd, 
+                                            userId: self.userId,
+                                            userPwd: self.userPwd,
                                             userName: self.userName,
                                             userBirth: self.userBirth,
                                             userGender: self.userGender,
-                                            userEmail: self.userEmail, 
-                                            userAddr: self.userAddr, 
+                                            userEmail: self.userEmail,
+                                            userAddr: self.userAddr,
                                             userPhone: self.userPhone,
                                             userRole: self.role
                                         },
@@ -475,27 +475,30 @@
                                 },
                                 fnSendCode() {
                                     let self = this;
-                                    let param = {
-                                        // userPhone: self.userPhone;
-                                    };
-                                    // $.ajax({
-                                    //     url: "/send-one",
-                                    //     dataType: "json",
-                                    //     type: "POST",
-                                    //     data: param,
-                                    //     success: function (data) {
-                                    //         console.log(data);
-                                    //         if (data.res.statusCode == "2000") {
-                                    alert("문자 전송 완료");
-                                    self.ranStr = 123456; // data.ranStr;
-
-                                    self.smsFlg = true;
-                                    self.fnTimer();
-                                    //         } else {
-                                    //             alert("잠시 후 다시 시도해주세요.");
-                                    //         }
-                                    //     }
-                                    // });                                    
+                                    const phoneRegex = /^01[0-9]\d{7,8}$/;
+                                    if (!phoneRegex.test(self.userPhone)) {
+                                        Swal.fire('⚠️', '휴대폰 번호를 올바르게 입력해주세요.', 'warning');
+                                        return;
+                                    }
+                                    $.ajax({
+                                        url: self.path + "/send-one",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: { phone: self.userPhone },
+                                        success: function (data) {
+                                            console.log("문자 발송 결과:", data);
+                                            if (data.result === "success" || data.res) {
+                                                Swal.fire('✅', '인증번호가 발송되었습니다.', 'success');
+                                                self.smsFlg = true; // 인증번호 입력창 표시
+                                                self.fnTimer(); // 타이머 시작
+                                            } else {
+                                                Swal.fire('❌', '문자 발송 실패. 잠시 후 다시 시도해주세요.', 'error');
+                                            }
+                                        },
+                                        error: function () {
+                                            Swal.fire('❌', '서버 오류로 문자 전송에 실패했습니다.', 'error');
+                                        }
+                                    });
                                 },
                                 fnTimer: function () {
                                     let self = this;
@@ -520,18 +523,35 @@
                                 },
                                 fnVerifyCode: function () {
                                     let self = this;
-                                    if (self.ranStr == self.verifyCode) {
-                                        alert("문자인증이 완료되었습니다.");
-                                        self.joinFlg = true;
 
-                                        if (this.timerInterval) {
-                                            clearInterval(this.timerInterval);
-                                            this.timer = "";   // 표시 제거
-                                        }
-
-                                    } else {
-                                        alert("문자인증에 실패했습니다.");
+                                    if (!self.verifyCode) {
+                                        Swal.fire('⚠️', '인증번호를 입력해주세요.', 'warning');
+                                        return;
                                     }
+
+                                    $.ajax({
+                                        url: self.path + "/verify-code",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: { phone: self.userPhone, code: self.verifyCode },
+                                        success: function (data) {
+                                            if (data.result === "success") {
+                                                Swal.fire('✅', '휴대폰 인증이 완료되었습니다.', 'success');
+                                                self.joinFlg = true;
+
+                                                // 타이머 중지
+                                                if (self.timerInterval) {
+                                                    clearInterval(self.timerInterval);
+                                                    self.timer = "";
+                                                }
+                                            } else {
+                                                Swal.fire('❌', '인증번호가 일치하지 않습니다.', 'error');
+                                            }
+                                        },
+                                        error: function () {
+                                            Swal.fire('❌', '서버 오류로 인증 확인에 실패했습니다.', 'error');
+                                        }
+                                    });
                                 }
                             },
                             mounted() {
