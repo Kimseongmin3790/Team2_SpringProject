@@ -19,8 +19,10 @@ public interface UserMapper {
 	User idCheck(HashMap<String, Object> map);
 	// 로그인
 	User loginUser(HashMap<String, Object> map);
-	// 아이디 찾기
+	// 아이디 찾기(이메일주소)
 	User findId(HashMap<String, Object> map);
+	// 아이디 찾기(핸드폰번호)
+	User findIdByPhone(HashMap<String, Object> map);
 	// 비밀번호 찾기
 	User findPwd(HashMap<String, Object> map);
 	// 새 비밀번호 등록
