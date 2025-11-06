@@ -10,7 +10,7 @@
 	
 	<insert id="insertSeller" parameterType="hashmap">
 		INSERT INTO SELLER_INFO
-		VALUES(#{userId}, #{businessName}, #{businessLi}, 'N', #{businessNumber}, #{account}, #{bankName}, #{lat}, #{lng}, null)
+		VALUES(#{userId}, #{businessName}, #{businessLi}, 'N', #{businessNumber}, #{account}, #{bankName}, #{lat}, #{lng}, #{profileImg})
 	</insert>
 	
 	<select id="idCheck" parameterType="hashmap" resultType="com.example.TeamProject.model.User">

@@ -179,6 +179,7 @@ public class UserController {
 	    @RequestParam("account") String account,
 	    @RequestParam("userAddr") String userAddr,
 	    @RequestParam("bizLicense") MultipartFile bizLicense,
+	    @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
 	    @RequestParam("userId") String userId,
 	    HttpServletRequest request) {
 
@@ -211,6 +212,28 @@ public class UserController {
 	        response.put("message", "사업자 등록증 파일이 필요합니다.");
 	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	    }
+	    
+	    // ✅ 프로필사진 업로드 처리 (선택사항)
+	    String profileWebPath = null;
+	    if (profileImage != null && !profileImage.isEmpty()) {
+	        try {
+	            String uploadDir = request.getServletContext().getRealPath("/resources/uploads/profile");
+	            File dir = new File(uploadDir);
+	            if (!dir.exists()) dir.mkdirs();
+
+	            String originalFilename = profileImage.getOriginalFilename();
+	            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+	            String savedFileName = "profile_" + userId + "_" + genSaveFileName(extName);
+
+	            File serverFile = new File(uploadDir, savedFileName);
+	            profileImage.transferTo(serverFile);
+
+	            profileWebPath = "/resources/uploads/profile/" + savedFileName;
+	        } catch (Exception e) {
+	            System.out.println("프로필사진 업로드 오류: " + e.getMessage());
+	            // 프로필 업로드 실패해도 회원가입은 진행되게끔 처리
+	        }
+	    }
 
 	    try {
 	        // ✅ 주소 → 좌표 변환
@@ -229,6 +252,7 @@ public class UserController {
 	        sellerData.put("lat", lat);
 	        sellerData.put("lng", lng);
 	        sellerData.put("businessLi", fileWebPath);
+	        sellerData.put("profileImg", profileWebPath);
 	        sellerData.put("verified", "N");
 
 	        // ✅ DB insert 실행

@@ -288,6 +288,21 @@
                             </div>
 
                             <div class="input-group">
+                                <label><i class="fa-solid fa-cake-candles"></i> 생년월일</label>
+                                <div class="input-wrapper">
+                                    <input type="date" v-model="userBirth">
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label><i class="fa-solid fa-venus-mars"></i> 성별</label>
+                                <div class="input-wrapper gender-options">
+                                    <label><input type="radio" value="M" v-model="userGender"> 남성</label>
+                                    <label><input type="radio" value="F" v-model="userGender"> 여성</label>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
                                 <label><i class="fa-solid fa-envelope"></i> 이메일</label>
                                 <div class="input-wrapper">
                                     <input type="email" v-model="userEmail" placeholder="이메일 주소를 입력하세요">
@@ -305,7 +320,7 @@
                             <div class="input-group">
                                 <label><i class="fa-solid fa-mobile-screen"></i> 휴대폰</label>
                                 <div class="input-wrapper">
-                                    <input type="text" v-model="userPhone" placeholder="예: 010-1234-5678">
+                                    <input type="text" v-model="userPhone" placeholder="예: 01012345678">
                                 </div>
                             </div>
 
@@ -317,6 +332,16 @@
                                     <label><i class="fa-solid fa-leaf"></i> 상호명 (농가명) </label>
                                     <div class="input-wrapper">
                                         <input type="text" v-model="farmName" placeholder="상호명 (농가명)을 입력하세요">
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label><i class="fa-solid fa-image"></i> 프로필 사진</label>
+                                    <div class="input-wrapper file-upload">
+                                        <input type="file" id="profileUpload" @change="fnProfileChange"
+                                            accept=".jpg,.jpeg,.png">
+                                        <label for="profileUpload" class="file-label">파일 선택</label>
+                                        <span class="file-name" v-if="profileName">{{ profileName }}</span>
                                     </div>
                                 </div>
 
@@ -395,6 +420,8 @@
                             userPwd: "",
                             userPwdChk: "",
                             userName: "",
+                            userBirth: "",
+                            userGender: "",
                             userEmail: "",
                             userAddr: "",
                             userPhone: "",
@@ -406,9 +433,11 @@
                             bankName: "",
                             account: "",
                             agree: false,
-                            checkFlg: false,                            
+                            checkFlg: false,
                             file: null,
-                            fileName: ""
+                            fileName: "",
+                            profile: null,
+                            profileName: "",
                         };
                     },
                     methods: {
@@ -436,6 +465,18 @@
                                 Swal.fire('⚠️', '모든 항목을 입력해주세요.', 'warning');
                                 return;
                             }
+                            const birthDate = new Date(self.userBirth);
+                            const today = new Date();
+                            const age = today.getFullYear() - birthDate.getFullYear();
+                            if (age < 14) {
+                                Swal.fire('⚠️', '14세 미만은 가입할 수 없습니다.', 'warning');
+                                return;
+                            }
+
+                            if (self.userGender !== "M" && self.userGender !== "F") {
+                                Swal.fire('⚠️', '성별을 선택해주세요.', 'warning');
+                                return;
+                            }
                             if (!self.checkFlg) {
                                 Swal.fire('⚠️', '아이디 중복확인을 해주세요.', 'warning');
                                 return;
@@ -459,9 +500,9 @@
                                 Swal.fire('⚠️', '이메일 형식에 맞게 입력해주세요.', 'warning');
                                 return;
                             }
-                            const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
+                            const phoneRegex = /^01[0-9]\d{3,4}\d{4}$/;
                             if (!phoneRegex.test(self.userPhone)) {
-                                Swal.fire('⚠️', '휴대폰 번호는 010-1234-5678 형태로 입력해주세요.', 'warning');
+                                Swal.fire('⚠️', '휴대폰 번호는 01012345678 형태로 입력해주세요.', 'warning');
                                 return;
                             }
 
@@ -473,6 +514,8 @@
                                     userId: self.userId,
                                     userPwd: self.userPwd,
                                     userName: self.userName,
+                                    userBirth: self.userBirth,
+                                    userGender: self.userGender,
                                     userEmail: self.userEmail,
                                     userAddr: self.userAddr,
                                     userPhone: self.userPhone,
@@ -486,7 +529,7 @@
                                     }
                                 }
                             });
-                            
+
                         },
                         fnAddSeller() {
                             let self = this;
@@ -540,6 +583,7 @@
                             formData.append("bankName", self.bankName);
                             formData.append("account", self.account);
                             if (self.file) formData.append("bizLicense", self.file);
+                            if (self.profile) formData.append("profileImage", self.profile);
                             formData.append("userAddr", self.userAddr);
 
                             $.ajax({
@@ -555,7 +599,7 @@
                                         title: '판매자 회원가입 완료!',
                                         text: 'AGRICOLA와 함께 성장하세요 🌾',
                                         confirmButtonColor: '#5dbb63'
-                                    }).then(() => location.href = self.path + "/login.do");                                
+                                    }).then(() => location.href = self.path + "/login.do");
                                 },
                                 error: function (jqXHR, textStatus, errorThrown) {
                                     console.error("신청 실패:", textStatus, errorThrown);
@@ -575,7 +619,14 @@
                                 this.file = file;
                                 this.fileName = file.name;
                             }
-                        }
+                        },
+                        fnProfileChange(event) {
+                            const file = event.target.files[0];
+                            if (file) {
+                                this.profile = file;
+                                this.profileName = file.name;
+                            }
+                        },
                     },
                     mounted() {
                         window.vueObj = this;
