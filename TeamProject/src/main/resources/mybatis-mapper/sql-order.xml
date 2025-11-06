@@ -23,10 +23,7 @@
         <result property="productCount" column="productCount"/> <!-- SQL 별칭과 일치 -->
         <result property="buyerName" column="buyerName"/> <!-- SQL 별칭과 일치 -->
 
-        <!-- <collection>은 현재 selectOrderListBySeller 쿼리에서는 사용되지 않으므로 주석 처리하거나
-제거 -->
-        <!-- <collection property="items" ofType="com.example.TeamProject.model.OrderItem"
-                    select="selectOrderItemsByOrderNo" column="ORDER_NO"/> -->
+      
     </resultMap>
 
     <resultMap id="orderItemResultMap" type="com.example.TeamProject.model.OrderItem">
