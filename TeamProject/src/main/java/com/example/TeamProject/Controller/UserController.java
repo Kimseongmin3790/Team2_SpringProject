@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.TeamProject.dao.OrderService;
 import com.example.TeamProject.dao.SellerService;
 import com.example.TeamProject.dao.UserService;
+import com.example.TeamProject.mapper.UserMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -40,7 +41,7 @@ public class UserController {
 
 	@Autowired
 	private SellerService sellerService;
-
+	
 	@RequestMapping("/login.do")
 	public String login(Model model) throws Exception {
 
@@ -90,22 +91,36 @@ public class UserController {
 		return "user/buyerMypage";
 	}
 
-	@RequestMapping("/sellerMyPage.do")
-	public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes)
-			throws Exception {
-		String userId = (String) session.getAttribute("sessionId");
+    @RequestMapping("/sellerMyPage.do")
+    public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes)
+    throws Exception {
+        String userId = (String) session.getAttribute("sessionId");
 
-		HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
-		String resultStatus = (String) serviceResult.get("result");
-		String message = (String) serviceResult.get("message");
+        // 1. userId가 null인지 먼저 확인
+        if (userId == null || userId.isEmpty()) {
+            redirectAttributes.addFlashAttribute("redirectMessage", "로그인이 필요합니다.");
+            return "redirect:/login.do"; // 로그인 페이지로 리다이렉트
+        }
 
-		if ("success".equals(resultStatus)) {
-			return "user/sellerMyPage";
-		} else {
-			redirectAttributes.addFlashAttribute("redirectMessage", message);
-			return "redirect:/main.do";
-		}
-	}
+        HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
+        String resultStatus = (String) serviceResult.get("result");
+        String message = (String) serviceResult.get("message");
+
+        if ("success".equals(resultStatus)) {
+            // loginType은 이미 세션에 저장되어 프론트엔드로 전달되고 있다고 가정
+            // 여기서는 단순히 모델에 추가만 합니다.
+            String loginType = (String) session.getAttribute("loginType");
+            if (loginType == null) { // 혹시 세션에 없는 경우를 대비한 기본값
+                loginType = "NORMAL"; // 또는 "UNKNOWN" 등 적절한 기본값
+            }
+            model.addAttribute("loginType", loginType); // 모델에 loginType 추가
+
+            return "user/sellerMyPage";
+        } else {
+            redirectAttributes.addFlashAttribute("redirectMessage", message);
+            return "redirect:/main.do";
+        }
+    }
 
 	@RequestMapping("/cart.do")
 	public String cart(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)

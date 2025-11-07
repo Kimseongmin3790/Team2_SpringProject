@@ -14,554 +14,649 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
     <style>
-        html,
-        body {
-            height: 100%;
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        }
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f9fafb; /* Body 배경색 추가 */
+    }
 
-        #app {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    #app {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
 
-        .content {
-            flex: 1;
-            background-color: #f9fafb;
-        }
+    .content {
+        flex: 1;
+    }
 
-        /* 판매자 헤더 스타일 */
-        .seller-header {
-            background-color: white;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 1rem 0;
-        }
+    /* 판매자 헤더 스타일 */
+    .seller-header {
+        background-color: white;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 1rem 0;
+    }
 
+    .seller-header-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .seller-logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #16a34a; /* 색상 통일 */
+    }
+
+    .seller-badge {
+        display: inline-block;
+        background-color: #dcfce7;
+        color: #166534; /* 좀 더 진한 녹색으로 가독성 향상 */
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    /* 퀵 액션 */
+    .quick-actions {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem; /* 간격 조정 */
+    }
+
+    .action-card {
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem; /* 통일성 있는 값으로 변경 */
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); /* 기본 그림자 추가 */
+    }
+
+    .action-card:hover {
+        transform: translateY(-4px); /* 좀 더 부드러운 효과 */
+        box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .action-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .action-title {
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+
+    .action-desc {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    /* 탭 네비 */
+    .tab-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .tab-nav {
+        display: flex;
+        gap: 0.5rem;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 2rem;
+        overflow-x: auto;
+    }
+
+    .tab-button {
+        padding: 1rem 1.5rem;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent; /* 두께 조정 */
+        color: #6b7280;
+        font-weight: 500;
+        font-size: 1rem; /* 폰트 크기 조정 */
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+        margin-bottom: -2px;
+    }
+
+    .tab-button:hover {
+        color: #16a34a;
+    }
+
+    .tab-button.active {
+        color: #16a34a;
+        font-weight: 600; /* 활성 탭 강조 */
+        border-bottom-color: #16a34a;
+    }
+
+    /* 탭 내용 */
+    .tab-content {
+        background-color: white;
+        border: 1px solid #e5e7eb; /* 테두리 추가 */
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    /* 통계창 */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.875rem;
+        font-weight: bold;
+        color: #111827;
+    }
+
+    .stat-unit {
+        font-size: 1rem;
+        color: #6b7280;
+        margin-left: 0.25rem;
+    }
+
+    /* 주문 테이블 */
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .orders-table th {
+        background-color: #f9fafb;
+        padding: 0.75rem 1rem; /* 패딩 조정 */
+        text-align: left;
+        font-size: 0.875rem; /* 폰트 크기 조정 */
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .orders-table td {
+        padding: 1rem; /* 패딩 조정 */
+        border-bottom: 1px solid #e5e7eb;
+        color: #374151;
+    }
+
+    .orders-table tbody tr:last-child td {
+        border-bottom: none; /* 마지막 행 테두리 제거 */
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-shipping {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-completed {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+
+    /* 농가 정보 */
+    .info-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .info-value {
+        color: #6b7280;
+    }
+
+    .cert-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .cert-badge {
+        background-color: #dcfce7;
+        color: #166534;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    /* 리뷰 */
+    .review-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem; /* 통일성 */
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .review-product {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .review-rating {
+        color: #fbbf24;
+    }
+
+    .review-content {
+        color: #6b7280;
+        margin-bottom: 1rem;
+        line-height: 1.6; /* 줄 간격 추가 */
+    }
+
+    .review-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #9ca3af;
+        margin-top: 1rem;
+    }
+
+    /* 폼 양식 */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input, .form-select, .form-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem; /* 통일성 */
+        font-size: 1rem;
+        box-sizing: border-box; /* 너비 계산 오류 방지 */
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        outline: none;
+        border-color: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* 버튼 */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem; /* 통일성 */
+        font-weight: 600; /* 폰트 굵기 조정 */
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background-color: #16a34a;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #15803d;
+    }
+
+    .btn-secondary {
+        background-color: #f3f4f6;
+        color: #374151;
+        border: 1px solid #e5e7eb; /* 테두리 추가 */
+    }
+
+    .btn-secondary:hover {
+        background-color: #e5e7eb;
+    }
+
+    .btn-danger {
+        background-color: #dc2626;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #b91c1c;
+    }
+
+    /* 탈퇴 영역 */
+    .danger-zone {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 2px solid #fee2e2;
+    }
+
+    .danger-zone-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .danger-zone-title {
+        color: #dc2626;
+        font-weight: 600;
+        font-size: 1.125rem;
+    }
+
+    .danger-zone-content {
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 0.75rem; /* 통일성 */
+        padding: 1.5rem;
+    }
+
+    .danger-zone-desc {
+        color: #991b1b;
+        margin-bottom: 1rem;
+    }
+
+    /* 비활성화된 필드 스타일 */
+    .non-editable-field {
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background-color: #f3f4f6; /* 색상 변경 */
+        color: #6b7280;
+    }
+
+    .non-editable-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+    }
+
+    /* 리뷰 이미지 */
+    .review-images-container {
+        margin-top: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .review-image-thumbnail {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 0.5rem; /* 통일성 */
+        border: 1px solid #e5e7eb;
+    }
+
+    .review-section-title {
+        margin-bottom: 1.5rem;
+        color: #111827;
+        font-size: 1.5rem; /* 크기 조정 */
+        font-weight: 600;
+    }
+
+    /* 판매자 답글 */
+    .seller-reply-container {
+        margin-top: 1.5rem; /* 여백 조정 */
+        background-color: #f9fafb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+    }
+
+    .seller-reply-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .seller-reply-item:first-child {
+        padding-top: 0;
+    }
+    .seller-reply-item:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .seller-reply-author {
+        font-weight: 600;
+        color: #16a34a;
+    }
+
+    .seller-reply-content {
+        color: #374151;
+        margin: 0.5rem 0;
+        line-height: 1.6;
+    }
+
+    .seller-reply-date {
+        font-size: 0.875rem;
+        color: #9ca3af;
+        margin-top: 0.5rem;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.75rem; /* 패딩 조정 */
+        font-size: 0.875rem;
+    }
+
+    .seller-reply-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: 1rem;
+        flex-shrink: 0; /* 버튼이 줄어들지 않도록 */
+    }
+
+    .seller-reply-edit-input {
+        width: 100%;
+        min-height: 60px;
+        margin: 0.5rem 0;
+    }
+
+    /* 매출 관리 필터 & 요약 */
+    .sales-filter-container {
+        display: flex;
+        align-items: flex-end;
+        gap: 1rem;
+        padding: 1.5rem;
+        background-color: #f9fafb;
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #374151;
+    }
+
+    .sales-summary-card {
+        display: grid; /* grid로 변경 */
+        grid-template-columns: 1fr 1fr; /* 2개 열 */
+        justify-content: space-around;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        gap: 1rem;
+    }
+
+    .summary-item {
+        text-align: center;
+    }
+
+    .summary-label {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+    }
+
+    .summary-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #111827;
+    }
+
+    .summary-unit {
+        font-size: 1rem;
+        font-weight: normal;
+        margin-left: 0.25rem;
+        color: #6b7280;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 0;
+    }
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #9ca3af;
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
         .seller-header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .seller-logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #16a34a;
-        }
-
-        .seller-badge {
-            display: inline-block;
-            background-color: #dcfce7;
-            color: #16a34a;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-
-        /* 퀵 액션 */
-        .quick-actions {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        .quick-actions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            flex-direction: column;
             gap: 1rem;
-        }
-
-        .action-card {
-            background-color: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .action-card:hover {
-            border-color: #16a34a;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .action-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .action-title {
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 0.25rem;
-        }
-
-        .action-desc {
-            font-size: 0.875rem;
-            color: #6b7280;
-        }
-
-        /* 탭 네비 */
-        .tab-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
         }
 
         .tab-nav {
-            display: flex;
-            gap: 0.5rem;
-            border-bottom: 2px solid #e5e7eb;
-            margin-bottom: 2rem;
-            overflow-x: auto;
+            flex-wrap: nowrap;
         }
 
-        .tab-button {
-            padding: 1rem 1.5rem;
-            background: none;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: #6b7280;
-            font-weight: 500;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
-            margin-bottom: -2px;
-        }
-
-        .tab-button:hover {
-            color: #16a34a;
-        }
-
-        .tab-button.active {
-            color: #16a34a;
-            border-bottom-color: #16a34a;
-        }
-
-        /* 캡 내용 */
         .tab-content {
-            background-color: white;
-            border-radius: 0.5rem;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
-
-        /* 통계창 */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-        }
-
-        .stat-label {
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 1.875rem;
-            font-weight: bold;
-            color: #111827;
-        }
-
-        .stat-unit {
-            font-size: 1rem;
-            color: #6b7280;
-            margin-left: 0.25rem;
-        }
-
-        /* 주문 */
-        .orders-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .orders-table th {
-            background-color: #f9fafb;
-            padding: 0.75rem;
-            text-align: left;
-            font-weight: 600;
-            color: #374151;
-            border-bottom: 2px solid #e5e7eb;
-        }
-
-        .orders-table td {
-            padding: 0.75rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-shipping {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-
-        .status-completed {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-
-        /* 통계 자료 */
-        .settlement-summary {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            border-radius: 0.5rem;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .settlement-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .settlement-item h4 {
-            font-size: 0.875rem;
-            color: #166534;
-            margin-bottom: 0.5rem;
-        }
-
-        .settlement-item p {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #111827;
-        }
-
-        /* 농가 정보 */
-        .info-grid {
-            display: grid;
-            gap: 1.5rem;
+            padding: 1.5rem; /* 패딩 조정 */
         }
 
         .info-item {
-            display: grid;
-            grid-template-columns: 150px 1fr;
-            gap: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #e5e7eb;
+            grid-template-columns: 1fr;
         }
 
-        .info-label {
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .info-value {
-            color: #6b7280;
-        }
-
-        .cert-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .cert-badge {
-            background-color: #dcfce7;
-            color: #166534;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        /* 리뷰 */
-        .review-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .review-product {
-            font-weight: 600;
-            color: #111827;
-        }
-
-        .review-rating {
-            color: #fbbf24;
-        }
-
-        .review-content {
-            color: #6b7280;
-            margin-bottom: 1rem;
-        }
-
-        .review-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.875rem;
-            color: #9ca3af;
-        }
-
-        /* 폼 양식 */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #16a34a;
-            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
-        }
-
-        .form-textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        /* 버튼 */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.375rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background-color: #16a34a;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #15803d;
-        }
-
-        .btn-secondary {
-            background-color: #f3f4f6;
-            color: #374151;
-        }
-
-        .btn-secondary:hover {
-            background-color: #e5e7eb;
-        }
-
-        .btn-danger {
-            background-color: #dc2626;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #b91c1c;
-        }
-
-        /* 탈퇴 영역 */
-        .danger-zone {
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 2px solid #fee2e2;
-        }
-
-        .danger-zone-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .danger-zone-title {
-            color: #dc2626;
-            font-weight: 600;
-            font-size: 1.125rem;
-        }
-
-        .danger-zone-content {
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-        }
-
-        .danger-zone-desc {
-            color: #991b1b;
-            margin-bottom: 1rem;
-        }
-
-        /* 반응형 */
-        @media (max-width: 768px) {
-            .seller-header-container {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .tab-nav {
-                flex-wrap: nowrap;
-            }
-
-            .tab-content {
-                padding: 1rem;
-            }
-
-            .info-item {
-                grid-template-columns: 1fr;
-            }
-
-            .orders-table {
-                font-size: 0.875rem;
-            }
-
-            .orders-table th,
-            .orders-table td {
-                padding: 0.5rem;
-            }
-        }
-        /* 비활성화된 필드 스타일 */
-        .non-editable-field {
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            background-color: #e9ecef;
-            color: #6c757d; 
-        }
-
-        /* 비활성화된 필드 설명 텍스트 스타일 */
-        .non-editable-text {
-            font-size: 0.875rem; 
-            color: #6b7280; 
-            margin-top: 0.25rem; 
-        }
-
-        /* 리뷰 이미지 컨테이너 */
-        .review-images-container {
-            margin-top: 1rem;
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        /* 개별 리뷰 이미지 썸네일 */
-        .review-image-thumbnail {
-            width: 100px;
-            height: 100px;
-            object-fit: cover; 
-            border-radius: 0.25rem; 
-            border: 1px solid #e5e7eb; 
-        }
-        /* 리뷰 섹션 제목 */
-        .review-section-title {
-            margin-bottom: 1.5rem;
-            color: #111827;
-        }
-
-        /* 판매자 답글 컨테이너 */
-        .seller-reply-container {
-            margin-top: 1rem;
-            background-color: #f9fafb;
-            border-radius: 0.5rem;
-            padding: 1rem;
-        }
-
-        /* 판매자 답글 작성자 */
-        .seller-reply-author {
-            font-weight: 600;
-            color: #16a34a;
-        }
-
-        /* 판매자 답글 내용 */
-        .seller-reply-content {
-            color: #374151;
-            margin-top: 0.5rem;
-        }
-
-        /* 판매자 답글 날짜 */
-        .seller-reply-date {
-            font-size: 0.875rem;
-            color: #9ca3af;
-            margin-top: 0.25rem;
-        }
-        .seller-reply-item {
-            display: flex;
-            justify-content: space-between; 
-            align-items: flex-start; 
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #e5e7eb; 
-        }
-
-        .seller-reply-item:last-child {
-            border-bottom: none; 
-        }
-
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
+        .orders-table {
             font-size: 0.875rem;
         }
-         /* 답글 버튼 그룹 */
-        .seller-reply-actions {
-            display: flex;
-            gap: 0.5rem; 
-            margin-left: 1rem; 
+
+        .orders-table th,
+        .orders-table td {
+            padding: 0.5rem;
         }
 
-        /* 답글 수정 입력 필드 */
-        .seller-reply-edit-input {
-            width: 100%; 
-            min-height: 60px; 
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+        .stats-grid, .quick-actions-grid {
+            grid-template-columns: 1fr; /* 모바일에서 1열로 */
         }
 
-    </style>
+        .sales-filter-container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .sales-summary-card {
+            grid-template-columns: 1fr; /* 모바일에서 1열로 */
+        }
+        
+    }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 2rem;
+        gap: 0.5rem;
+    }
+    .page-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        background-color: white;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .page-btn:hover {
+        background-color: #f3f4f6;
+    }
+    .page-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+    .page-btn.active {
+        background-color: #16a34a;
+        color: white;
+        border-color: #16a34a;
+        font-weight: 600;
+    }
+</style>
 </head>
 
 <body>
@@ -593,7 +688,7 @@
                     </div>
                     <div class="action-card" @click="goToPage('delivery-manage')">
                         <div class="action-icon">🚚</div>
-                        <div class="action-title">배송 상태 변경</div>
+                        <div class="action-title">배송 상태 확인</div>
                         <div class="action-desc">배송 상태를 업데이트하세요</div>
                     </div>
                 </div>
@@ -612,7 +707,7 @@
                         class="tab-button" 
                         :class="{ active: activeTab === 'settlement' }"
                         @click="activeTab = 'settlement'">
-                        정산 관리
+                        매출 관리
                     </button>
                     <button 
                         class="tab-button" 
@@ -673,8 +768,8 @@
                             <tr v-for="order in recentOrders" :key="order.orderNo">
                                 <td>{{ order.orderNo }}</td>
                                 <td>{{ order.productName }}</td>
-                                <td>{{ order.quantity }}개</td>
-                                <td>{{ formatPrice(order.amount) }}원</td>
+                                <td>{{ order.productCount }}개</td>
+                                <td>{{ formatPrice(order.totalPrice) }}원</td>
                                 <td>
                                     <span class="status-badge" :class="getStatusClass(order.status)">
                                         {{ order.status }}
@@ -686,33 +781,68 @@
                     </table>
                 </div>
 
-                <!-- 통계 자료 -->
+                <!-- 매출 관리 -->
                 <div v-show="activeTab === 'settlement'" class="tab-content">
-                    <h2 style="margin-bottom: 1.5rem; color: #111827;">정산 관리</h2>
-                    
-                    <div class="settlement-summary">
-                        <div class="settlement-grid">
-                            <div class="settlement-item">
-                                <h4>총 매출</h4>
-                                <p>{{ formatPrice(settlement.totalSales) }}원</p>
-                            </div>
-                            <div class="settlement-item">
-                                <h4>플랫폼 수수료 (5%)</h4>
-                                <p>{{ formatPrice(settlement.platformFee) }}원</p>
-                            </div>
-                            <div class="settlement-item">
-                                <h4>정산 예정 금액</h4>
-                                <p>{{ formatPrice(settlement.expectedAmount) }}원</p>
-                            </div>
+                    <h2 style="margin-bottom: 1.5rem; color: #111827;">매출 관리</h2>
+
+                    <!-- 기간 조회 UI -->
+                    <div class="sales-filter-container">
+                        <div class="filter-group">
+                            <label class="filter-label">조회 기간</label>
+                            <select v-model="salesPeriod.type" class="form-select">
+                                <option value="daily">일별</option>
+                                <option value="monthly">월별</option>
+                                <option value="yearly">연도별</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">조회 날짜</label>
+                            <!-- 일별 선택 -->
+                            <input v-if="salesPeriod.type === 'daily'" type="date" v-model="salesPeriod.date" class="form-input">
+                            <!-- 월별 선택 -->
+                            <input v-if="salesPeriod.type === 'monthly'" type="month" v-model="salesPeriod.month" class="form-input">
+                            <!-- 연도별 선택 -->
+                            <input v-if="salesPeriod.type === 'yearly'" type="number" v-model="salesPeriod.year" class="form-input" placeholder= "YYYY">
+                        </div>
+                        <button @click="loadSalesHistory" class="btn btn-primary">조회</button>
+                    </div>
+
+                    <!-- 기간 내 총계 요약 -->
+                    <div class="sales-summary-card">
+                        <div class="summary-item">
+                            <div class="summary-label">총 매출</div>
+                            <div class="summary-value">{{ formatPrice(salesSummary.totalSalesSum) }}<span class="summary-unit">원</span></div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">총 플랫폼 수수료</div>
+                            <div class="summary-value">{{ formatPrice(salesSummary.totalPlatformFeeSum) }}<span class="summary-unit">원</span></div>
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 1.5rem;">
-                        <h3 style="margin-bottom: 0.5rem; color: #111827;">정산 계좌 정보</h3>
-                        <p style="color: #6b7280;">{{ settlement.bankName }} {{ settlement.accountNumber }}</p>
+                    <!-- 매출 내역 테이블 -->
+                    <div class="sales-history-table">
+                        <table class="orders-table">
+                            <tbody>
+                                <tr v-for="record in paginatedSalesHistory" :key="record.period">
+                                    <td>{{ record.period }}</td>
+                                    <td>{{ formatPrice(record.totalSales) }}원</td>
+                                    <td>{{ formatPrice(record.platformFee) }}원</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div v-if="salesHistory.length === 0" class="empty-state">
+                            <div class="empty-icon">📊</div>
+                            <p>매출 내역이 없습니다.</p>
+                        </div>
                     </div>
-
-                    <button class="btn btn-primary" @click="requestSettlement">정산 신청</button>
+                    <!-- 페이징 -->
+                    <div v-if="salesPeriod.type === 'monthly' && totalPages > 1" class="pagination">
+                        <button @click="changePage(salesPagination.currentPage - 1)" :disabled="salesPagination.currentPage <= 1" class="page-btn"> 이전 </button>
+                        <span v-for="page in totalPages" :key="page">
+                            <button @click="changePage(page)" :class="{ 'page-btn': true, 'active': salesPagination.currentPage === page }"> {{ page }} </button>
+                        </span>
+                        <button @click="changePage(salesPagination.currentPage + 1)" :disabled="salesPagination.currentPage >= totalPages" class= "page-btn"> 다음 </button>
+                    </div>
                 </div>
 
                 <!-- 농가 정보 -->
@@ -861,6 +991,8 @@
             return {
                 sessionId: "${sessionId}",
                 activeTab: 'dashboard',
+                loginType: '${loginType}',
+
                 stats: {
                     todayOrders: 0,
                     todaySales: 0,
@@ -868,12 +1000,16 @@
                     avgRating: 0.0
                 },
                 recentOrders: [],
-                settlement: {
-                    totalSales: 5420000,
-                    platformFee: 271000,
-                    expectedAmount: 5149000,
-                    bankName: '농협은행',
-                    accountNumber: '123-456-789012'
+                salesHistory: [],
+                salesPeriod: {
+                    type: 'monthly', // 'daily', 'monthly', 'yearly'
+                    date: new Date().toISOString().slice(0, 10), // 일별 기본값 (오늘)
+                    month: new Date().toISOString().slice(0, 7), // 월별 기본값 (이번 달)
+                    year: new Date().getFullYear() // 연도별 기본값 (올해)
+                },
+                salesPagination: { 
+                    currentPage: 1,
+                    rowsPerPage: 10 
                 },
                 farmInfo: {
                     name: '',
@@ -894,17 +1030,41 @@
                 editingCommentNo: null
             };
         },
+        computed: {
+            salesSummary: function() {
+                let self = this;
+                let totalSalesSum = 0;
+                let totalPlatformFeeSum = 0;
+                self.salesHistory.forEach(record => {
+                    totalSalesSum += record.totalSales || 0;
+                    totalPlatformFeeSum += record.platformFee || 0;
+                });
+                return {
+                    totalSalesSum: totalSalesSum,
+                    totalPlatformFeeSum: totalPlatformFeeSum
+                };
+            },
+            totalPages: function() {
+                return Math.ceil(this.salesHistory.length / this.salesPagination.rowsPerPage);
+            },
+
+            paginatedSalesHistory: function() {
+                if (this.salesPeriod.type !== 'monthly' || this.totalPages <= 1) {
+                    return this.salesHistory; 
+                }
+                const start = (this.salesPagination.currentPage - 1) * this.salesPagination.rowsPerPage;
+                const end = start + this.salesPagination.rowsPerPage;
+                return this.salesHistory.slice(start, end);
+            }
+        },
         methods: {
             formatPrice: function(price) {
                 if (price === undefined || price === null) {
-                    console.warn("formatPrice: price가 undefined 또는 null입니다.", price); // 디버깅용 경고
-                    return '0'; // 또는 다른 기본 문자열 (예: '-')
+                    return '0'; 
                 }
-                // 백엔드에서 숫자가 아닌 문자열로 올 수도 있으니 숫자로 변환 시도
                 const numericPrice = Number(price);
                 if (isNaN(numericPrice)) {
-                    console.warn("formatPrice: price가 숫자가 아닙니다.", price); // 디버깅용 경고
-                    return String(price); // 숫자가 아니면 원래 값을 문자열로 반환
+                    return String(price); 
                 }
                 return numericPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             },
@@ -921,7 +1081,7 @@
                 } else if (page === 'order-manage') {
                     path = '${pageContext.request.contextPath}/order/sellerList.do';
                 } else if (page === 'delivery-manage') {
-                    // 배송 상태 변경 페이지 경로를 여기에 지정하세요. (예: /seller/delivery.do)      
+                    // 배송 상태 확인 페이지 경로를 여기에 지정하세요. (예: /seller/delivery.do)      
                 }
 
                 if (path) {
@@ -929,26 +1089,6 @@
                 } else {
                     // 정의되지 않은 페이지에 대한 처리 (선택 사항)
                     alert(page + ' 페이지는 아직 경로가 정의되지 않았습니다.');
-                }
-            },
-            requestSettlement: function() {
-                if (confirm('정산을 신청하시겠습니까?')) {
-                    let self = this;
-                    let param = {
-                        amount: self.settlement.expectedAmount
-                    };
-                    $.ajax({
-                        url: "${pageContext.request.contextPath}/seller/settlement/request",
-                        dataType: "json",
-                        type: "POST",
-                        data: param,
-                        success: function(data) {
-                            alert('정산 신청이 완료되었습니다.');
-                        },
-                        error: function() {
-                            alert('정산 신청 중 오류가 발생했습니다.');
-                        }
-                    });
                 }
             },
             updateFarmInfo: function() {
@@ -1032,22 +1172,59 @@
                     });
                 }
             },
-            confirmWithdrawal: function() {
-                if (confirm('정말로 판매자 계정을 탈퇴하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 상품과 주문 정보가 삭제됩니다.')) {
-                    let finalConfirm = prompt('탈퇴를 진행하려면 "탈퇴"를 입력하세요:');
-                    if (finalConfirm === '탈퇴') {
-                        let self = this;
+            confirmWithdrawal: function () {
+                let self = this;
+                if (confirm('정말로 판매자 계정을 탈퇴하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 상품이 숨김 처리되고, 계정 상태가 변경됩니다.')) {
+
+                    let withdrawalData = {};
+                    let proceedWithdrawal = false;
+
+                    if (self.loginType === 'NORMAL') {
+                        let passwordConfirm = prompt('탈퇴를 진행하려면 현재 비밀번호를 입력하세요:');
+                        if (passwordConfirm) {
+                            withdrawalData.password = passwordConfirm;
+                            proceedWithdrawal = true;
+                        } else if (passwordConfirm === null) {
+                            alert('탈퇴가 취소되었습니다.');
+                            return;
+                        } else {
+                            alert('비밀번호를 입력해야 탈퇴할 수 있습니다.');
+                            return;
+                        }
+
+                    } else if (self.loginType === 'SOCIAL') {
+                        let finalConfirm = prompt('소셜 로그인 계정입니다. 탈퇴를 진행하려면 "탈퇴"를 입력하세요:');
+                        if (finalConfirm === '탈퇴') {
+                            proceedWithdrawal = true;
+                        } else if (finalConfirm === null) {
+                            alert('탈퇴가 취소되었습니다.');
+                            return;
+                        } else {
+                            alert('정확히 "탈퇴"를 입력해야 합니다.');
+                            return;
+                        }
+                    } else { 
+                        alert('로그인 유형을 알 수 없어 탈퇴를 진행할 수 없습니다.');
+                        return;
+                    }
+
+                    if (proceedWithdrawal) {
                         $.ajax({
-                            url: "${pageContext.request.contextPath}/seller/withdrawal",
+                            url: "${pageContext.request.contextPath}/seller/withdrawal.dox", 
                             dataType: "json",
                             type: "POST",
-                            data: {},
-                            success: function(data) {
-                                alert('판매자 계정이 탈퇴되었습니다.');
-                                location.href = '${pageContext.request.contextPath}/';
+                            contentType: "application/json; charset=utf-8", 
+                            data: JSON.stringify(withdrawalData), 
+                            success: function (response) {
+                                if (response.result === 'success') {
+                                    alert('판매자 계정이 성공적으로 탈퇴되었습니다.');
+                                    location.href = '${pageContext.request.contextPath}/main.do';
+                                } else {
+                                    alert(response.message || '계정 탈퇴 중 오류가 발생했습니다.');
+                                }
                             },
-                            error: function() {
-                                alert('계정 탈퇴 중 오류가 발생했습니다.');
+                            error: function () {
+                                alert('서버와 통신 중 오류가 발생했습니다.');
                             }
                         });
                     }
@@ -1167,8 +1344,6 @@
                     type: "GET",
                     success: function(response) {
                         if (response.result === 'success') {
-                            console.log("Received dashboard data:", response); 
-
                             self.stats.todayOrders = response.todayOrders;
                             self.stats.todaySales = response.todaySales;
                             self.stats.totalProducts = response.totalProducts;
@@ -1183,6 +1358,48 @@
                         console.error("AJAX Error: ", status, error);
                     }
                 });
+            },
+            loadSalesHistory: function() {
+                let self = this;
+                
+                self.salesPagination.currentPage = 1;
+                
+                let params = {
+                    type: self.salesPeriod.type
+                };
+
+                if (self.salesPeriod.type === 'daily') {
+                    params.date = self.salesPeriod.date; 
+                } else if (self.salesPeriod.type === 'monthly') {
+                    params.month = self.salesPeriod.month; 
+                } else if (self.salesPeriod.type === 'yearly') {
+                    params.year = self.salesPeriod.year; 
+                }
+
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/seller/salesHistory.dox",
+                    dataType: "json",
+                    type: "GET",
+                    data: params, 
+                    success: function(response) {
+                        if (response.result === 'success') {
+                            self.salesHistory = response.history;
+                        } else {
+                            alert('매출 내역을 불러오는데 실패했습니다: ' + response.message);
+                            self.salesHistory = []; 
+                        }
+                    },
+                    error: function() {
+                        alert('매출 내역을 불러오는 중 오류가 발생했습니다.');
+                        self.salesHistory = []; 
+                    }
+                });
+            },
+            changePage: function(page) {
+                let self = this;
+                if (page > 0 && page <= self.totalPages) {
+                    self.salesPagination.currentPage = page;
+                }
             }
         },
         mounted() {
@@ -1190,6 +1407,7 @@
             self.loadDashboardData(); 
             self.loadFarmInfo();
             self.loadReviews();
+            self.loadSalesHistory();
         }
     });
 

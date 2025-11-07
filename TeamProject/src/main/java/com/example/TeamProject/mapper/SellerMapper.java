@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import com.example.TeamProject.model.Order;
 import com.example.TeamProject.model.SellerVO;
 import com.example.TeamProject.model.User;
 
@@ -30,5 +32,10 @@ public interface SellerMapper {
 	// 상품 평균 평점 조회
 	Double getAverageRating(String sellerId);
 	// 최근 주문 목록 조회
-	List<HashMap<String, Object>> getRecentOrders(String sellerId);
+	List<Order> getRecentOrders(String sellerId);
+	// 매출 내역 조회 (일별, 월별, 연도별)
+	List<HashMap<String, Object>> getSalesHistory(HashMap<String, Object> paramMap);
+	// 판매자 인증 상태 변경
+	void updateSellerVerification(@Param("userId") String userId, @Param("status") String status);
+	
 }

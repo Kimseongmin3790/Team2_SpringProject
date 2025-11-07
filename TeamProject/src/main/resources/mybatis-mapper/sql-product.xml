@@ -143,4 +143,14 @@
 		LEFT JOIN PRODUCT_QNA_ANSWER A ON Q.QNA_NO = A.QNA_NO
 		WHERE Q.PRODUCT_NO = #{productNo}
     </select>
+    
+    <!-- 판매자 탈퇴 시 모든 상품 숨김 처리 -->
+	<update id="hideAllProductsBySeller" parameterType="String">
+	    UPDATE PRODUCT
+	    SET
+	        PRODUCT_STATUS = 'HIDDEN'
+	    WHERE
+	        SELLER_ID = #{userId}
+	</update>
+    
 </mapper>

@@ -16,6 +16,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.TeamProject.mapper.UserMapper;
 import com.example.TeamProject.model.Cart;
@@ -434,35 +435,46 @@ public class UserService {
 	}
 
 	// 계정 복구
+	@Transactional
 	public HashMap<String, Object> recoverUser(HashMap<String, Object> map) {
-		HashMap<String, Object> resultMap = new HashMap<>();
+	    HashMap<String, Object> resultMap = new HashMap<>();
 
-		try {
-			String userId = (String) map.get("userId");
-			if (userId == null || userId.isEmpty()) {
-				resultMap.put("result", "fail");
-				resultMap.put("message", "사용자 ID가 누락되었습니다.");
-				return resultMap;
-			}
+	    try {
+	        String userId = (String) map.get("userId");
+	        if (userId == null || userId.isEmpty()) {
+	            resultMap.put("result", "fail");
+	            resultMap.put("message", "사용자 ID가 누락되었습니다.");
+	            return resultMap;
+	        }
 
-			// 사용자 상태를 'ACTIVE'로 업데이트
-			int updatedRows = userMapper.updateUserStatus(userId, "ACTIVE");
+	        // 1. 기본 사용자 계정 복구 (STATUS를 'ACTIVE'로)
+	        int updatedRows = userMapper.updateUserStatus(userId, "ACTIVE");
 
-			if (updatedRows > 0) {
-				resultMap.put("result", "success");
-				resultMap.put("message", "계정이 성공적으로 복구되었습니다.");
-			} else {
-				resultMap.put("result", "fail");
-				resultMap.put("message", "계정 복구에 실패했습니다. 사용자 ID를 확인해주세요.");
-			}
+	        if (updatedRows > 0) {
+	            // 2. 복구된 사용자의 정보 다시 조회 (USER_ROLE 확인용)
+	            HashMap<String, Object> paramMap = new HashMap<>();
+	            paramMap.put("userId", userId);
+	            User recoveredUser = userMapper.loginUser(paramMap);
 
-		} catch (Exception e) {
-			resultMap.put("result", "fail");
-			resultMap.put("message", "계정 복구 중 오류가 발생했습니다.");
-			e.printStackTrace();
-		}
+	            // 3. 만약 사용자가 판매자라면, 판매자 관련 정보도 복구
+	            if (recoveredUser != null && "SELLER".equals(recoveredUser.getUserRole())) {
+	                sellerService.recoverSellerAccount(userId); // 새로운 판매자 복구 서비스 호출
+	            }
 
-		return resultMap;
+	            resultMap.put("result", "success");
+	            resultMap.put("message", "계정이 성공적으로 복구되었습니다.");
+	        } else {
+	            resultMap.put("result", "fail");
+	            resultMap.put("message", "계정 복구에 실패했습니다. 사용자 ID를 확인해주세요.");
+	        }
+
+	    } catch (Exception e) {
+	        resultMap.put("result", "fail");
+	        resultMap.put("message", "계정 복구 중 오류가 발생했습니다.");
+	        e.printStackTrace();
+	    }
+
+	    return resultMap;
 	}
 
 	public HashMap<String, Object> addCart(HashMap<String, Object> in) {
