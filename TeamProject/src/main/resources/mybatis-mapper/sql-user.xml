@@ -139,38 +139,56 @@
     <!-- 목록 (상품과 조인해서 이름/가격/썸네일 포함) -->
   <select id="selectCartList" parameterType="hashmap" resultType="com.example.TeamProject.model.Cart">
 		SELECT
-		C.CART_NO AS cartNo,
-		C.PRODUCT_NO AS productNo,
-		C.USER_ID AS userId,
-		C.QUANTITY AS quantity,
-		C.FULFILLMENT AS fulfillment, -- ✅ 프런트로 내려줌
-		TO_CHAR(C.ADDED_AT, 'YYYY-MM-DD') AS addedAt,
-		P.PNAME AS pName,
-		P.PRICE AS price,
-		NVL(PI.THUMB_URL, '/resources/img/no-image.png') AS thumbPath,
-		(NVL(P.PRICE,0) * NVL(C.QUANTITY,0)) AS lineTotal,
-		CASE -- ✅ 라인 배송비
-		WHEN NVL(C.FULFILLMENT, 'DELIVERY') IN ('VISIT','PICKUP') THEN 0
-		ELSE NVL(C.SHIPPING_FEE, 3000)
-		END AS shippingFee
+	    C.CART_NO                                           AS cartNo,
+	    C.PRODUCT_NO                                        AS productNo,
+	    C.USER_ID                                           AS userId,
+	    C.OPTION_NO                                         AS optionNo,
+	    C.QUANTITY                                          AS quantity,
+	    UPPER(NVL(C.FULFILLMENT, 'DELIVERY'))               AS fulfillment,
+	    TO_CHAR(C.ADDED_AT, 'YYYY-MM-DD')                   AS addedAt,
+	
+	    P.PNAME                                             AS pName,
+	    NVL(P.PRICE, 0)                                     AS basePrice,
+	    NVL(PO.ADD_PRICE, 0)                                AS addPrice,
+	
+	    -- ✅ 단가: 기본가 + 옵션추가금
+	    (NVL(P.PRICE, 0) + NVL(PO.ADD_PRICE, 0))            AS unitPrice,
+	
+	    -- ✅ 라인합계: 단가 × 수량
+	    ((NVL(P.PRICE, 0) + NVL(PO.ADD_PRICE, 0)) * NVL(C.QUANTITY, 0)) AS lineTotal,
+	
+	    -- ✅ 배송비: 픽업/방문은 0, 그 외 CART의 SHIPPING_FEE(없으면 3000)
+	    CASE
+	      WHEN UPPER(NVL(C.FULFILLMENT, 'DELIVERY')) IN ('VISIT', 'PICKUP') THEN 0
+	      ELSE NVL(C.SHIPPING_FEE, 3000)
+	    END                                                 AS shippingFee,
+	
+	    NVL(PI.THUMB_URL, '/resources/img/no-image.png')    AS thumbPath
+	
 		FROM CART C
-		JOIN PRODUCT P ON P.PRODUCT_NO = C.PRODUCT_NO
+		JOIN PRODUCT P
+		  ON P.PRODUCT_NO = C.PRODUCT_NO
+		LEFT JOIN PRODUCT_OPTION PO
+		  ON PO.OPTION_NO = C.OPTION_NO
 		LEFT JOIN (
-		SELECT PRODUCT_NO,
-		DBMS_LOB.SUBSTR(IMAGE_URL, 4000, 1) AS THUMB_URL
-		FROM (
-		SELECT PI.*,
-		ROW_NUMBER() OVER (
-		PARTITION BY PRODUCT_NO
-		ORDER BY CASE WHEN NVL(PI.IS_THUMBNAIL,'N')='Y' THEN 0 ELSE 1 END,
-		NVL(PI.SORT_ORDER, 999999),
-		PI.IMAGE_ID
-		) RN
-		FROM PRODUCT_IMAGE PI
-		) WHERE RN = 1
-		) PI ON PI.PRODUCT_NO = C.PRODUCT_NO
+		    SELECT PRODUCT_NO,
+		           DBMS_LOB.SUBSTR(IMAGE_URL, 4000, 1) AS THUMB_URL
+		    FROM (
+		        SELECT PI.*,
+		               ROW_NUMBER() OVER (
+		                 PARTITION BY PRODUCT_NO
+		                 ORDER BY CASE WHEN NVL(PI.IS_THUMBNAIL,'N')='Y' THEN 0 ELSE 1 END,
+		                          NVL(PI.SORT_ORDER, 999999),
+		                          PI.IMAGE_ID
+		               ) RN
+		        FROM PRODUCT_IMAGE PI
+		    )
+		    WHERE RN = 1
+		) PI
+		  ON PI.PRODUCT_NO = C.PRODUCT_NO
 		WHERE C.USER_ID = #{userId}
 		ORDER BY C.CART_NO DESC
+
   </select>
 
   <!-- 총액(상품합) -->
@@ -216,6 +234,44 @@
 		<foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
 			#{item}
 		</foreach>
-	</delete>
-	
+  </delete>
+  
+  <select id="selectCartNoByKey" parameterType="map" resultType="java.lang.Long">
+	SELECT CART_NO
+	  FROM CART
+	  WHERE USER_ID   = #{userId}
+	    AND PRODUCT_NO= #{productNo}
+	    AND NVL(OPTION_NO, -1) = NVL(#{optionNo}, -1)
+	    AND FULFILLMENT = #{fulfillment}
+	  FETCH FIRST 1 ROWS ONLY
+  </select>
+  
+  <update id="updateCartQtyByKey" parameterType="map">
+	UPDATE CART
+	   SET QUANTITY = QUANTITY + #{quantity, jdbcType=NUMERIC},
+	       SHIPPING_FEE = #{shippingFee, jdbcType=NUMERIC}
+	 WHERE USER_ID = #{userId}
+	   AND PRODUCT_NO = #{productNo, jdbcType=NUMERIC}
+	   AND NVL(OPTION_NO, -1) = NVL(#{optionNo, jdbcType=NUMERIC}, -1)
+	   AND FULFILLMENT = #{fulfillment}
+  </update>		
+  
+  <insert id="insertCarts" parameterType="map">
+	  <selectKey keyProperty="cartNo" resultType="long" order="BEFORE">
+	    SELECT CART_SEQ.NEXTVAL FROM DUAL
+	  </selectKey>
+	  INSERT INTO CART(
+	    CART_NO, PRODUCT_NO, USER_ID, OPTION_NO, QUANTITY, ADDED_AT, FULFILLMENT, SHIPPING_FEE
+	  ) VALUES (
+	    #{cartNo, jdbcType=NUMERIC},
+	    #{productNo, jdbcType=NUMERIC},
+	    #{userId},
+	    #{optionNo, jdbcType=NUMERIC},
+	    #{quantity, jdbcType=NUMERIC},
+	    SYSDATE,
+	    #{fulfillment},
+	    #{shippingFee, jdbcType=NUMERIC}
+	  )
+  </insert>
+
 </mapper>
