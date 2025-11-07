@@ -76,7 +76,7 @@
                 .prod-media .main-box img {
                     width: 100%;
                     height: 100%;
-                    object-fit: cover; 
+                    object-fit: cover;
                     /* 이미지 비율 유지해서 맞춤 ; contain */
                     background: #fff;
                     /* 투명/폴백일 때도 하얀 배경 */
@@ -959,6 +959,7 @@
                         flex-wrap: nowrap;
                     }
                 }
+
                 /* 판매자 답글 컨테이너 */
                 .seller-reply-container {
                     margin-top: 1rem;
@@ -973,12 +974,15 @@
                     padding-bottom: 0.5rem;
                     border-bottom: 1px solid #e5e7eb;
                 }
-                
+
                 .seller-reply-header {
                     display: flex;
-                    justify-content: space-between; /* 양쪽 끝으로 정렬 */
-                    align-items: center; /* 세로 중앙 정렬 */
-                    margin-bottom: 0.5rem; /* 내용과의 간격 */
+                    justify-content: space-between;
+                    /* 양쪽 끝으로 정렬 */
+                    align-items: center;
+                    /* 세로 중앙 정렬 */
+                    margin-bottom: 0.5rem;
+                    /* 내용과의 간격 */
                 }
 
                 .seller-reply-item:last-child {
@@ -1004,13 +1008,16 @@
                     color: #6b7280;
                     margin-top: 0.25rem;
                 }
+
                 .btn-info {
-                    background-color: #007bff; 
+                    background-color: #007bff;
                     color: white;
                 }
+
                 .btn-info:hover {
-                    background-color: #0056b3; 
+                    background-color: #0056b3;
                 }
+
                 .seller-reply-actions {
                     display: flex;
                     gap: 0.5rem;
@@ -1020,19 +1027,22 @@
                     padding: 0.25rem 0.5rem;
                     font-size: 0.875rem;
                 }
+
                 .btn-danger {
                     background-color: #dc3545;
                     color: white;
                 }
+
                 .btn-danger:hover {
                     background-color: #c82333;
                 }
+
                 .btn-sm {
-                    height: auto; 
-                    min-width: 0; 
-                    padding: 4px 10px; 
+                    height: auto;
+                    min-width: 0;
+                    padding: 4px 10px;
                     font-size: 13px;
-                    font-weight: 500; 
+                    font-weight: 500;
                 }
             </style>
         </head>
@@ -1155,7 +1165,8 @@
                                         <div class="dd-list" v-if="ddOpen2" @click.stop>
                                             <div class="dd-opt" @click="pickProduct()" v-for="item in options">
                                                 <span class="l1">{{ item.unit }}</span>
-                                                <span class="l2">￦{{ (info.price + item.addPrice||0).toLocaleString() }}원</span>
+                                                <span class="l2">￦{{ (info.price + item.addPrice||0).toLocaleString()
+                                                    }}원</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1364,11 +1375,12 @@
                         shareUrl: window.location.href,
                         shareTitle: '',
                         showDetail: false,
-                        week: false, 
+                        week: false,
                         before: false,
                         liked: false,
 
-                        userId: "${sessionId}",
+                        userId: "${sessionScope.sessionId}",
+                        userName: "${sessionScope.sessionName}",
                         productNo: "${productNo}",
                         info: {},
                         fileList: [],
@@ -1715,44 +1727,40 @@
                     },
 
                     fnWish() { /* TODO */ },
+                    // productInfo.do 내
                     openChatWindowPost() {
-                        const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
-                        const winName = 'chatWin';
-                        const features = 'width=500,height=600,resizable=yes,scrollbars=yes';
-
-                        // 1) 사용자 클릭 안에서 '즉시' 새 창 오픈 (차단 우회)
-                        const w = window.open('about:blank', winName, features);
-                        if (!w) {
-                            alert('팝업이 차단되었습니다. 브라우저에서 이 사이트 팝업을 허용해 주세요.');
+                        let self = this;
+                        // 로그인 안 되어 있으면: 현재 페이지로 돌아오게 redirect 붙여서 이동
+                        if (!self.userId) {
+                            const back = encodeURIComponent(location.pathname + location.search);
+                            location.href = `/login.do?redirect=${back}`;
                             return;
                         }
 
-                        // 2) 히든 폼 만들어서 그 창(target)으로 POST 전송
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = CTX + '/chatting.do';
-                        form.target = winName;
+                        const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
+                        const winName = 'chatWin';
+                        const feat = 'width=500,height=600,resizable=yes,scrollbars=yes';
+                        const w = window.open('about:blank', winName, feat);
+                        if (!w) { alert('팝업 차단 해제 필요'); return; }
 
-                        const add = (name, value) => {
-                            const i = document.createElement('input');
-                            i.type = 'hidden';
-                            i.name = name;
-                            i.value = value;
-                            form.appendChild(i);
-                        };
+                        const f = document.createElement('form');
+                        f.method = 'POST';
+                        f.action = CTX + '/chatting.do';
+                        f.target = winName;
 
-                        // 필요한 파라미터
-                        add('sessionId', this.userId || 'guest');
+                        const add = (k, v) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; f.appendChild(i); };
+                        // 세션값/컨텍스트를 팝업으로 전달
+                        add('sessionId', self.userId);
+                        add('sessionName', '${sessionName}');
+                        add('productNo', self.productNo || '');
+                        add('title', '상품문의 ' + (self.info?.pName || ''));
 
-                        // ▼ Spring Security CSRF (켜져 있다면 필수)
-                        const csrfName = document.querySelector('meta[name="_csrf_parameter"]')?.content;
-                        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-                        if (csrfName && csrfToken) add(csrfName, csrfToken);
+                        // CSRF 메타가 있다면 첨부
+                        const nm = document.querySelector('meta[name="_csrf_parameter"]')?.content;
+                        const tk = document.querySelector('meta[name="_csrf"]')?.content;
+                        if (nm && tk) add(nm, tk);
 
-                        document.body.appendChild(form);
-                        form.submit();
-                        form.remove();
-
+                        document.body.appendChild(f); f.submit(); f.remove();
                         try { w.focus(); } catch (e) { }
                     },
 
@@ -1944,22 +1952,22 @@
                             }
                         });
                     },
-                    editComment: function(comment) {
+                    editComment: function (comment) {
                         let self = this;
                         comment.originalContents = comment.contents;
-                        self.editingCommentNo = comment.commentNo; 
+                        self.editingCommentNo = comment.commentNo;
                     },
 
-                    cancelEdit: function() {
+                    cancelEdit: function () {
                         let self = this;
                         const comment = this.reviews.flatMap(r => r.comments || []).find(c => c.commentNo === self.editingCommentNo);
                         if (comment && comment.originalContents !== undefined) {
                             comment.contents = comment.originalContents;
                         }
-                        self.editingCommentNo = null; 
+                        self.editingCommentNo = null;
                     },
 
-                    saveEditedComment: function(comment) {
+                    saveEditedComment: function (comment) {
                         let self = this;
 
                         if (comment.contents.trim() === '') {
@@ -1975,40 +1983,40 @@
                                 commentNo: comment.commentNo,
                                 contents: comment.contents
                             },
-                            success: function(response) {
+                            success: function (response) {
                                 if (response.result === 'success') {
                                     alert('답글이 수정되었습니다.');
-                                    self.editingCommentNo = null; 
-                                    self.fnLoadReviews(); 
+                                    self.editingCommentNo = null;
+                                    self.fnLoadReviews();
                                 } else {
                                     alert('답글 수정에 실패했습니다: ' + response.message);
                                 }
                             },
-                            error: function() {
+                            error: function () {
                                 alert('답글 수정 중 오류가 발생했습니다.');
                             }
                         });
                     },
 
-                    deleteComment: function(commentNo) {
+                    deleteComment: function (commentNo) {
                         if (confirm('정말로 이 답글을 삭제하시겠습니까?')) {
                             let self = this;
                             $.ajax({
-                                url: "${pageContext.request.contextPath}/seller/review/deleteComment.dox", 
+                                url: "${pageContext.request.contextPath}/seller/review/deleteComment.dox",
                                 dataType: "json",
                                 type: "POST",
                                 data: {
-                                    commentNo: commentNo 
+                                    commentNo: commentNo
                                 },
-                                success: function(response) {
+                                success: function (response) {
                                     if (response.result === 'success') {
                                         alert('답글이 삭제되었습니다.');
-                                        self.fnLoadReviews(); 
+                                        self.fnLoadReviews();
                                     } else {
                                         alert('답글 삭제에 실패했습니다: ' + response.message);
                                     }
                                 },
-                                error: function() {
+                                error: function () {
                                     alert('답글 삭제 중 오류가 발생했습니다.');
                                 }
                             });
@@ -2061,6 +2069,14 @@
                     },
                 },
                 mounted() {
+                    const hid = document.getElementById('sessionId');
+                    if (hid && hid.value) this.userId = hid.value;
+                    const hnm = document.getElementById('sessionName');
+                    if (hnm && hnm.value) this.userName = hnm.value;
+                    console.log('[debug] hidden#sessionId =', hid && hid.value);
+                    console.log('[debug] data.userId(before)=', this.userId);
+                    this.userId = (hid && hid.value) || this.userId || '';
+                    console.log('[debug] data.userId(after)=', this.userId);
                     this.fnInfo();
                     this.fnLoadReviews(); // 리뷰 
                     this.fnLoadQA(); // 상품문의
