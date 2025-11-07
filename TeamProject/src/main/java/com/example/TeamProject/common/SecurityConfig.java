@@ -37,6 +37,7 @@ public class SecurityConfig {
                // 정적 리소스 허용
                .requestMatchers("/img/**", "/css/**", "/js/**", "/webjars/**",
                                 "/resources/**", "/uploads/**").permitAll()
+               .requestMatchers("/ws-chat/**","/chatting.do").permitAll()
                // 나머지는 필요에 따라
                .anyRequest().permitAll()   // ← 필요하면 authenticated()로 변경
            )

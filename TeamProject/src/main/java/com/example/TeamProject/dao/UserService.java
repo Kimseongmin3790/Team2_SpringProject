@@ -33,9 +33,6 @@ public class UserService {
 	UserMapper userMapper;
 
 	@Autowired
-	HttpSession session;
-
-	@Autowired
 	PasswordEncoder passwordEncoder;
 
 	@Autowired
@@ -95,79 +92,67 @@ public class UserService {
 		return resultMap;
 	}
 
-	public HashMap<String, Object> login(HashMap<String, Object> map) {
-		// TODO Auto-generated method stub
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		try {
-			User user = userMapper.loginUser(map);
-			String message = "";
-			String result = "";
+	public HashMap<String, Object> login(HashMap<String, Object> map, HttpSession session) {
+	    HashMap<String, Object> resultMap = new HashMap<>();
+	    try {
+	        User user = userMapper.loginUser(map);
+	        String message = "";
+	        String result = "";
 
-			if (user != null) {
+	        if (user != null) {
+	            if ("WITHDRAWN".equals(user.getStatus())) {
+	                message = "탈퇴 처리된 계정입니다. 계정을 복구하시겠습니까?";
+	                result = "WITHDRAWN_CAN_RECOVER";
+	                resultMap.put("msg", message);
+	                resultMap.put("result", result);
+	                return resultMap;
+	            }
 
-				// 탈퇴 여부 확인
-				if ("WITHDRAWN".equals(user.getStatus())) {
-					message = "탈퇴 처리된 계정입니다. 계정을 복구하시겠습니까?";
-					result = "WITHDRAWN_CAN_RECOVER";
-					resultMap.put("msg", message);
-					resultMap.put("result", result);
-					return resultMap;
-				}
+	            boolean loginFlg = passwordEncoder.matches((String) map.get("userPwd"), user.getPassword());
+	            if (loginFlg) {
+	                message = "로그인 성공";
+	                result = "success";
+	                session.setAttribute("sessionId", user.getUserId());
+	                session.setAttribute("sessionStatus", user.getUserRole());
+	                session.setAttribute("sessionName", user.getName());
+	                session.setAttribute("sessionLat", user.getLat());
+	                session.setAttribute("sessionLng", user.getLng());
 
-				boolean loginFlg = passwordEncoder.matches((String) map.get("userPwd"), user.getPassword());
-				if (loginFlg) {
-					message = "로그인 성공";
-					result = "success";
-					session.setAttribute("sessionId", user.getUserId());
-					session.setAttribute("sessionStatus", user.getUserRole());
-					session.setAttribute("sessionName", user.getName());
-					session.setAttribute("sessionLat", user.getLat());
-					session.setAttribute("sessionLng", user.getLng());
-					
-					// --- VERIFIED 상태 확인 및 세션 저장 로직 추가 ---
-					if ("SELLER".equals(user.getUserRole())) {
-					    // SellerService를 통해 판매자 정보 조회 
-					    HashMap<String, Object> sellerResult = sellerService.getSellerInfoForMyPage(user.getUserId());
-					    String verifiedStatus = "N"; // 기본값은 'N'으로 설정
-
-
-					    if ("success".equals(sellerResult.get("result"))) {
-					        SellerVO sellerVO = (SellerVO) sellerResult.get("sellerInfo");
-					 
-					        if (sellerVO != null && sellerVO.getVerified() != null) {
-					            verifiedStatus = sellerVO.getVerified();	            
-					        }
-					    }
-					    session.setAttribute("sellerVerifiedStatus", verifiedStatus);
-					    
-					} else {
-					    session.removeAttribute("sellerVerifiedStatus");
-					 
-					}							
-				} else {
-					message = "비밀번호가 일치하지 않습니다";
-					result = "fail";
-				}
-			} else {
-				message = "아이디가 존재하지 않습니다.";
-				result = "fail";
-			}
-			resultMap.put("msg", message);
-			resultMap.put("result", result);
-		} catch (Exception e) {
-			resultMap.put("result", "fail");
-		}
-		return resultMap;
+	                // 판매자 상태 확인
+	                if ("SELLER".equals(user.getUserRole())) {
+	                    HashMap<String, Object> sellerResult = sellerService.getSellerInfoForMyPage(user.getUserId());
+	                    String verifiedStatus = "N";
+	                    if ("success".equals(sellerResult.get("result"))) {
+	                        SellerVO sellerVO = (SellerVO) sellerResult.get("sellerInfo");
+	                        if (sellerVO != null && sellerVO.getVerified() != null) {
+	                            verifiedStatus = sellerVO.getVerified();
+	                        }
+	                    }
+	                    session.setAttribute("sellerVerifiedStatus", verifiedStatus);
+	                } else {
+	                    session.removeAttribute("sellerVerifiedStatus");
+	                }
+	            } else {
+	                message = "비밀번호가 일치하지 않습니다.";
+	                result = "fail";
+	            }
+	        } else {
+	            message = "아이디가 존재하지 않습니다.";
+	            result = "fail";
+	        }
+	        resultMap.put("msg", message);
+	        resultMap.put("result", result);
+	    } catch (Exception e) {
+	        resultMap.put("result", "fail");
+	    }
+	    return resultMap;
 	}
 
-	public HashMap<String, Object> logout(HashMap<String, Object> map) {
-		// TODO Auto-generated method stub
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-
-		session.invalidate();
-		resultMap.put("result", "success");
-
-		return resultMap;
+	public HashMap<String, Object> logout(HashMap<String, Object> map, HttpSession session) {
+	    HashMap<String, Object> resultMap = new HashMap<>();
+	    session.invalidate();
+	    resultMap.put("result", "success");
+	    return resultMap;
 	}
 
 	public HashMap<String, Object> findId(HashMap<String, Object> map) {
@@ -175,6 +160,26 @@ public class UserService {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		try {
 			User user = userMapper.findId(map);
+			if (user != null) {
+				resultMap.put("user", user);
+				resultMap.put("result", "success");
+			} else {
+				resultMap.put("result", "fail");
+			}
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+		}
+
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> findIdByPhone(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			User user = userMapper.findIdByPhone(map);
 			if (user != null) {
 				resultMap.put("user", user);
 				resultMap.put("result", "success");
@@ -521,6 +526,20 @@ public class UserService {
 			int cnt = userMapper.deleteCartItem(map); 
 			resultMap.put("cnt", cnt);
 			resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+
+	public HashMap<String, Object> allRemoveItem(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			int cnt = userMapper.allDelete(map);
+			resultMap.put("result", "sucess");
 		} catch (Exception e) {
 			// TODO: handle exception
 			resultMap.put("result", "fail");

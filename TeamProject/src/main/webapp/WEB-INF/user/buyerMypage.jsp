@@ -11,7 +11,6 @@
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
             <script src="/resources/js/page-change.js"></script>
-            <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <style>
@@ -585,11 +584,17 @@
                                     회원정보
                                 </button>
                             </div>
-
+                            <div>
+                                <input type="checkbox" @click="fnAllCheck">전체선택
+                                <span>
+                                    <button @click="fnAllRemove">선택삭제</button>
+                                </span>
+                            </div>
                             <!-- 장바구니 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'cart' }">
                                 <div class="card" v-for="item in cartItems" :key="item.cartNo">
                                     <div class="cart-item">
+                                        <input type="checkbox" :value="item.cartNo" v-model="selectItem">
                                         <a href="javascript:;" @click="fnBack(item.productNo)" class="cart-link">
                                             <div class="cart-item-image">
                                                 <img :src="item.thumbPath" alt=""
@@ -618,71 +623,73 @@
                                         </div>
                                         <div class="summary-row">
                                             <span>배송비</span>
-                                            <span>{{ shippingFee.toLocaleString() }}원</span>
+                                            <span>{{ shippingFeeC.toLocaleString() }}원</span>
                                         </div>
                                         <div class="summary-total">
                                             <span>총 결제금액</span>
-                                            <span class="price">{{ (totalPrice + shippingFee).toLocaleString()
-                                                }}원</span>
+                                            <span class="price">{{ finalPriceC.toLocaleString()}}원</span>
                                         </div>
-                                        <button class="btn btn-primary btn-lg w-100 mt-1" @click="fnPurchase">구매하기</button>
+                                        <button class="btn btn-primary btn-lg w-100 mt-1"
+                                            @click="fnPurchase">구매하기</button>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- 주문 탭 -->
-                            <div class="tab-content" :class="{ active: activeTab === 'orders' }">
-                                <div class="card" v-for="order in orders" :key="order.orderNo">
-                                    <div class="order-header">
-                                        <div>
-                                            <p class="order-date">{{ order.orderdate }}</p>
-                                            <p class="order-number">주문번호: {{ order.orderNo }}</p>
-                                        </div>
-                                        <div class="order-header-actions">
-                                            <span class="badge">{{ order.status }}</span>
-                                            <button class="btn btn-outline-info btn-sm">배송조회</button>
-                                        </div>
-                                    </div>
-                                    <div class="cart-item order-item-divider" v-for="item in order.items" :key="item.orderItemNo">
-                                        <div class="cart-item-image"></div>
-                                        <div class="cart-item-info">
-                                            <h3>{{ item.productName }}</h3>
-                                            <p>수량: {{ item.quantity }}개</p>
-                                            <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p>
-                                        </div>
-                                        <button class="btn btn-outline-success btn-sm"
-                                            @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button>
-                                        <button class="btn btn-outline btn-sm text-danger">환불신청</button>
-                                    </div>
-                                </div>
-
-                                <div v-if="orders.length === 0" class="card">
-                                    <p class="text-center text-muted">주문 내역이 없습니다.</p>
-                                </div>
+                            <!-- 주문 탭 --> 
+                            <div class="tab-content" :class="{ active: activeTab === 'orders' }"> 
+                                <div class="card" v-for="order in orders" :key="order.orderNo"> 
+                                    <div class="order-header"> 
+                                        <div> 
+                                            <p class="order-date">{{ order.orderDate }}</p> 
+                                            <p class="order-number">주문번호: {{ order.orderNo }}</p> 
+                                        </div> 
+                                        <div class="order-header-actions"> 
+                                            <span class="badge">{{ order.status }}</span> 
+                                            <button class="btn btn-outline-info btn-sm">배송조회</button> 
+                                        </div> 
+                                    </div> 
+                                    <div class="cart-item order-item-divider" v-for="item in order.items" :key="item.orderItemNo"> 
+                                        <div class="cart-item-image"></div> 
+                                        <div class="cart-item-info"> 
+                                            <h3>{{ item.productName }}</h3> 
+                                            <p>수량: {{ item.quantity }}개</p> 
+                                            <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p> 
+                                        </div> <button class="btn btn-outline-success btn-sm" @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button> 
+                                        <button class="btn btn-outline btn-sm text-danger">환불신청</button> 
+                                    </div> 
+                                </div> 
+                                <div v-if="orders.length === 0" class="card"> 
+                                    <p class="text-center text-muted">주문 내역이 없습니다.</p> 
+                                </div> 
                             </div>
+
 
                             <!-- 리뷰 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'reviews' }">
                                 <div v-if="reviews.length > 0">
-                                    <div class="card" v-for="review in reviews" :key="review.reviewNo"> 
+                                    <div class="card" v-for="review in reviews" :key="review.reviewNo">
                                         <div class="review-item">
                                             <!-- 리뷰 상품 이미지 -->
-                                            <img :src="review.imageUrl" alt="상품 이미지" class="cart-item-image" v-if="review.imageUrl">
+                                            <img :src="review.imageUrl" alt="상품 이미지" class="cart-item-image"
+                                                v-if="review.imageUrl">
                                             <div class="cart-item-image" v-else></div>
 
                                             <div class="review-content">
                                                 <div class="review-header">
                                                     <h3>{{ review.productName }}</h3>
                                                     <div class="stars">
-                                                        <span v-for="n in 5" :key="n">{{ n <= review.rating ? '★' : '☆' }}</span>
+                                                        <span v-for="n in 5" :key="n">{{ n <= review.rating ? '★' : '☆'
+                                                                }}</span>
                                                     </div>
                                                 </div>
                                                 <p class="review-date">{{ review.cdate }}</p>
                                                 <p class="review-text">{{ review.content }}</p>
                                             </div>
                                             <div class="order-actions">
-                                                <button class="btn btn-outline btn-sm" @click="fnUpdateReview(review.reviewNo)">수정</button>
-                                                <button class="btn btn-outline btn-sm text-danger" @click="fnDeleteReview(review.reviewNo)">삭제</button>
+                                                <button class="btn btn-outline btn-sm"
+                                                    @click="fnUpdateReview(review.reviewNo)">수정</button>
+                                                <button class="btn btn-outline btn-sm text-danger"
+                                                    @click="fnDeleteReview(review.reviewNo)">삭제</button>
                                             </div>
                                         </div>
                                     </div>
@@ -774,22 +781,38 @@
                         activeTab: '${activeTab}',
                         userName: "",
                         userEmail: "",
-                        cartItems: [],           // ← 서버 데이터로 채움
-                        shippingFee: 3000,
+                        cartItems: [],          
                         orders: [],
                         reviews: [],
                         profile: {},
                         loginType: '',
-                        errors: {}
+                        errors: {},
+                        selectItem: [],
+                        selectFlg: false
                     };
                 },
                 computed: {
+                    selectedItems() {
+                        // 체크된 productNo만 필터링
+                        return (this.cartItems || []).filter(it =>
+                            this.selectItem.includes(it.cartNo)
+                        );
+                    },
+
                     totalPrice() {
-                        return (this.cartItems || []).reduce((sum, it) => {
+                        return this.selectedItems.reduce((sum, it) => {
                             const price = Number(it.price || 0);
                             const qty = Number(it.quantity || 0);
-                            return sum + (price * qty);
+                            return sum + price * qty;
                         }, 0);
+                    },
+
+                    shippingFeeC() {
+                        return this.selectedItems.reduce((sum, it) =>
+                            sum + Number(it.shippingFee || 0), 0);
+                    },
+                    finalPriceC() {
+                        return this.totalPrice + this.shippingFeeC;
                     }
                 },
 
@@ -847,8 +870,22 @@
                         });
                     },
 
-                    fnPurchase : function(){
-                        
+                    fnPurchase: function () {
+                        if (this.selectedItems.length === 0) {
+                            alert('구매할 상품을 선택하세요.');
+                            return;
+                        }
+                        // A안: 단건 결제(선택된 첫 항목 기준)
+                        const first = this.selectedItems[0];
+                        const productNo = first.productNo;
+                        const qty = first.quantity;
+
+                        // 결제페이지로 이동 (product/payment.do)
+                        pageChange('/product/payment.do', {
+                            productNo,
+                            qty,
+                            userId: this.userId
+                        });
                     },
 
                     fnBack: function (productNo) {
@@ -1093,7 +1130,7 @@
                             url: "${pageContext.request.contextPath}/review/list.dox",
                             type: "GET",
                             dataType: "json",
-                            success: function(response) {
+                            success: function (response) {
                                 if (response.result === "success") {
                                     self.reviews = response.list;
                                     console.log("Loaded Reviews:", self.reviews);
@@ -1101,7 +1138,7 @@
                                     alert("리뷰 목록을 불러오는 데 실패했습니다.");
                                 }
                             },
-                            error: function() {
+                            error: function () {
                                 alert("리뷰 목록 조회 중 오류가 발생했습니다.");
                             }
                         });
@@ -1114,10 +1151,10 @@
                             const self = this;
                             $.ajax({
                                 url: "${pageContext.request.contextPath}/review/delete.dox",
-                                type: "POST", 
+                                type: "POST",
                                 data: { reviewNo: reviewNo },
                                 dataType: "json",
-                                success: function(response) {
+                                success: function (response) {
                                     if (response.result === "success") {
                                         alert('리뷰가 삭제되었습니다.');
                                         self.fnLoadReviews();
@@ -1125,7 +1162,7 @@
                                         alert('리뷰 삭제에 실패했습니다: ' + response.message);
                                     }
                                 },
-                                error: function() {
+                                error: function () {
                                     alert('리뷰 삭제 중 오류가 발생했습니다.');
                                 }
                             });
@@ -1145,7 +1182,40 @@
                                 map: self.map
                             });
                         })
+                    },
+
+                    fnAllCheck: function () {
+                        let self = this;
+                        self.selectFlg = !self.selectFlg;
+
+                        if (self.selectFlg) {
+                            self.selectItem = [];
+                            for (let i = 0; i < self.cartItems.length; i++) {
+                                self.selectItem.push(self.cartItems[i].cartNo);
+                            }
+                        } else {
+                            self.selectItem = [];
+                        }
+                    },
+
+                    fnAllRemove: function () {
+                        let self = this;
+                        console.log(self.selectItem);
+                        var fList = JSON.stringify(self.selectItem);
+                        var param = { selectItem: fList };
+                        $.ajax({
+                            url: "/cart/Allremove.dox",
+                            dataType: "json",
+                            type: "POST",
+                            data: param,
+                            success: function (data) {
+                                console.log(data);
+                                alert("삭제되었습니다.");
+                                self.fnLoadCart();
+                            }
+                        });
                     }
+
                 },
                 mounted() {
                     let self = this;

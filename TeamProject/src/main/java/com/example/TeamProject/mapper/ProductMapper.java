@@ -31,4 +31,6 @@ public interface ProductMapper {
     List<ProductCategory> selectCategoryList(HashMap<String, Object> map);
     // 상품문의 글 목록
     List<ProductQuestions> selectProductQuestions(HashMap<String, Object> map);
+    // 상품 옵션 목록
+    List<Product> selectProductOptions(HashMap<String, Object> map);
 }
