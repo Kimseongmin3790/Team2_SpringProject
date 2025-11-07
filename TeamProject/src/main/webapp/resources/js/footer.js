@@ -67,7 +67,9 @@ $(document).ready(function() {
        } else if (msg.includes("로그인")) {
            answer = "🔑 로그인은 <a href='" + CONTEXT_PATH + "/login.do'>여기</a>에서 할 수 있습니다.";
        } else if (msg.includes("쌀")) {
-		   answer = "🌾 쌀은 <a href='" + CONTEXT_PATH + "/productCategory.do#p=10&c=100&s=1000&v=product'>여기</a>에서 찾으실 수 있습니다."
+		   answer = "🌾 쌀은 <a href='" + CONTEXT_PATH + "/productCategory.do#p=10&c=100&s=1000&v=product'>여기</a>에서 찾으실 수 있습니다.";
+	   } else if (msg.includes("안녕")) {
+	   	   answer = "안녕하세요 저는 AGRICOLA 사이트 도우미 입니다.<br>'배송', '환불', '입점', '제휴', '공지' 등으로 물어보세요!";
 	   } else {
            answer = "🤖 죄송해요, 아직 그 질문은 준비 중이에요.<br>예: '배송', '환불', '입점', '제휴', '공지' 등으로 물어보세요!";
        }
