@@ -13,5 +13,8 @@ public class OrderItem {
 	private String imageUrl;
 	
 	private int hasReview;
+	 private String optionUnit;  
+	 private int optionAddPrice; 
+	
 	
 }

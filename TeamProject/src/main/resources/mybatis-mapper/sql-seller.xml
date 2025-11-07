@@ -80,5 +80,57 @@
 	        BANKNAME = #{bankName, jdbcType=VARCHAR}
 	    WHERE USER_ID = #{userId}
 	</update>
+	
+	    <!-- 대시보드 - 오늘 주문 건수 -->
+    <select id="getTodayOrdersCount" parameterType="String" resultType="int">
+        SELECT COUNT(DISTINCT O.ORDER_NO)
+        FROM ORDERS O
+        JOIN ORDER_ITEM OI ON O.ORDER_NO = OI.ORDER_NO
+        JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
+        WHERE P.SELLER_ID = #{sellerId}
+          AND TRUNC(O.ORDERDATE) = TRUNC(SYSDATE)
+    </select>
+
+    <!-- 대시보드 - 오늘 매출 -->
+    <select id="getTodaySalesAmount" parameterType="String" resultType="Long">
+        SELECT NVL(SUM(O.TOTAL_PRICE), 0)
+        FROM ORDERS O
+        JOIN ORDER_ITEM OI ON O.ORDER_NO = OI.ORDER_NO
+        JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
+        WHERE P.SELLER_ID = #{sellerId}
+          AND TRUNC(O.ORDERDATE) = TRUNC(SYSDATE)
+    </select>
+
+    <!-- 대시보드 - 총 등록 상품 수 -->
+    <select id="getTotalProductsCount" parameterType="String" resultType="int">
+        SELECT COUNT(PRODUCT_NO)
+        FROM PRODUCT
+        WHERE SELLER_ID = #{sellerId}
+    </select>
+
+    <!-- 대시보드 - 평균 평점 -->
+    <select id="getAverageRating" parameterType="String" resultType="Double">
+        SELECT NVL(AVG(R.RATING), 0.0)
+        FROM REVIEW R
+        JOIN PRODUCT P ON R.PRODUCT_NO = P.PRODUCT_NO
+        WHERE P.SELLER_ID = #{sellerId}
+    </select>
+
+    <!-- 대시보드 - 최근 주문 목록 (최대 3개) -->
+    <select id="getRecentOrders" parameterType="String" resultType="HashMap">
+	    SELECT
+	        O.ORDER_NO AS orderNo,
+	        P.PNAME AS productName,
+	        OI.QUANTITY AS quantity,
+	        NVL(OI.QUANTITY * OI.PRICE, 0) AS amount,
+	        O.STATUS AS status,
+	        TO_CHAR(O.ORDERDATE, 'YYYY-MM-DD') AS orderDate
+	    FROM ORDERS O
+	    JOIN ORDER_ITEM OI ON O.ORDER_NO = OI.ORDER_NO
+	    JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
+	    WHERE P.SELLER_ID = #{sellerId}
+	    ORDER BY O.ORDERDATE DESC
+	    FETCH FIRST 3 ROWS ONLY
+	</select>
 	 
 </mapper>

@@ -25,12 +25,18 @@ public class PaymentController {
 	@RequestMapping("/product/payment.do")
 	public String payment(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
 			throws Exception {
-		System.out.println(map.get("productNo"));
 		request.setAttribute("productNo", map.get("productNo"));
-		System.out.println(map.get("userId"));
 		request.setAttribute("userId", map.get("userId"));
-		System.out.println(map.get("qty"));
 		request.setAttribute("qty", map.get("qty"));
+		
+		// ✅ 옵션/수령방식/배송비(상세에서 pageChange로 함께 보냄)
+		request.setAttribute("optionNo", map.get("optionNo"));
+	    request.setAttribute("optionUnit", map.get("optionUnit"));
+	    request.setAttribute("optionAddPrice", map.get("optionAddPrice"));
+	    request.setAttribute("unitPrice", map.get("unitPrice"));
+	    request.setAttribute("fulfillment", map.get("fulfillment"));
+	    request.setAttribute("shippingFee", map.get("shippingFee"));
+		
 		return "product/payment";
 	}
 	
@@ -99,7 +105,18 @@ public class PaymentController {
 
 	        // 4️⃣ DB Insert 실행
 	        paymentService.insertPayment(payMap);
-
+	        
+	        // 주문 정보 생성(ORDER_ITEM 테이블에 INSERT) 
+	        HashMap<String, Object> orderItemMap = new HashMap<>();
+	        orderItemMap.put("orderNo", orderNo);  // FK (주문번호)
+	        orderItemMap.put("quantity", toInt(map.get("quantity"), null));
+	        orderItemMap.put("price", toInt(map.get("unitPrice"), null));
+	        orderItemMap.put("productNo", toInt(map.get("productNo"), null));
+	        orderItemMap.put("optionNo", toInt(map.get("optionNo"), null));
+	        
+	        // DB Insert 실행
+	        paymentService.insertOrderItem(orderItemMap);
+	        
 	        resultMap.put("result", "success");
 	        resultMap.put("orderNo", orderNo);
 	        resultMap.put("message", "결제정보 저장 완료");
@@ -112,6 +129,18 @@ public class PaymentController {
 	    return new Gson().toJson(resultMap);
 	}
 	
-	
+	private Integer toInt(Object v, Integer def) {
+		if (v == null) return def;
+	    if (v instanceof Number) return ((Number) v).intValue();
+	    try {
+	        String s = v.toString().trim();
+	        if (s.isEmpty() || "null".equalsIgnoreCase(s)) return def;
+	        // 1,000 같은 포맷 혹시 대비
+	        s = s.replaceAll(",", "");
+	        return new java.math.BigDecimal(s).intValue();
+	    } catch (Exception e) {
+	        return def;
+	    }
+	}
 
 }

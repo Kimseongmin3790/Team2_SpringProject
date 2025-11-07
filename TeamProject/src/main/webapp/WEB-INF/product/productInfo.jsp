@@ -1044,6 +1044,36 @@
                     font-size: 13px;
                     font-weight: 500;
                 }
+
+                /* ▼ 옵션/공유 드롭다운이 sticky 탭 위로 뜨도록 */
+                .dd {
+                    position: relative;
+                }
+
+                /* 이미 있으니 안전하게 명시 */
+                .share-wrap {
+                    position: relative;
+                }
+
+                /* 공유 팝업 부모도 기준점 명시 */
+
+                .dd-list,
+                .share-pop {
+                    position: absolute;
+                    /* 기존과 동일 */
+                    z-index: 1001;
+                    /* .irq(50) 보다 확실히 높게 */
+                    max-height: min(60vh, 480px);
+                    /* 옵션 많아도 화면 높이 기준으로 스크롤 */
+                    overflow: auto;
+                    /* 내부 스크롤 */
+                }
+
+                /* 굳이 내릴 필요는 없지만, 혹시 모를 테마 충돌 대비해 살짝만 조정 */
+                .irq {
+                    z-index: 30;
+                    /* sticky 유지 + 드롭다운보다 낮게 */
+                }
             </style>
         </head>
 
@@ -1159,13 +1189,24 @@
                                 <div style="margin: 50px 0;">
                                     수율 상세페이지 참조 *
                                     <div class="dd" style="margin-top:8px;">
+                                        <!-- 🔹 버튼 라벨: 선택 전/후 UI -->
                                         <button type="button" class="dd-btn" @click.stop="ddOpen2=!ddOpen2">
-                                            <span class="l1">수율 상세페이지 참조 (필수)</span>
+                                            <span class="l1">
+                                                {{ selectedOption ? selectedOption.unit : '옵션 선택 (필수)' }}
+                                            </span>
+                                            <span class="l2" v-if="selectedOption">
+                                                단가: ￦{{ price.toLocaleString() }}
+                                            </span>
                                         </button>
+
+                                        <!-- 🔹 리스트: 옵션 클릭 시 pickProduct(item, idx) 호출 -->
                                         <div class="dd-list" v-if="ddOpen2" @click.stop>
-                                            <div class="dd-opt" @click="pickProduct()" v-for="item in options">
+                                            <div class="dd-opt" v-for="(item, idx) in options"
+                                                :key="item.optionNo ?? idx" @click="pickProduct(item, idx)">
                                                 <span class="l1">{{ item.unit }}</span>
-                                                <span class="l2">￦{{ (info.price + item.addPrice||0).toLocaleString()
+                                                <span class="l2">￦{{
+                                                    (Number(info.price || 0) + Number(item.addPrice ||
+                                                    0)).toLocaleString()
                                                     }}원</span>
                                             </div>
                                         </div>
@@ -1174,11 +1215,12 @@
                                     <div class="selection-summary" v-if="selected" style="margin-top:12px">
                                         <div style="padding:8px 0;border-top:1px solid #eee">
                                             <div>
-                                                {{ info.pName }} {{options[0].unit}}
+                                                {{ info.pName }} <span style="color:#666">/ {{ selectedOption?.unit
+                                                    }}</span>
                                                 <button @click="removeProduct" style="margin-left:270px">삭제</button>
                                             </div>
                                             <hr
-                                                style="border-width:1px 0 0 0; border-style:dashed; border-color:#9d9c9c; width:480px;">
+                                                style="border-width:1px 0 0 0; border-style:dashed; border-color:#9d9d9d; width:480px;">
                                             <div
                                                 style="font-size:18px;font-weight:700; display:flex; align-items:center; gap:8px; margin-top:6px">
                                                 <button @click="fnMinus" style="width:30px; height:30px;">-</button>
@@ -1189,6 +1231,13 @@
                                                     }}원</span>
                                             </div>
                                         </div>
+
+                                        <!-- (선택 옵션, 단가, 총액) 서버 필요 시 참고용 히든필드 -->
+                                        <input type="hidden" name="optionUnit" :value="selectedOption?.unit">
+                                        <input type="hidden" name="optionAddPrice" :value="selectedOption?.addPrice">
+                                        <input type="hidden" name="optionIdx" :value="selectedOption?.idx">
+                                        <input type="hidden" name="unitPrice" :value="price">
+                                        <input type="hidden" name="totalPrice" :value="totalSum">
                                     </div>
 
                                     <div v-if="selected" style="text-align:right; font-size:20px; font-weight:800;">
@@ -1205,6 +1254,7 @@
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
 
@@ -1333,7 +1383,7 @@
                                             <tr v-if="q.showAnswer && canViewQuestion(q)">
                                                 <td colspan="4" style="background:#fafafa; padding:16px 24px;">
                                                     <b style="color:#5b21b6;">문의 내용</b><br>
-                                                    <div style="margin-top:8px; white-space:pre-wrap;">{{ q.title }}
+                                                    <div style="margin-top:8px; white-space:pre-wrap;">{{ q.content }}
                                                     </div>
 
                                                     <div v-if="q.answer" style="margin-top:12px;">
@@ -1387,6 +1437,7 @@
                         options: [],
 
                         selected: false,
+                        selectedOption: null,
                         qty: 0,
                         price: 0,
                         totalSum: 0,
@@ -1654,75 +1705,133 @@
                     },
 
                     // 구매 선택
-                    pickProduct: function () {
+                    pickProduct(item, idx) {
+                        // 옵션 지정
+                        this.selectedOption = {
+                            ...item,
+                            idx: (item?.idx ?? idx)
+                        };
+
+                        // 선택 상태/수량
                         this.selected = true;
-                        if (this.qty < 1) {
-                            this.qty = 1;
-                        }
+                        if ((this.qty | 0) < 1) this.qty = 1;
+
+                        // 단가(기본가 + 추가금)
+                        const base = Number(this.info?.price || 0);
+                        const add = Number(item?.addPrice || 0);
+                        this.price = base + add;
+
                         this.ddOpen2 = false;
                         this.recomputeTotal();
                     },
 
-                    removeProduct() { this.selected = false; this.qty = 0; this.recomputeTotal(); },
+                    removeProduct() {
+                        this.selected = false;
+                        this.selectedOption = null;
+                        this.qty = 0;
+                        this.price = Number(this.info?.price || 0); // 기본가로 복귀(표시용)
+                        this.recomputeTotal();
+                    },
                     fnMinus() { if (!this.selected) return; if (this.qty > 1) { this.qty--; this.recomputeTotal(); } },
                     fnPlus() { if (!this.selected) return; this.qty++; this.recomputeTotal(); },
-                    recomputeTotal() { this.totalSum = this.selected ? (this.qty * this.price) : 0; },
+                    recomputeTotal() {
+                        const unit = Number(this.price || 0);
+                        const q = Number(this.qty || 0);
+                        this.totalSum = (this.selected && q > 0) ? (unit * q) : 0;
+                    },
 
                     // 상세 토글
                     openDetail() { this.showDetail = true; },
                     closeDetail() { this.showDetail = false; },
 
                     // CTA
-                    fnPurchase: function (productNo, qty, userId) {
-                        let self = this;
-                        if (!self.userId) {
+                    fnPurchase(productNo, qty) {
+                        if (!this.userId) {
                             alert("로그인 후 이용바랍니다.");
                             location.href = "http://localhost:8082/login.do";
                             return;
                         }
-                        if (!self.selected || (self.qty | 0) <= 0) {
+                        if (!this.selected || (this.qty | 0) <= 0) {
                             alert("옵션 선택 후 수량을 확인해 주세요.");
                             return;
                         }
-                        pageChange('/product/payment.do', { productNo, qty, userId: self.userId }); // 결제 페이지로 이동
-                    },
+                        if (!this.selectedOption) {
+                            alert("옵션을 선택해 주세요.");
+                            return;
+                        }
 
-                    fnBasket: function (productNo, qty) {
-                        let self = this;
-                        if (!self.userId) {
-                            alert("로그인 후 이용바랍니다.");
-                            location.href = "http://localhost:8082/login.do";
-                            return;
-                        }
-                        if (!self.selected || (self.qty | 0) <= 0) {
-                            alert("옵션 선택 후 수량을 확인해 주세요.");
-                            return;
-                        }
-                        const fee = (this.fulfillment === 'delivery') ? 3000 : 0; // ★ 추가
-                        let param = {
-                            userId: self.userId,
-                            productNo: productNo,
-                            quantity: qty,
-                            fulfillment: self.fulfillment,
+                        const fee = (this.fulfillment === 'delivery') ? 3000 : 0;
+                        const opt = this.selectedOption;
+
+                        // 서버에서 고유 옵션키를 쓰면 optionNo/id, 없다면 idx 전송
+                        const optionNo = opt.optionNo ?? opt.id ?? opt.idx;
+
+                        const param = {
+                            productNo,
+                            userId: this.userId,
+                            qty: this.qty,                      // 결제 페이지에서 사용할 수량
+                            optionNo,                           // 서버가 받는 옵션 키
+                            optionUnit: opt.unit,               // 표시용
+                            optionAddPrice: Number(opt.addPrice || 0),
+                            unitPrice: Number(this.price || 0), // 단가(기본가+추가금)
+                            totalPrice: Number(this.totalSum || 0),
+                            fulfillment: this.fulfillment,
                             shippingFee: fee
                         };
+
+                        // 결제 페이지로 이동(POST Form 전송 가정)
+                        pageChange('/product/payment.do', param);
+                    },
+
+                    fnBasket(productNo, qty) {
+                        if (!this.userId) {
+                            alert("로그인 후 이용바랍니다.");
+                            location.href = "http://localhost:8082/login.do";
+                            return;
+                        }
+                        if (!this.selected || (this.qty | 0) <= 0) {
+                            alert("옵션 선택 후 수량을 확인해 주세요.");
+                            return;
+                        }
+                        if (!this.selectedOption) {
+                            alert("옵션을 선택해 주세요.");
+                            return;
+                        }
+
+                        const fee = (this.fulfillment === 'delivery') ? 3000 : 0;
+                        const opt = this.selectedOption;
+                        const optionNo = opt.optionNo ?? opt.id ?? opt.idx;
+
+                        const param = {
+                            userId: this.userId,
+                            productNo: productNo,
+                            quantity: this.qty,                 // 🔹 장바구니 API는 quantity 사용 중이므로 유지
+                            fulfillment: this.fulfillment,
+                            shippingFee: fee,
+                            optionNo,                           // 장바구니에도 옵션키 저장
+                            optionUnit: opt.unit,
+                            optionAddPrice: Number(opt.addPrice || 0),
+                            unitPrice: Number(this.price || 0), // 선택 단가 저장(주문서 계산용)
+                            totalPrice: Number(this.totalSum || 0)
+                        };
+
                         $.ajax({
                             url: '/cart/add.dox',
                             type: 'POST',
                             dataType: 'json',
                             data: param,
-                            success: function (data) {
-                                if (data.result == 'success') {
-                                    if (confirm("장바구니에 담겼습니다 장바구니로 이동하시겠습니까?")) {
-                                        pageChange('/buyerMyPage.do', { productNo }); // 장바구니로 이동
+                            success: (data) => {
+                                if (data.result === 'success') {
+                                    if (confirm("장바구니에 담겼습니다. 장바구니로 이동하시겠습니까?")) {
+                                        pageChange('/buyerMyPage.do', { productNo });
                                     } else {
-                                        self.fnInfo();
+                                        this.fnInfo(); // 화면 갱신
                                     }
                                 } else {
                                     alert('장바구니 담기 실패');
                                 }
                             },
-                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                            error: (xhr) => { alert('서버오류: ' + xhr.status); }
                         });
                     },
 

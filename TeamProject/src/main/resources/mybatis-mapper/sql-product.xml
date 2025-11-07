@@ -137,10 +137,36 @@
     </select>
     
     <select id="selectProductQuestions" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductQuestions">
-    	SELECT Q.TITLE, Q.USER_ID, Q.STATUS, TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD') AS REG_DATE, A.CONTENT AS ANSWER, Q.IS_SECRET, P.SELLER_ID
+    	SELECT Q.TITLE, Q.USER_ID, Q.STATUS, TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD') AS REG_DATE, A.CONTENT AS ANSWER, Q.IS_SECRET, P.SELLER_ID, Q.CONTENT
 		FROM PRODUCT_QNA Q
 		JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
 		LEFT JOIN PRODUCT_QNA_ANSWER A ON Q.QNA_NO = A.QNA_NO
 		WHERE Q.PRODUCT_NO = #{productNo}
     </select>
+    
+    <insert id="insertProductOptions" parameterType="map">
+	  <if test="options != null and options.size() &gt; 0">
+	    MERGE INTO PRODUCT_OPTION t
+	    USING (
+	      <foreach collection="options" item="opt" separator=" UNION ALL ">
+	        SELECT
+	          #{productNo}    AS PRODUCT_NO,
+	          #{opt.unit}     AS UNIT,
+	          #{opt.stock}    AS STOCK_QTY,
+	          #{opt.addPrice} AS ADD_PRICE
+	        FROM DUAL
+	      </foreach>
+	    ) s
+	    ON (t.PRODUCT_NO = s.PRODUCT_NO AND t.UNIT = s.UNIT)
+	    WHEN NOT MATCHED THEN
+	      INSERT (OPTION_NO, PRODUCT_NO, UNIT, STOCK_QTY, ADD_PRICE, IS_ACTIVE, CDATETIME)
+	      VALUES (PRODUCT_OPTION_SEQ.NEXTVAL, s.PRODUCT_NO, s.UNIT, s.STOCK_QTY, s.ADD_PRICE, 'Y', SYSDATE)
+	    WHEN MATCHED THEN
+	      UPDATE SET t.STOCK_QTY = s.STOCK_QTY,
+	                 t.ADD_PRICE = s.ADD_PRICE,
+	                 t.IS_ACTIVE = NVL(t.IS_ACTIVE,'Y'),
+	                 t.UDATETIME = SYSDATE
+	  </if>
+	</insert>
+	
 </mapper>
