@@ -7,6 +7,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -464,27 +465,66 @@ public class UserService {
 		return resultMap;
 	}
 
-	public HashMap<String, Object> addCart(HashMap<String, Object> map) {
-		// TODO Auto-generated method stub
-		HashMap<String, Object> resultMap = new HashMap<>();
-		try {
-			if (map.get("quantity") == null || String.valueOf(map.get("quantity")).trim().equals("")) {
-				map.put("quantity", 1);
-			}
-			// 1) 같은 상품이 이미 있으면 수량만 증가
-			int cnt = userMapper.updateCartQty(map);
-			// 2) 없으면 새로 추가
-			if (cnt == 0) {
-				userMapper.insertCart(map);
-			}
-			resultMap.put("result", "success");
-		} catch (Exception e) {
-			// TODO: handle exception
-			resultMap.put("result", "fail");
-			System.out.println(e.getMessage());
-		}
+	public HashMap<String, Object> addCart(HashMap<String, Object> in) {
+	    HashMap<String, Object> out = new HashMap<>();
+	    try {
+	        // 1) 파라미터 정규화
+	        String userId     = safeStr(in.get("userId"));
+	        Integer productNo = toInt(in.get("productNo"), null);
+	        Integer optionNo  = toInt(in.get("optionNo"), null); // nullable
+	        Integer qty       = Math.max(1, toInt(in.get("quantity"), 1));
+	        String fulfillment= normalizeFulfillment(safeStrOrDefault(in.get("fulfillment"), "delivery"));
+	        Integer shippingFee = "delivery".equals(fulfillment) ? 3000 : 0; // 서버에서 확정
 
-		return resultMap;
+	        if (userId == null || userId.isBlank() || productNo == null) {
+	            out.put("result", "fail");
+	            out.put("message", "필수값 누락(userId/productNo)");
+	            return out;
+	        }
+
+	        // 2) 동일 라인(cart key) 존재 여부
+	        Map<String,Object> key = new HashMap<>();
+	        key.put("userId", userId);
+	        key.put("productNo", productNo);
+	        key.put("optionNo", optionNo);
+	        key.put("fulfillment", fulfillment);
+
+	        Long cartNo = userMapper.selectCartNoByKey(key);
+
+	        if (cartNo != null) {
+	            // 3-A) 있으면 수량 누적 + 배송비 최신화
+	            Map<String,Object> upd = new HashMap<>(key);
+	            upd.put("quantity", qty);
+	            upd.put("shippingFee", shippingFee);
+	            int updated = userMapper.updateCartQtyByKey(upd); // WHERE key
+	            if (updated <= 0) throw new IllegalStateException("장바구니 수량 업데이트 실패");
+	        } else {
+	            // 3-B) 없으면 신규 INSERT (시퀀스로 cartNo 생성)
+	            Map<String,Object> ins = new HashMap<>(key);
+	            ins.put("quantity", qty);
+	            ins.put("shippingFee", shippingFee);
+	            userMapper.insertCarts(ins); // selectKey로 cartNo 세팅
+	            cartNo = toLong(ins.get("cartNo"));
+	            if (cartNo == null) {
+	                // Oracle MERGE/INSERT 환경에 따라 selectKey가 안 잡히면 재조회
+	                cartNo = userMapper.selectCartNoByKey(key);
+	            }
+	            if (cartNo == null) throw new IllegalStateException("장바구니 행 생성 실패");
+	        }
+
+	        out.put("result", "success");
+	        out.put("cartNo", cartNo);
+	        out.put("quantity", qty);
+	        out.put("fulfillment", fulfillment);
+	        out.put("shippingFee", shippingFee);
+	        return out;
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        out.put("result", "fail");
+	        out.put("message", e.getMessage());
+	        return out;
+	    }
 	}
 
 	public HashMap<String, Object> getCartList(HashMap<String, Object> map) {
@@ -546,6 +586,31 @@ public class UserService {
 			System.out.println(e.getMessage());
 		}
 		return resultMap;
+	}
+	
+	/* ===== 유틸 ===== */
+	private String safeStr(Object v){ return v==null? null : String.valueOf(v); }
+	private String safeStrOrDefault(Object v, String def){
+	    String s = safeStr(v);
+	    return (s==null || s.isBlank() || "null".equalsIgnoreCase(s) || "undefined".equalsIgnoreCase(s)) ? def : s;
+	}
+	private Integer toInt(Object v, Integer def){
+	    if (v == null) return def;
+	    if (v instanceof Number) return ((Number)v).intValue();
+	    try {
+	        String s = v.toString().trim().replaceAll(",", "");
+	        if (s.isEmpty() || "null".equalsIgnoreCase(s) || "undefined".equalsIgnoreCase(s)) return def;
+	        return new java.math.BigDecimal(s).intValue();
+	    } catch (Exception e){ return def; }
+	}
+	private Long toLong(Object v){
+	    if (v == null) return null;
+	    if (v instanceof Number) return ((Number)v).longValue();
+	    try { return new java.math.BigDecimal(v.toString().trim()).longValue(); }
+	    catch(Exception e){ return null; }
+	}
+	private String normalizeFulfillment(String f){
+	    return "pickup".equalsIgnoreCase(f) ? "pickup" : "delivery";
 	}
 
 }
