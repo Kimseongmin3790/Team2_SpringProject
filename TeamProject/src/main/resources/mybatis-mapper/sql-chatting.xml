@@ -4,34 +4,105 @@
 
 <mapper namespace="com.example.TeamProject.mapper.ChattingMapper">
 
-  <!-- 단일 테이블 TBL_CHATTING 사용(이전 성공 패턴) -->
-  <!-- CHAT_SEQ 시퀀스, 컬럼: CHAT_ID, ROOM_ID, USERID, TYPE, CONTENT, CREATED_AT -->
+  <!-- ======================= ROOM ======================= -->
 
-  <insert id="insertChat" parameterType="hashmap">
-    INSERT INTO CHAT_MESSAGE (MSG_NO, ROOM_NO, SENDER_ID, TYPE, CONTENTS, CDATETIME)
-  VALUES (CHAT_MESSAGE_SEQ.NEXTVAL, #{roomId}, #{userId}, #{type}, #{content}, SYSDATE)
+  <!-- 방 생성: selectKey 없이 시퀀스 직접 사용 -->
+  <insert id="insertChatRoom" parameterType="hashmap">
+		INSERT INTO CHAT_ROOM
+		(ROOM_ID, TITLE, PRODUCT_NO, OWNER_ID, IS_PRIVATE, CDATETIME)
+		VALUES
+		(SEQ_CHAT_ROOM.NEXTVAL, #{title}, #{productNo}, #{ownerId},
+		NVL(#{isPrivate}, 'Y'), SYSDATE)
   </insert>
 
-  <select id="selectHistory" parameterType="hashmap" resultType="com.example.TeamProject.model.ChatMessage">
+  <!-- 직전 NEXTVAL의 값(같은 커넥션) 필요할 때 조회용 -->
+  <select id="selectRecentRoomNo" resultType="long">
+  SELECT SEQ_CHAT_ROOM.CURRVAL FROM dual
+	</select>
+
+	<!-- 단일 방 조회 -->
+  <select id="selectRoom" parameterType="hashmap"
+          resultType="com.example.TeamProject.model.ChatRoom">
     SELECT
-     MSG_NO    AS chatId,
-     ROOM_NO   AS roomId,
-     SENDER_ID AS userId,
-     TYPE      AS type,
-     CONTENTS  AS content,
-     /* 오늘이면 HH24:MI:SS, 아니면 날짜+시간 */
-     DECODE(TO_CHAR(CDATETIME, 'YY-MM-DD'),
-            TO_CHAR(SYSDATE, 'YY-MM-DD'),
-            TO_CHAR(CDATETIME, 'HH24:MI:SS'),
-            TO_CHAR(CDATETIME, 'YY-MM-DD HH24:MI:SS')) AS cdate
-  FROM CHAT_MESSAGE
-  WHERE ROOM_NO = #{roomId}
-  ORDER BY MSG_NO ASC
-  OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+      ROOM_ID                               AS roomNo,
+      TITLE                                 AS title,
+      PRODUCT_NO                            AS productNo,
+      OWNER_ID                              AS ownerId,
+      IS_PRIVATE                            AS isPrivate,
+      TO_CHAR(CDATETIME,'YYYY-MM-DD HH24:MI:SS') AS cdate
+    FROM CHAT_ROOM
+    WHERE ROOM_ID = #{roomNo}
   </select>
 
-  <select id="selectHistoryCnt" parameterType="hashmap" resultType="int">
-    SELECT COUNT(*) FROM CHAT_MESSAGE WHERE ROOM_ID = #{roomId}
+	<!-- 내가 참여한 방 목록 -->
+  <select id="selectMyRooms" parameterType="hashmap"
+          resultType="com.example.TeamProject.model.ChatRoom">
+    SELECT
+      r.ROOM_ID                             AS roomNo,
+      r.TITLE                               AS title,
+      r.PRODUCT_NO                          AS productNo,
+      r.OWNER_ID                            AS ownerId,
+      r.IS_PRIVATE                          AS isPrivate,
+      TO_CHAR(r.CDATETIME,'YYYY-MM-DD HH24:MI:SS') AS cdate
+    FROM CHAT_ROOM r
+    JOIN CHAT_ROOM_PARTICIPANT p ON p.ROOM_ID = r.ROOM_ID
+    WHERE p.USER_ID = #{userId}
+    ORDER BY r.CDATETIME DESC
   </select>
+
+	<!-- =================== PARTICIPANT ==================== -->
+
+	<!-- 입장 업서트 (네 프로젝트에도 MERGE 자주 씀) -->
+  <insert id="upsertParticipant" parameterType="hashmap">
+    MERGE INTO CHAT_ROOM_PARTICIPANT t
+    USING (SELECT #{roomNo} AS ROOM_ID, #{userId} AS USER_ID FROM dual) s
+    ON (t.ROOM_ID = s.ROOM_ID AND t.USER_ID = s.USER_ID)
+    WHEN MATCHED THEN
+      UPDATE SET t.ROLE = NVL(#{role}, t.ROLE),
+                 t.LEAVEDATE = NULL
+    WHEN NOT MATCHED THEN
+      INSERT (ROOM_ID, USER_ID, ROLE, JOINDATE)
+      VALUES (#{roomNo}, #{userId}, NVL(#{role}, 'MEMBER'), SYSDATE)
+  </insert>
+
+	<!-- 퇴장 표시 -->
+  <update id="leaveParticipant" parameterType="hashmap">
+    UPDATE CHAT_ROOM_PARTICIPANT
+       SET LEAVEDATE = SYSDATE
+     WHERE ROOM_ID = #{roomNo}
+       AND USER_ID = #{userId}
+       AND LEAVEDATE IS NULL
+  </update>
+
+	<!-- ====================== MESSAGE ===================== -->
+
+	<!-- 메시지 저장: selectKey 없이 NEXTVAL -->
+  <insert id="insertChatMessage" parameterType="hashmap">
+	  INSERT INTO CHAT_MESSAGE
+	    (MSG_NO, ROOM_ID, USER_ID, CONTENTS, TYPE, CDATETIME)
+	  VALUES
+	    (SEQ_CHAT_MESSAGE.NEXTVAL,
+	    #{roomNo, jdbcType=NUMERIC},   <!-- ★ 타입 고정 -->
+	     #{userId},
+	     #{contents},
+	     #{type},
+	     SYSDATE)
+	</insert>
+
+	<!-- 직전 메시지 번호 필요시 -->
+  <select id="selectRecentMsgNo" resultType="long">
+    SELECT SEQ_CHAT_MESSAGE.CURRVAL FROM dual
+  </select>
+
+	<!-- 히스토리 조회 (페이지네이션: offset/pageSize는 서비스에서 계산해서 넘겨도 되고, 그대로 써도 됨) -->
+  <select id="selectHistory" parameterType="hashmap"
+        resultType="com.example.TeamProject.model.ChatMessage">
+	  SELECT ...
+	  FROM CHAT_MESSAGE m
+	  LEFT JOIN USERS u ON u.USER_ID = m.USER_ID
+	  WHERE m.ROOM_ID = #{roomNo, jdbcType=NUMERIC}   <!-- ★ -->
+	  ORDER BY m.CDATETIME ASC
+	  OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+	</select>
 
 </mapper>

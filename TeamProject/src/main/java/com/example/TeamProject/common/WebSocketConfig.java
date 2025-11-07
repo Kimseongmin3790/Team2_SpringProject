@@ -5,6 +5,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 //이 클래스는 “웹소켓 + STOMP”를 쓰기 위한 스프링 설정입니다.
 @Configuration // 스프링 설정 클래스임을 알림 (자바 기반 설정)
@@ -15,9 +16,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	// 브라우저에서 new SockJS('/ws-chat')로 접속할 때 매칭
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
-		registry.addEndpoint("/ws-chat") // 클라이언트가 HTTP로 업그레이드 요청을 보낼 엔드포인트
-				.addInterceptors(new org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor())
-				.withSockJS(); // SockJS 사용(웹소켓 불가 환경에서도 폴백)
+		registry.addEndpoint("/ws-chat").setAllowedOriginPatterns("*") // 필요시 도메인으로 제한
+				.addInterceptors(new HttpSessionHandshakeInterceptor()).withSockJS();
 	}
 
 	// /app/* 으로 들어온 메시지를 @MessageMapping 으로 라우팅
