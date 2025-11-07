@@ -50,4 +50,6 @@ public interface BoardMapper {
 	Answer selectQnaAnswer(int qnaNo);
 	// 상품문의 글 작성
 	int productQnaInsert(HashMap<String, Object> map);
+	// 상품문의 답글 작성
+	int productQnaAnswerInsert(HashMap<String, Object> map);
 }
