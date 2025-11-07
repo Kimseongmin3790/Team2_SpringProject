@@ -12,7 +12,7 @@
     <!-- ✅ header, footer CSS만 로드 -->
     <link rel="stylesheet" href="${path}/resources/css/header.css">
     <link rel="stylesheet" href="${path}/resources/css/footer.css">
-
+    
     <!-- ✅ jQuery는 header.jsp에서 이미 로드됨 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>

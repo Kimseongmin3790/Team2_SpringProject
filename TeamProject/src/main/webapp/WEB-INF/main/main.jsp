@@ -659,7 +659,7 @@
                     track.style.transform = 'translateX(-' + (i * this.width) + 'px)';
                   }
                 },
-
+                
                 next() {
                   this.stopAuto();
                   this.move(this.index + 1, true);
