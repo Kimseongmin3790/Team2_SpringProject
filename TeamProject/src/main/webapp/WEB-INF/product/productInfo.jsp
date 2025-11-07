@@ -6,6 +6,8 @@
         <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <meta name="_csrf_parameter" content="${_csrf.parameterName}">
+            <meta name="_csrf" content="${_csrf.token}">
             <title>상품 상세</title>
 
             <!-- 라이브러리 -->
@@ -74,8 +76,8 @@
                 .prod-media .main-box img {
                     width: 100%;
                     height: 100%;
-                    object-fit: contain;
-                    /* 이미지 비율 유지해서 맞춤 */
+                    object-fit: cover; 
+                    /* 이미지 비율 유지해서 맞춤 ; contain */
                     background: #fff;
                     /* 투명/폴백일 때도 하얀 배경 */
                 }
@@ -1044,13 +1046,13 @@
                             <!-- 왼쪽: 이미지 -->
                             <div class="prod-media" id="img">
                                 <div class="main-box">
-                                    <img :src="mainImageUrl" :alt="info.pname" @error="onImgError($event)">
+                                    <img :src="mainImageUrl" :alt="info.pName" @error="onImgError($event)">
                                 </div>
 
                                 <div class="thumbs" id="small-img">
                                     <button v-for="u in thumbImages" :key="u" class="thumb"
                                         :class="{ active: u === mainImageUrl }" @click="mainImageUrl = u">
-                                        <img :src="u" :alt="info.pname">
+                                        <img :src="u" :alt="info.pName">
                                     </button>
                                 </div>
                             </div>
@@ -1151,9 +1153,9 @@
                                             <span class="l1">수율 상세페이지 참조 (필수)</span>
                                         </button>
                                         <div class="dd-list" v-if="ddOpen2" @click.stop>
-                                            <div class="dd-opt" @click="pickProduct()">
-                                                <span class="l1">{{ info.stock }}{{ info.unit }}</span>
-                                                <span class="l2">￦{{ (info.price||0).toLocaleString() }}원</span>
+                                            <div class="dd-opt" @click="pickProduct()" v-for="item in options">
+                                                <span class="l1">{{ item.unit }}</span>
+                                                <span class="l2">￦{{ (info.price + item.addPrice||0).toLocaleString() }}원</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1161,7 +1163,7 @@
                                     <div class="selection-summary" v-if="selected" style="margin-top:12px">
                                         <div style="padding:8px 0;border-top:1px solid #eee">
                                             <div>
-                                                {{ info.pname }}
+                                                {{ info.pName }} {{options[0].unit}}
                                                 <button @click="removeProduct" style="margin-left:270px">삭제</button>
                                             </div>
                                             <hr
@@ -1188,8 +1190,7 @@
                                                 class="btn btn-primary">구매하기</button>
                                             <button @click="fnBasket(info.productNo, qty)"
                                                 class="btn btn-outline">장바구니</button>
-                                            <button @click="fnChat" class="btn btn-ghost">실시간 문의</button>
-                                            <button @click="fnWish" class="btn btn-like">찜</button>
+                                            <button class="btn btn-ghost" @click="openChatWindowPost">실시간 문의</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1217,7 +1218,7 @@
 
                         <div v-show="showDetail">
                             <div v-for="img in detailOnly" :key="img" class="detail-img-wrap">
-                                <img :src="img" :alt="info.pname || '상세 이미지'" class="detail-img cover" loading="lazy">
+                                <img :src="img" :alt="info.pName || '상세 이미지'" class="detail-img cover" loading="lazy">
                             </div>
 
                             <div>
@@ -1363,13 +1364,15 @@
                         shareUrl: window.location.href,
                         shareTitle: '',
                         showDetail: false,
-                        week: false, before: false,
+                        week: false, 
+                        before: false,
                         liked: false,
 
                         userId: "${sessionId}",
                         productNo: "${productNo}",
                         info: {},
                         fileList: [],
+                        options: [],
 
                         selected: false,
                         qty: 0,
@@ -1472,7 +1475,7 @@
                             success: function (data) {
                                 self.info = data.info;
                                 self.fileList = data.fileList;
-
+                                self.options = data.options;
                                 // --- 도우미 ---
                                 const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
 
@@ -1669,7 +1672,7 @@
                             alert("옵션 선택 후 수량을 확인해 주세요.");
                             return;
                         }
-                        pageChange('/product/payment.do', { productNo, qty, userId:self.userId }); // 결제 페이지로 이동
+                        pageChange('/product/payment.do', { productNo, qty, userId: self.userId }); // 결제 페이지로 이동
                     },
 
                     fnBasket: function (productNo, qty) {
@@ -1683,10 +1686,13 @@
                             alert("옵션 선택 후 수량을 확인해 주세요.");
                             return;
                         }
+                        const fee = (this.fulfillment === 'delivery') ? 3000 : 0; // ★ 추가
                         let param = {
                             userId: self.userId,
                             productNo: productNo,
-                            quantity: qty
+                            quantity: qty,
+                            fulfillment: self.fulfillment,
+                            shippingFee: fee
                         };
                         $.ajax({
                             url: '/cart/add.dox',
@@ -1695,7 +1701,11 @@
                             data: param,
                             success: function (data) {
                                 if (data.result == 'success') {
-                                    pageChange('/buyerMyPage.do', { productNo }); // 장바구니로 이동
+                                    if (confirm("장바구니에 담겼습니다 장바구니로 이동하시겠습니까?")) {
+                                        pageChange('/buyerMyPage.do', { productNo }); // 장바구니로 이동
+                                    } else {
+                                        self.fnInfo();
+                                    }
                                 } else {
                                     alert('장바구니 담기 실패');
                                 }
@@ -1705,7 +1715,46 @@
                     },
 
                     fnWish() { /* TODO */ },
-                    fnChat() { console.log('fnChat clicked'); },
+                    openChatWindowPost() {
+                        const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
+                        const winName = 'chatWin';
+                        const features = 'width=500,height=600,resizable=yes,scrollbars=yes';
+
+                        // 1) 사용자 클릭 안에서 '즉시' 새 창 오픈 (차단 우회)
+                        const w = window.open('about:blank', winName, features);
+                        if (!w) {
+                            alert('팝업이 차단되었습니다. 브라우저에서 이 사이트 팝업을 허용해 주세요.');
+                            return;
+                        }
+
+                        // 2) 히든 폼 만들어서 그 창(target)으로 POST 전송
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = CTX + '/chatting.do';
+                        form.target = winName;
+
+                        const add = (name, value) => {
+                            const i = document.createElement('input');
+                            i.type = 'hidden';
+                            i.name = name;
+                            i.value = value;
+                            form.appendChild(i);
+                        };
+
+                        // 필요한 파라미터
+                        add('sessionId', this.userId || 'guest');
+
+                        // ▼ Spring Security CSRF (켜져 있다면 필수)
+                        const csrfName = document.querySelector('meta[name="_csrf_parameter"]')?.content;
+                        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+                        if (csrfName && csrfToken) add(csrfName, csrfToken);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                        form.remove();
+
+                        try { w.focus(); } catch (e) { }
+                    },
 
                     // 댓글
                     toggleComments() {
@@ -1837,10 +1886,10 @@
                                     });
 
                                     self.reviews = reviewsWithState || [];
-                                    self.totalReviewCount = response.totalCount || 0; 
+                                    self.totalReviewCount = response.totalCount || 0;
                                     self.averageRating = response.averageRating || 0;
                                     self.totalReviews = response.totalReviews || 0;
-                                    self.ratingDistribution = response.ratingDistribution || { 5:0,4:0,3:0,2:0,1:0 };
+                                    self.ratingDistribution = response.ratingDistribution || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
                                 } else {
                                     alert("리뷰 데이터를 불러오는 데 실패했습니다.");
                                 }
@@ -1997,7 +2046,7 @@
                             pageChange('/login.do');
                             return;
                         }
-                        pageChange('/productQna/write.do', { productNo: this.productNo, productName: this.info.pname });
+                        pageChange('/productQna/write.do', { productNo: this.productNo, productName: this.info.pName });
                     },
                     canViewQuestion(q) {
                         // 1. 비밀글 아닌 경우 → 누구나 열람 가능

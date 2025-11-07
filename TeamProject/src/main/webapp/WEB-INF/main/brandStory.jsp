@@ -564,7 +564,7 @@
                     <h3 class="cta-title">AGRICOLA와 함께 시작하세요</h3>
                     <p class="cta-subtitle">가장 정직한 연결로 신선한 농수산물을 만나보세요</p>
                     <div class="cta-buttons">
-                        <a href="${pageContext.request.contextPath}/" class="btn btn-primary">쇼핑 시작하기</a>
+                        <a href="${pageContext.request.contextPath}/productCategory.do#v=parent" class="btn btn-primary">쇼핑 시작하기</a>
                         <a href="${path}/partnership.do" class="btn btn-outline">입점 / 제휴 문의</a>
                     </div>
                 </div>

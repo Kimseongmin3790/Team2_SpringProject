@@ -56,8 +56,10 @@ public class ProductService {
 		try {
 			Product product = productMapper.selectProduct(map);
 			List<Product> fileList = productMapper.selectImageList(map);
+			List<Product> options = productMapper.selectProductOptions(map);
 			resultMap.put("info", product);
 			resultMap.put("fileList", fileList);
+			resultMap.put("options", options);
 			resultMap.put("result", "success");
 		} catch (Exception e) {
 			// TODO: handle exception

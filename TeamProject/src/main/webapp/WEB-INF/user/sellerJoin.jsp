@@ -245,6 +245,12 @@
                     white-space: nowrap;
                     max-width: 250px;
                 }
+
+                .timer-label-inline {
+                    color: #e74c3c;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
             </style>
         </head>
 
@@ -318,9 +324,20 @@
                             </div>
 
                             <div class="input-group">
-                                <label><i class="fa-solid fa-mobile-screen"></i> 휴대폰</label>
+                                <label><i class="fa-solid fa-mobile-screen"></i> 휴대폰 인증</label>
                                 <div class="input-wrapper">
-                                    <input type="text" v-model="userPhone" placeholder="예: 01012345678">
+                                    <input v-if="!joinFlg" type="text" v-model="userPhone" placeholder="01012345678">
+                                    <input v-else type="text" v-model="userPhone" disabled>
+                                    <button @click="fnSendCode">인증번호 전송</button>
+                                </div>
+                            </div>
+
+                            <div class="input-group" v-if="smsFlg">
+                                <label><i class="fa-solid fa-shield"></i> 인증번호 입력</label>
+                                <div class="input-wrapper">
+                                    <input type="text" v-model="verifyCode" placeholder="인증번호 6자리">
+                                    <button @click="fnVerifyCode">확인</button>
+                                    <span v-if="count > 0" class="timer-label-inline">{{ timer }}</span>
                                 </div>
                             </div>
 
@@ -426,6 +443,12 @@
                             userAddr: "",
                             userPhone: "",
                             role: "SELLER",
+                            verifyCode: "",
+                            joinFlg: false,
+                            smsFlg: false,
+                            count: 0,
+                            timer: "",
+                            timerInterval: null,
 
                             // 판매자 회원가입 정보
                             farmName: "",
@@ -503,6 +526,10 @@
                             const phoneRegex = /^01[0-9]\d{3,4}\d{4}$/;
                             if (!phoneRegex.test(self.userPhone)) {
                                 Swal.fire('⚠️', '휴대폰 번호는 01012345678 형태로 입력해주세요.', 'warning');
+                                return;
+                            }
+                            if (!self.joinFlg) {
+                                Swal.fire('⚠️', '휴대폰 인증을 완료해야 판매자 등록이 가능합니다.', 'warning');
                                 return;
                             }
 
@@ -627,6 +654,69 @@
                                 this.profileName = file.name;
                             }
                         },
+                        fnSendCode() {
+                            let self = this;
+                            const phoneRegex = /^01[0-9]\d{7,8}$/;
+                            if (!phoneRegex.test(self.userPhone)) {
+                                Swal.fire('⚠️', '휴대폰 번호를 올바르게 입력해주세요.', 'warning');
+                                return;
+                            }
+                            $.ajax({
+                                url: self.path + "/send-one",
+                                type: "POST",
+                                dataType: "json",
+                                data: { phone: self.userPhone },
+                                success: function (data) {
+                                    if (data.result === "success" || data.res) {
+                                        Swal.fire('✅', '인증번호가 발송되었습니다.', 'success');
+                                        self.smsFlg = true;
+                                        self.fnTimer();
+                                    } else {
+                                        Swal.fire('❌', '문자 발송에 실패했습니다.', 'error');
+                                    }
+                                }
+                            });
+                        },
+                        fnVerifyCode() {
+                            let self = this;
+                            $.ajax({
+                                url: self.path + "/verify-code",
+                                type: "POST",
+                                dataType: "json",
+                                data: { phone: self.userPhone, code: self.verifyCode },
+                                success: function (data) {
+                                    if (data.result === "success") {
+                                        Swal.fire('✅', '휴대폰 인증이 완료되었습니다.', 'success');
+                                        self.joinFlg = true;
+                                        clearInterval(self.timerInterval);
+                                        self.timer = "";
+                                    } else {
+                                        Swal.fire('❌', '인증번호가 일치하지 않습니다.', 'error');
+                                    }
+                                }
+                            });
+                        },
+                        fnTimer: function () {
+                            let self = this;
+
+                            self.count = 180;
+
+                            self.timerInterval = setInterval(function () {
+                                if (self.count <= 0) {
+                                    clearInterval(self.timerInterval);
+                                    this.timer = "00 : 00";
+                                    Swal.fire("⏰", "시간이 만료되었습니다.", "warning");
+                                } else {
+                                    let min = parseInt(self.count / 60);
+                                    let sec = self.count % 60;
+                                    min = min < 10 ? "0" + min : min;
+                                    sec = sec < 10 ? "0" + sec : sec;
+                                    self.timer = min + " : " + sec;
+
+                                    self.count--;
+                                }
+                            }, 1000);
+                        }
                     },
                     mounted() {
                         window.vueObj = this;
