@@ -340,12 +340,55 @@
         .btn-map-detail:hover {
           background: #4ba954;
         }
+
+        .map-controls {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 8px;
+          margin: 6px 0 28px;
+          padding: 6px 10px;
+          border: 1px solid #e1f0e1;
+          background: #f7fff7;
+          border-radius: 10px;
+        }
+
+        .map-controls__title {
+          margin-right: auto;
+          color: #567;
+          font-size: 13px;
+        }
+
+        .map-controls label {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 13px;
+          color: #2e7d32;
+          background: #e8f5e9;
+          padding: 6px 10px;
+          border-radius: 14px;
+          cursor: pointer;
+          user-select: none;
+        }
+
+        .map-controls input[type="radio"],
+        .map-controls input[type="checkbox"] {
+          accent-color: #5dbb63;
+        }
+
+        .map-controls .sep {
+          width: 1px;
+          height: 20px;
+          background: #c8e6c9;
+          margin: 0 4px;
+        }
       </style>
     </head>
 
     <body>
       <%@ include file="/WEB-INF/views/common/header.jsp" %>
-      
+
         <div id="app">
           <main class="content">
             <!-- 🌿 슬라이더 -->
@@ -356,10 +399,9 @@
               <div v-show="!loading && !error" @mousedown="startDrag" @mousemove="dragging" @mouseup="endDrag"
                 @mouseleave="endDrag" @touchstart="startDrag" @touchmove="dragging" @touchend="endDrag">
                 <div class="slider-track" ref="track">
-                  <a v-for="(banner, i) in banners" :key="i" class="slider-item" :href="banner.linkUrl || '#'"
-                    @click.prevent="openBanner(banner)">
+                  <a v-for="(banner, i) in banners" :key="i" class="slider-item" :href="bannerHref(banner)"
+                    @click.prevent="openBanner(banner, $event)">
                     <img :src="fullUrl(banner.imageUrl)" :alt="banner.title || '배너'+i" draggable="false">
-                    <div class="slider-caption" v-if="banner.title">{{ banner.title }}</div>
                   </a>
                 </div>
                 <button v-if="banners.length>1" class="slider-arrow arrow-prev" @click="prev">‹</button>
@@ -375,14 +417,23 @@
             <section class="main-section">
               <h2>내 주변 농부</h2>
               <p class="section-desc">가장 가까운 생산자를 찾아보세요. ※ 위치 권한 없으면 기본으로 서울시청으로 지정됩니다</p>
-              <div id="map" style="width:100%;height:400px;border-radius:12px;margin-bottom:40px;"></div>
+              <div id="map" style="width:100%;height:400px;border-radius:12px;margin-bottom:12px;"></div>
+
+              <div class="map-controls">
+                <span class="map-controls__title">반경 선택</span>
+                <label><input type="radio" name="range" :value="1" v-model.number="rangeKm">1km</label>
+                <label><input type="radio" name="range" :value="3" v-model.number="rangeKm">3km</label>
+                <label><input type="radio" name="range" :value="5" v-model.number="rangeKm">5km</label>
+                <span class="sep"></span>
+                <label><input type="checkbox" v-model="onlyInRange">범위 내만 보기</label>
+              </div>
 
               <div class="producer-list">
-                <div class="producer-card" v-for="p in producers" :key="p.userId" @click="goSeller(p.userId)">
+                <div class="producer-card" v-for="p in visibleProducers" :key="p.userId" @click="goSeller(p.userId)">
                   <div class="producer-logo" :style="{ backgroundImage: 'url(' + p.profileImg + ')' }"></div>
                   <strong>{{ p.businessName }}</strong>
                   <p>{{ p.addrDo }} {{ p.addrCity }}</p>
-                  <p v-if="p.distance">📍 {{ p.distance }}km</p>
+                  <p v-if="p.distance">📍 {{ Number(p.distance).toFixed(1) }}km</p>
                 </div>
               </div>
             </section>
@@ -457,7 +508,16 @@
                   startX: 0,
                   deltaX: 0,
                   width: 0,
-                  topFarmers: []
+                  topFarmers: [],
+
+                  rangeKm: 3,             // ✅ 기본 반경 3km
+                  onlyInRange: true,      // ✅ 체크 시 범위 내만 표시
+                  mapRef: null,           // kakao.maps.Map 인스턴스
+                  mapCenter: null,        // {lat,lng}
+                  _markers: [],           // [{ marker, info, p }]
+                  _circles: [],           // kakao.maps.Circle[]
+                  _infoWindow: null,   // 모든 마커가 공유하는 단 하나의 InfoWindow
+                  _openMarker: null,   // 현재 InfoWindow가 붙어있는 마커 참조
                 };
               },
               methods: {
@@ -465,6 +525,28 @@
                   if (!u) return "";
                   if (/^https?:\/\//i.test(u)) return u;
                   return this.path + (u.startsWith("/") ? u : "/" + u);
+                },
+
+                bannerHref(b) {
+                  const url = (b && b.linkUrl) ? b.linkUrl : '#';
+                  return this.normalizeLink(url);
+                },
+
+                normalizeLink(url) {
+                  if (!url) return '#';
+
+                  // http(s)면 그대로
+                  if (/^https?:\/\//i.test(url)) return url;
+
+                  const base = this.path || ''; // 예: '/agricola'
+                  if (!base) return url;
+
+                  // url이 '/xxx' 형태면 base + url (중복 슬래시 제거)
+                  if (url.startsWith('/')) {
+                    return (base.endsWith('/') ? base.slice(0, -1) : base) + url;
+                  }
+                  // url이 'xxx' 형태면 base/xxx
+                  return base.endsWith('/') ? (base + url) : (base + '/' + url);
                 },
 
                 /* ------------ AJAX ------------ */
@@ -589,51 +671,117 @@
                     center: new kakao.maps.LatLng(lat, lng),
                     level: 6
                   });
+                  this.mapRef = map;
 
-                  // ✅ 내 위치 마커
+                  // InfoWindow 단일 인스턴스 생성(없을 때만)
+                  if (!this._infoWindow) {
+                    this._infoWindow = new kakao.maps.InfoWindow({ removable: false });
+                  }
+
+                  // 지도 빈 곳 클릭 시 열려있으면 닫기
+                  kakao.maps.event.addListener(this.mapRef, "click", () => {
+                    if (this._infoWindow && this._infoWindow.getMap()) {
+                      this._infoWindow.close();
+                      this._openMarker = null;
+                    }
+                  });
+
+                  this.mapCenter = { lat, lng };
+
+                  // ✅ 내 위치 마커 + 인포
                   const userMarker = new kakao.maps.Marker({
                     position: new kakao.maps.LatLng(lat, lng),
                     map: map
                   });
-                  const userInfo = new kakao.maps.InfoWindow({
-                    content: "<div style='padding:5px;'>내 위치</div>"
-                  });
-                  userInfo.open(map, userMarker);
+                  new kakao.maps.InfoWindow({ content: "<div style='padding:5px;'>내 위치</div>" }).open(map, userMarker);
 
-                  // ✅ 판매자 마커 표시
-                  list.forEach((p) => {
+                  // ✅ 거리값 보정(백엔드에서 넘어오지 않으면 직접 계산)
+                  (list || []).forEach(p => {
+                    if (typeof p.distance !== 'number' && p.lat && p.lng) {
+                      p.distance = this.calcDistanceKm(lat, lng, p.lat, p.lng);
+                    }
+                  });
+
+                  // ✅ 반경 원 그리기
+                  this.drawRangeCircles();
+
+                  // ✅ 마커 그리기
+                  this.renderMarkers(list || []);
+                },
+
+                renderMarkers(list) {
+                  if (!this.mapRef) return;
+
+                  // 기존 마커 제거
+                  if (this._markers && this._markers.length) {
+                    this._markers.forEach(m => { m.marker.setMap(null); });
+                  }
+                  this._markers = [];
+
+                  // 열려있던 공유 창 정리
+                  this._openMarker = null;
+                  if (this._infoWindow && this._infoWindow.getMap()) {
+                    this._infoWindow.close();
+                  }
+
+                  (list || []).forEach((p) => {
                     if (!p.lat || !p.lng) return;
 
                     const pos = new kakao.maps.LatLng(p.lat, p.lng);
-                    const marker = new kakao.maps.Marker({ position: pos, map: map });
+                    const marker = new kakao.maps.Marker({ position: pos, map: this.mapRef });
 
-                    // 거리값 처리
-                    const distanceText =
-                      typeof p.distance === "number" && !isNaN(p.distance)
-                        ? p.distance.toFixed(1) + "km"
-                        : "거리 정보 없음";
+                    kakao.maps.event.addListener(marker, "click", () => {
+                      const distanceText =
+                        (typeof p.distance === "number" && !isNaN(p.distance)) ? p.distance.toFixed(1) + "km" : "거리 정보 없음";
+                      const inRange = (typeof p.distance === 'number') ? (p.distance <= this.rangeKm + 1e-9) : false;
 
-                    // ✅ InfoWindow HTML (문자열 연결 방식)
-                    const html =
-                      "<div style='padding:10px;width:180px;line-height:1.5;font-size:13px;'>" +
-                      "<strong style='font-size:14px;color:#1a5d1a;'>" +
-                      (p.businessName || "이름 없음") +
-                      "</strong><br>" +
-                      (p.addrDo || "") +
-                      " " +
-                      (p.addrCity || "") +
-                      "<br>📍 " +
-                      distanceText +
-                      "<br>" +
-                      // ✅ 상세 페이지 버튼 추가
-                      "<button class='btn-map-detail' onclick=\"location.href='/seller/detail.do?sellerId=" + p.userId + "'\">상세보기</button>" +
-                      "</div>";
+                      const html =
+                        "<div style='padding:10px;width:200px;line-height:1.5;font-size:13px;'>" +
+                        "<strong style='font-size:14px;color:#1a5d1a;'>" + (p.businessName || "이름 없음") + "</strong>" +
+                        (inRange ? " <span style=\"display:inline-block;margin-left:4px;padding:2px 6px;border-radius:10px;background:#e8f5e9;color:#2e7d32;font-size:11px;\">범위내</span>" : "") +
+                        "<br>" + (p.addrDo || "") + " " + (p.addrCity || "") +
+                        "<br>📍 " + distanceText +
+                        "<br><button class='btn-map-detail' onclick=\"location.href='" + (this.path || '') + "/seller/detail.do?sellerId=" + p.userId + "'\">상세보기</button>" +
+                        "</div>";
 
-                    const info = new kakao.maps.InfoWindow({ content: html });
+                      // 같은 마커를 다시 클릭하면 닫기(토글)
+                      const isOpenOnThis = (this._openMarker === marker) && this._infoWindow.getMap();
+                      if (isOpenOnThis) {
+                        this._infoWindow.close();
+                        this._openMarker = null;
+                        return;
+                      }
 
-                    kakao.maps.event.addListener(marker, "click", function () {
-                      info.open(map, marker);
+                      // 공유창 열기
+                      this._infoWindow.setContent(html);
+                      this._infoWindow.open(this.mapRef, marker);
+                      this._openMarker = marker;
                     });
+
+                    this._markers.push({ marker, p });
+                  });
+
+                  // 가시성(범위 필터) 반영
+                  this.updateMarkerVisibility();
+                },
+
+                updateMarkerVisibility() {
+                  if (!this._markers) return;
+
+                  this._markers.forEach(({ marker, p }) => {
+                    const d = (typeof p.distance === 'number') ? p.distance : Infinity;
+                    const show = !this.onlyInRange || d <= this.rangeKm + 1e-9;
+
+                    if (show) {
+                      marker.setMap(this.mapRef);
+                    } else {
+                      marker.setMap(null);
+                      // 숨기려는 마커가 현재 열린 창이라면 닫기
+                      if (this._openMarker === marker && this._infoWindow && this._infoWindow.getMap()) {
+                        this._infoWindow.close();
+                        this._openMarker = null;
+                      }
+                    }
                   });
                 },
 
@@ -694,6 +842,8 @@
                 },
 
                 startDrag(e) {
+                  this._isDragging = false;
+                  this._dragStartX = this._getX(e);
                   if (this.banners.length <= 1) return;
                   this.stopAuto();
                   this.dragging = true;
@@ -703,6 +853,8 @@
                 },
 
                 dragging(e) {
+                  const dx = Math.abs(this._getX(e) - (this._dragStartX || 0));
+                  if (dx > 6) this._isDragging = true;
                   if (!this.dragging) return;
                   const x = e.touches ? e.touches[0].clientX : e.clientX;
                   this.deltaX = x - this.startX;
@@ -713,7 +865,12 @@
                   }
                 },
 
+                _getX(e) {
+                  return (e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX) || 0;
+                },
+
                 endDrag() {
+                  setTimeout(() => { this._isDragging = false; }, 0);
                   if (!this.dragging) return;
                   this.dragging = false;
                   const t = this.width * 0.15;
@@ -724,11 +881,15 @@
                   this.startAuto();
                 },
 
-                openBanner(b) {
-                  if (this.dragging) return;
-                  if (b && b.linkUrl) location.href = b.linkUrl;
-                },
+                openBanner(banner, evt) {
+                  if (this._isDragging) return; // 드래그 중이면 무시
 
+                  const href = this.bannerHref(banner);
+                  if (!href || href === '#') return;
+
+                  // 새창여부를 쓰고싶다면 banner.target === '_blank' 같이 확장 가능
+                  window.location.href = href;
+                },
                 /* ------------ 스크롤 리모컨 ------------ */
                 scrollTop() {
                   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -751,9 +912,60 @@
                 },
 
                 goInfo(productNo) {
-                    location.href = this.path + "/productInfo.do?productNo=" + productNo;
+                  location.href = this.path + "/productInfo.do?productNo=" + productNo;
+                },
+
+                calcDistanceKm(lat1, lon1, lat2, lon2) {
+                  if ([lat1, lon1, lat2, lon2].some(v => typeof v !== 'number')) return Infinity;
+                  const R = 6371;
+                  const toRad = d => d * Math.PI / 180;
+                  const dLat = toRad(lat2 - lat1);
+                  const dLon = toRad(lon2 - lon1);
+                  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+                  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                },
+
+                drawRangeCircles() {
+                  if (!this.mapRef || !this.mapCenter) return;
+                  // 기존 원 제거
+                  if (this._circles && this._circles.length) this._circles.forEach(c => c.setMap(null));
+                  this._circles = [];
+
+                  const center = new kakao.maps.LatLng(this.mapCenter.lat, this.mapCenter.lng);
+                  [1, 3, 5].forEach(km => {
+                    const circle = new kakao.maps.Circle({
+                      center,
+                      radius: km * 1000,
+                      strokeWeight: 2,
+                      strokeColor: (km === this.rangeKm) ? '#5dbb63' : '#1a5d1a',
+                      strokeOpacity: (km === this.rangeKm) ? 0.9 : 0.5,
+                      strokeStyle: 'shortdash',
+                      fillColor: '#5dbb63',
+                      fillOpacity: (km === this.rangeKm) ? 0.12 : 0.0
+                    });
+                    circle.setMap(this.mapRef);
+                    this._circles.push(circle);
+                  });
+                },
+              },
+
+              computed: {
+                // ✅ 리스트에 보여줄 판매자 (반경 필터 반영 + 거리 오름차순)
+                visibleProducers() {
+                  if (!this.onlyInRange || !this.mapCenter) {
+                    return (this.producers || []).slice().sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
+                  }
+                  return (this.producers || [])
+                    .filter(p => {
+                      const d = (typeof p.distance === 'number')
+                        ? p.distance
+                        : (p.lat && p.lng ? this.calcDistanceKm(this.mapCenter.lat, this.mapCenter.lng, p.lat, p.lng) : Infinity);
+                      return d <= this.rangeKm + 1e-9;
+                    })
+                    .sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
                 }
               },
+
               mounted() {
                 this.loadAll();
                 window.addEventListener("resize", this.measure);
@@ -761,7 +973,12 @@
               unmounted() {
                 this.stopAuto();
                 window.removeEventListener("resize", this.measure);
-              }
+              },
+
+              watch: {
+                rangeKm() { this.drawRangeCircles(); this.updateMarkerVisibility(); },
+                onlyInRange() { this.updateMarkerVisibility(); }
+              },
             });
             app.mount("#app");
           </script>

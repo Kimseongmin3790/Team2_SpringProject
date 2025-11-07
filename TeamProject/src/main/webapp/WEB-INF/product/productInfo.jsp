@@ -1044,6 +1044,36 @@
                     font-size: 13px;
                     font-weight: 500;
                 }
+
+                /* ▼ 옵션/공유 드롭다운이 sticky 탭 위로 뜨도록 */
+                .dd {
+                    position: relative;
+                }
+
+                /* 이미 있으니 안전하게 명시 */
+                .share-wrap {
+                    position: relative;
+                }
+
+                /* 공유 팝업 부모도 기준점 명시 */
+
+                .dd-list,
+                .share-pop {
+                    position: absolute;
+                    /* 기존과 동일 */
+                    z-index: 1001;
+                    /* .irq(50) 보다 확실히 높게 */
+                    max-height: min(60vh, 480px);
+                    /* 옵션 많아도 화면 높이 기준으로 스크롤 */
+                    overflow: auto;
+                    /* 내부 스크롤 */
+                }
+
+                /* 굳이 내릴 필요는 없지만, 혹시 모를 테마 충돌 대비해 살짝만 조정 */
+                .irq {
+                    z-index: 30;
+                    /* sticky 유지 + 드롭다운보다 낮게 */
+                }
             </style>
         </head>
 
@@ -1353,7 +1383,7 @@
                                             <tr v-if="q.showAnswer && canViewQuestion(q)">
                                                 <td colspan="4" style="background:#fafafa; padding:16px 24px;">
                                                     <b style="color:#5b21b6;">문의 내용</b><br>
-                                                    <div style="margin-top:8px; white-space:pre-wrap;">{{ q.title }}
+                                                    <div style="margin-top:8px; white-space:pre-wrap;">{{ q.content }}
                                                     </div>
 
                                                     <div v-if="q.answer" style="margin-top:12px;">
@@ -1395,7 +1425,7 @@
                         shareUrl: window.location.href,
                         shareTitle: '',
                         showDetail: false,
-                        week: false, 
+                        week: false,
                         before: false,
                         liked: false,
 

@@ -14,6 +14,10 @@
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
             <style>
+                [v-cloak] {
+                    display: none !important;
+                }
+
                 body {
                     font-family: "Noto Sans KR", sans-serif;
                     background: #f9f9f9;
@@ -450,12 +454,14 @@
         <body>
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-                <div id="app" class="product-category-page">
+                <div id="app" class="product-category-page" data-session-status="<c:out value='${sessionStatus}'/>">
                     <!-- 좌측 트리 -->
                     <div class="sidebar">
                         <div class="sidebar-header">
                             <h3>카테고리</h3>
-                            <button class="btn-register" @click="goToProductRegister">상품등록</button>
+                            <c:if test="${sessionStatus eq 'SELLER' and sellerVerifiedStatus eq 'Y'}">
+                                <button class="btn-register" @click="goToProductRegister">상품등록</button>
+                            </c:if>
                         </div>
 
                         <ul>
@@ -622,7 +628,8 @@
                             { label: '20,000원 ~ 30,000원', min: 20000, max: 30000 },
                             { label: '30,000원 이상', min: 30000, max: Infinity }
                         ],
-                        selectedPriceRange: null
+                        selectedPriceRange: null,
+                        sessionStatus: ''
                     };
                 },
                 computed: {
@@ -662,6 +669,10 @@
                         if (this.selectedChild) r.push(this.getCategoryName(this.selectedChild));
                         if (this.selectedSub) r.push(this.getCategoryName(this.selectedSub));
                         return r;
+                    },
+
+                    isSeller() {
+                        return (this.sessionStatus || '').toUpperCase() === 'SELLER';
                     }
                 },
                 methods: {
@@ -830,6 +841,15 @@
                     }
                     window.addEventListener('hashchange', () => this.applyFromHash());
                     this.fnList();
+
+                    const root = document.getElementById('app');
+                    // 1차: 현재 페이지의 data-session-status
+                    let role = root?.dataset?.sessionStatus || '';
+                    // 2차 보조: 헤더의 마이페이지 버튼에 data-status가 박혀있다면 활용
+                    if (!role) {
+                        role = document.querySelector('#btnMyPage')?.dataset?.status || '';
+                    }
+                    this.sessionStatus = role;
                 }
             });
             app.mount("#app");
