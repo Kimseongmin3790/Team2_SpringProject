@@ -198,6 +198,15 @@ public class BoardController {
 		return new Gson().toJson(resultMap);
 	}
 	
+	@RequestMapping(value = "/productQnaAnswerInsert.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String productQnaAnswerInsert(@RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap = boardService.productQnaAnswerInsert(map);
+		
+		return new Gson().toJson(resultMap);
+	}
+	
 	
 }
 	

@@ -535,6 +535,31 @@
                     margin-left: .5rem;
                 }
 
+                .bulk-actions {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin: .75rem 0 1rem;
+                }
+
+                .bulk-actions .toggle-all {
+                    display: flex;
+                    align-items: center;
+                    gap: .5rem;
+                    font-size: .9rem;
+                    color: #374151;
+                }
+
+                .bulk-actions-right {
+                    display: flex;
+                    gap: .5rem;
+                }
+
+                .btn[disabled] {
+                    opacity: .5;
+                    cursor: not-allowed;
+                }
+
                 /* 반응형에서 줄바꿈 방지 (선택) */
                 @media (max-width: 480px) {
                     .cart-item {
@@ -550,7 +575,8 @@
         </head>
 
         <body>
-            <div id="app">
+            <div id="app" data-ctx="<c:out value='${pageContext.request.contextPath}'/>"
+                data-user-id="<c:out value='${sessionId}'/>" data-active-tab="<c:out value='${activeTab}'/>">
                 <!-- 공통 헤더 -->
                 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
@@ -584,17 +610,28 @@
                                     회원정보
                                 </button>
                             </div>
-                            <div>
-                                <input type="checkbox" @click="fnAllCheck">전체선택
-                                <span>
-                                    <button @click="fnAllRemove">선택삭제</button>
-                                </span>
-                            </div>
                             <!-- 장바구니 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'cart' }">
+                                <div class="bulk-actions" v-if="activeTab === 'cart' && cartItems.length">
+                                    <label class="toggle-all">
+                                        <input type="checkbox" v-model="allSelected" />
+                                        전체선택
+                                    </label>
+                                    <div class="bulk-actions-right">
+                                        <button class="btn btn-outline btn-sm" @click="selectedIds = []"
+                                            :disabled="!selectedIds.length">
+                                            선택해제
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" @click="fnAllRemove"
+                                            :disabled="!selectedIds.length">
+                                            선택삭제
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <div class="card" v-for="item in cartItems" :key="item.cartNo">
                                     <div class="cart-item">
-                                        <input type="checkbox" :value="item.cartNo" v-model="selectItem">
+                                        <input type="checkbox" :value="item.cartNo" v-model="selectedIds">
                                         <a href="javascript:;" @click="fnBack(item.productNo)" class="cart-link">
                                             <div class="cart-item-image">
                                                 <img :src="item.thumbPath" alt=""
@@ -602,7 +639,8 @@
                                             </div>
                                             <div class="cart-item-info">
                                                 <h3>{{ item.pName }}</h3>
-                                                <p class="cart-item-price">{{ Number(item.price||0).toLocaleString() }}원
+                                                <p class="cart-item-price">
+                                                    {{ Number(item.unitPrice || 0).toLocaleString() }}원
                                                 </p>
                                             </div>
                                         </a>
@@ -635,32 +673,38 @@
                                 </div>
                             </div>
 
-                            <!-- 주문 탭 --> 
-                            <div class="tab-content" :class="{ active: activeTab === 'orders' }"> 
-                                <div class="card" v-for="order in orders" :key="order.orderNo"> 
-                                    <div class="order-header"> 
-                                        <div> 
-                                            <p class="order-date">{{ order.orderDate }}</p> 
-                                            <p class="order-number">주문번호: {{ order.orderNo }}</p> 
-                                        </div> 
-                                        <div class="order-header-actions"> 
-                                            <span class="badge">{{ order.status }}</span> 
-                                            <button class="btn btn-outline-info btn-sm">배송조회</button> 
-                                        </div> 
-                                    </div> 
-                                    <div class="cart-item order-item-divider" v-for="item in order.items" :key="item.orderItemNo"> 
-                                        <div class="cart-item-image"></div> 
-                                        <div class="cart-item-info"> 
-                                            <h3>{{ item.productName }}</h3> 
-                                            <p>수량: {{ item.quantity }}개</p> 
-                                            <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p> 
-                                        </div> <button class="btn btn-outline-success btn-sm" @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button> 
-                                        <button class="btn btn-outline btn-sm text-danger">환불신청</button> 
-                                    </div> 
-                                </div> 
-                                <div v-if="orders.length === 0" class="card"> 
-                                    <p class="text-center text-muted">주문 내역이 없습니다.</p> 
-                                </div> 
+                            <!-- 주문 탭 -->
+                            <div class="tab-content" :class="{ active: activeTab === 'orders' }">
+                                <div class="card" v-for="order in orders" :key="order.orderNo">
+                                    <div class="order-header">
+                                        <div>
+                                            <p class="order-date">{{ order.orderdate }}</p>
+                                            <p class="order-number">주문번호: {{ order.orderNo }}</p>
+                                        </div>
+                                        <div class="order-header-actions">
+                                            <span class="badge">{{ order.status }}</span>
+                                            <button class="btn btn-outline-info btn-sm">배송조회</button>
+                                        </div>
+                                    </div>
+                                    <div class="cart-item order-item-divider" v-for="item in order.items"
+                                        :key="item.orderItemNo">
+                                        <div class="cart-item-image"></div>
+                                        <div class="cart-item-info">
+                                            <h3>{{ item.productName }}</h3>
+                                            <p>수량: {{ item.quantity }}개</p>
+                                            <p class="cart-item-price">
+                                                {{ Number(item.unitPrice || 0).toLocaleString() }}원
+                                            </p>
+                                        </div>
+                                        <button class="btn btn-outline-success btn-sm"
+                                            @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button>
+                                        <button class="btn btn-outline btn-sm text-danger">환불신청</button>
+                                    </div>
+                                </div>
+
+                                <div v-if="orders.length === 0" class="card">
+                                    <p class="text-center text-muted">주문 내역이 없습니다.</p>
+                                </div>
                             </div>
 
 
@@ -763,6 +807,7 @@
                     <!-- 공통 푸터 -->
                     <%@ include file="/WEB-INF/views/common/footer.jsp" %>
             </div>
+
         </body>
 
         </html>
@@ -772,13 +817,18 @@
                 window.vueObj.fnResult(roadFullAddr, addrDetail, zipNo);
             }
 
-            const contextPath = "<%= request.getContextPath() %>";
+            const root = document.getElementById('app');
+            const zap = s => (s || '').replace(/[\u200B-\u200D\uFEFF]/g, '');
+
+            const CTX = zap(root?.dataset?.ctx);
+            const USER = zap(root?.dataset?.userId);
+            const TAB = zap(root?.dataset?.activeTab) || 'cart';
 
             const app = Vue.createApp({
                 data() {
                     return {
-                        userId: "${sessionId}",
-                        activeTab: '${activeTab}',
+                        userId: root?.dataset?.userId || '',
+                        activeTab: root?.dataset?.activeTab || 'cart',
                         userName: "",
                         userEmail: "",
                         cartItems: [],          
@@ -787,32 +837,33 @@
                         profile: {},
                         loginType: '',
                         errors: {},
-                        selectItem: [],
-                        selectFlg: false
+                        selectedIds: [],   // ✅ 체크된 cartNo들이 들어가는 배열
                     };
                 },
                 computed: {
-                    selectedItems() {
-                        // 체크된 productNo만 필터링
-                        return (this.cartItems || []).filter(it =>
-                            this.selectItem.includes(it.cartNo)
-                        );
+                    pickedItems() {
+                        return this.selectedIds.length
+                            ? this.cartItems.filter(i => this.selectedIds.includes(i.cartNo))
+                            : this.cartItems;
                     },
-
                     totalPrice() {
-                        return this.selectedItems.reduce((sum, it) => {
-                            const price = Number(it.price || 0);
-                            const qty = Number(it.quantity || 0);
-                            return sum + price * qty;
-                        }, 0);
+                        return this.pickedItems
+                        .reduce((s, i) => s + Number(i.unitPrice || 0) * Number(i.quantity || 1), 0);
                     },
-
-                    shippingFeeC() {
-                        return this.selectedItems.reduce((sum, it) =>
-                            sum + Number(it.shippingFee || 0), 0);
+                    shippingFeeC() { // 배송비 정책: 현재는 라인별 합(묶음배송이면 여기 로직만 바꿔)
+                        return this.pickedItems
+                            .reduce((s, i) => s + Number(i.shippingFee || 0), 0);
                     },
                     finalPriceC() {
                         return this.totalPrice + this.shippingFeeC;
+                    },
+                    allSelected: {
+                        get() {
+                            return this.cartItems.length > 0 && this.selectedIds.length === this.cartItems.length;
+                        },
+                        set(v) {
+                            this.selectedIds = v ? this.cartItems.map(i => i.cartNo) : [];
+                        }
                     }
                 },
 
@@ -845,13 +896,13 @@
                     fnUserInfo() {
                         let self = this;
                         $.ajax({
-                            url: "${pageContext.request.contextPath}/userInfo.dox",
+                            url: CTX + "/userInfo.dox",
                             dataType: "json",
                             type: "GET",
                             success: function (data) {
                                 if (data.status === 'error') {
                                     alert(data.message);
-                                    location.href = '${pageContext.request.contextPath}/login.do';
+                                    location.href = CTX + '/login.do';
                                     return;
                                 }
 
@@ -870,26 +921,25 @@
                         });
                     },
 
-                    fnPurchase: function () {
-                        if (this.selectedItems.length === 0) {
+                    fnPurchase() {
+                        const cartNos = this.selectedIds.length
+                            ? this.selectedIds
+                            : this.cartItems.map(i => i.cartNo);
+
+                        if (cartNos.length === 0) {
                             alert('구매할 상품을 선택하세요.');
                             return;
                         }
-                        // A안: 단건 결제(선택된 첫 항목 기준)
-                        const first = this.selectedItems[0];
-                        const productNo = first.productNo;
-                        const qty = first.quantity;
 
-                        // 결제페이지로 이동 (product/payment.do)
-                        pageChange('/product/payment.do', {
-                            productNo,
-                            qty,
-                            userId: this.userId
+                        // 결제 페이지로 이동 (장바구니 다건 결제)
+                        pageChange(CTX + '/product/payment.do', {
+                            userId: this.userId,
+                            cartNos: cartNos.join(',')   // payment.jsp에서 분해해서 /payment/list.dox 호출
                         });
                     },
 
                     fnBack: function (productNo) {
-                        pageChange('/productInfo.do', { productNo });
+                        pageChange(CTX + '/productInfo.do', { productNo });
                     },
 
                     // 프로필 저장 로직
@@ -953,7 +1003,7 @@
                         });
                     },
                     fnAddr() {
-                        window.open("/addr.do", "addr", "width=500, height=500");
+                        window.open(CTX + "/addr.do", "addr", "width=500, height=500");
                     },
                     fnResult(roadFullAddr, addrDetail, zipNo) {
                         let self = this;
@@ -1027,7 +1077,7 @@
                             userId: self.userId
                         };
                         $.ajax({
-                            url: "/cart/list.dox",
+                            url: CTX + "/cart/list.dox",
                             type: "POST",
                             dataType: "json",
                             data: param,
@@ -1050,7 +1100,7 @@
                         }
                         let self = this;
                         $.ajax({
-                            url: "/cart/qty.dox",
+                            url: CTX + "/cart/qty.dox",
                             type: "POST",
                             dataType: "json",
                             data: { cartNo: item.cartNo, userId: self.userId, quantity: next },
@@ -1076,25 +1126,26 @@
                             userId: self.userId
                         };
                         $.ajax({
-                            url: "/cart/remove.dox",
+                            url: CTX + "/cart/remove.dox",
                             type: "POST",
                             dataType: "json",
-                            data: param,
-                            success: function (data) {
+                            data: { cartNo: item.cartNo, userId: this.userId },
+                            success: (data) => {
                                 if (data.result == 'success') {
-                                    self.cartItems = self.cartItems.filter(x => x.cartNo !== item.cartNo);
+                                    this.cartItems = this.cartItems.filter(x => x.cartNo !== item.cartNo);
+                                    this.selectedIds = this.selectedIds.filter(id => id !== item.cartNo); // ✅ 선택에서도 제거
                                 } else {
                                     alert('삭제 실패');
                                 }
                             },
-                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                            error: (xhr) => alert('서버오류: ' + xhr.status)
                         });
                     },
 
                     fnLoadOrders() {
                         let self = this;
                         $.ajax({
-                            url: "<%= request.getContextPath() %>/myPage/orders.dox",
+                            url: CTX + '/myPage/orders.dox',
                             dataType: "json",
                             type: "GET",
                             success: function (data) {
@@ -1118,7 +1169,7 @@
                     fnWriteReview(productNo, orderItemNo) {
                         console.log("productNo:", productNo, "orderItemNo:", orderItemNo);
 
-                        const url = contextPath + "/reviewWrite.do?productNo=" + encodeURIComponent(productNo)
+                        const url = CTX + "/reviewWrite.do?productNo=" + encodeURIComponent(productNo)
                             + "&orderItemNo=" + encodeURIComponent(orderItemNo);
 
                         console.log("생성된 URL:", url);
@@ -1127,7 +1178,7 @@
                     fnLoadReviews() {
                         let self = this;
                         $.ajax({
-                            url: "${pageContext.request.contextPath}/review/list.dox",
+                            url: CTX + '/review/list.dox',
                             type: "GET",
                             dataType: "json",
                             success: function (response) {
@@ -1144,7 +1195,7 @@
                         });
                     },
                     fnUpdateReview(reviewNo) {
-                        window.location.href = '${pageContext.request.contextPath}/reviewUpdate.do?reviewNo=' + reviewNo;
+                        window.location.href = CTX + '/reviewUpdate.do?reviewNo=' + reviewNo;
                     },
                     fnDeleteReview(reviewNo) {
                         if (confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
@@ -1184,20 +1235,6 @@
                         })
                     },
 
-                    fnAllCheck: function () {
-                        let self = this;
-                        self.selectFlg = !self.selectFlg;
-
-                        if (self.selectFlg) {
-                            self.selectItem = [];
-                            for (let i = 0; i < self.cartItems.length; i++) {
-                                self.selectItem.push(self.cartItems[i].cartNo);
-                            }
-                        } else {
-                            self.selectItem = [];
-                        }
-                    },
-
                     fnAllRemove: function () {
                         let self = this;
                         console.log(self.selectItem);
@@ -1205,15 +1242,29 @@
                         var param = { selectItem: fList };
                         $.ajax({
                             url: "/cart/Allremove.dox",
-                            dataType: "json",
                             type: "POST",
-                            data: param,
-                            success: function (data) {
-                                console.log(data);
-                                alert("삭제되었습니다.");
-                                self.fnLoadCart();
+                            dataType: "json",
+                            data: { selectItem: JSON.stringify(this.selectedIds) },
+                            success: (data) => {
+                                if (data.result === 'success') {
+                                    alert('삭제되었습니다.');
+                                    this.fnLoadCart();
+                                    this.selectedIds = [];
+                                } else {
+                                    alert('삭제 실패');
+                                }
                             }
                         });
+                    },
+
+                    unitPrice(i) {
+                        const hasUnit = i.unitPrice !== null && i.unitPrice !== undefined && !Number.isNaN(Number(i.unitPrice));
+                        if (hasUnit) return Number(i.unitPrice);
+
+                        const base = Number(i.basePrice || 0);
+                        const add = Number(i.addPrice || 0);
+                        const combo = base + add;
+                        return combo > 0 ? combo : Number(i.price || 0);
                     }
 
                 },
