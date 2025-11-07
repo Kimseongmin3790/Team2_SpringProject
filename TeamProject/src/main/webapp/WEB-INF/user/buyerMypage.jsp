@@ -673,34 +673,6 @@
                                 </div>
                             </div>
 
-<<<<<<< HEAD
-                            <!-- 주문 탭 --> 
-                            <div class="tab-content" :class="{ active: activeTab === 'orders' }"> 
-                                <div class="card" v-for="order in orders" :key="order.orderNo"> 
-                                    <div class="order-header"> 
-                                        <div> 
-                                            <p class="order-date">{{ order.orderDate }}</p> 
-                                            <p class="order-number">주문번호: {{ order.orderNo }}</p> 
-                                        </div> 
-                                        <div class="order-header-actions"> 
-                                            <span class="badge">{{ order.status }}</span> 
-                                            <button class="btn btn-outline-info btn-sm">배송조회</button> 
-                                        </div> 
-                                    </div> 
-                                    <div class="cart-item order-item-divider" v-for="item in order.items" :key="item.orderItemNo"> 
-                                        <div class="cart-item-image"></div> 
-                                        <div class="cart-item-info"> 
-                                            <h3>{{ item.productName }}</h3> 
-                                            <p>수량: {{ item.quantity }}개</p> 
-                                            <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p> 
-                                        </div> <button class="btn btn-outline-success btn-sm" @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button> 
-                                        <button class="btn btn-outline btn-sm text-danger">환불신청</button> 
-                                    </div> 
-                                </div> 
-                                <div v-if="orders.length === 0" class="card"> 
-                                    <p class="text-center text-muted">주문 내역이 없습니다.</p> 
-                                </div> 
-=======
                             <!-- 주문 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'orders' }">
                                 <div class="card" v-for="order in orders" :key="order.orderNo">
@@ -733,7 +705,6 @@
                                 <div v-if="orders.length === 0" class="card">
                                     <p class="text-center text-muted">주문 내역이 없습니다.</p>
                                 </div>
->>>>>>> branch 'develop' of https://github.com/Kimseongmin3790/Team2_SpringProject.git
                             </div>
 
 
