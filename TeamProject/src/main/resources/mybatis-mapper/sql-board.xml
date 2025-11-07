@@ -248,6 +248,9 @@
 		VALUES(PRODUCT_QNA_SEQ.NEXTVAL, #{productNo}, #{userId}, #{title}, #{content}, #{isSecret}, #{password}, '답변대기', 0, SYSDATE, SYSDATE)
 	</insert>
 	
-	
+	<insert id="productQnaAnswerInsert" parameterType="hashmap">
+		INSERT INTO PRODUCT_QNA_ANSWER	
+		VALUES(PRODUCT_QNA_ANSWER_SEQ.NEXTVAL, #{qnaNo}, #{sellerId}, #{content}, SYSDATE, SYSDATE)
+	</insert>
 
 </mapper>
