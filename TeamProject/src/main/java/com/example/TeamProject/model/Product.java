@@ -33,5 +33,6 @@ public class Product {
 	
 	private String stockQty;
 	private int addPrice;	
-	
+	private String userName;
+	private double rating;
 }
