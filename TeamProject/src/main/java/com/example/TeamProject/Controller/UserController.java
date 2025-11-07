@@ -336,7 +336,7 @@ public class UserController {
 	@ResponseBody
 	public String login(HttpSession session, Model model, @RequestParam HashMap<String, Object> map) throws Exception {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap = userService.login(map);
+		resultMap = userService.login(map, session);
 		if ("success".equals(String.valueOf(resultMap.get("result")))) {
 			String uId = (String) session.getAttribute("sessionId"); // Service가 넣은 userId
 			String uName = (String) session.getAttribute("sessionName"); // Service가 넣은 userName
