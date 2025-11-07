@@ -495,9 +495,91 @@
             width: 2rem;
             height: 2rem;
         }
+        .bulk-action-container {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center; 
+            gap: 0.5rem; 
+        }
+
+        .bulk-action-select {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid #d1d5db;
+            font-size: 0.875rem; 
+        }
+
+        .bulk-action-button {
+        }
+
+        th input[type="checkbox"],
+        td input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+        .modal-loading {
+            padding: 5rem;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .product-card + .product-card {
+            margin-top: 1rem;
+        }
+
+        .product-card .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        .product-info-option {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        .tracking-number-value {
+            font-family: monospace;
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem 0;
+        }
+        .pagination-button {
+            border: 1px solid #d1d5db;
+            background-color: #fff;
+            color: #374151;
+            padding: 0.5rem 0.75rem;
+            margin: 0 0.25rem;
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+            font-size: 0.875rem;
+        }
+        .pagination-button:hover:not(:disabled) {
+            background-color: #f9fafb;
+        }
+        .pagination-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .pagination-button.active {
+            background-color: #4caf50;
+            color: white;
+            border-color: #4caf50;
+            font-weight: bold;
+        }
     </style>
 </head>
-
 <body>
     <!-- 공통 헤더 -->
     <%@ include file="/WEB-INF/views/common/header.jsp" %>
@@ -554,12 +636,23 @@
                     </div>
                 </div>
 
+                <div class="bulk-action-container" v-if="selectedOrders.length > 0">
+                    <strong>{{ selectedOrders.length }}</strong>개 항목 선택됨 &nbsp;
+                    <select v-model="bulkActionStatus" class="bulk-action-select">
+                        <option value="">일괄 변경할 상태 선택</option>
+                        <option value="배송 준비중">배송 준비중</option>
+                        <option value="취소/반품">취소/반품</option>
+                    </select>
+                    <button class="btn btn-primary bulk-action-button" @click="applyBulkAction">적용</button>
+                </div>
+
                 <!-- Orders Table -->
                 <div class="table-section">
                     <div class="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
+                                    <th style="width: 3rem;"><input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected"></th>
                                     <th>주문번호</th>
                                     <th>주문일시</th>
                                     <th>상품명</th>
@@ -570,7 +663,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="order in filteredOrders" :key="order.orderNo">
+                                <tr v-for="order in orders" :key="order.orderNo">
+                                    <td><input type="checkbox" :value="order.orderNo" v-model="selectedOrders"></td>
                                     <td>
                                         <a href="#" class="order-no-link" @click.prevent="openDetailModal(order)">
                                             {{ order.orderNo }}
@@ -594,19 +688,19 @@
                                     </td>
                                     <td>
                                         <div class="action-controls">
-                                            <select 
-                                                class="status-select" 
+                                            <select
+                                                class="status-select"
                                                 :value="order.status"
                                                 @change="handleStatusChange(order.orderNo, $event.target.value)"
+                                                :disabled="getValidStatusOptions(order.status).length === 0"
                                             >
-                                                <option value="신규 주문">신규 주문</option>
-                                                <option value="배송 준비중">배송 준비중</option>
-                                                <option value="배송중">배송중</option>
-                                                <option value="배송 완료">배송 완료</option>
-                                                <option value="취소/반품">취소/반품</option>
+                                                <option :value="order.status" selected>{{ order.status }}</option>
+                                                <option v-for="option in getValidStatusOptions(order.status)" :key="option" :value="option">
+                                                    {{ option }}
+                                                </option>
                                             </select>
-                                            <button 
-                                                v-if="order.status === '배송 준비중'" 
+                                            <button
+                                                v-if="order.status === '배송 준비중'"
                                                 class="btn"
                                                 @click="openDeliveryModal(order)"
                                             >
@@ -620,10 +714,32 @@
                     </div>
 
                     <!-- Empty State -->
-                    <div v-if="filteredOrders.length === 0" class="empty-state">
+                    <div v-if="orders.length === 0" class="empty-state">
                         <div class="empty-icon">📦</div>
                         <p>주문 내역이 없습니다.</p>
                     </div>
+                </div>
+                <div class="pagination-container" v-if="totalPages > 0">
+                    <button class="pagination-button" @click="goToPage(1)" :disabled="currentPage === 1">
+                        &laquo;
+                    </button>
+                    <button class="pagination-button" @click="prevPage" :disabled="currentPage === 1">
+                        &lsaquo;
+                    </button>
+                    <span v-for="page in pageNumbers" :key="page">
+                        <button
+                            class="pagination-button"
+                            :class="{ 'active': page === currentPage }"
+                            @click="goToPage(page)">
+                            {{ page }}
+                        </button>
+                    </span>
+                    <button class="pagination-button" @click="nextPage" :disabled="currentPage === totalPages">
+                        &rsaquo;
+                    </button>
+                    <button class="pagination-button" @click="goToPage(totalPages)" :disabled="currentPage === totalPages">
+                        &raquo;
+                    </button>
                 </div>
             </div>
         </main>
@@ -663,113 +779,123 @@
                 </div>
             </div>
         </div>
-
         <!-- Order Detail Modal -->
         <div v-if="detailModalOpen" class="modal-overlay" @click.self="closeDetailModal">
             <div class="modal-content large">
-                <div class="modal-header">
-                    <h2 class="modal-title">주문 상세 정보</h2>
-                    <p class="modal-description">주문번호: {{ selectedOrder.orderNo }}</p>
+                <!-- 로딩 표시 -->
+                <div v-if="!selectedOrder" class="modal-loading">
+                    <p>상세 정보를 불러오는 중입니다...</p>
                 </div>
-                <div class="modal-body">
-                    <!-- Order Info -->
-                    <div class="detail-section">
-                        <h3>📦 주문 정보</h3>
-                        <div class="detail-box">
-                            <div class="detail-row">
-                                <span class="detail-label">주문번호</span>
-                                <span class="detail-value">{{ selectedOrder.orderNo }}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">주문일시</span>
-                                <span class="detail-value">{{ selectedOrder.orderDate }}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">주문상태</span>
-                                <span :class="getStatusBadgeClass(selectedOrder.status)">
-                                    {{ selectedOrder.status }}
-                                </span>
+                <!-- 상세 정보 표시 (데이터가 로드된 후) -->
+                <template v-else>
+                    <div class="modal-header">
+                        <h2 class="modal-title">주문 상세 정보</h2>
+                        <p class="modal-description">주문번호: {{ selectedOrder.orderNo }}</p>
+                    </div>
+                    <div class="modal-body">
+                        <!-- 주문 정보 -->
+                        <div class="detail-section">
+                            <h3>📦 주문 정보</h3>
+                            <div class="detail-box">
+                                <div class="detail-row">
+                                    <span class="detail-label">주문번호</span>
+                                    <span class="detail-value">{{ selectedOrder.orderNo }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">주문일시</span>
+                                    <span class="detail-value">{{ selectedOrder.orderDate }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">주문상태</span>
+                                    <span :class="getStatusBadgeClass(selectedOrder.status)">
+                                        {{ selectedOrder.status }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Product Info -->
-                    <div class="detail-section">
-                        <h3>주문 상품</h3>
-                        <div class="product-card">
-                            <div class="product-image">📦</div>
-                            <div class="product-info">
-                                <div class="product-info-name">{{ selectedOrder.productName }}</div>
-                                <div class="product-info-quantity">수량: 1개</div>
-                                <div class="product-info-price">{{ selectedOrder.totalAmount.toLocaleString() }}원</div>
+                        <!-- 주문 상품 (v-for로 목록 표시) -->
+                        <div class="detail-section">
+                            <h3>주문 상품</h3>
+                            <div v-for="item in selectedOrder.items" :key="item.orderItemNo" class="product-card">
+                                <div class="product-image">
+                                    <img :src="'${pageContext.request.contextPath}' + item.imageUrl" alt="상품 이미지" v-if="item.imageUrl">
+                                    <span v-else>📦</span>
+                                </div>
+                                <div class="product-info">
+                                    <div class="product-info-name">{{ item.productName }}</div>
+                                    <div v-if="item.optionUnit" class="product-info-option">옵션: {{ item.optionUnit }} </div>
+                                    <div class="product-info-quantity">수량: {{ item.quantity }}개</div>
+                                    <div class="product-info-price">{{ item.price.toLocaleString() }}원</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Delivery Address -->
-                    <div class="detail-section">
-                        <h3>배송지 정보</h3>
-                        <div class="detail-box">
-                            <div class="detail-row">
-                                <span class="detail-label">수령인</span>
-                                <span class="detail-value">{{ selectedOrder.buyerName }}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">연락처</span>
-                                <span class="detail-value">010-1234-5678</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">주소</span>
-                                <span class="detail-value">서울시 강남구 테헤란로 123</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">배송메모</span>
-                                <span class="detail-value">문 앞에 놓아주세요</span>
+                        <!-- 배송지 정보 (동적 데이터로 변경) -->
+                        <div class="detail-section">
+                            <h3>배송지 정보</h3>
+                            <div class="detail-box">
+                                <div class="detail-row">
+                                    <span class="detail-label">수령인</span>
+                                    <span class="detail-value">{{ selectedOrder.receivName }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">연락처</span>
+                                    <span class="detail-value">{{ selectedOrder.receivPhone }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">주소</span>
+                                    <span class="detail-value">{{ selectedOrder.deliverAddr }}</span>
+                                </div>
+                                <div class="detail-row" v-if="selectedOrder.memo">
+                                    <span class="detail-label">배송메모</span>
+                                    <span class="detail-value">{{ selectedOrder.memo }}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Payment Info -->
-                    <div class="detail-section">
-                        <h3>결제 정보</h3>
-                        <div class="detail-box">
-                            <div class="detail-row">
-                                <span class="detail-label">상품금액</span>
-                                <span class="detail-value">{{ (selectedOrder.totalAmount - 3000).toLocaleString() }}원</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">배송비</span>
-                                <span class="detail-value">3,000원</span>
-                            </div>
-                            <div class="detail-row total">
-                                <span class="detail-label">최종 결제금액</span>
-                                <span class="detail-value">{{ selectedOrder.totalAmount.toLocaleString() }}원</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">결제수단</span>
-                                <span class="detail-value">신용카드</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Delivery Info -->
-                    <div v-if="selectedOrder.deliveryCompany" class="detail-section">
-                        <h3>🚚 배송 정보</h3>
-                        <div class="detail-box">
-                            <div class="detail-row">
-                                <span class="detail-label">택배사</span>
-                                <span class="detail-value">{{ selectedOrder.deliveryCompany }}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">송장번호</span>
-                                <span class="detail-value" style="font-family: monospace;">{{ selectedOrder.trackingNumber }}</span>
+                        <!-- 결제 정보 (동적 데이터로 변경) -->
+                        <div class="detail-section">
+                            <h3>결제 정보</h3>
+                            <div class="detail-box">
+                                <div class="detail-row">
+                                    <span class="detail-label">총 상품금액</span>
+                                    <span class="detail-value">{{ (selectedOrder.totalPrice).toLocaleString()}}원</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">배송비</span>
+                                    <span class="detail-value">3,000원</span>
+                                </div>
+                                <div class="detail-row total">
+                                    <span class="detail-label">최종 결제금액</span>
+                                    <span class="detail-value">{{ (selectedOrder.totalPrice + 3000).toLocaleString() }}원</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">결제수단</span>
+                                    <span class="detail-value">{{ selectedOrder.paymentMethod || '정보 없음' }}</span>
+                                </div>
                             </div>
                         </div>
+                        <!-- 배송 정보 섹션 -->
+                        <div v-if="selectedOrder.courier" class="detail-section">
+                            <h3>🚚 배송 정보</h3>
+                            <div class="detail-box">
+                                <div class="detail-row">
+                                    <span class="detail-label">택배사</span>
+                                    <span class="detail-value">{{ selectedOrder.courier }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">송장번호</span>
+                                    <span class="detail-value tracking-number-value">{{ selectedOrder.trackingNo}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>    
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" @click="closeDetailModal">닫기</button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" @click="closeDetailModal">닫기</button>
-                </div>
+                </template>
             </div>
         </div>
     </div>
@@ -779,51 +905,146 @@
 </body>
 
 </html>
-
 <script>
     const app = Vue.createApp({
         data() {
             return {
                 sessionId: "${sessionId}",
-                selectedStatus: "전체",
-                searchQuery: "",
-                startDate: "",
-                endDate: "",
+                orders: [],
                 deliveryModalOpen: false,
                 detailModalOpen: false,
                 selectedOrder: null,
                 deliveryCompany: "",
                 trackingNumber: "",
-                orders: []
+
+                // 필터 데이터
+                selectedStatus: "전체",
+                searchQuery: "",
+                startDate: "",
+                endDate: "",
+
+                // 페이징 데이터
+                currentPage: 1,
+                itemsPerPage: 10, 
+                totalCount: 0,
+
+                // 검색 지연을 위한 변수
+                searchTimeout: null,
+
+                // 일괄 처리용 데이터
+                selectedOrders: [],
+                bulkActionStatus: ""
             };
         },
         computed: {
-            filteredOrders() {
+            totalPages() {
                 let self = this;
-                const filteredByDate = self.orders.filter(order => {
-                const orderDate = new Date(order.orderDate);
-                const start = self.startDate ? new Date(self.startDate) : null;
-                const end = self.endDate ? new Date(self.endDate) : null;
+                return Math.ceil(self.totalCount / self.itemsPerPage);
+            },
+            pageNumbers() {
+                let self = this;
+                const maxPagesToShow = 5;
+                const half = Math.floor(maxPagesToShow / 2);
+                let start = Math.max(1, this.currentPage - half);
+                let end = Math.min(self.totalPages, self.currentPage + half);
 
-                if (start && orderDate < start) return false;
-                if (end && orderDate > end) return false;
-                return true;
-                });
+                if (self.currentPage - half < 1) {
+                    end = Math.min(self.totalPages, maxPagesToShow);
+                }
+                if (self.currentPage + half > self.totalPages) {
+                    start = Math.max(1, self.totalPages - maxPagesToShow + 1);
+                }
 
-                return filteredByDate.filter(order => {
-                    const matchesStatus = self.selectedStatus === "전체" || order.status === self.selectedStatus;
-                    const matchesSearch =
-                        String(order.orderNo).toLowerCase().includes(self.searchQuery.toLowerCase()) ||
-                        order.buyerName.toLowerCase().includes(self.searchQuery.toLowerCase()) ||
-                        order.productName.toLowerCase().includes(self.searchQuery.toLowerCase());
-                    return matchesStatus && matchesSearch;
-                });
+                const pages = [];
+                for (let i = start; i <= end; i++) {
+                    pages.push(i);
+                }
+                return pages;
+            },
+            isAllSelected() {
+                let self = this;
+                return self.orders.length > 0 && self.selectedOrders.length === self.orders.length;
+            },        
+        },
+        watch: {
+            selectedStatus() { this.applyFilter(); },
+            startDate() { this.applyFilter(); },
+            endDate() { this.applyFilter(); },
+            searchQuery() {
+                clearTimeout(this.searchTimeout);
+                this.searchTimeout = setTimeout(() => {
+                    this.applyFilter();
+                }, 500); 
             }
         },
         methods: {
+            applyFilter() {
+                let self = this;
+                self.currentPage = 1;
+                self.fnLoadOrders();
+            },
+            toggleSelectAll(event) {
+                let self = this;
+                if (event.target.checked) {
+                    self.selectedOrders = self.orders.map(order => order.orderNo);
+                } else {
+                    self.selectedOrders = [];
+                }
+            },
+            applyBulkAction() {
+                let self = this;
+                if (!self.bulkActionStatus) {
+                    alert("일괄 변경할 상태를 선택해주세요.");
+                    return;
+                }
+                if (self.selectedOrders.length === 0) {
+                    alert("선택된 주문이 없습니다.");
+                    return;
+                }
+
+                if (!confirm(self.selectedOrders.length + "개의 주문 상태를 '" + self.bulkActionStatus + "'(으)로 변경하시겠습니까?")) {
+                    return;
+                }
+
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/order/bulkUpdateStatus.dox",
+                    type: "POST",
+                    dataType: "json",            
+                    data: {
+                        "orderNoList[]": self.selectedOrders,
+                        "status": self.bulkActionStatus
+                    },
+                    traditional: true,
+                    success: function(data) {
+                        if (data.result === "success") {
+                            alert(data.message || "주문 상태가 성공적으로 변경되었습니다.");
+                            self.selectedOrders = [];
+                            self.fnLoadOrders(); 
+                        } else {
+                            alert("오류: " + data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert("서버와 통신 중 오류가 발생했습니다.");
+                    }
+                });
+            },
+             getValidStatusOptions(currentStatus) {
+                const statusMap = {
+                    "결제완료": ["배송 준비중", "취소/반품"],
+                    "신규 주문": ["배송 준비중", "취소/반품"],
+                    "배송 준비중": ["배송중", "취소/반품"],
+                    "배송중": ["배송 완료"],
+                    "배송 완료": ["배송중"],    
+                    "취소/반품": ["배송 준비중"]
+                };
+
+                return statusMap[currentStatus] || [];
+            },
             getStatusBadgeClass(status) {
                 const classes = {
                     "신규 주문": "badge badge-new",
+                    "결제완료": "badge badge-new", 
                     "배송 준비중": "badge badge-preparing",
                     "배송중": "badge badge-shipping",
                     "배송 완료": "badge badge-completed",
@@ -831,17 +1052,38 @@
                 };
                 return classes[status] || "badge";
             },
-            handleStatusChange(orderNo, newStatus) {
-                if (newStatus === "배송중") {
-                    const order = this.orders.find(o => o.orderNo === orderNo);
+             handleStatusChange(orderNo, newStatus) {
+                let self = this;
+                const order = self.orders.find(o => o.orderNo === orderNo);
+                const currentStatus = order ? order.status : '';
+
+                if ((currentStatus === '배송 준비중' || currentStatus === '결제완료' || currentStatus === '신규 주문') &&
+            newStatus === '배송중') {
                     if (order) {
-                        this.selectedOrder = order;
-                        this.deliveryModalOpen = true;
+                        self.selectedOrder = order;
+                        self.deliveryModalOpen = true;
                     }
                 } else {
-                    this.orders = this.orders.map(o => 
-                        o.orderNo === orderNo ? { ...o, status: newStatus } : o
-                    );
+                    $.ajax({
+                        url: "${pageContext.request.contextPath}/order/updateStatus.dox",
+                        dataType: "json",
+                        type: "POST",
+                        data: {
+                            orderNo: orderNo,
+                            status: newStatus
+                        },
+                        success: function (data) {
+                            if (data.result === "success") {
+                                self.fnLoadOrders(); 
+                                alert("주문 상태가 업데이트되었습니다.");
+                            } else {
+                                alert(data.message || '주문 상태 업데이트에 실패했습니다.');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert('서버와 통신 중 오류가 발생했습니다. ' + error);
+                        }
+                    });
                 }
             },
             openDeliveryModal(order) {
@@ -849,59 +1091,113 @@
                 this.deliveryModalOpen = true;
             },
             closeDeliveryModal() {
-                this.deliveryModalOpen = false;
-                this.deliveryCompany = "";
-                this.trackingNumber = "";
-                this.selectedOrder = null;
+                let self = this;
+                self.deliveryModalOpen = false;
+                self.deliveryCompany = "";
+                self.trackingNumber = "";
+                self.selectedOrder = null;
             },
             submitDelivery() {
-                if (this.selectedOrder && this.deliveryCompany && this.trackingNumber) {
-                    this.orders = this.orders.map(o =>
-                        o.orderNo === this.selectedOrder.orderNo
-                            ? { ...o, status: "배송중", deliveryCompany: this.deliveryCompany, trackingNumber: this.trackingNumber }
-                            : o
-                    );
-                    this.closeDeliveryModal();
-                    alert("배송 정보가 등록되었습니다.");
+                let self = this;
+                if (self.selectedOrder && self.deliveryCompany && self.trackingNumber) {
+                    $.ajax({
+                        url: "${pageContext.request.contextPath}/order/registerDelivery.dox",
+                        dataType: "json",
+                        type: "POST",
+                        data: {
+                            orderNo: self.selectedOrder.orderNo,
+                            deliveryCompany: self.deliveryCompany,
+                            trackingNumber: self.trackingNumber
+                        },
+                        success: function (data) {
+                            if (data.result === "success") {
+                                self.closeDeliveryModal();
+                                alert("배송 정보가 등록되고 주문 상태가 '배송중'으로 변경되었습니다.");
+                                self.fnLoadOrders(); 
+                            } else {
+                                alert(data.message || '배송 정보 등록에 실패했습니다.');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert('서버와 통신 중 오류가 발생했습니다. ' + error);
+                        }
+                    });
                 } else {
                     alert("택배사와 송장번호를 모두 입력해주세요.");
                 }
             },
-            openDetailModal(order) {
-                this.selectedOrder = order;
-                this.detailModalOpen = true;
+            openDetailModal(order) { 
+                let self = this;
+                self.selectedOrder = null; 
+                self.detailModalOpen = true; 
+
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/order/detail.dox",
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        orderNo: order.orderNo
+                    },
+                    success: function(data) {
+                        if (data.result === "success" && data.order) {
+                            self.selectedOrder = data.order;
+                        } else {
+                            alert("주문 상세 정보를 불러오는데 실패했습니다.");
+                            self.detailModalOpen = false; 
+                        }
+                    },
+                    error: function() {
+                        alert("서버와 통신 중 오류가 발생했습니다.");
+                        self.detailModalOpen = false;
+                    }
+                });
             },
             closeDetailModal() {
                 this.detailModalOpen = false;
                 this.selectedOrder = null;
             },
             fnLoadOrders() {
-                console.log("fnLoadOrders 함수 호출됨. API 요청 시작.");
                 let self = this;
-                    
-                let param = {};
                 $.ajax({
                     url: "${pageContext.request.contextPath}/order/sellerList.dox",
                     dataType: "json",
-                    type: "POST", 
-                    data: param, 
-                        success: function (data) {
-                            if (data.result === "success") {
-                                console.log("성공적으로 조회했으나, 주문 목록이 비어있습니다.");
-                                self.orders = data.list; 
-                            } else {
-                                alert(data.message || '주문 목록을 불러오는데 실패했습니다.');
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            alert('서버와 통신 중 오류가 발생했습니다. ' + error);
-                            console.error("AJAX Error: ", status, error, xhr);
+                    type: "POST",
+                    data: {
+                        currentPage: self.currentPage,
+                        itemsPerPage: self.itemsPerPage,
+                        status: self.selectedStatus,
+                        startDate: self.startDate,
+                        endDate: self.endDate,
+                        searchKeyword: self.searchQuery
+                    },
+                    success: function (data) {
+                        if (data.result === "success") {
+                            self.orders = data.list;
+                            self.totalCount = data.totalCount;
+                        } else {
+                            alert(data.message || '주문 목록을 불러오는데 실패했습니다.');
                         }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('서버와 통신 중 오류가 발생했습니다. ' + error);
+                    }
                 });
-            }
+            },
+            goToPage(page) {
+                let self = this;
+                if (page >= 1 && page <= self.totalPages) {
+                    self.currentPage = page;
+                    self.fnLoadOrders();
+                }
+            },
+            prevPage() {
+                this.goToPage(this.currentPage - 1);
+            },
+            nextPage() {
+                this.goToPage(this.currentPage + 1);
+            },
         },
         mounted() {
-            console.log("Vue app mounted! 스크립트 시작됨.");
             let self = this;
             self.fnLoadOrders();
         }

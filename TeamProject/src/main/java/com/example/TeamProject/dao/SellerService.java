@@ -1,6 +1,8 @@
 package com.example.TeamProject.dao;
 
 import java.util.HashMap;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -114,7 +116,7 @@ public class SellerService {
             System.out.println("SellerService: Account: " + sellerVO.getAccount());
             System.out.println("SellerService: BankName: " + sellerVO.getBankName());
 
-            sellerMapper.updateSellerAccountInfo(sellerVO); // 새로운 매퍼 메서드 호출
+            sellerMapper.updateSellerAccountInfo(sellerVO); 
 
             resultMap.put("result", "success");
             resultMap.put("message", "회원정보가 성공적으로 업데이트되었습니다.");
@@ -131,5 +133,38 @@ public class SellerService {
             resultMap.put("message", "회원정보 업데이트 중 치명적인 오류가 발생했습니다.");
         }
         return resultMap;
+    }
+    
+    public HashMap<String, Object> getDashboardData(String sellerId) {
+        HashMap<String, Object> dashboardData = new HashMap<>();
+        try {
+            // 1. 오늘 주문 건수
+            int todayOrders = sellerMapper.getTodayOrdersCount(sellerId);
+            dashboardData.put("todayOrders", todayOrders);
+
+            // 2. 오늘 매출
+            Long todaySales = sellerMapper.getTodaySalesAmount(sellerId);
+            dashboardData.put("todaySales", todaySales != null ? todaySales : 0L);
+
+            // 3. 등록 상품 수
+            int totalProducts = sellerMapper.getTotalProductsCount(sellerId);
+            dashboardData.put("totalProducts", totalProducts);
+
+            // 4. 평균 평점
+            Double avgRating = sellerMapper.getAverageRating(sellerId);
+            dashboardData.put("avgRating", avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
+
+            // 5. 최근 주문 목록
+            List<HashMap<String, Object>> recentOrders = sellerMapper.getRecentOrders(sellerId);
+            dashboardData.put("recentOrders", recentOrders);
+
+            dashboardData.put("result", "success");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            dashboardData.put("result", "fail");
+            dashboardData.put("message", "대시보드 데이터 조회 중 오류가 발생했습니다.");
+        }
+        return dashboardData;
     }
 }

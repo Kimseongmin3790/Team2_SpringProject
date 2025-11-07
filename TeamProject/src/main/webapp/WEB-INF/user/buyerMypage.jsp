@@ -11,7 +11,6 @@
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
             <script src="/resources/js/page-change.js"></script>
-            <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <style>
@@ -636,37 +635,34 @@
                                 </div>
                             </div>
 
-                            <!-- 주문 탭 -->
-                            <div class="tab-content" :class="{ active: activeTab === 'orders' }">
-                                <div class="card" v-for="order in orders" :key="order.orderNo">
-                                    <div class="order-header">
-                                        <div>
-                                            <p class="order-date">{{ order.orderdate }}</p>
-                                            <p class="order-number">주문번호: {{ order.orderNo }}</p>
-                                        </div>
-                                        <div class="order-header-actions">
-                                            <span class="badge">{{ order.status }}</span>
-                                            <button class="btn btn-outline-info btn-sm">배송조회</button>
-                                        </div>
-                                    </div>
-                                    <div class="cart-item order-item-divider" v-for="item in order.items"
-                                        :key="item.orderItemNo">
-                                        <div class="cart-item-image"></div>
-                                        <div class="cart-item-info">
-                                            <h3>{{ item.productName }}</h3>
-                                            <p>수량: {{ item.quantity }}개</p>
-                                            <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p>
-                                        </div>
-                                        <button class="btn btn-outline-success btn-sm"
-                                            @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button>
-                                        <button class="btn btn-outline btn-sm text-danger">환불신청</button>
-                                    </div>
-                                </div>
-
-                                <div v-if="orders.length === 0" class="card">
-                                    <p class="text-center text-muted">주문 내역이 없습니다.</p>
-                                </div>
+                            <!-- 주문 탭 --> 
+                            <div class="tab-content" :class="{ active: activeTab === 'orders' }"> 
+                                <div class="card" v-for="order in orders" :key="order.orderNo"> 
+                                    <div class="order-header"> 
+                                        <div> 
+                                            <p class="order-date">{{ order.orderDate }}</p> 
+                                            <p class="order-number">주문번호: {{ order.orderNo }}</p> 
+                                        </div> 
+                                        <div class="order-header-actions"> 
+                                            <span class="badge">{{ order.status }}</span> 
+                                            <button class="btn btn-outline-info btn-sm">배송조회</button> 
+                                        </div> 
+                                    </div> 
+                                    <div class="cart-item order-item-divider" v-for="item in order.items" :key="item.orderItemNo"> 
+                                        <div class="cart-item-image"></div> 
+                                        <div class="cart-item-info"> 
+                                            <h3>{{ item.productName }}</h3> 
+                                            <p>수량: {{ item.quantity }}개</p> 
+                                            <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p> 
+                                        </div> <button class="btn btn-outline-success btn-sm" @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button> 
+                                        <button class="btn btn-outline btn-sm text-danger">환불신청</button> 
+                                    </div> 
+                                </div> 
+                                <div v-if="orders.length === 0" class="card"> 
+                                    <p class="text-center text-muted">주문 내역이 없습니다.</p> 
+                                </div> 
                             </div>
+
 
                             <!-- 리뷰 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'reviews' }">
@@ -785,7 +781,7 @@
                         activeTab: '${activeTab}',
                         userName: "",
                         userEmail: "",
-                        cartItems: [],           // ← 서버 데이터로 채움
+                        cartItems: [],          
                         orders: [],
                         reviews: [],
                         profile: {},

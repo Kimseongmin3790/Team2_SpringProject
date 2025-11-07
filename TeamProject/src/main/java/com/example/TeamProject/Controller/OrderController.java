@@ -1,19 +1,21 @@
-package com.example.TeamProject.Controller; // 패키지명 확인
+package com.example.TeamProject.Controller;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.TeamProject.dao.OrderService;
+import com.example.TeamProject.model.Order;
+import com.google.gson.Gson;
 
 import jakarta.servlet.http.HttpSession;
-
 
 @Controller
 public class OrderController {
@@ -26,50 +28,77 @@ public class OrderController {
         return "user/orderManagement";
     }
 
-
     // 판매자 주문목록 조회
-    @PostMapping("/order/sellerList.dox")
+    @RequestMapping(value = "/order/sellerList.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
     @ResponseBody
+    public String sellerOrderList(
+            // 페이징 파라미터
+            @RequestParam(defaultValue = "1") int currentPage,
+            @RequestParam(defaultValue = "10") int itemsPerPage,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String searchKeyword,
+            HttpSession session) throws Exception {
 
-    public Map<String, Object> sellerOrderList(HttpSession session) {
-        System.out.println("### 1. /order/sellerList.dox API 호출됨 ###");
-        Map<String, Object> result = new HashMap<>();
+        String sellerId = (String) session.getAttribute("sessionId");
 
-        try {
-            String sellerId = (String) session.getAttribute("sessionId");
-            System.out.println("### 2. 세션에서 추출된 sellerId: '" + sellerId + "' ###");
+        // 서비스 호출 시 모든 파라미터 전달
+        HashMap<String, Object> resultMap = orderService.getOrderListBySeller(
+            sellerId, currentPage, itemsPerPage, status, startDate, endDate, searchKeyword
+        );
 
-            if (sellerId == null || sellerId.isEmpty()) {
-                System.out.println("### 오류: sellerId가 null이거나 비어있습니다. 로그인 필요. ###");
-                result.put("result", "fail");
-                result.put("message", "로그인이 필요합니다.");
-                return result;
-            }
-
-            HashMap<String, Object> paramMap = new HashMap<>();
-            paramMap.put("sellerId", sellerId);
-            System.out.println("### 3. Service에 전달할 paramMap: " + paramMap + " ###");
-
-            Map<String, Object> serviceResult = orderService.getOrderListBySeller(paramMap);
-            System.out.println("### 4. Service로부터 받은 결과: " + serviceResult + " ###");
-
-            if ("success".equals(serviceResult.get("result"))) {
-                System.out.println("### 5. 서비스 결과: 성공. ###");
-                result.put("result", "success");
-                result.put("list", serviceResult.get("list"));
-            } else {
-                System.out.println("### 5. 서비스 결과: 실패. 메시지: " + serviceResult.get("message") + "###");
-                result.put("result", "fail");
-                result.put("message", serviceResult.get("message"));
-            }
-            System.out.println("### 6. 최종 반환될 JSON 데이터: " + result + " ###");
-            return result;
-        } catch (Exception e) {
-            System.err.println("### 컨트롤러 sellerOrderList 메소드에서 예외 발생! ###");
-            e.printStackTrace();
-            result.put("result", "error");
-            result.put("message", "서버 내부 오류: " + e.getMessage());
-            return result;
-        }
+        return new Gson().toJson(resultMap);
     }
+    
+    // --- 주문 상태 업데이트 ---
+    @RequestMapping(value = "/order/updateStatus.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String updateOrderStatus(@RequestParam HashMap<String, Object> paramMap, HttpSession session) throws Exception {
+        String sellerId = (String) session.getAttribute("sessionId");
+        paramMap.put("sellerId", sellerId); 
+        HashMap<String, Object> resultMap = orderService.updateOrderStatus(paramMap);
+        return new Gson().toJson(resultMap);
+    }
+
+    // --- 배송 정보 등록 ---
+    @RequestMapping(value = "/order/registerDelivery.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String registerDelivery(@RequestParam HashMap<String, Object> paramMap, HttpSession session) throws Exception {
+        String sellerId = (String) session.getAttribute("sessionId");
+        paramMap.put("sellerId", sellerId); 
+        HashMap<String, Object> resultMap = orderService.registerDelivery(paramMap);
+        return new Gson().toJson(resultMap);
+    }
+    
+    // 주문 일괄 변경
+    @RequestMapping(value = "/order/bulkUpdateStatus.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String bulkUpdateStatus(@RequestParam("orderNoList[]") List<String> orderNoList, 
+    @RequestParam("status") String status, HttpSession session) throws Exception {
+        String sellerId = (String) session.getAttribute("sessionId");
+        HashMap<String, Object> resultMap = orderService.bulkUpdateOrderStatus(sellerId, orderNoList, status);
+        return new Gson().toJson(resultMap);
+    }
+    
+    // --- 주문 상세 정보 조회 ---
+    @RequestMapping(value = "/order/detail.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
+    @ResponseBody
+    public String orderDetail(@RequestParam("orderNo") int orderNo, HttpSession session) throws Exception {
+        String sellerId = (String) session.getAttribute("sessionId");
+
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("orderNo", orderNo);
+        paramMap.put("sellerId", sellerId);
+
+        
+        Order orderDetail = orderService.getOrderDetail(paramMap);
+
+        HashMap<String, Object> resultMap = new HashMap<>();
+        resultMap.put("result", orderDetail != null ? "success" : "fail");
+        resultMap.put("order", orderDetail);
+
+        return new Gson().toJson(resultMap);
+    }    
+    
 }

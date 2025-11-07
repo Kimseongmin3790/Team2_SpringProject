@@ -670,7 +670,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="order in recentOrders" :key="order.id">
+                            <tr v-for="order in recentOrders" :key="order.orderNo">
                                 <td>{{ order.orderNo }}</td>
                                 <td>{{ order.productName }}</td>
                                 <td>{{ order.quantity }}개</td>
@@ -862,16 +862,12 @@
                 sessionId: "${sessionId}",
                 activeTab: 'dashboard',
                 stats: {
-                    todayOrders: 12,
-                    todaySales: 850000,
-                    totalProducts: 24,
-                    avgRating: 4.8
+                    todayOrders: 0,
+                    todaySales: 0,
+                    totalProducts: 0,
+                    avgRating: 0.0
                 },
-                recentOrders: [
-                    { id: 1, orderNo: 'ORD-2024-001', productName: '유기농 토마토', quantity: 3, amount: 45000, status: '배송중', orderDate: '2024-01-15' },
-                    { id: 2, orderNo: 'ORD-2024-002', productName: '친환경 쌀', quantity: 1, amount: 50000, status: '배송완료', orderDate: '2024-01-14' },
-                    { id: 3, orderNo: 'ORD-2024-003', productName: '제주 감귤', quantity: 5, amount: 75000, status: '주문확인', orderDate: '2024-01-14' }
-                ],
+                recentOrders: [],
                 settlement: {
                     totalSales: 5420000,
                     platformFee: 271000,
@@ -900,7 +896,17 @@
         },
         methods: {
             formatPrice: function(price) {
-                return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                if (price === undefined || price === null) {
+                    console.warn("formatPrice: price가 undefined 또는 null입니다.", price); // 디버깅용 경고
+                    return '0'; // 또는 다른 기본 문자열 (예: '-')
+                }
+                // 백엔드에서 숫자가 아닌 문자열로 올 수도 있으니 숫자로 변환 시도
+                const numericPrice = Number(price);
+                if (isNaN(numericPrice)) {
+                    console.warn("formatPrice: price가 숫자가 아닙니다.", price); // 디버깅용 경고
+                    return String(price); // 숫자가 아니면 원래 값을 문자열로 반환
+                }
+                return numericPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             },
             getStatusClass: function(status) {
                 if (status === '주문확인') return 'status-pending';
@@ -1153,10 +1159,35 @@
                     }
                 });
             },
+            loadDashboardData: function() {
+                let self = this;
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/seller/dashboard.dox",
+                    dataType: "json",
+                    type: "GET",
+                    success: function(response) {
+                        if (response.result === 'success') {
+                            console.log("Received dashboard data:", response); 
+
+                            self.stats.todayOrders = response.todayOrders;
+                            self.stats.todaySales = response.todaySales;
+                            self.stats.totalProducts = response.totalProducts;
+                            self.stats.avgRating = response.avgRating;
+                            self.recentOrders = response.recentOrders;
+                        } else {
+                            alert('대시보드 데이터를 불러오는데 실패했습니다: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('대시보드 데이터를 불러오는 중 오류가 발생했습니다.');
+                        console.error("AJAX Error: ", status, error);
+                    }
+                });
+            }
         },
         mounted() {
             let self = this;
-            // self.loadDashboardData(); 대시보드 추후 
+            self.loadDashboardData(); 
             self.loadFarmInfo();
             self.loadReviews();
         }

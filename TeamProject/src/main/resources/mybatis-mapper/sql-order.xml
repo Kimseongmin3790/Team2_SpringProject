@@ -4,26 +4,32 @@
 
 <mapper namespace="com.example.TeamProject.mapper.OrderMapper">
 
-    <!-- Order DTO에 대한 resultMap 정의 -->
+    <!--
+        [수정 1] <result> 태그들을 <collection> 앞으로 이동
+    -->
     <resultMap id="orderResultMap" type="com.example.TeamProject.model.Order">
-        <id property="orderNo" column="orderNo"/> <!-- SQL 별칭과 일치 -->
-        <result property="buyerId" column="buyerId"/> <!-- SQL 별칭과 일치 -->
-        <result property="orderDate" column="orderDate"/> <!-- SQL 별칭과 일치 -->
-        <result property="totalPrice" column="totalAmount"/> <!-- SQL 별칭과 일치 -->
-        <result property="status" column="status"/> <!-- SQL 별칭과 일치 -->
-        <result property="receivName" column="receivName"/> <!-- SQL 별칭과 일치 -->
-        <result property="receivPhone" column="receivPhone"/> <!-- SQL 별칭과 일치 -->
-        <result property="deliverAddr" column="deliverAddr"/> <!-- SQL 별칭과 일치 -->
-        <result property="memo" column="memo"/> <!-- SQL 별칭과 일치 -->
-        <result property="uDatetime" column="uDatetime"/> <!-- SQL 별칭과 일치 -->
-        <result property="imageUrl" column="imageUrl"/> <!-- SQL 별칭과 일치 -->
+        <id property="orderNo" column="orderNo"/>
+        <result property="buyerId" column="buyerId"/>
+        <result property="orderDate" column="orderDate"/>
+        <result property="totalPrice" column="totalAmount"/>
+        <result property="status" column="status"/>
+        <result property="receivName" column="receivName"/>
+        <result property="receivPhone" column="receivPhone"/>
+        <result property="deliverAddr" column="deliverAddr"/>
+        <result property="memo" column="memo"/>
+        <result property="uDatetime" column="uDatetime"/>
 
         <!-- selectOrderListBySeller 쿼리에서 추가로 사용하는 필드들 -->
-        <result property="productName" column="productName"/> <!-- SQL 별칭과 일치 -->
-        <result property="productCount" column="productCount"/> <!-- SQL 별칭과 일치 -->
-        <result property="buyerName" column="buyerName"/> <!-- SQL 별칭과 일치 -->
+        <result property="productName" column="productName"/>
+        <result property="productCount" column="productCount"/>
+        <result property="buyerName" column="buyerName"/>
+        <result property="imageUrl" column="imageUrl"/>
 
-      
+        <!-- 각 주문에 속한 상품 목록(items)을 조회하기 위한 collection 설정 -->
+        <collection property="items"
+                    column="orderNo"
+                    ofType="com.example.TeamProject.model.OrderItem"
+                    select="selectOrderItemsByOrderNo"/>
     </resultMap>
 
     <resultMap id="orderItemResultMap" type="com.example.TeamProject.model.OrderItem">
@@ -32,10 +38,40 @@
         <result property="productNo" column="PRODUCT_NO"/>
         <result property="quantity" column="QUANTITY"/>
         <result property="price" column="PRICE"/>
-        <result property="productName" column="PNAME"/>
+        <result property="productName" column="productName"/>
+        <result property="imageUrl" column="imageUrl"/>
+        <result property="hasReview" column="hasReview"/>
     </resultMap>
+    
+     <resultMap id="orderDetailResultMap" type="com.example.TeamProject.model.Order">
+     <id property="orderNo" column="ORDER_NO"/>
+     <result property="buyerId" column="BUYER_ID"/>
+     <result property="orderDate" column="ORDERDATE"/>
+     <result property="totalPrice" column="TOTAL_PRICE"/>
+     <result property="status" column="STATUS"/>
+     <result property="receivName" column="RECEIV_NAME"/>
+     <result property="receivPhone" column="RECEIV_PHONE"/>
+     <result property="deliverAddr" column="DELIVER_ADDR"/>
+     <result property="memo" column="MEMO"/>
+     <result property="buyerName" column="BUYER_NAME"/>
+     <result property="paymentMethod" column="PAYMENT_METHOD"/>
+     <result property="courier" column="COURIER"/>
+     <result property="trackingNo" column="TRACKING_NO"/>
 
-    <!-- 사용자 ID로 주문 내역을 조회하는 메인 쿼리 -->
+     <collection property="items" ofType="com.example.TeamProject.model.OrderItem">
+         <id property="orderItemNo" column="ORDER_ITEM_NO"/>
+         <result property="orderNo" column="ORDER_NO"/>
+         <result property="productNo" column="PRODUCT_NO"/>
+         <result property="quantity" column="QUANTITY"/>
+         <result property="price" column="ITEM_PRICE"/>
+         <result property="productName" column="PRODUCT_NAME"/>
+         <result property="imageUrl" column="IMAGE_URL"/>
+         <result property="optionUnit" column="OPTION_UNIT"/>
+         <result property="optionAddPrice" column="OPTION_ADD_PRICE"/>
+     </collection>
+ </resultMap>
+
+    <!-- 사용자 ID로 주문 내역을 조회-->
     <select id="selectOrderHistoryByUserId" resultMap="orderResultMap">
         SELECT
             ORDER_NO AS orderNo,
@@ -53,8 +89,8 @@
         ORDER BY ORDERDATE DESC
     </select>
 
-    <!-- 특정 주문 번호에 해당하는 상품 목록을 조회하는 서브 쿼리 -->
-    <select id="selectOrderItemsByOrderNo" resultType="com.example.TeamProject.model.OrderItem">
+
+    <select id="selectOrderItemsByOrderNo" resultMap="orderItemResultMap">
         SELECT
             OI.ORDER_ITEM_NO,
             OI.ORDER_NO,
@@ -62,45 +98,187 @@
             OI.QUANTITY,
             OI.PRICE,
             P.PNAME AS productName,
-            (SELECT PI.IMAGE_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = P.PRODUCT_NO AND
-PI.IS_THUMBNAIL = 'Y' AND ROWNUM = 1) AS imageUrl,
+            (SELECT PI.IMAGE_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = P.PRODUCT_NO AND PI.IS_THUMBNAIL = 'Y' AND ROWNUM = 1) AS imageUrl,
             (SELECT COUNT(*) FROM REVIEW R WHERE R.ORDER_ITEM_NO = OI.ORDER_ITEM_NO) AS hasReview
         FROM ORDER_ITEM OI
         JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
         WHERE OI.ORDER_NO = #{orderNo}
     </select>
 
-    <!-- 판매자 ID 주문목록 조회 -->
-    <select id="selectOrderListBySeller" resultMap="orderResultMap" parameterType="java.util.HashMap">
-        WITH ORDER_PRODUCTS AS (
-            SELECT
-                oi.ORDER_NO,
-                oi.PRODUCT_NO,
-                p.PNAME,
-                ROW_NUMBER() OVER(PARTITION BY oi.ORDER_NO ORDER BY oi.ORDER_ITEM_NO) as rn,
-                COUNT(*) OVER(PARTITION BY oi.ORDER_NO) as productCount
-            FROM ORDER_ITEM oi
-            JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
-            WHERE p.SELLER_ID = #{sellerId}
-        )
-        SELECT
-            o.ORDER_NO AS orderNo,
-            o.BUYER_ID AS buyerId,
-            o.ORDERDATE AS orderDate,
-            o.TOTAL_PRICE AS totalAmount,
-            o.STATUS AS status,
-            op.PNAME AS productName,
-            op.productCount AS productCount,
-            u.NAME AS buyerName,
-            o.RECEIV_NAME AS receivName,
-            o.RECEIV_PHONE AS receivPhone,
-            o.DELIVER_ADDR AS deliverAddr,
-            o.MEMO AS memo,
-            o.UDATETIME AS uDatetime
-        FROM ORDERS o
-        JOIN USERS u ON o.BUYER_ID = u.USER_ID
-        JOIN ORDER_PRODUCTS op ON o.ORDER_NO = op.ORDER_NO AND op.rn = 1
-        ORDER BY o.ORDERDATE DESC
-    </select>
+    <!-- 판매자 ID 주문목록 조회  -->
+    <select id="selectOrderListBySeller" parameterType="hashmap" resultType="com.example.TeamProject.model.Order">
+	    SELECT *
+	    FROM (
+	        SELECT
+	            o.ORDER_NO, o.BUYER_ID, o.ORDERDATE, o.TOTAL_PRICE, o.STATUS, o.RECEIV_NAME, o.RECEIV_PHONE, o.DELIVER_ADDR, o.MEMO,
+	            u.NAME as BUYER_NAME,
+	            (SELECT p_inner.PNAME FROM PRODUCT p_inner JOIN ORDER_ITEM oi_inner ON p_inner.PRODUCT_NO = 
+	            oi_inner.PRODUCT_NO WHERE oi_inner.ORDER_NO = o.ORDER_NO AND ROWNUM = 1) as PRODUCT_NAME,
+	            (SELECT COUNT(*) FROM ORDER_ITEM oi_inner WHERE oi_inner.ORDER_NO = o.ORDER_NO) as PRODUCT_COUNT,
+	            ROW_NUMBER() OVER (ORDER BY o.ORDERDATE DESC) as RNUM
+	        FROM
+	            ORDERS o
+	        JOIN USERS u ON o.BUYER_ID = u.USER_ID
+	        <where>
+	            <if test="sellerId != null and sellerId != ''">
+	                AND EXISTS (
+	                    SELECT 1 FROM ORDER_ITEM oi_sec JOIN PRODUCT p_sec ON oi_sec.PRODUCT_NO = p_sec.PRODUCT_NO
+	                    WHERE oi_sec.ORDER_NO = o.ORDER_NO AND p_sec.SELLER_ID = #{sellerId}
+	                )
+	            </if>
+	            <if test="status != null and status != '' and status != '전체' and status != '신규 주문'">
+	                AND o.STATUS = #{status}
+	            </if>
+	            <if test="status == '신규 주문'">
+	                AND o.STATUS = '결제완료'
+	            </if>
+	            <if test="startDate != null and startDate != ''">
+	                AND o.ORDERDATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+	            </if>
+	            <if test="endDate != null and endDate != ''">
+	                AND o.ORDERDATE &lt; TO_DATE(#{endDate}, 'YYYY-MM-DD') + 1
+	            </if>
+	            <if test="searchKeyword != null and searchKeyword != ''">
+	                AND (
+	                    o.ORDER_NO LIKE '%' || #{searchKeyword} || '%'
+	                    OR u.NAME LIKE '%' || #{searchKeyword} || '%'
+	                    OR EXISTS (
+	                        SELECT 1 FROM ORDER_ITEM oi JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
+	                        WHERE oi.ORDER_NO = o.ORDER_NO AND p.PNAME LIKE '%' || #{searchKeyword} || '%'
+	                    )
+	                )
+	            </if>
+	        </where>
+	    )
+	    WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+	</select>
+    
+    <!-- 주문상태 업데이트 -->
+    <update id="updateOrderStatus" parameterType="hashmap">
+	    UPDATE ORDERS
+	    SET
+	        STATUS = #{status},
+	        UDATETIME = SYSDATE
+	    WHERE ORDER_NO = #{orderNo}
+	    AND EXISTS (
+	        SELECT 1
+	        FROM ORDER_ITEM oi
+	        JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
+	        WHERE oi.ORDER_NO = #{orderNo}
+	        AND p.SELLER_ID = #{sellerId}
+	    )
+	</update>
+
+	<!-- 배송 정보 등록 -->
+	<insert id="insertDelivery" parameterType="hashmap">
+	    INSERT INTO DELIVERY (
+	        DELIVERY_NO,
+	        ORDER_NO,
+	        COURIER,
+	        TRACKING_NO,
+	        DELIVERY_STATUS,
+	        SHIPPED_AT
+	    )
+	    SELECT
+	        DELIVERY_SEQ.NEXTVAL,
+	        #{orderNo},
+	        #{deliveryCompany},
+	        #{trackingNumber},
+	        '배송중',
+	        SYSDATE
+	    FROM DUAL
+	    WHERE EXISTS (
+	        SELECT 1
+	        FROM ORDER_ITEM oi
+	        JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
+	        WHERE oi.ORDER_NO = #{orderNo}
+	        AND p.SELLER_ID = #{sellerId}
+	    )
+	</insert>
+	
+	<!-- 현재 주문정보 조회-->
+	 <select id="selectOrderForUpdate" parameterType="hashmap" resultType="com.example.TeamProject.model.Order">
+	     SELECT
+	         o.ORDER_NO,
+	         o.STATUS
+	     FROM ORDERS o
+	     WHERE o.ORDER_NO = #{orderNo}
+	     AND EXISTS (
+	         SELECT 1
+	         FROM ORDER_ITEM oi
+	         JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
+	         WHERE oi.ORDER_NO = #{orderNo}
+	         AND p.SELLER_ID = #{sellerId}
+	     )
+	 </select>
+	 
+	<!-- 주문 상태 일괄 변경 -->
+	<select id="selectOrderDetail" parameterType="hashmap" resultMap="orderDetailResultMap">
+	    SELECT
+	        o.ORDER_NO, o.BUYER_ID, o.ORDERDATE, o.TOTAL_PRICE, o.STATUS, o.RECEIV_NAME, o.RECEIV_PHONE, o.DELIVER_ADDR, o.MEMO,
+	        u.NAME as BUYER_NAME,
+	        pay.PAYMENT_METHOD,
+	        d.COURIER, d.TRACKING_NO,
+	        oi.ORDER_ITEM_NO, oi.PRODUCT_NO, oi.QUANTITY, oi.PRICE as ITEM_PRICE,
+	        p.PNAME as PRODUCT_NAME,
+	        po.UNIT as OPTION_UNIT, po.ADD_PRICE as OPTION_ADD_PRICE,
+	        (SELECT pi.IMAGE_URL FROM PRODUCT_IMAGE pi WHERE pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_THUMBNAIL = 'Y' AND ROWNUM = 1) as IMAGE_URL
+	    FROM
+	        ORDERS o
+	    LEFT JOIN USERS u ON o.BUYER_ID = u.USER_ID
+	    LEFT JOIN DELIVERY d ON o.ORDER_NO = d.ORDER_NO
+	    LEFT JOIN PAYMENT pay ON o.ORDER_NO = pay.ORDER_NO
+	    LEFT JOIN ORDER_ITEM oi ON o.ORDER_NO = oi.ORDER_NO
+	    LEFT JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
+	    LEFT JOIN PRODUCT_OPTION po ON oi.OPTION_NO = po.OPTION_NO
+	    WHERE
+	        o.ORDER_NO = #{orderNo}
+	        AND EXISTS (
+	            SELECT 1
+	            FROM ORDER_ITEM oi_sec
+	            JOIN PRODUCT p_sec ON oi_sec.PRODUCT_NO = p_sec.PRODUCT_NO
+	            WHERE oi_sec.ORDER_NO = #{orderNo}
+	            AND p_sec.SELLER_ID = #{sellerId}
+	        )
+	</select>
+	
+	<!-- 판매자의 전체 주문 건수 조회 -->
+	<select id="selectOrderListCountBySeller" parameterType="hashmap" resultType="int">
+	    SELECT
+	        COUNT(DISTINCT o.ORDER_NO)
+	    FROM
+	        ORDERS o
+	    <where>
+	        <if test="sellerId != null and sellerId != ''">
+	            AND EXISTS (
+	                SELECT 1
+	                FROM ORDER_ITEM oi JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
+	                WHERE oi.ORDER_NO = o.ORDER_NO AND p.SELLER_ID = #{sellerId}
+	            )
+	        </if>
+	        <if test="status != null and status != '' and status != '전체' and status != '신규 주문'">
+	            AND o.STATUS = #{status}
+	        </if>
+	        <if test="status == '신규 주문'">
+	            AND o.STATUS = '결제완료'
+	        </if>
+	        <if test="startDate != null and startDate != ''">
+	            AND o.ORDERDATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+	        </if>
+	        <if test="endDate != null and endDate != ''">
+	            AND o.ORDERDATE &lt; TO_DATE(#{endDate}, 'YYYY-MM-DD') + 1
+	        </if>
+	        <if test="searchKeyword != null and searchKeyword != ''">
+	            AND (
+	                o.ORDER_NO LIKE '%' || #{searchKeyword} || '%'
+	                OR o.BUYER_ID IN (SELECT USER_ID FROM USERS WHERE NAME LIKE '%' || #{searchKeyword} || '%')
+	                OR EXISTS (
+	                    SELECT 1 FROM ORDER_ITEM oi JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
+	                    WHERE oi.ORDER_NO = o.ORDER_NO AND p.PNAME LIKE '%' || #{searchKeyword} || '%'
+	                )
+	            )
+	        </if>
+	    </where>
+	</select>
 
 </mapper>
