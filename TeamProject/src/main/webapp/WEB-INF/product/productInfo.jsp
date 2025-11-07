@@ -1395,7 +1395,8 @@
                         shareUrl: window.location.href,
                         shareTitle: '',
                         showDetail: false,
-                        week: false, before: false,
+                        week: false, 
+                        before: false,
                         liked: false,
 
                         userId: "${sessionId}",
