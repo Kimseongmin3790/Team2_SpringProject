@@ -22,4 +22,8 @@ public class Order {
 	private int productCount;
 	private String buyerName;
 	
+	private String paymentMethod;
+	private String courier;
+	private String trackingNo;
+	
 }

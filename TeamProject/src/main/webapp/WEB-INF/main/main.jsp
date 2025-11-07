@@ -441,6 +441,8 @@
             const app = Vue.createApp({
               data() {
                 return {
+                  sessionId: "${sessionId}",
+                  userRole: "${sessionScope.sessionStatus}",
                   path: "${pageContext.request.contextPath}",
                   banners: [],
                   best: [],

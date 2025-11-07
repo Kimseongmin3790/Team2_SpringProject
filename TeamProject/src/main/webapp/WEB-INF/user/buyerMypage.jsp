@@ -11,7 +11,6 @@
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
             <script src="/resources/js/page-change.js"></script>
-            <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <style>
@@ -708,6 +707,7 @@
                                 </div>
                             </div>
 
+
                             <!-- 리뷰 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'reviews' }">
                                 <div v-if="reviews.length > 0">
@@ -831,7 +831,7 @@
                         activeTab: root?.dataset?.activeTab || 'cart',
                         userName: "",
                         userEmail: "",
-                        cartItems: [],           // ← 서버 데이터로 채움
+                        cartItems: [],          
                         orders: [],
                         reviews: [],
                         profile: {},
