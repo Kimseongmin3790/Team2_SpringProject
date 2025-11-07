@@ -1163,7 +1163,7 @@
                                     <div class="selection-summary" v-if="selected" style="margin-top:12px">
                                         <div style="padding:8px 0;border-top:1px solid #eee">
                                             <div>
-                                                {{ info.pName }}
+                                                {{ info.pName }} {{options[0].unit}}
                                                 <button @click="removeProduct" style="margin-left:270px">삭제</button>
                                             </div>
                                             <hr
@@ -1364,7 +1364,8 @@
                         shareUrl: window.location.href,
                         shareTitle: '',
                         showDetail: false,
-                        week: false, before: false,
+                        week: false, 
+                        before: false,
                         liked: false,
 
                         userId: "${sessionId}",
