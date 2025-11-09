@@ -115,14 +115,28 @@ public class ProductService {
             resultMap.put("result", "fail");
             System.out.println(e.getMessage());
         }
-        return resultMap;
-    }
+        return resultMap;    }
 	
-	public HashMap<String, Object> getProductQuestions(HashMap<String, Object> map) {
+	
+	public HashMap<String, Object> getSellerRegionsAndCount(HashMap<String, Object> map) {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
         try {
-            List<ProductQuestions> list = productMapper.selectProductQuestions(map);
-            resultMap.put("list", list);
+        	int page = map.get("page") ==null ? 1 : Integer.parseInt(map.get("page").toString());
+        	int pageSize = map.get("pageSize") == null ? 15 : Integer.parseInt(map.get("pageSize").toString()); 
+        	int offset = (page - 1) * pageSize;
+        	
+        	map.put("offset", offset);
+        	map.put("pageSize", pageSize);
+        	
+            List<Product> regions = productMapper.selectSellerRegions(map);
+            int totalCount = productMapper.countSellerRegions(map);
+            
+            System.out.println(">>> sellerRegions called at Service totalCount: " + totalCount);
+            
+            resultMap.put("list", regions);
+            resultMap.put("totalCount", totalCount);
+            resultMap.put("page", page);
+            resultMap.put("pageSize", pageSize);
             resultMap.put("result", "success");
         } catch (Exception e) {
             resultMap.put("result", "fail");
@@ -131,10 +145,12 @@ public class ProductService {
         return resultMap;
     }
 	
-	public HashMap<String, Object> insertProductOptions(HashMap<String, Object> map) {
+	
+	public HashMap<String, Object> getProductQuestions(HashMap<String, Object> map) {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
         try {
-            productMapper.insertProductOptions(map);
+            List<ProductQuestions> list = productMapper.selectProductQuestions(map);
+            resultMap.put("list", list);
             resultMap.put("result", "success");
         } catch (Exception e) {
             resultMap.put("result", "fail");

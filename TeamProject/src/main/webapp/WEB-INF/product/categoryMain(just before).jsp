@@ -749,6 +749,7 @@
                         selectedChild: null,
                         selectedSub: null,
                         viewLevel: 'parent',
+                        // 서버가 넘겨주는 초기 진입 카테고리(없으면 빈 문자열)
                         initialCategoryNo: '${categoryNo}',
 
                         priceRanges: [
@@ -761,48 +762,49 @@
                         ],
                         selectedPriceRange: null,
 
-                        regionList: [],
-                        selectedRegion: null,
-                        currentRegionPage: 1,
-                        regionsPerPage: 10
+                        regionList: [], // 판매자 지역목록
+                        selectedRegion: null, // 선택된 지역
+                        currentRegionPage: 1, // 현재페이지
+                        regionsPerPage: 10    // 페이지당 표시될 지역 수
                     };
                 },
-
                 computed: {
                     parentCategories() {
                         return this.categoryList.filter(c => c.parentCategoryNo === '');
                     },
+
                     pagedRegions() {
                         const start = (this.currentRegionPage - 1) * this.regionsPerPage;
                         return this.regionList.slice(start, start + this.regionsPerPage);
                     },
+
                     totalRegionPages() {
                         return Math.ceil(this.regionList.length / this.regionsPerPage);
                     },
+
                     filteredProducts() {
                         let result = this.productList || [];
                         console.log('------ ', this.productList && this.productList[0]);
                         console.log('현재 선택된 가격범위 index:', this.selectedPriceRange);
                         console.log('현재 선택된 가격범위 값:', this.priceRanges[this.selectedPriceRange]);
 
-                        // 카테고리 필터
+                        //기존 카테고리
                         if (this.selectedSub) {
                             result = result.filter(
-                                (p) => Number(p.categoryNo) === Number(this.selectedSub)
-                            );
+                                (p) => Number(p.categoryNo) === Number(this.selectedSub));
                         }
 
-                        // 가격 필터
+                        //가격 필터 추가
                         if (this.selectedPriceRange !== null && this.selectedPriceRange !== undefined) {
                             const range = this.priceRanges[this.selectedPriceRange];
                             result = result.filter((p) => {
                                 const price = Number(p.price);
-                                if (isNaN(price)) return false;
+                                if (isNaN(price)) return false; //가격정보 없으면 제외
                                 return price >= range.min && price < range.max;
                             });
                         }
 
-                        // 지역 필터
+                        //지역 필터
                         if (this.selectedRegion && typeof this.selectedRegion === 'string' && this.selectedRegion.trim() !== '') {
                             console.log('현재 선택된 지역:', this.selectedRegion);
                             console.log('상품의 지역 샘플:', result.slice(0, 5).map(p => p.region));
@@ -811,8 +813,11 @@
 
                         console.log('필터 적용 후 상품 수:', result.length);
                         console.log('필터 적용 후 지역 수:', this.selectedRegion);
+
                         return result;
                     },
+
+
                     breadcrumb() {
                         const r = [];
                         if (this.selectedParent) r.push(this.getCategoryName(this.selectedParent));
@@ -833,32 +838,20 @@
                     normalize(c) {
                         return {
                             categoryNo: String(c.categoryNo),
-                            parentCategoryNo:
-                                (c.parentCategoryNo == null ||
-                                    String(c.parentCategoryNo).trim() === '' ||
-                                    String(c.parentCategoryNo) === '0')
-                                    ? ''
-                                    : String(c.parentCategoryNo),
+                            parentCategoryNo: (c.parentCategoryNo == null || String(c.parentCategoryNo).trim() === '' || String(c.parentCategoryNo) === '0')
+                                ? '' : String(c.parentCategoryNo),
                             categoryName: c.categoryName || '',
                             imageUrl: c.imageUrl || ''
                         };
                     },
 
-                    // ✅ 지역 클릭 → 상품 목록 화면으로 이동
                     selectRegion(regionName) {
-                        const reg = regionName ? String(regionName).trim() : '';
-                        this.selectedRegion = reg;
+                        // Vue Proxy → 실제 문자열만 저장
+                        this.selectedRegion = regionName;
                         console.log('지역 클릭됨:', this.selectedRegion);
-
-                        // v=product & r=지역 포함된 해시로 이동
-                        const q = new URLSearchParams();
-                        if (this.selectedParent) q.set('p', this.selectedParent);
-                        if (this.selectedChild) q.set('c', this.selectedChild);
-                        if (this.selectedSub) q.set('s', this.selectedSub);
-                        q.set('v', 'product');
-                        if (reg) q.set('r', reg);
-
-                        location.href = location.pathname + '#' + q.toString();
+                        this.$nextTick(() => {
+                            console.log("DOM 반영 후 selectedRegion:", this.selectedRegion);
+                        });
                     },
 
                     fnList() {
@@ -875,14 +868,14 @@
                                 }));
                                 console.log('*******=== 서버에서 받은 상품데이터 샘플 ===', data.list[0]);
 
-                                // 해시 우선 복원
+                                // 1) 해시가 있으면 해시로 복원 (쿼리 무시)
                                 if (this.applyFromHash()) return;
 
-                                // 초기 카테고리 진입
+                                // 2) 해시 없으면 쿼리(initialCategoryNo)로 시작
                                 this.applyInitialCategory();
-                                this.writeHash(false);
+                                this.writeHash(false); // 현재 상태를 URL에 기록 (해시만)
 
-                                this.fnSellerRegionList();
+                                this.fnSellerRegionList(); //지역리스트 부르기
                             }
                         });
                     },
@@ -912,29 +905,31 @@
                             this.currentRegionPage++;
                         }
                     },
+
                     prevRegionPage() {
                         if (this.currentRegionPage > 1) {
                             this.currentRegionPage--;
                         }
                     },
 
-                    // ✅ region(r) 포함되도록 수정
                     writeHash(push = true) {
                         const q = new URLSearchParams();
+
                         if (this.selectedParent) q.set('p', this.selectedParent);
                         if (this.selectedChild) q.set('c', this.selectedChild);
                         if (this.selectedSub) q.set('s', this.selectedSub);
                         q.set('v', this.viewLevel);
-                        if (this.selectedRegion) q.set('r', this.selectedRegion);
-
                         const newHash = '#' + q.toString();
+
                         if (location.hash !== newHash) {
-                            if (push) history.pushState(null, '', location.pathname + newHash);
-                            else history.replaceState(null, '', location.pathname + newHash);
+                            if (push) {
+                                history.pushState(null, '', location.pathname + newHash);
+                            } else {
+                                history.replaceState(null, '', location.pathname + newHash);
+                            }
                         }
                     },
 
-                    // ✅ region 복원 추가
                     applyFromHash() {
                         const raw = (location.hash || '').replace(/^#/, '');
                         if (!raw) return false;
@@ -944,7 +939,6 @@
                         const c = qs.get('c') || '';
                         const s = qs.get('s') || '';
                         const v = qs.get('v') || 'parent';
-                        const r = qs.get('r') || '';
 
                         const has = (no) => this.categoryList.some(x => x.categoryNo === String(no));
                         const okP = p && has(p);
@@ -959,8 +953,6 @@
                         else if (okP && okC && v !== 'parent') this.viewLevel = 'sub';
                         else if (okP) this.viewLevel = 'child';
                         else this.viewLevel = 'parent';
-
-                        this.selectedRegion = r ? String(r) : '';
 
                         return true;
                     },
@@ -1016,15 +1008,18 @@
                         if (!target) { this.selectedParent = ''; this.viewLevel = 'parent'; return; }
 
                         if (target.parentCategoryNo === '') {
+                            // 대분류
                             this.selectedParent = target.categoryNo;
                             this.viewLevel = 'child';
                         } else {
                             const parent = this.categoryList.find(c => c.categoryNo === target.parentCategoryNo);
                             if (parent && parent.parentCategoryNo === '') {
+                                // 중분류
                                 this.selectedParent = parent.categoryNo;
                                 this.selectedChild = target.categoryNo;
                                 this.viewLevel = 'sub';
                             } else if (parent && parent.parentCategoryNo !== '') {
+                                // 소분류
                                 const top = this.categoryList.find(c => c.categoryNo === parent.parentCategoryNo);
                                 this.selectedParent = top ? top.categoryNo : '';
                                 this.selectedChild = parent.categoryNo;
@@ -1035,6 +1030,7 @@
                     },
 
                     readCategoryNoFromURL() {
+                        // 해시 우선 사용하므로 여기서는 보조 수단
                         const qs = new URLSearchParams(location.search);
                         const v = qs.get('categoryNo');
                         if (v) return String(v);
@@ -1051,6 +1047,7 @@
                         this.initialCategoryNo = this.readCategoryNoFromURL();
                     }
                     window.addEventListener('hashchange', () => this.applyFromHash());
+
                     this.fnList();
                     this.fnSellerRegionList();
                 }
