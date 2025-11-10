@@ -273,5 +273,135 @@
 	    #{shippingFee, jdbcType=NUMERIC}
 	  )
   </insert>
+  
+  <select id="getSellerProductList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+  		SELECT P.PRODUCT_NO, P.PNAME, P.PINFO, P.PRICE, P.ORIGIN, P.PRODUCT_STATUS, I.IMAGE_URL, O.UNIT, O.STOCK_QTY, O.ADD_PRICE, O.IS_ACTIVE
+		FROM PRODUCT P
+		LEFT JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO AND I.IS_THUMBNAIL = 'Y'
+		LEFT JOIN PRODUCT_OPTION O ON P.PRODUCT_NO = O.PRODUCT_NO
+		WHERE SELLER_ID = #{sellerId}
+  </select>
+  
+  <update id="hiddenSellerProduct" parameterType="hashmap">
+  		UPDATE PRODUCT
+  			SET PRODUCT_STATUS = 'HIDDEN'
+  		WHERE PRODUCT_NO = #{productNo}
+  </update>
+  
+  <select id="getsellerProductDetail" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+  		SELECT
+		  p.PRODUCT_NO,
+		  p.SELLER_ID,
+		  p.CATEGORY_NO,
+		  p.PNAME,
+		  p.PINFO,
+		  p.PRICE,
+		  p.ORIGIN,
+		  p.PRODUCT_STATUS
+		FROM PRODUCT p
+		WHERE p.PRODUCT_NO = #{productNo}
+  </select>
+  
+  <select id="getsellerProductOption" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+  		SELECT
+		  o.OPTION_NO,
+		  o.UNIT,
+		  NVL(o.ADD_PRICE, 0) AS ADD_PRICE,
+		  NVL(o.STOCK_QTY, 0) AS STOCK_QTY
+		FROM PRODUCT_OPTION o
+		WHERE o.PRODUCT_NO = #{productNo}
+		  AND NVL(o.IS_ACTIVE, 'Y') = 'Y'
+		ORDER BY o.OPTION_NO
+  </select>
+  
+  <select id="getsellerProductImage" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+  		SELECT
+		  i.IMAGE_ID,
+		  i.IMAGE_URL,
+		  i.IS_THUMBNAIL
+		FROM PRODUCT_IMAGE i
+		WHERE i.PRODUCT_NO = #{productNo}
+		ORDER BY
+		  CASE NVL(
+		    i.IS_THUMBNAIL, 'N'
+		  )
+		    WHEN 'Y' THEN 0
+		    WHEN 'A' THEN 1
+		    ELSE 2
+		  END,
+		  i.IMAGE_ID
+  </select>
 
+  <select id="getsellerProductCategory" parameterType="int" resultType="com.example.TeamProject.model.Product">
+  		SELECT
+		  t.CATEGORY_NO AS topNo,
+		  m.CATEGORY_NO AS midNo,
+		  l.CATEGORY_NO AS leafNo
+		FROM PRODUCT_CATEGORY l
+		LEFT JOIN PRODUCT_CATEGORY m ON m.CATEGORY_NO = l.PARENT_CATEGORY_NO
+		LEFT JOIN PRODUCT_CATEGORY t ON t.CATEGORY_NO = m.PARENT_CATEGORY_NO
+		WHERE l.CATEGORY_NO = #{categoryNo}
+  </select>
+  
+  <update id="updateProduct" parameterType="map">
+	  UPDATE PRODUCT
+	     SET CATEGORY_NO = #{categoryNo},
+	         PNAME       = #{pname},
+	         PINFO       = #{pinfo},
+	         PRICE       = #{price},
+	         ORIGIN      = #{origin},
+	         PRODUCT_STATUS = #{productStatus},
+	         UDATETIME   = SYSDATE
+	   WHERE PRODUCT_NO = #{productNo}
+	</update>
+	
+	<delete id="deleteOptions" parameterType="map">
+	  <!-- 비어 있으면 실행 안 되게 가드 (서비스에서 비어있으면 호출 생략하는게 더 깔끔) -->
+	  <if test="optionNos != null and optionNos.size() &gt; 0">
+	    DELETE FROM PRODUCT_OPTION
+	     WHERE PRODUCT_NO = #{productNo}
+	       AND OPTION_NO IN
+	       <foreach collection="optionNos" item="no" open="(" separator="," close=")">
+	         #{no}
+	       </foreach>
+	  </if>
+	</delete>
+	
+	<update id="updateOption" parameterType="map">
+	  UPDATE PRODUCT_OPTION
+	     SET UNIT      = #{unit},
+	         ADD_PRICE = #{addPrice},
+	         STOCK_QTY = #{stockQty},
+	         UDATETIME = SYSDATE
+	   WHERE OPTION_NO = #{optionNo}
+	     AND PRODUCT_NO = #{productNo}
+	</update>
+	
+	<insert id="insertOption" parameterType="map">
+	  INSERT INTO PRODUCT_OPTION(OPTION_NO, PRODUCT_NO, UNIT, STOCK_QTY, ADD_PRICE, IS_ACTIVE, CDATETIME, UDATETIME)
+	  VALUES (PRODUCT_OPTION_SEQ.NEXTVAL, #{productNo}, #{unit}, #{stockQty}, #{addPrice}, 'Y', SYSDATE, SYSDATE)
+	</insert>
+	
+	<update id="clearThumbnail" parameterType="int">
+	  UPDATE PRODUCT_IMAGE
+	     SET IS_THUMBNAIL = 'N'
+	   WHERE PRODUCT_NO = #{_parameter}
+	</update>
+	
+	<insert id="insertImage" parameterType="map">
+	  INSERT INTO PRODUCT_IMAGE(IMAGE_ID, PRODUCT_NO, IMAGE_URL, IS_THUMBNAIL)
+	  VALUES (PRODUCT_IMAGE_SEQ.NEXTVAL, #{productNo}, #{imageUrl}, #{imageType})
+	</insert>
+	
+	<delete id="deleteImages" parameterType="map">
+	  <if test="imageNos != null and imageNos.size() &gt; 0">
+	    DELETE FROM PRODUCT_IMAGE
+	     WHERE PRODUCT_NO = #{productNo}
+	       AND IMAGE_ID IN
+	       <foreach collection="imageNos" item="no" open="(" separator="," close=")">
+	         #{no}
+	       </foreach>
+	  </if>
+	</delete>
+  
 </mapper>

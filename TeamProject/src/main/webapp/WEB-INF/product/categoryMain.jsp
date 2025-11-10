@@ -608,6 +608,34 @@
                         font-size: 18px !important;
                         padding: 12px 20px !important;
                     }
+
+                    /* 카테고리 그리드일 때: 카드 폭/간격 축소, 너비 100% */
+                    .content .grid:has(.grid-item:not(.product)) {
+                        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                        gap: 24px;
+                        width: 100%;
+                    }
+
+                    /* 카테고리 카드 비율을 낮게(가로가 더 넓게) */
+                    .grid-item:not(.product) {
+                        aspect-ratio: 4 / 3;
+                        /* 기존 3/5.5 → 4/3 로 변경 */
+                        max-width: 260px;
+                        /* 필요 시 최대폭 제한 */
+                        margin: 10px auto;
+                        /* 가운데 정렬 느낌 */
+                    }
+
+                    /* 카테고리 카드 이미지 래퍼 높이 안정화 */
+                    .grid-item:not(.product) .image-wrapper {
+                        border-radius: 8px;
+                    }
+
+                    /* 카테고리 텍스트도 살짝 축소 */
+                    .grid-item:not(.product) .info h4 {
+                        font-size: 18px;
+                        margin-top: 2px;
+                    }
                 }
             </style>
 
@@ -855,7 +883,9 @@
                     },
 
                     filteredProducts() {
-                        let result = this.productList || [];
+                        let result = (this.productList || []).filter(
+                            p => (p.productStatus || '').toUpperCase() === 'SELLING'
+                        );
                         console.log('------ ', this.productList && this.productList[0]);
                         console.log('현재 선택된 가격범위 index:', this.selectedPriceRange);
                         console.log('현재 선택된 가격범위 값:', this.priceRanges[this.selectedPriceRange]);
@@ -971,10 +1001,13 @@
                             dataType: "json",
                             type: "POST",
                             success: (data) => {
+                                console.log(data);
                                 this.categoryList = (data.categories || []).map(this.normalize);
                                 this.productList = (data.list || []).map(p => ({
                                     ...p,
                                     categoryNo: String(p.categoryNo),
+                                    productStatus: (p.productStatus || '').toUpperCase()
+                                }));
 
                                 }));
                                 console.log('*******=== 서버에서 받은 상품데이터 샘플 ===', data.list[0]);

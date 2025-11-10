@@ -8,9 +8,11 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -114,6 +116,19 @@ public class UserController {
 		request.setAttribute("productNo", map.get("productNo"));
 
 		return "user/cart";
+	}
+	
+	@RequestMapping("/sellerProductList.do")
+	public String sellerProductList(Model model) throws Exception {
+
+		return "user/sellerProductList";
+	}
+	
+	@RequestMapping("/sellerProductEdit.do")
+	public String sellerProductEdit(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		request.setAttribute("productNo", map.get("productNo"));
+		
+		return "user/sellerProductEdit";
 	}
 
 	@RequestMapping(value = "/join.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
@@ -441,6 +456,111 @@ public class UserController {
 		HashMap<String, Object> resultMap = orderService.getOrderHistory(userId);
 
 		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/myPage/list.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String getSellerProductList(@RequestBody HashMap<String, Object> map) throws Exception {
+		
+		HashMap<String, Object> resultMap = userService.getSellerProductList(map);
+
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/myPage/delete.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String hiddenSellerProduct(@RequestBody HashMap<String, Object> map) throws Exception {
+		
+		HashMap<String, Object> resultMap = userService.hiddenSellerProduct(map);
+
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/seller/product/detail.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String sellerProductDetail(@RequestBody HashMap<String, Object> map) throws Exception {
+		
+		HashMap<String, Object> resultMap = userService.getSellerProductDetail(map);
+
+		return new Gson().toJson(resultMap);
+	}
+	
+	@PostMapping(
+	  value = "/seller/product/update.dox",
+	  consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+	  produces = MediaType.APPLICATION_JSON_VALUE
+	)
+	@ResponseBody
+	public ResponseEntity<Map<String,Object>> updateProduct(
+	    @RequestParam Integer productNo,
+	    @RequestParam Integer categoryNo,
+	    @RequestParam String pname,
+	    @RequestParam String pinfo,
+	    @RequestParam Integer price,
+	    @RequestParam String origin,
+	    @RequestParam(defaultValue = "SELLING") String productStatus,
+
+	    @RequestParam(required = false) String optionsJson,
+	    @RequestParam(required = false) String deletedOptionNosJson,
+	    @RequestParam(required = false) String deletedImageNosJson,
+
+	    @RequestParam(required = false) MultipartFile thumbnail,
+	    @RequestParam(required = false) List<MultipartFile> galleryImages,
+	    @RequestParam(required = false) List<MultipartFile> detailImages,
+
+	    HttpServletRequest request
+	) throws Exception {
+
+	    String uploadDir = request.getServletContext()
+	                    .getRealPath("/resources/uploads/productImage");
+
+	    Map<String,Object> res = userService.updateProductAll(
+	        productNo, categoryNo, pname, pinfo, price, origin, productStatus,
+	        optionsJson, deletedOptionNosJson, deletedImageNosJson,
+	        thumbnail, galleryImages, detailImages,
+	        uploadDir
+	    );
+	    return ResponseEntity.ok(res);
+	}
+
+
+	// ---- 유틸 ----
+	private String saveFile(MultipartFile mf, String dir) throws Exception {
+	  String ext = "";
+	  String name = mf.getOriginalFilename();
+	  if (name != null && name.lastIndexOf(".") > -1) ext = name.substring(name.lastIndexOf("."));
+	  String saved = java.util.UUID.randomUUID().toString() + ext;
+	  mf.transferTo(new File(dir, saved));
+	  return "/resources/uploads/productImage/" + saved;
+	}
+
+	private Map<String,Object> mapImg(int productNo, String url, String type){
+	  Map<String,Object> m = new HashMap<>();
+	  m.put("productNo", productNo);
+	  m.put("imageUrl", url);
+	  m.put("imageType", type); // 'Y','A','N'
+	  return m;
+	}
+	
+	/* ===== 유틸 ===== */
+	private Integer toInt(Object v, Integer def) {
+	    if (v == null) return def;
+	    if (v instanceof Number) return ((Number) v).intValue();
+	    try {
+	        String s = v.toString().trim();
+	        if (s.isEmpty() || "null".equalsIgnoreCase(s) || "undefined".equalsIgnoreCase(s)) return def;
+	        s = s.replaceAll(",", "");
+	        return new java.math.BigDecimal(s).intValue();
+	    } catch (Exception e) {
+	        return def;
+	    }
+	}
+
+	private Long toLong(Object v) {
+	    if (v == null) return null;
+	    if (v instanceof Number) return ((Number) v).longValue();
+	    try { return new java.math.BigDecimal(v.toString().trim()).longValue(); }
+	    catch (Exception e) { return null; }
 	}
 
 }

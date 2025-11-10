@@ -39,4 +39,8 @@ public class Product {
 	
 	private String region;
 	private int productCount;
+	private int topNo;
+	private int midNo;
+	private int leafNo;
+	
 }

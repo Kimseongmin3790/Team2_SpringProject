@@ -652,3 +652,11 @@ body {
 	position: absolute;
 	z-index: 9999;
 }
+
+.nav-menu a.active {
+  color: #1a5d1a;
+  font-weight: 700;
+}
+.nav-menu a.active::after {
+  width: 100%;
+}
