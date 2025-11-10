@@ -242,14 +242,14 @@
                             <div class="box">
                                 <h3>배송 정보</h3>
                                 <div class="input-row">
-                                    <input type="text" v-model="shipping.recipient" placeholder="수령인">
-                                    <input type="text" v-model="shipping.phone" placeholder="연락처">
+                                    <input type="text" v-model="buyer.name" placeholder="수령인">
+                                    <input type="text" v-model="buyer.phone" placeholder="연락처">
                                 </div>
                                 <div class="input-row">
                                     <input type="text" v-model="shipping.zip" placeholder="우편번호">
                                     <button class="btn" @click="searchAddress">주소찾기</button>
                                 </div>
-                                <input type="text" v-model="shipping.address" placeholder="주소"
+                                <input type="text" v-model="buyer.address" placeholder="주소"
                                     style="width:100%; margin-bottom:8px;">
                                 <input type="text" v-model="shipping.detail" placeholder="상세주소"
                                     style="width:100%; margin-bottom: 8px;">

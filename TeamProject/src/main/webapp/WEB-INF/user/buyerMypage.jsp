@@ -617,16 +617,6 @@
                                         <input type="checkbox" v-model="allSelected" />
                                         전체선택
                                     </label>
-                                    <div class="bulk-actions-right">
-                                        <button class="btn btn-outline btn-sm" @click="selectedIds = []"
-                                            :disabled="!selectedIds.length">
-                                            선택해제
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" @click="fnAllRemove"
-                                            :disabled="!selectedIds.length">
-                                            선택삭제
-                                        </button>
-                                    </div>
                                 </div>
 
                                 <div class="card" v-for="item in cartItems" :key="item.cartNo">
@@ -1233,28 +1223,6 @@
                                 map: self.map
                             });
                         })
-                    },
-
-                    fnAllRemove: function () {
-                        let self = this;
-                        console.log(self.selectItem);
-                        var fList = JSON.stringify(self.selectItem);
-                        var param = { selectItem: fList };
-                        $.ajax({
-                            url: "/cart/Allremove.dox",
-                            type: "POST",
-                            dataType: "json",
-                            data: { selectItem: JSON.stringify(this.selectedIds) },
-                            success: (data) => {
-                                if (data.result === 'success') {
-                                    alert('삭제되었습니다.');
-                                    this.fnLoadCart();
-                                    this.selectedIds = [];
-                                } else {
-                                    alert('삭제 실패');
-                                }
-                            }
-                        });
                     },
 
                     unitPrice(i) {

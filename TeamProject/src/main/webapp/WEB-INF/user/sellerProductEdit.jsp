@@ -292,20 +292,28 @@
 
                                     <form id="productForm" enctype="multipart/form-data">
                                         <!-- 카테고리 -->
-                                        <select v-model="top" @change="fnMidList">
-                                            <option value="">대분류</option>
-                                            <option :value="item.categoryNo" v-for="item in topList">
-                                                {{item.categoryName}}</option>
+                                        <select v-model="top" @change="onTopChange">
+                                            <option value="" disabled>대분류</option>
+                                            <option v-for="item in topList" :key="item.categoryNo"
+                                                :value="String(item.categoryNo)">
+                                                {{ item.categoryName }}
+                                            </option>
                                         </select>
-                                        <select v-model="mid" @change="fnLeafList">
-                                            <option value="">중분류</option>
-                                            <option :value="item.categoryNo" v-for="item in midList">
-                                                {{item.categoryName}}</option>
+
+                                        <select v-model="mid" @change="onMidChange">
+                                            <option value="" disabled>중분류</option>
+                                            <option v-for="item in midList" :key="item.categoryNo"
+                                                :value="String(item.categoryNo)">
+                                                {{ item.categoryName }}
+                                            </option>
                                         </select>
+
                                         <select v-model="leaf" name="categoryNo">
-                                            <option value="">소분류</option>
-                                            <option :value="item.categoryNo" v-for="item in leafList">
-                                                {{item.categoryName}}</option>
+                                            <option value="" disabled>소분류</option>
+                                            <option v-for="item in leafList" :key="item.categoryNo"
+                                                :value="String(item.categoryNo)">
+                                                {{ item.categoryName }}
+                                            </option>
                                         </select>
 
                                         <label>상품명</label>
@@ -399,6 +407,13 @@
                                         <input type="file" ref="detailFiles" accept="image/*" multiple
                                             style="margin-top:8px">
 
+                                        <label>상태</label>
+                                        <select v-model="form.productStatus" required>
+                                            <option value="SELLING">판매중</option>
+                                            <option value="SOLDOUT">품절</option>
+                                            <option value="HIDDEN">숨김</option>
+                                        </select>
+
                                         <button type="submit">저장</button>
                                     </form>
                                 </main>
@@ -420,10 +435,11 @@
                                         data() {
                                             return {
                                                 // 카테고리
+                                                initLoading: true,
                                                 topList: [], midList: [], leafList: [],
                                                 top: "", mid: "", leaf: "",
                                                 // 폼/옵션
-                                                form: { pname: "", pinfo: "", origin: "" },
+                                                form: { pname: "", pinfo: "", origin: "", productStatus: "" },
                                                 basePrice: 0,
                                                 options: [],
                                                 deletedOptionNos: [],
@@ -437,48 +453,92 @@
                                         methods: {
                                             // 상세 불러오기
                                             loadProduct() {
+                                                const safeNum = (v, d = 0) => {
+                                                    if (v === null || v === undefined) return d;
+                                                    const n = Number(String(v).replace(/,/g, '').trim());
+                                                    return Number.isFinite(n) ? n : d;
+                                                };
+
                                                 $.ajax({
                                                     url: CP + "/seller/product/detail.dox",
                                                     type: "POST",
                                                     dataType: "json",
-                                                    data: { productNo: PNO },
-                                                    success: async (res) => {
-                                                        const p = res.product || {};
-                                                        this.form.pname = p.pname || "";
-                                                        this.form.pinfo = p.pinfo || "";
-                                                        this.form.origin = p.origin || "";
-                                                        this.basePrice = Number(p.price || 0);
 
-                                                        // 옵션
-                                                        const opts = res.options || [];
-                                                        this.options = opts.map(o => ({
-                                                            optionNo: o.optionNo || null,
-                                                            label: o.optionName || "",
-                                                            addPrice: Number(o.addPrice || 0),
-                                                            stock: Number(o.stock || 0)
+                                                    // ✔ 둘 중 하나만 사용
+                                                    // 1) JSON 방식 (@RequestBody로 받는 경우)
+                                                    contentType: "application/json; charset=UTF-8",
+                                                    data: JSON.stringify({ productNo: PNO }),
+
+                                                    // 2) 폼 방식 (@RequestParam으로 받는 경우)
+                                                    // contentType 생략하고 ↓만 사용
+                                                    // data: { productNo: PNO },
+
+                                                    success: async (res) => {
+                                                        // ---------- 기본 상품 ----------
+                                                        const p = res.detail || res.product || {};
+                                                        this.form.pname = p.pName ?? p.pname ?? "";
+                                                        this.form.pinfo = p.pInfo ?? p.pinfo ?? "";
+                                                        this.form.origin = p.origin ?? "";
+                                                        this.basePrice = safeNum(p.price, 0);
+                                                        this.form.productStatus = (p.productStatus || 'SELLING').toString().toUpperCase();
+                                                        // (선택) 상태값 통일 (hidden → HIDDEN)
+                                                        if (p.productStatus) {
+                                                            this.form.productStatus = String(p.productStatus).toUpperCase();
+                                                        }
+
+                                                        // ---------- 옵션(UNIT / STOCK_QTY / ADD_PRICE → label/stock/addPrice) ----------
+                                                        const rawOpts = res.option || res.options || [];
+                                                        this.options = rawOpts.map(o => ({
+                                                            optionNo: safeNum(o.optionNo, null),
+                                                            label: o.unit ?? o.optionName ?? "",
+                                                            addPrice: safeNum(o.addPrice, 0),
+                                                            stock: safeNum(o.stockQty ?? o.stock, 0)
                                                         }));
 
-                                                        // 이미지
-                                                        const imgs = res.images || [];
-                                                        this.thumb = imgs.find(x => x.imageType === 'Y') || null;
-                                                        this.gallery = imgs.filter(x => x.imageType === 'A');
-                                                        this.details = imgs.filter(x => x.imageType === 'N');
-
-                                                        // 카테고리 경로 (가능하면 path로 세팅)
-                                                        const path = res.categoryPath || null;
-                                                        if (path && path.leafNo) {
-                                                            this.top = String(path.topNo || "");
-                                                            await this.fetchMid();
-                                                            this.mid = String(path.midNo || "");
-                                                            await this.fetchLeaf();
-                                                            this.leaf = String(path.leafNo || p.categoryNo || "");
-                                                        } else if (p.categoryNo) {
-                                                            this.leaf = String(p.categoryNo);
+                                                        // 옵션이 하나도 없으면 기본 한 줄 넣고 싶으면:
+                                                        if (this.options.length === 0) {
+                                                            this.options = [{ optionNo: null, label: "", addPrice: 0, stock: 0 }];
                                                         }
+
+                                                        // ---------- 이미지 (imageId/isThumbnail → imageNo/imageType) ----------
+                                                        const rawImgs = res.image || res.images || [];
+                                                        const images = rawImgs.map(i => ({
+                                                            imageNo: safeNum(i.imageId ?? i.imageNo, 0),
+                                                            imageUrl: i.imageUrl,
+                                                            imageType: (i.isThumbnail ?? i.imageType ?? 'N') // 'Y' | 'A' | 'N'
+                                                        }));
+
+                                                        this.thumb = images.find(x => x.imageType === 'Y') || null;
+                                                        this.gallery = images.filter(x => x.imageType === 'A');
+                                                        this.details = images.filter(x => x.imageType === 'N');
+
+                                                        // ---------- 카테고리 경로 ----------
+                                                        // 우선 category 객체(top/mid/leaf), 없으면 detail.categoryNo(leaf)로 대체
+                                                        const path = res.category || res.categoryPath || {};
+                                                        const topNo = path.topNo ?? null;
+                                                        const midNo = path.midNo ?? null;
+                                                        const leafNo = path.leafNo ?? p.categoryNo ?? null;
+
+
+                                                        this.initLoading = true;
+
+                                                        await this.fetchTop(); await this.$nextTick();
+                                                        this.top = topNo != null ? String(topNo) : "";
+
+                                                        await this.fetchMid(false); await this.$nextTick();
+                                                        this.mid = midNo != null ? String(midNo) : "";
+
+                                                        await this.fetchLeaf(); await this.$nextTick();
+                                                        this.leaf = leafNo != null ? String(leafNo) : "";
+
+
+                                                        // ⑥ 초기화 종료: change 핸들러 다시 활성화
+                                                        this.initLoading = false;
                                                     },
                                                     error: () => alert('상품 정보를 불러오지 못했습니다.')
                                                 });
                                             },
+
 
                                             // 저장(수정 전용)
                                             async fnSubmit() {
@@ -499,7 +559,7 @@
                                                 fd.append('pinfo', this.form.pinfo.trim());
                                                 fd.append('price', Number(this.basePrice));
                                                 fd.append('origin', this.form.origin.trim());
-                                                fd.append('productStatus', 'SELLING'); // 필요 시 수정
+                                                fd.append('productStatus', this.form.productStatus);
 
                                                 fd.append('optionsJson', JSON.stringify(this.options.map(o => ({
                                                     optionNo: o.optionNo || null,
@@ -521,7 +581,10 @@
                                                     processData: false,
                                                     contentType: false,
                                                     dataType: "json",
-                                                    success: () => { alert("✅ 수정되었습니다."); location.href = CP + "/seller/products.do"; },
+                                                    success: () => {
+                                                        alert("✅ 수정되었습니다.");
+                                                        location.href = CP + "/sellerProductList.do";
+                                                    },
                                                     error: () => { alert("❌ 저장 실패"); }
                                                 });
                                             },
@@ -531,18 +594,29 @@
                                             removeOption(idx, opt) { if (opt.optionNo) this.deletedOptionNos.push(opt.optionNo); this.options.splice(idx, 1); },
 
                                             // 카테고리
+                                            onTopChange() { if (this.initLoading) return; this.fetchMid(/*clearLeaf=*/true); },
+                                            onMidChange() { if (this.initLoading) return; this.fetchLeaf(); },
                                             fetchTop() {
                                                 return $.ajax({
-                                                    url: CP + "/CategoryTopList.dox", type: "POST", dataType: "json",
-                                                    data: { topNo: this.top },
-                                                    success: (data) => { this.topList = data.list || []; }
+                                                    url: CP + "/CategoryTopList.dox",
+                                                    type: "POST",
+                                                    dataType: "json",
+                                                    data: {
+                                                        topNo: this.top
+                                                    },
+                                                    success: (data) => {
+                                                        this.topList = data.list || [];
+                                                    }
                                                 });
                                             },
-                                            fetchMid() {
+                                            fetchMid(clearLeaf = false) {
                                                 return $.ajax({
                                                     url: CP + "/CategoryMidList.dox", type: "POST", dataType: "json",
                                                     data: { topNo: this.top, midNo: this.mid },
-                                                    success: (data) => { this.midList = data.list || []; this.leaf = ""; }
+                                                    success: (data) => {
+                                                        this.midList = data.list || [];
+                                                        if (clearLeaf) this.leaf = null;
+                                                    }
                                                 });
                                             },
                                             fetchLeaf() {
@@ -560,8 +634,6 @@
                                             // 제출 이벤트
                                             $("#productForm").on("submit", (e) => { e.preventDefault(); this.fnSubmit(); });
 
-                                            // 카테고리 로드 후 상세 불러오기
-                                            this.fnTopList();
                                             this.loadProduct();
 
                                             // Quill (상세 이미지 업로드용)
