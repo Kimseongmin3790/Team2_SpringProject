@@ -641,6 +641,47 @@
                         margin-top: 2px;
                     }
                 }
+
+                .status-badge {
+                    position: absolute;
+                    top: 10px;
+                    left: 10px;
+                    padding: 6px 10px;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    font-size: 14px;
+                    background: rgba(0, 0, 0, .7);
+                    color: #fff;
+                    z-index: 2;
+                }
+
+                .product--soldout .status-badge {
+                    background: #757575;
+                }
+
+                /* 회색 */
+                .product--hidden .status-badge {
+                    background: #b71c1c;
+                }
+
+                /* 레드 */
+
+                .product--soldout .image-wrapper img,
+                .product--hidden .image-wrapper img {
+                    filter: grayscale(40%) brightness(0.85);
+                }
+
+                /* 상태일 때 가격/텍스트 톤다운 */
+                .product--soldout .info .price,
+                .product--hidden .info .price {
+                    color: #8d8d8d;
+                }
+
+                /* 상태 카드에선 hover 줌 약화 */
+                .product--soldout:hover .image-wrapper img,
+                .product--hidden:hover .image-wrapper img {
+                    transform: scale(1.01);
+                }
             </style>
 
         <body>
@@ -682,7 +723,7 @@
                         <span v-if="viewLevel === 'product'">
                             <div class="sidebar-divider"></div>
 
-                            <div class="price-filer">
+                            <div class="price-filter">
                                 <h3>가격</h3>
                                 <ul>
                                     <li v-for="(range, index) in priceRanges" :key="index"
@@ -708,7 +749,7 @@
 
                         <div class="sidebar-divider"></div>
 
-                        <div class="region-filer">
+                        <div class="region-filter">
                             <h3>전국 아그리콜라들의 상품</h3>
 
                             <button v-if="selectedRegion" @click="clearRegion" class="clear-region">
@@ -741,9 +782,9 @@
                     <div class="content">
                         <!-- Breadcrumb -->
                         <div class="breadcrumb">
-                            <a href="main.do" class="home">홈<span class="breadcrumb-sep">></spean></a>
+                            <a href="main.do" class="home">홈<span class="breadcrumb-sep">></span></a>
                             <a href="productCategory.do#v=parent" class="home">상품목록
-                                <span class="breadcrumb-sep" v-if="breadcrumb.length > 0">></spean>
+                                <span class="breadcrumb-sep" v-if="breadcrumb.length > 0">></span>
                             </a>
                             <span v-for="(b, i) in breadcrumb" :key="i" @click="goToLevel(i)">
                                 {{ b }}
@@ -802,15 +843,16 @@
                         <div v-else-if="viewLevel === 'product'">
                             <div class="grid">
                                 <div class="grid-item product" v-for="p in filteredProducts" :key="p.productNo"
-                                    @click="fnView(p.productNo)">
+                                    :class="statusClass(p)" @click="onProductClick(p)">
                                     <div class="image-wrapper">
-                                        <img :src="p.filePath || '/resources/img/category/noimage.jpg'" alt="상품 이미지">
+                                        <span v-if="statusLabel(p)" class="status-badge">{{ statusLabel(p) }}</span>
+                                        <img :src="p.filePath || '/resources/img/category/noimage.jpg'"
+                                            :alt="altText(p)">
                                     </div>
                                     <div class="info">
-                                        <h4 class="wave-text">{{ p.pName || '-' }}</h4>
-                                        <div class="desc">{{p.pInfo || ''}}</div>
-                                        <div class="price wave-price">{{ (Number(p.price || 0).toLocaleString()) }}원
-                                        </div>
+                                        <h4>{{ p.pName }}</h4>
+                                        <div class="desc">{{ p.pInfo }}</div>
+                                        <div class="price">{{ Number(p.price).toLocaleString() }}원</div>
                                         <div class="review">
                                             <span v-for="i in 5" :key="i">
                                                 <i v-if="Number(p.rating) >= i" class="fas fa-star full-star"></i>
@@ -822,10 +864,9 @@
                                                 ({{ p.rating ? Number(p.rating).toFixed(1) : '0.0' }})
                                             </span>
                                         </div>
-                                        <div class="date">📅생산일: {{p.cdate || '정보없음'}}</div>
-                                        <div class="region">🌾원산지: {{p.origin || '-'}}</div>
-                                        <div class="seller">👨‍🌾Agricola: {{p.businessName || '-'}}({{p.sellerId}})
-                                        </div>
+                                        <div class="date">📅생산일: {{ p.cdate }}</div>
+                                        <div class="region">🌾원산지: {{ p.origin }}</div>
+                                        <div class="seller">👨‍🌾Agricola: {{ p.userName }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -866,7 +907,7 @@
                         ],
                         selectedPriceRange: null,
                         customMinPrice: null,
-                        cutomMaxPrice: null,
+                        customMaxPrice: null,
 
                         regionList: [],
                         selectedRegion: null,
@@ -891,9 +932,7 @@
                     },
 
                     filteredProducts() {
-                        let result = (this.productList || []).filter(
-                            p => (p.productStatus || '').toUpperCase() === 'SELLING'
-                        );
+                        let result = this.productList || [];
                         console.log('------ ', this.productList && this.productList[0]);
                         console.log('현재 선택된 가격범위 index:', this.selectedPriceRange);
                         console.log('현재 선택된 가격범위 값:', this.priceRanges[this.selectedPriceRange]);
@@ -1013,14 +1052,21 @@
                             dataType: "json",
                             type: "POST",
                             success: (data) => {
-                                console.log(data);
                                 this.categoryList = (data.categories || []).map(this.normalize);
-                                this.productList = (data.list || []).map(p => ({
-                                    ...p,
-                                    categoryNo: String(p.categoryNo),
-                                    productStatus: (p.productStatus || '').toUpperCase()
-                                }));
-                                console.log('*******=== 서버에서 받은 상품데이터 샘플 ===', data.list[0]);
+
+                                this.productList = (data.list || []).map(p => {
+                                    const status = String(
+                                        p.productStatus ?? p.PRODUCT_STATUS ?? p.product_status ?? ""
+                                    ).trim().toUpperCase();
+
+                                    return {
+                                        ...p,
+                                        // 안전한 키 정규화
+                                        categoryNo: String(p.categoryNo ?? p.CATEGORY_NO ?? p.category_no ?? ""),
+                                        productStatus: status,
+                                        filePath: p.filePath ?? p.FILE_PATH ?? p.thumbnailPath ?? p.THUMBNAIL_PATH ?? ""
+                                    };
+                                });
 
                                 // 해시 우선 복원
                                 if (this.applyFromHash()) return;
@@ -1028,7 +1074,6 @@
                                 // 초기 카테고리 진입
                                 this.applyInitialCategory();
                                 this.writeHash(false);
-
                                 this.fnSellerRegionList();
                             }
                         });
@@ -1234,6 +1279,37 @@
                         this.customMinPrice = null;
                         this.customMaxPrice = null;
                         this.selectedPriceRange = null;
+                    },
+
+                    getStatus(p) {
+                        return String(p.productStatus || "").trim().toUpperCase();
+                    },
+                    statusLabel(p) {
+                        const s = this.getStatus(p);
+                        if (s === 'SOLDOUT') return '품절';
+                        if (s === 'HIDDEN') return '판매 중지';
+                        return '';
+                    },
+                    statusClass(p) {
+                        const s = this.getStatus(p);
+                        return {
+                            'product--soldout': s === 'SOLDOUT',
+                            'product--hidden': s === 'HIDDEN'
+                        };
+                    },
+                    onProductClick(p) {
+                        const s = this.getStatus(p);
+                        if (s === 'HIDDEN') {
+                            alert('판매 중지된 상품입니다.');
+                            return;
+                        }
+                        pageChange("/productInfo.do", { productNo: p.productNo });
+                    },
+                    altText(p) {
+                        const s = this.getStatus(p);
+                        if (s === 'SOLDOUT') return '품절된 상품 이미지';
+                        if (s === 'HIDDEN') return '판매 중지된 상품 이미지';
+                        return '상품 이미지';
                     }
 
                 },
