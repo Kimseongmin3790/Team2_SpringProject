@@ -1151,7 +1151,7 @@
                                 <div id="price">￦{{ Number(info.price || 0).toLocaleString() }}원</div>
                                 <hr style="margin: 60px 0;">
                                 <div id="sub">
-                                    <p style="line-height:2px;">{{ info.pInfo }}</p>
+                                    <p style="line-height:20px;">{{ info.pInfo }}</p>
                                 </div>
 
                                 <div v-if="fulfillment=='delivery'">
