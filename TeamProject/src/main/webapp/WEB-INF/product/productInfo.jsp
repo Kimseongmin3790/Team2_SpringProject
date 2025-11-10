@@ -1119,21 +1119,6 @@
                                             </svg>
                                         </button>
 
-                                        <span class="heart-btn" @click="liked=!liked" role="button"
-                                            :aria-pressed="liked" tabindex="0" aria-label="찜">
-                                            <svg v-if="liked" width="20" height="20" viewBox="0 0 24 24"
-                                                aria-hidden="true">
-                                                <path
-                                                    d="M12.1 21.35l-.1.1-.1-.1C7.14 17.24 4 14.36 4 10.9 4 8.5 5.9 6.6 8.3 6.6c1.4 0 2.75.65 3.7 1.68C12.95 7.25 14.3 6.6 15.7 6.6 18.1 6.6 20 8.5 20 10.9c0 3.46-3.14 6.34-7.9 10.45Z"
-                                                    fill="currentColor" />
-                                            </svg>
-                                            <svg v-else width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                                                <path
-                                                    d="M12.1 21.35l-.1.1-.1-.1C7.14 17.24 4 14.36 4 10.9 4 8.5 5.9 6.6 8.3 6.6c1.4 0 2.75.65 3.7 1.68C12.95 7.25 14.3 6.6 15.7 6.6 18.1 6.6 20 8.5 20 10.9c0 3.46-3.14 6.34-7.9 10.45Z"
-                                                    fill="none" stroke="currentColor" stroke-width="1.5" />
-                                            </svg>
-                                        </span>
-
                                         <div class="share-pop" v-if="shareOpen" @click.stop>
                                             <button type="button" class="share-item" @click="shareNaver">
                                                 <span class="share-badge naver-badge">N</span><span>네이버로 공유</span>
@@ -1250,7 +1235,6 @@
                                                 class="btn btn-primary">구매하기</button>
                                             <button @click="fnBasket(info.productNo, qty)"
                                                 class="btn btn-outline">장바구니</button>
-                                            <button class="btn btn-ghost" @click="openChatWindowPost">실시간 문의</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1770,7 +1754,7 @@
                         const param = {
                             productNo,
                             userId: this.userId,
-                            qty: this.qty,                      // 결제 페이지에서 사용할 수량
+                            qty: this.qty, // 결제 페이지에서 사용할 수량
                             optionNo,                           // 서버가 받는 옵션 키
                             optionUnit: opt.unit,               // 표시용
                             optionAddPrice: Number(opt.addPrice || 0),
@@ -1834,44 +1818,6 @@
                             },
                             error: (xhr) => { alert('서버오류: ' + xhr.status); }
                         });
-                    },
-
-                    fnWish() { /* TODO */ },
-                    // productInfo.do 내
-                    openChatWindowPost() {
-                        let self = this;
-                        // 로그인 안 되어 있으면: 현재 페이지로 돌아오게 redirect 붙여서 이동
-                        if (!self.userId) {
-                            const back = encodeURIComponent(location.pathname + location.search);
-                            location.href = `/login.do?redirect=${back}`;
-                            return;
-                        }
-
-                        const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
-                        const winName = 'chatWin';
-                        const feat = 'width=500,height=600,resizable=yes,scrollbars=yes';
-                        const w = window.open('about:blank', winName, feat);
-                        if (!w) { alert('팝업 차단 해제 필요'); return; }
-
-                        const f = document.createElement('form');
-                        f.method = 'POST';
-                        f.action = CTX + '/chatting.do';
-                        f.target = winName;
-
-                        const add = (k, v) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; f.appendChild(i); };
-                        // 세션값/컨텍스트를 팝업으로 전달
-                        add('sessionId', self.userId);
-                        add('sessionName', '${sessionName}');
-                        add('productNo', self.productNo || '');
-                        add('title', '상품문의 ' + (self.info?.pName || ''));
-
-                        // CSRF 메타가 있다면 첨부
-                        const nm = document.querySelector('meta[name="_csrf_parameter"]')?.content;
-                        const tk = document.querySelector('meta[name="_csrf"]')?.content;
-                        if (nm && tk) add(nm, tk);
-
-                        document.body.appendChild(f); f.submit(); f.remove();
-                        try { w.focus(); } catch (e) { }
                     },
 
                     // 댓글
@@ -2183,10 +2129,7 @@
                     if (hid && hid.value) this.userId = hid.value;
                     const hnm = document.getElementById('sessionName');
                     if (hnm && hnm.value) this.userName = hnm.value;
-                    console.log('[debug] hidden#sessionId =', hid && hid.value);
-                    console.log('[debug] data.userId(before)=', this.userId);
                     this.userId = (hid && hid.value) || this.userId || '';
-                    console.log('[debug] data.userId(after)=', this.userId);
                     this.fnInfo();
                     this.fnLoadReviews(); // 리뷰 
                     this.fnLoadQA(); // 상품문의
