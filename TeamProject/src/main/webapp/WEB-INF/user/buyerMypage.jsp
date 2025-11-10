@@ -759,6 +759,18 @@
                     color: #fff;
                     border-color: #6c757d;
                 }
+                .badge-info {
+                    background-color: #e0f7fa; 
+                    color: #006064; 
+                }
+                .badge-shipping { 
+                    background-color: #e9d5ff;
+                    color: #6b21a8;
+                }
+                .badge-completed { 
+                    background-color: #d1fae5;
+                    color: #065f46;
+                }
             </style>
         </head>
 
@@ -861,13 +873,25 @@
                                             <p class="order-number">주문번호: {{ order.orderNo }}</p>
                                         </div>
                                         <div class="order-header-actions">
-                                            <!-- 환불 상태가 있을 경우 우선 표시 -->
-                                            <span v-if="order.primaryRefundStatus" class="badge badge-warning">
-                                                환불 {{ order.primaryRefundStatus }}
+                                            <span v-if="getOrderOverallRefundStatus(order) === '대기'"
+                                                class="badge badge-warning">
+                                                환불 요청
                                             </span>
-                                            <!-- 환불 상태가 없을 경우 기존 주문 상태 표시 -->
-                                            <span v-else class="badge">{{ order.status }}</span>
-                                            <button class="btn btn-outline-info btn-sm" @click="trackDelivery(order)" v-if="order.trackingNo">배송조회</button>
+                                            <span v-else-if="getOrderOverallRefundStatus(order) === '전체 환불 완료'"
+                                                class="badge badge-danger">
+                                                전체 환불 완료
+                                            </span>
+                                            <span v-else-if="getOrderOverallRefundStatus(order) === '부분 환불 완료'"
+                                                class="badge badge-info">
+                                                부분 환불 완료
+                                            </span>
+                                            <!-- 환불 관련 상태가 없을 경우에만 기존 주문 상태 표시 -->
+                                            <span v-else :class="getStatusClass(order.status)">
+                                                {{ order.status }}
+                                            </span>
+                                            <!-- 배송조회 버튼은 별도로 유지 -->
+                                            <button class="btn btn-outline-info btn-sm" @click="trackDelivery(order)" v-if="order.courier && order.trackingNo &&
+                                        getOrderOverallRefundStatus(order) !== '전체 환불 완료'">배송조회</button>
                                             <button class="btn btn-outline-secondary btn-sm" @click="toggleDetails(order)">
                                                 {{ order.isDetailsVisible ? '상세보기 닫기' : '상세보기' }}
                                             </button>
@@ -1688,9 +1712,37 @@
                             }
                             return total;
                         }, 0);
-                    }
-                    
+                    },
+                    getOrderOverallRefundStatus(order) {
+                        if (!order || order.totalItemCount === undefined) {
+                            return null;
+                        }
 
+                        const totalItems = order.totalItemCount;
+                        const pendingRefundItems = order.pendingRefundItemCount;
+                        const processedRefundItems = order.processedRefundItemCount;
+
+                        if (pendingRefundItems > 0) {
+                            return '대기'; // 하나라도 대기 중인 환불이 있으면 '대기'
+                        } else if (processedRefundItems > 0 && processedRefundItems === totalItems) {
+                            return '전체 환불 완료'; // 모든 상품이 환불 처리됨 (승인 또는 거절)
+                        } else if (processedRefundItems > 0 && processedRefundItems < totalItems) {
+                            return '부분 환불 완료'; // 일부 상품만 환불 처리됨 (승인 또는 거절)
+                        } else {
+                            return null; // 환불 관련 없음
+                        }
+                    },
+                    getStatusClass(status) {
+                        const classes = {
+                            "결제완료": "badge badge-new",
+                            "배송 준비중": "badge badge-preparing",
+                            "배송중": "badge badge-shipping",
+                            "배송 완료": "badge badge-completed",
+                            "취소/반품": "badge badge-cancelled"
+                        };
+                        return classes[status] || "badge";
+                    },
+    
                 },
                 mounted() {
                     let self = this;
