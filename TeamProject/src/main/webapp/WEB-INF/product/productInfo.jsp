@@ -1090,6 +1090,55 @@
                     z-index: 30;
                     /* sticky 유지 + 드롭다운보다 낮게 */
                 }
+
+                .status-badge-detail {
+                    position: absolute;
+                    top: 10px;
+                    left: 10px;
+                    padding: 8px 12px;
+                    border-radius: 10px;
+                    font-weight: 700;
+                    font-size: 14px;
+                    color: #fff;
+                    z-index: 2;
+                }
+
+                .status-badge-detail.soldout {
+                    background: #757575;
+                }
+
+                /* 회색 */
+                .status-badge-detail.hidden {
+                    background: #b71c1c;
+                }
+
+                /* 레드 */
+
+                .main-box img.dimmed {
+                    filter: grayscale(40%) brightness(0.85);
+                }
+
+                .status-note {
+                    margin: 12px 0;
+                    padding: 10px 12px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                }
+
+                .status-note.soldout {
+                    background: #f3f4f6;
+                    color: #6b7280;
+                }
+
+                .status-note.hidden {
+                    background: #fee2e2;
+                    color: #b91c1c;
+                }
+
+                .btn[disabled] {
+                    opacity: .6;
+                    cursor: not-allowed;
+                }
             </style>
         </head>
 
@@ -1102,7 +1151,10 @@
                             <!-- 왼쪽: 이미지 -->
                             <div class="prod-media" id="img">
                                 <div class="main-box">
-                                    <img :src="mainImageUrl" :alt="info.pName" @error="onImgError($event)">
+                                    <span v-if="isSoldOut" class="status-badge-detail soldout">품절</span>
+                                    <span v-else-if="isHidden" class="status-badge-detail hidden">판매 중지</span>
+                                    <img :src="mainImageUrl" :alt="info.pName"
+                                        :class="{ dimmed: isSoldOut || isHidden }" @error="onImgError($event)">
                                 </div>
 
                                 <div class="thumbs" id="small-img">
@@ -1150,6 +1202,9 @@
                                 </div>
 
                                 <div id="price">￦{{ Number(info.price || 0).toLocaleString() }}원</div>
+                                <div v-if="isSoldOut" class="status-note soldout">현재 <b>품절</b>된 상품입니다. 재입고 후 구매하실 수 있어요.
+                                </div>
+                                <div v-else-if="isHidden" class="status-note hidden">이 상품은 <b>판매 중지</b>되었습니다.</div>
                                 <hr style="margin: 60px 0;">
                                 <div id="sub">
                                     <p style="line-height:20px;">{{ info.pInfo }}</p>
@@ -1247,10 +1302,15 @@
 
                                     <div style="margin: 24px 0 0;">
                                         <div class="actions">
-                                            <button @click="fnPurchase(info.productNo, qty)"
-                                                class="btn btn-primary">구매하기</button>
-                                            <button @click="fnBasket(info.productNo, qty)"
-                                                class="btn btn-outline">장바구니</button>
+                                            <button @click="fnPurchase(info.productNo, qty)" class="btn btn-primary"
+                                                :disabled="!canBuy || !selected || qty <= 0"
+                                                :title="!canBuy ? (isSoldOut ? '품절된 상품입니다' : '판매 중지된 상품입니다') : ''">구매하기</button>
+
+                                            <button @click="fnBasket(info.productNo, qty)" class="btn btn-outline"
+                                                :disabled="!canBuy || !selected || qty <= 0"
+                                                :title="!canBuy ? (isSoldOut ? '품절된 상품입니다' : '판매 중지된 상품입니다') : ''">장바구니</button>
+
+                                            <button class="btn btn-ghost" @click="openChatWindowPost">실시간 문의</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1520,8 +1580,14 @@
                             reviewsToShow.sort((a, b) => b.recommend - a.recommend);
                         }
                         return reviewsToShow;
-                    }
+                    },
                     // ======================================
+                    status() {
+                        return String(this.info?.productStatus || "").trim().toUpperCase();
+                    },
+                    isSoldOut() { return this.status === 'SOLDOUT'; },
+                    isHidden() { return this.status === 'HIDDEN'; },
+                    canBuy() { return !this.isSoldOut && !this.isHidden; }
                 },
                 methods: {
                     // 상품/이미지 로드
@@ -1538,7 +1604,12 @@
                             data: param,
                             success: function (data) {
                                 console.log(data);
-                                self.info = data.info;
+                                self.info = {
+                                    ...data.info,
+                                    productStatus: String(
+                                        data.info?.productStatus ?? data.info?.PRODUCT_STATUS ?? ""
+                                    ).trim().toUpperCase()
+                                };
                                 self.fileList = data.fileList;
                                 self.options = data.options;
                                 // --- 도우미 ---
@@ -1762,6 +1833,8 @@
 
                     // CTA
                     fnPurchase(productNo, qty) {
+                        if (this.isHidden) { alert('판매 중지된 상품입니다.'); return; }
+                        if (this.isSoldOut) { alert('품절된 상품입니다.'); return; }
                         if (!this.userId) {
                             alert("로그인 후 이용바랍니다.");
                             location.href = "http://localhost:8082/login.do";
@@ -1800,6 +1873,8 @@
                     },
 
                     fnBasket(productNo, qty) {
+                        if (this.isHidden) { alert('판매 중지된 상품입니다.'); return; }
+                        if (this.isSoldOut) { alert('품절된 상품입니다.'); return; }
                         if (!this.userId) {
                             alert("로그인 후 이용바랍니다.");
                             location.href = "http://localhost:8082/login.do";
