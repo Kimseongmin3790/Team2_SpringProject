@@ -159,4 +159,16 @@ public class ProductService {
         return resultMap;
     }
 	
+	public HashMap<String, Object> insertProductOptions(HashMap<String, Object> map) {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+        try {
+            productMapper.insertProductOptions(map);
+            resultMap.put("result", "success");
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+            System.out.println(e.getMessage());
+        }
+        return resultMap;
+    }
+	
 }
