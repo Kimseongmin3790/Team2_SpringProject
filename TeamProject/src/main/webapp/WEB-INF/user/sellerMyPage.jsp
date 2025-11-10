@@ -709,10 +709,10 @@
                         <div class="action-title">주문 관리</div>
                         <div class="action-desc">주문 내역을 확인하세요</div>
                     </div>
-                    <div class="action-card" @click="goToPage('delivery-manage')">
+                    <div class="action-card" @click="goToPage('product-manage')">
                         <div class="action-icon">🚚</div>
-                        <div class="action-title">배송 상태 확인</div>
-                        <div class="action-desc">배송 상태를 업데이트하세요</div>
+                        <div class="action-title">내 상품 관리</div>
+                        <div class="action-desc">내 상품을 관리하세요</div>
                     </div>
                 </div>
             </div>
@@ -1156,8 +1156,8 @@
                     path = '${pageContext.request.contextPath}/product/add.do';
                 } else if (page === 'order-manage') {
                     path = '${pageContext.request.contextPath}/order/sellerList.do';
-                } else if (page === 'delivery-manage') {
-                    // 배송 상태 확인 페이지 경로를 여기에 지정하세요. (예: /seller/delivery.do)      
+                } else if (page === 'product-manage') {
+                    path = '${pageContext.request.contextPath}/sellerProductList.do';   
                 }
 
                 if (path) {

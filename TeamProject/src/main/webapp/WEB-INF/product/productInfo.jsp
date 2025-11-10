@@ -1308,9 +1308,7 @@
 
                                             <button @click="fnBasket(info.productNo, qty)" class="btn btn-outline"
                                                 :disabled="!canBuy || !selected || qty <= 0"
-                                                :title="!canBuy ? (isSoldOut ? '품절된 상품입니다' : '판매 중지된 상품입니다') : ''">장바구니</button>
-
-                                            <button class="btn btn-ghost" @click="openChatWindowPost">실시간 문의</button>
+                                                :title="!canBuy ? (isSoldOut ? '품절된 상품입니다' : '판매 중지된 상품입니다') : ''">장바구니</button>                                            
                                         </div>
                                     </div>
                                 </div>
