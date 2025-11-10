@@ -21,7 +21,6 @@
 	    <!-- 배송 정보를 위한 매핑 추가 -->
 	    <result property="courier" column="courier"/>
 	    <result property="trackingNo" column="trackingNo"/>
-	    <result property="primaryRefundStatus" column="primaryRefundStatus"/>
 	
 	    <!-- selectOrderListBySeller 쿼리에서 추가로 사용하는 필드들 -->
 	    <result property="productName" column="productName"/>
@@ -82,35 +81,33 @@
 
     <!-- 사용자 ID로 주문 내역을 조회-->
      <select id="selectOrderHistoryByUserId" resultMap="orderResultMap">
-	     SELECT
-	         O.ORDER_NO AS orderNo,
-	         O.BUYER_ID AS buyerId,
-	         TO_CHAR(O.ORDERDATE, 'YYYY-MM-DD HH24:MI:SS') AS orderDate,
-	         O.TOTAL_PRICE AS totalAmount,
-	         O.STATUS AS status,
-	         O.RECEIV_NAME AS receivName,
-	         O.RECEIV_PHONE AS receivPhone,
-	         O.DELIVER_ADDR AS deliverAddr,
-	         O.MEMO AS memo,
-	         TO_CHAR(O.UDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS uDatetime,
-	         D.COURIER AS courier,
-	         D.TRACKING_NO AS trackingNo,
-	         
-	                 (SELECT r.STATUS FROM (
-			            SELECT
-			                oi_inner.ORDER_NO,
-			                r_inner.STATUS,
-			                ROW_NUMBER() OVER (PARTITION BY oi_inner.ORDER_NO ORDER BY DECODE(r_inner.STATUS, '대기', 1, '승인', 2, '거절', 3, 99)) as rn
-			            FROM REFUND r_inner
-			            JOIN ORDER_ITEM oi_inner ON r_inner.ORDER_ITEM_NO = oi_inner.ORDER_ITEM_NO
-			            WHERE oi_inner.ORDER_NO = O.ORDER_NO
-			        ) r WHERE r.ORDER_NO = O.ORDER_NO AND r.rn = 1) AS primaryRefundStatus
-	         
-	     FROM ORDERS O
-	     LEFT JOIN DELIVERY D ON O.ORDER_NO = D.ORDER_NO
-	     WHERE O.BUYER_ID = #{userId}
-	     ORDER BY O.ORDERDATE DESC
-	 </select>
+		    SELECT
+		        O.ORDER_NO AS orderNo,
+		        O.BUYER_ID AS buyerId,
+		        TO_CHAR(O.ORDERDATE, 'YYYY-MM-DD HH24:MI:SS') AS orderDate,
+		        O.TOTAL_PRICE AS totalAmount,
+		        O.STATUS AS status,
+		        O.RECEIV_NAME AS receivName,
+		        O.RECEIV_PHONE AS receivPhone,
+		        O.DELIVER_ADDR AS deliverAddr,
+		        O.MEMO AS memo,
+		        TO_CHAR(O.UDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS uDatetime,
+		        D.COURIER AS courier,
+		        D.TRACKING_NO AS trackingNo,
+		     
+		        (SELECT COUNT(OI_TOTAL.ORDER_ITEM_NO) FROM ORDER_ITEM OI_TOTAL WHERE OI_TOTAL.ORDER_NO = o.ORDER_NO) AS totalItemCount,
+		        
+		        (SELECT COUNT(OI_PROC.ORDER_ITEM_NO) FROM ORDER_ITEM OI_PROC JOIN REFUND R_PROC ON OI_PROC.ORDER_ITEM_NO =
+		R_PROC.ORDER_ITEM_NO WHERE OI_PROC.ORDER_NO = o.ORDER_NO AND (R_PROC.STATUS = '승인' OR R_PROC.STATUS = '거절')) AS
+		processedRefundItemCount,
+		     
+		        (SELECT COUNT(OI_PEND.ORDER_ITEM_NO) FROM ORDER_ITEM OI_PEND JOIN REFUND R_PEND ON OI_PEND.ORDER_ITEM_NO =
+		R_PEND.ORDER_ITEM_NO WHERE OI_PEND.ORDER_NO = o.ORDER_NO AND R_PEND.STATUS = '대기') AS pendingRefundItemCount
+		    FROM ORDERS O
+		    LEFT JOIN DELIVERY D ON O.ORDER_NO = D.ORDER_NO
+		    WHERE O.BUYER_ID = #{userId}
+		    ORDER BY O.ORDERDATE DESC
+		</select>
 
     <select id="selectOrderItemsByOrderNo" resultMap="orderItemResultMap">
 	    SELECT

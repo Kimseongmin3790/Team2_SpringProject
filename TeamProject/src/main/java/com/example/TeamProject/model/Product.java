@@ -40,7 +40,6 @@ public class Product {
 	private int topNo;
 	private int midNo;
 	private int leafNo;
-	private int optionNo;
 	
 	private String businessName;
 	
