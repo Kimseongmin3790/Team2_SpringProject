@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.example.TeamProject.model.Cart;
+import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.User;
 
 @Mapper
@@ -59,4 +60,9 @@ public interface UserMapper {
 	int updateCartQtyByKey(Map<String, Object> map);
 	// 장바구니 추가
 	int insertCarts(Map<String, Object> map);
+	
+	// 판매자 내 상품 목록
+	List<Product> getSellerProductList(HashMap<String, Object> map);
+	// 판매자 내 상품 삭제(hidden처리)
+	int hiddenSellerProduct(HashMap<String, Object> map);
 }

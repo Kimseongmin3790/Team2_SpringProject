@@ -686,7 +686,7 @@
                         <div class="action-title">주문 관리</div>
                         <div class="action-desc">주문 내역을 확인하세요</div>
                     </div>
-                    <div class="action-card" @click="goToPage('delivery-manage')">
+                    <div class="action-card" @click="goToPage('product-manage')">
                         <div class="action-icon">🚚</div>
                         <div class="action-title">배송 상태 확인</div>
                         <div class="action-desc">배송 상태를 업데이트하세요</div>
@@ -1407,7 +1407,6 @@
             self.loadDashboardData(); 
             self.loadFarmInfo();
             self.loadReviews();
-            self.loadSalesHistory();
         }
     });
 

@@ -1,13 +1,14 @@
 package com.example.TeamProject.model;
 
+import java.util.Date;
+
 import lombok.Data;
 
 @Data
 public class ChatMessage {
-    private Long chatId;
-    private Long roomId;
-    private String userId;
-    private String type;     // JOIN / LEAVE / CHAT
-    private String content;
-    private String cdate;    // 포맷된 문자열
+	 private Long msgNo;
+	    private Long roomNo;
+	    private String userId;       // SENDER_ID
+	    private String contents;
+	    private String cdate;        // TO_CHAR
 }

@@ -1044,6 +1044,36 @@
                     font-size: 13px;
                     font-weight: 500;
                 }
+
+                /* ▼ 옵션/공유 드롭다운이 sticky 탭 위로 뜨도록 */
+                .dd {
+                    position: relative;
+                }
+
+                /* 이미 있으니 안전하게 명시 */
+                .share-wrap {
+                    position: relative;
+                }
+
+                /* 공유 팝업 부모도 기준점 명시 */
+
+                .dd-list,
+                .share-pop {
+                    position: absolute;
+                    /* 기존과 동일 */
+                    z-index: 1001;
+                    /* .irq(50) 보다 확실히 높게 */
+                    max-height: min(60vh, 480px);
+                    /* 옵션 많아도 화면 높이 기준으로 스크롤 */
+                    overflow: auto;
+                    /* 내부 스크롤 */
+                }
+
+                /* 굳이 내릴 필요는 없지만, 혹시 모를 테마 충돌 대비해 살짝만 조정 */
+                .irq {
+                    z-index: 30;
+                    /* sticky 유지 + 드롭다운보다 낮게 */
+                }
             </style>
         </head>
 
@@ -1353,7 +1383,7 @@
                                             <tr v-if="q.showAnswer && canViewQuestion(q)">
                                                 <td colspan="4" style="background:#fafafa; padding:16px 24px;">
                                                     <b style="color:#5b21b6;">문의 내용</b><br>
-                                                    <div style="margin-top:8px; white-space:pre-wrap;">{{ q.title }}
+                                                    <div style="margin-top:8px; white-space:pre-wrap;">{{ q.content }}
                                                     </div>
 
                                                     <div v-if="q.answer" style="margin-top:12px;">
@@ -1395,11 +1425,12 @@
                         shareUrl: window.location.href,
                         shareTitle: '',
                         showDetail: false,
-                        week: false, 
+                        week: false,
                         before: false,
                         liked: false,
 
-                        userId: "${sessionId}",
+                        userId: "${sessionScope.sessionId}",
+                        userName: "${sessionScope.sessionName}",
                         productNo: "${productNo}",
                         info: {},
                         fileList: [],
@@ -1805,44 +1836,40 @@
                     },
 
                     fnWish() { /* TODO */ },
+                    // productInfo.do 내
                     openChatWindowPost() {
-                        const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
-                        const winName = 'chatWin';
-                        const features = 'width=500,height=600,resizable=yes,scrollbars=yes';
-
-                        // 1) 사용자 클릭 안에서 '즉시' 새 창 오픈 (차단 우회)
-                        const w = window.open('about:blank', winName, features);
-                        if (!w) {
-                            alert('팝업이 차단되었습니다. 브라우저에서 이 사이트 팝업을 허용해 주세요.');
+                        let self = this;
+                        // 로그인 안 되어 있으면: 현재 페이지로 돌아오게 redirect 붙여서 이동
+                        if (!self.userId) {
+                            const back = encodeURIComponent(location.pathname + location.search);
+                            location.href = `/login.do?redirect=${back}`;
                             return;
                         }
 
-                        // 2) 히든 폼 만들어서 그 창(target)으로 POST 전송
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = CTX + '/chatting.do';
-                        form.target = winName;
+                        const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
+                        const winName = 'chatWin';
+                        const feat = 'width=500,height=600,resizable=yes,scrollbars=yes';
+                        const w = window.open('about:blank', winName, feat);
+                        if (!w) { alert('팝업 차단 해제 필요'); return; }
 
-                        const add = (name, value) => {
-                            const i = document.createElement('input');
-                            i.type = 'hidden';
-                            i.name = name;
-                            i.value = value;
-                            form.appendChild(i);
-                        };
+                        const f = document.createElement('form');
+                        f.method = 'POST';
+                        f.action = CTX + '/chatting.do';
+                        f.target = winName;
 
-                        // 필요한 파라미터
-                        add('sessionId', this.userId || 'guest');
+                        const add = (k, v) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; f.appendChild(i); };
+                        // 세션값/컨텍스트를 팝업으로 전달
+                        add('sessionId', self.userId);
+                        add('sessionName', '${sessionName}');
+                        add('productNo', self.productNo || '');
+                        add('title', '상품문의 ' + (self.info?.pName || ''));
 
-                        // ▼ Spring Security CSRF (켜져 있다면 필수)
-                        const csrfName = document.querySelector('meta[name="_csrf_parameter"]')?.content;
-                        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-                        if (csrfName && csrfToken) add(csrfName, csrfToken);
+                        // CSRF 메타가 있다면 첨부
+                        const nm = document.querySelector('meta[name="_csrf_parameter"]')?.content;
+                        const tk = document.querySelector('meta[name="_csrf"]')?.content;
+                        if (nm && tk) add(nm, tk);
 
-                        document.body.appendChild(form);
-                        form.submit();
-                        form.remove();
-
+                        document.body.appendChild(f); f.submit(); f.remove();
                         try { w.focus(); } catch (e) { }
                     },
 
@@ -2151,6 +2178,14 @@
                     },
                 },
                 mounted() {
+                    const hid = document.getElementById('sessionId');
+                    if (hid && hid.value) this.userId = hid.value;
+                    const hnm = document.getElementById('sessionName');
+                    if (hnm && hnm.value) this.userName = hnm.value;
+                    console.log('[debug] hidden#sessionId =', hid && hid.value);
+                    console.log('[debug] data.userId(before)=', this.userId);
+                    this.userId = (hid && hid.value) || this.userId || '';
+                    console.log('[debug] data.userId(after)=', this.userId);
                     this.fnInfo();
                     this.fnLoadReviews(); // 리뷰 
                     this.fnLoadQA(); // 상품문의

@@ -2,6 +2,8 @@ package com.example.TeamProject.Controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.TeamProject.dao.ProductService;
 import com.example.TeamProject.dao.ReviewService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -122,12 +126,11 @@ public class ProductController {
 			@RequestParam(value = "pname", required = false) String pname,
 			@RequestParam(value = "pinfo", required = false) String pinfo,
 			@RequestParam(value = "price", required = false) Integer price,
-			@RequestParam(value = "stock", required = false) Integer stock,
-			@RequestParam(value = "unit", required = false) String unit,
 			@RequestParam(value = "origin", required = false) String origin,
 			@RequestParam(value = "recommend", required = false, defaultValue = "N") String recommend,
 			@RequestParam(value = "productStatus", required = false, defaultValue = "SELLING") String productStatus,
-
+			@RequestParam(value = "optionsJson", required = false) String optionsJson,
+			
 			// 파일 파트
 			@RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
 			@RequestParam(value = "galleryImages", required = false) List<MultipartFile> galleryImages,
@@ -142,8 +145,7 @@ public class ProductController {
 			// 1) 신규 생성
 			if (productNo == null) {
 				// 필수값 검증
-				if (sellerId == null || categoryNo == null || pname == null || pinfo == null || price == null
-						|| stock == null || unit == null || origin == null) {
+				if (sellerId == null || categoryNo == null || pname == null || pinfo == null || price == null || origin == null) {
 					res.put("status", "error");
 					res.put("message", "필수 파라미터 누락");
 					return ResponseEntity.badRequest().body(res);
@@ -155,8 +157,6 @@ public class ProductController {
 				productData.put("pname", pname);
 				productData.put("pinfo", pinfo);
 				productData.put("price", price);
-				productData.put("stock", stock);
-				productData.put("unit", unit);
 				productData.put("origin", origin);
 				productData.put("recommend", recommend);
 				productData.put("productStatus", productStatus);
@@ -170,6 +170,35 @@ public class ProductController {
 					res.put("message", "상품 생성 실패");
 					return ResponseEntity.internalServerError().body(res);
 				}
+				
+				// optionsJson → List<Map<String,Object>>
+				List<Map<String, Object>> options = Collections.emptyList();
+				if (optionsJson != null && !optionsJson.isBlank()) {
+				    ObjectMapper om = new ObjectMapper();
+				    options = om.readValue(optionsJson, new TypeReference<List<Map<String, Object>>>() {});
+				}
+				
+				List<Map<String, Object>> normalized = new ArrayList<>();
+				for (Map<String, Object> o : options) {
+					Map<String, Object> m = new HashMap<>();				    
+				    String unit = String.valueOf(
+				    	    o.getOrDefault("optionName", o.getOrDefault("name",""))
+				    	).replaceAll("\\s+"," ").trim(); // 공백/케이스 차이 최소화
+
+				    	m.put("unit", unit);
+				    m.put("productNo", productNo);         // ✅ 필수				    				    
+				    m.put("addPrice", toInt(o.get("addPrice")));
+				    m.put("stock",    toInt(o.get("stock")));
+				    normalized.add(m);
+				}
+				
+				HashMap<String, Object> productOptions = new HashMap<>();
+				productOptions.put("productNo", productNo);  // ✅ 상위에 보관 (foreach에서 #{productNo}로 접근)
+				productOptions.put("options", normalized);
+
+				// 서비스로 넘겨서 mapper 호출은 네가 진행
+				productService.insertProductOptions(productOptions);
+				
 			}
 
 			// 2) 이미지 저장 (신규/추가 동일)
@@ -223,6 +252,13 @@ public class ProductController {
 		imageData.put("imageUrl", path);
 		imageData.put("isThumbnail", isThumbnail);
 		productService.insertProductImage(imageData);
+	}
+	
+	private static int toInt(Object v) {
+	    if (v == null) return 0;
+	    if (v instanceof Number) return ((Number) v).intValue();
+	    String s = v.toString().trim();
+	    return s.isEmpty() ? 0 : Integer.parseInt(s);
 	}
 
 }

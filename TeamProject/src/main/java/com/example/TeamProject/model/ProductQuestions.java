@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class ProductQuestions {
 	private String title;
+	private String content;
 	private String userId;
 	private String status;
 	private String regDate;

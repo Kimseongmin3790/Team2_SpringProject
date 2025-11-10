@@ -9,6 +9,8 @@ import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.ProductCategory;
 import com.example.TeamProject.model.ProductQuestions;
 
+
+
 @Mapper
 public interface ProductMapper {
 	// 상품 등록
@@ -33,4 +35,6 @@ public interface ProductMapper {
     List<Product> selectProductOptions(HashMap<String, Object> map);
     // 판매자의 모든 상품 숨김 처리
     void hideAllProductsBySeller(String userId);
+    // 상품 옵션 등록
+    int insertProductOptions(HashMap<String, Object> map);
 }

@@ -273,5 +273,19 @@
 	    #{shippingFee, jdbcType=NUMERIC}
 	  )
   </insert>
+  
+  <select id="getSellerProductList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+  		SELECT P.PRODUCT_NO, P.PNAME, P.PINFO, P.PRICE, P.ORIGIN, P.PRODUCT_STATUS, I.IMAGE_URL, O.UNIT, O.STOCK_QTY, O.ADD_PRICE, O.IS_ACTIVE
+		FROM PRODUCT P
+		LEFT JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO AND I.IS_THUMBNAIL = 'Y'
+		LEFT JOIN PRODUCT_OPTION O ON P.PRODUCT_NO = O.PRODUCT_NO
+		WHERE SELLER_ID = #{sellerId}
+  </select>
+  
+  <update id="hiddenSellerProduct" parameterType="hashmap">
+  		UPDATE PRODUCT
+  			SET PRODUCT_STATUS = 'HIDDEN'
+  		WHERE PRODUCT_NO = #{productNo}
+  </update>
 
 </mapper>
