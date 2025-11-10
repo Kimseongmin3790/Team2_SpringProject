@@ -100,6 +100,7 @@
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
             font-size: 0.875rem;
+            box-sizing: border-box;
         }
 
         .filter-item select:focus,
@@ -329,7 +330,7 @@
         }
 
         .modal-content.large {
-            max-width: 700px;
+            max-width: 800px;
         }
 
         .modal-header {
@@ -445,7 +446,13 @@
             border-radius: 0.5rem;
             padding: 1rem;
             display: flex;
+            flex-direction: column; 
+            gap: 1rem; 
+        }
+        .product-main-info {
+            display: flex;
             gap: 1rem;
+            width: 100%; 
         }
 
         .product-image {
@@ -578,6 +585,98 @@
             border-color: #4caf50;
             font-weight: bold;
         }
+        .badge-refund-request {
+            display: inline-block;
+            padding: 4px 8px;
+            margin-left: 5px;
+            border-radius: 5px;
+            font-size: 0.75em; 
+            font-weight: bold;
+            color: #fff;
+            background-color: #dc3545;
+            vertical-align: middle;
+        }
+
+        .refund-details {
+            width: 100%;
+            margin-top: 15px;
+            padding: 1rem;
+            border-top: 1px dashed #e5e7eb;
+            display: flex;
+            flex-direction: column; 
+            gap: 1rem; 
+            background-color: #fffbeb;
+            border-radius: 0.375rem;
+            border: 1px solid #fcd34d; 
+            box-sizing: border-box;
+        }
+
+        .refund-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem; 
+        }
+
+        .refund-info p {
+            margin: 0; 
+            font-size: 0.875rem; 
+            color: #92400e;
+            display: flex; 
+            justify-content: space-between; 
+        }
+
+        .refund-info p strong {
+            color: #b45309;
+            font-weight: 600; 
+            flex-shrink: 0; 
+            margin-right: 0.5rem; 
+        }
+
+        .refund-actions {
+            display: flex;
+            justify-content: flex-end; 
+            gap: 0.5rem;
+            flex-shrink: 0;
+            margin-top: 0.5rem;
+        }
+        .refund-actions .btn-success {
+            background-color: #28a745; 
+            border-color: #28a745;
+            color: #fff;
+        }
+
+        .refund-actions .btn-danger {
+            background-color: #dc3545; 
+            border-color: #dc3545;
+            color: #fff;
+        }
+        .badge-processed {
+        background-color: #e0e0e0; /* 회색 계열 */
+        color: #555;
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .badge-success {
+        background-color: #d1fae5; 
+        color: #065f46; 
+    }
+
+    .badge-danger {
+        background-color: #fee2e2; 
+        color: #991b1b; 
+    }
+    .refund-details .badge {
+        font-size: 0.75rem; 
+        padding: 0.2em 0.6em;
+        font-weight: 600;
+    }
+
+    .product-card .refund-details:last-child {
+        margin-bottom: 0;
+    }
     </style>
 </head>
 <body>
@@ -682,18 +781,37 @@
                                         {{ order.totalPrice.toLocaleString() }}원
                                     </td>
                                     <td class="text-center">
-                                        <span :class="getStatusBadgeClass(order.status)">
+                                        <span v-if="getOrderOverallRefundStatus(order) === '대기'"
+                                            class="status-badge" :class="getRefundStatusBadgeClass('대기')">
+                                            환불 요청
+                                        </span>
+                                        <span v-else-if="getOrderOverallRefundStatus(order) === '전체 환불 완료'"
+                                            class="status-badge" :class="getRefundStatusBadgeClass('승인')">
+                                            전체 환불 완료
+                                        </span>
+                                        <span v-else-if="getOrderOverallRefundStatus(order) === '부분 환불 완료'"
+                                            class="status-badge" :class="getRefundStatusBadgeClass('승인')">
+                                            부분 환불 완료
+                                        </span>
+                                        <span v-else :class="getStatusBadgeClass(order.status)">
                                             {{ order.status }}
                                         </span>
                                     </td>
-                                    <td>
-                                        <div class="action-controls">
+                                    <td class="text-center" style="vertical-align: middle;">
+                                        <div v-if="getOrderOverallRefundStatus(order) === '대기'">
+                                            <button class="btn btn-danger" @click="openDetailModal(order)">
+                                                🚨 환불처리
+                                            </button>
+                                        </div>
+                                        <div v-else-if="getOrderOverallRefundStatus(order) === '전체 환불 완료'">
+                                            <span class="text-muted">환불 완료</span>
+                                        </div>
+                                        <div v-else class="action-controls">
                                             <select
                                                 class="status-select"
                                                 :value="order.status"
                                                 @change="handleStatusChange(order.orderNo, $event.target.value)"
-                                                :disabled="getValidStatusOptions(order.status).length === 0"
-                                            >
+                                                :disabled="getValidStatusOptions(order.status).length === 0">
                                                 <option :value="order.status" selected>{{ order.status }}</option>
                                                 <option v-for="option in getValidStatusOptions(order.status)" :key="option" :value="option">
                                                     {{ option }}
@@ -702,8 +820,7 @@
                                             <button
                                                 v-if="order.status === '배송 준비중'"
                                                 class="btn"
-                                                @click="openDeliveryModal(order)"
-                                            >
+                                                @click="openDeliveryModal(order)">
                                                 🚚 배송등록
                                             </button>
                                         </div>
@@ -818,15 +935,32 @@
                         <div class="detail-section">
                             <h3>주문 상품</h3>
                             <div v-for="item in selectedOrder.items" :key="item.orderItemNo" class="product-card">
-                                <div class="product-image">
-                                    <img :src="'${pageContext.request.contextPath}' + item.imageUrl" alt="상품 이미지" v-if="item.imageUrl">
-                                    <span v-else>📦</span>
-                                </div>
-                                <div class="product-info">
-                                    <div class="product-info-name">{{ item.productName }}</div>
-                                    <div v-if="item.optionUnit" class="product-info-option">옵션: {{ item.optionUnit }} </div>
-                                    <div class="product-info-quantity">수량: {{ item.quantity }}개</div>
-                                    <div class="product-info-price">{{ item.price.toLocaleString() }}원</div>
+                                <div class="product-main-info"> 
+                                    <div class="product-image">
+                                        <img :src="'${pageContext.request.contextPath}' + item.imageUrl" alt="상품 이미지" v-if= "item.imageUrl">
+                                        <span v-else>📦</span>
+                                    </div>
+                                    <div class="product-info">
+                                        <div class="product-info-name">{{ item.productName }}</div>
+                                        <div v-if="item.optionUnit" class="product-info-option">옵션: {{ item.optionUnit }} </div>
+                                        <div class="product-info-quantity">수량: {{ item.quantity }}개</div>
+                                        <div class="product-info-price">{{ item.price.toLocaleString() }}원</div>
+                                    </div>
+                                </div> 
+
+                                <!-- 환불 요청 정보 및 처리 섹션 -->
+                                <div v-if="item.refundStatus" class="refund-details">
+                                    <div class="refund-info">
+                                        <p><strong>환불 상태:</strong> <span class="badge badge-refund-request">{{ item.refundStatus }}</span></p>
+                                        <p><strong>환불 요청 수량:</strong> {{ item.refundQuantity }}개</p>
+                                        <p><strong>환불 금액:</strong> {{ (item.price / item.quantity * item.refundQuantity).toLocaleString() }}원</p>
+                                        <p><strong>환불 사유:</strong> {{ item.refundReason }}</p>
+                                    </div>
+                                    <!-- '대기' 상태일 때만 승인/거절 버튼 표시 -->
+                                    <div v-if="item.refundStatus === '대기'" class="refund-actions">
+                                        <button class="btn btn-success btn-sm" @click="processRefund(item, '승인')">승인</button>
+                                        <button class="btn btn-danger btn-sm" @click="processRefund(item, '거절')">거절</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -859,8 +993,12 @@
                             <h3>결제 정보</h3>
                             <div class="detail-box">
                                 <div class="detail-row">
-                                    <span class="detail-label">총 상품금액</span>
+                                    <span class="detail-label">총 주문 금액</span>
                                     <span class="detail-value">{{ (selectedOrder.totalPrice).toLocaleString()}}원</span>
+                                </div>
+                                <div v-if="getRefundedAmount(selectedOrder) > 0" class="detail-row text-danger">
+                                    <span class="detail-label">- 환불된 금액</span>
+                                    <span class="detail-value">{{ getRefundedAmount(selectedOrder).toLocaleString() }}원</span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">배송비</span>
@@ -868,7 +1006,13 @@
                                 </div>
                                 <div class="detail-row total">
                                     <span class="detail-label">최종 결제금액</span>
-                                    <span class="detail-value">{{ (selectedOrder.totalPrice + 3000).toLocaleString() }}원</span>
+                                    <span class="detail-value">
+                                        {{
+                                            (selectedOrder.totalPrice - getRefundedAmount(selectedOrder)
+                                            + (selectedOrder.totalPrice - getRefundedAmount(selectedOrder) > 0 ? 3000 : 0))
+                                            .toLocaleString()
+                                        }}원
+                                    </span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">결제수단</span>
@@ -978,6 +1122,34 @@
             }
         },
         methods: {
+            processRefund(item, newStatus) {
+                const actionText = newStatus === '승인' ? '승인' : '거절';
+                if (!confirm('"' + item.productName + '" 상품의 환불 요청을 ' + actionText + '하시겠습니까?')) {
+                    return;
+                }
+
+                const self = this;
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/refund/process.dox", 
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        orderItemNo: item.orderItemNo,
+                        status: newStatus // '승인' 또는 '거절'
+                    },
+                    success: function(response) {
+                        if (response.result === 'success') {
+                            alert('환불 요청이 ' + actionText + ' 처리되었습니다.');
+                            self.openDetailModal(self.selectedOrder);
+                        } else {
+                            alert(response.message || '환불 처리 중 오류가 발생했습니다.');
+                        }
+                    },
+                    error: function() {
+                        alert('서버와 통신 중 오류가 발생했습니다.');
+                    }
+                });
+            },
             applyFilter() {
                 let self = this;
                 self.currentPage = 1;
@@ -1085,6 +1257,14 @@
                         }
                     });
                 }
+            },
+            getRefundStatusBadgeClass(status) {
+                const classes = {
+                    '대기': 'badge badge-refund-request',
+                    '승인': 'badge badge-success', 
+                    '거절': 'badge badge-danger' 
+                };
+                return classes[status] || 'badge';
             },
             openDeliveryModal(order) {
                 this.selectedOrder = order;
@@ -1195,6 +1375,40 @@
             },
             nextPage() {
                 this.goToPage(this.currentPage + 1);
+            },
+            getRefundedAmount(order) {
+                if (!order || !order.items) {
+                    return 0;
+                }
+
+                return order.items.reduce((total, item) => {
+                    if (item.refundStatus === '승인') {
+                        // (상품 단가) * (환불 수량)
+                        const unitPrice = item.price / item.quantity;
+                        const refundValue = unitPrice * item.refundQuantity;
+                        return total + refundValue;
+                    }
+                    return total;
+                }, 0);
+            },
+            getOrderOverallRefundStatus(order) {
+                if (!order || order.totalItemCount === undefined) { // totalItemCount가 없으면 아직 데이터가 안 넘어온 것
+                    return null;
+                }
+
+                const totalItems = order.totalItemCount;
+                const pendingRefundItems = order.pendingRefundItemCount;
+                const processedRefundItems = order.processedRefundItemCount;
+
+                if (pendingRefundItems > 0) { 
+                    return '대기'; 
+                } else if (processedRefundItems > 0 && processedRefundItems === totalItems) {          
+                    return '전체 환불 완료'; 
+                } else if (processedRefundItems > 0 && processedRefundItems < totalItems) {           
+                    return '부분 환불 완료'; 
+                } else {
+                    return null; 
+                }
             },
         },
         mounted() {

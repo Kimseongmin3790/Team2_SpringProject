@@ -66,10 +66,6 @@ public class CommonController {
 	    return "main/brandStory";
 	}
 
-	
-	
-	
-	
 	@RequestMapping(value = "/orderList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String orderList(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
@@ -208,5 +204,5 @@ public class CommonController {
 		        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		    }
 		}
-	    
+	    	    
 }

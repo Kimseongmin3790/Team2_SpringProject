@@ -343,7 +343,9 @@
                 th {
                     border: 1px solid #000;
                     border-collapse: collapse;
-                    padding: 5px 10px;
+                    padding: 5px 140px;
+                    margin: 0 auto;
+                    text-align: center;
                 }
 
                 th {
@@ -532,21 +534,35 @@
 
                 .detail-img-wrap {
                     width: 100%;
-                    aspect-ratio: 4 / 3;
-                    /* 모두 같은 비율로 맞춤 (원하면 1/1 로 바꿔도 됨) */
-                    margin: 0;
-                    /* 카드 사이 여백 제거 */
                     overflow: hidden;
                     border-radius: 8px;
-                    background: #000;
+                    background: #fff;
+                    /* 여백 색상 */
                 }
 
                 .detail-img {
-                    display: block;
-                    /* img의 하단 기본 공백 제거 */
                     width: 100%;
                     height: 100%;
+                    object-fit: contain;
+                    /* 잘림 없음 */
+                    display: block;
                 }
+
+                .detail--portrait {
+                    aspect-ratio: 3 / 4;
+                }
+
+                /* 세로형(포스터 같은 이미지) */
+                .detail--land {
+                    aspect-ratio: 4 / 3;
+                }
+
+                /* 가로형 */
+                .detail--square {
+                    aspect-ratio: 1 / 1;
+                }
+
+                /* 정사각 */
 
                 .detail-img.cover {
                     object-fit: cover;
@@ -1171,21 +1187,6 @@
                                             </svg>
                                         </button>
 
-                                        <span class="heart-btn" @click="liked=!liked" role="button"
-                                            :aria-pressed="liked" tabindex="0" aria-label="찜">
-                                            <svg v-if="liked" width="20" height="20" viewBox="0 0 24 24"
-                                                aria-hidden="true">
-                                                <path
-                                                    d="M12.1 21.35l-.1.1-.1-.1C7.14 17.24 4 14.36 4 10.9 4 8.5 5.9 6.6 8.3 6.6c1.4 0 2.75.65 3.7 1.68C12.95 7.25 14.3 6.6 15.7 6.6 18.1 6.6 20 8.5 20 10.9c0 3.46-3.14 6.34-7.9 10.45Z"
-                                                    fill="currentColor" />
-                                            </svg>
-                                            <svg v-else width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                                                <path
-                                                    d="M12.1 21.35l-.1.1-.1-.1C7.14 17.24 4 14.36 4 10.9 4 8.5 5.9 6.6 8.3 6.6c1.4 0 2.75.65 3.7 1.68C12.95 7.25 14.3 6.6 15.7 6.6 18.1 6.6 20 8.5 20 10.9c0 3.46-3.14 6.34-7.9 10.45Z"
-                                                    fill="none" stroke="currentColor" stroke-width="1.5" />
-                                            </svg>
-                                        </span>
-
                                         <div class="share-pop" v-if="shareOpen" @click.stop>
                                             <button type="button" class="share-item" @click="shareNaver">
                                                 <span class="share-badge naver-badge">N</span><span>네이버로 공유</span>
@@ -1325,8 +1326,7 @@
                         </div>
 
                         <section id="in">
-                            <img src="<c:url value='/resources/img/class.png'/>"
-                                style="max-width:100%;width:1100px;height:auto;display:block;">
+
                         </section>
 
                         <div v-if="!showDetail" style="margin:16px 0; text-align:center;">
@@ -1337,16 +1337,17 @@
                         </div>
 
                         <div v-show="showDetail">
-                            <div v-for="img in detailOnly" :key="img" class="detail-img-wrap">
-                                <img :src="img" :alt="info.pName || '상세 이미지'" class="detail-img cover" loading="lazy">
+                            <div v-for="img in detailOnly" :key="img" class="detail-img-wrap" :class="pickAR(img)">
+                                <img :src="img" :alt="info.pName || '상세 이미지'" class="detail-img" loading="lazy"
+                                    @load="onDetailLoad($event, img)">
                             </div>
 
-                            <div>
+                            <div style="margin: 30px 40px;">
                                 상품정보 제공고시
                                 <table>
                                     <tr>
                                         <th>품목 또는 명칭</th>
-                                        <td>연지홍게</td>
+                                        <td>{{info.pName}}</td>
                                     </tr>
                                     <tr>
                                         <th>포장단위별 용량(중량), 수량, 크기</th>
@@ -1487,6 +1488,7 @@
                         week: false,
                         before: false,
                         liked: false,
+                        detailMeta: {},
 
                         userId: "${sessionScope.sessionId}",
                         userName: "${sessionScope.sessionName}",
@@ -1717,6 +1719,20 @@
                         });
                     },
 
+                    onDetailLoad(e, url) {
+                        const w = e.target.naturalWidth || 1;
+                        const h = e.target.naturalHeight || 1;
+                        this.detailMeta[url] = { w, h };
+                    },
+                    pickAR(url) {
+                        const m = this.detailMeta[url];
+                        if (!m) return 'detail--portrait';      // 로딩 전 임시값(세로형이 많다면 이렇게)
+                        const r = m.w / m.h;                   // 가로/세로 비
+                        if (r > 1.15) return 'detail--land';   // 충분히 가로 넓으면 4:3
+                        if (r < 0.87) return 'detail--portrait'; // 충분히 세로 길면 3:4
+                        return 'detail--square';               // 애매하면 정사각
+                    },
+
                     onImgError(e) {
                         // 0차: 즉시 보이는 data URI (항상 성공)
                         if (!e.target.dataset.fallback0) {
@@ -1842,7 +1858,7 @@
                         const param = {
                             productNo,
                             userId: this.userId,
-                            qty: this.qty,                      // 결제 페이지에서 사용할 수량
+                            qty: this.qty, // 결제 페이지에서 사용할 수량
                             optionNo,                           // 서버가 받는 옵션 키
                             optionUnit: opt.unit,               // 표시용
                             optionAddPrice: Number(opt.addPrice || 0),
@@ -1908,44 +1924,6 @@
                             },
                             error: (xhr) => { alert('서버오류: ' + xhr.status); }
                         });
-                    },
-
-                    fnWish() { /* TODO */ },
-                    // productInfo.do 내
-                    openChatWindowPost() {
-                        let self = this;
-                        // 로그인 안 되어 있으면: 현재 페이지로 돌아오게 redirect 붙여서 이동
-                        if (!self.userId) {
-                            const back = encodeURIComponent(location.pathname + location.search);
-                            location.href = `/login.do?redirect=${back}`;
-                            return;
-                        }
-
-                        const CTX = '<c:out value="${pageContext.request.contextPath}"/>';
-                        const winName = 'chatWin';
-                        const feat = 'width=500,height=600,resizable=yes,scrollbars=yes';
-                        const w = window.open('about:blank', winName, feat);
-                        if (!w) { alert('팝업 차단 해제 필요'); return; }
-
-                        const f = document.createElement('form');
-                        f.method = 'POST';
-                        f.action = CTX + '/chatting.do';
-                        f.target = winName;
-
-                        const add = (k, v) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; f.appendChild(i); };
-                        // 세션값/컨텍스트를 팝업으로 전달
-                        add('sessionId', self.userId);
-                        add('sessionName', '${sessionName}');
-                        add('productNo', self.productNo || '');
-                        add('title', '상품문의 ' + (self.info?.pName || ''));
-
-                        // CSRF 메타가 있다면 첨부
-                        const nm = document.querySelector('meta[name="_csrf_parameter"]')?.content;
-                        const tk = document.querySelector('meta[name="_csrf"]')?.content;
-                        if (nm && tk) add(nm, tk);
-
-                        document.body.appendChild(f); f.submit(); f.remove();
-                        try { w.focus(); } catch (e) { }
                     },
 
                     // 댓글
@@ -2257,10 +2235,7 @@
                     if (hid && hid.value) this.userId = hid.value;
                     const hnm = document.getElementById('sessionName');
                     if (hnm && hnm.value) this.userName = hnm.value;
-                    console.log('[debug] hidden#sessionId =', hid && hid.value);
-                    console.log('[debug] data.userId(before)=', this.userId);
                     this.userId = (hid && hid.value) || this.userId || '';
-                    console.log('[debug] data.userId(after)=', this.userId);
                     this.fnInfo();
                     this.fnLoadReviews(); // 리뷰 
                     this.fnLoadQA(); // 상품문의

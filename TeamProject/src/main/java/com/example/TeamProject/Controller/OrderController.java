@@ -101,4 +101,29 @@ public class OrderController {
         return new Gson().toJson(resultMap);
     }    
     
+    @RequestMapping(value = "/refund/request.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    	public String refundRequest(@RequestParam HashMap<String, Object> paramMap) throws Exception {	    
+    		HashMap<String, Object> resultMap = orderService.requestRefund(paramMap);
+
+    		    
+    		return new Gson().toJson(resultMap);
+    }
+    
+    @RequestMapping(value = "/refund/cancel.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    		@ResponseBody
+    		public String cancelRefund(@RequestParam HashMap<String, Object> paramMap) throws Exception {	  
+    		    HashMap<String, Object> resultMap = orderService.cancelRefund(paramMap);
+
+    		    return new Gson().toJson(resultMap);
+    		}
+    
+    @RequestMapping(value = "/refund/process.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    		@ResponseBody
+    		public String processRefund(@RequestParam HashMap<String, Object> paramMap) throws Exception {	   
+    		    HashMap<String, Object> resultMap = orderService.processRefund(paramMap);
+
+    		    return new Gson().toJson(resultMap);
+    		}
+    
 }
