@@ -805,16 +805,6 @@
                                         <input type="checkbox" v-model="allSelected" />
                                         전체선택
                                     </label>
-                                    <div class="bulk-actions-right">
-                                        <button class="btn btn-outline btn-sm" @click="selectedIds = []"
-                                            :disabled="!selectedIds.length">
-                                            선택해제
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" @click="fnAllRemove"
-                                            :disabled="!selectedIds.length">
-                                            선택삭제
-                                        </button>
-                                    </div>
                                 </div>
 
                                 <div class="card" v-for="item in cartItems" :key="item.cartNo">
@@ -1131,7 +1121,7 @@
                         activeTab: root?.dataset?.activeTab || 'cart',
                         userName: "",
                         userEmail: "",
-                        cartItems: [],          
+                        cartItems: [],
                         orders: [],
                         reviews: [],
                         profile: {},
@@ -1158,11 +1148,20 @@
                     },
                     totalPrice() {
                         return this.pickedItems
-                        .reduce((s, i) => s + Number(i.unitPrice || 0) * Number(i.quantity || 1), 0);
+                            .reduce((s, i) => s + Number(i.unitPrice || 0) * Number(i.quantity || 1), 0);
                     },
-                    shippingFeeC() { // 배송비 정책: 현재는 라인별 합(묶음배송이면 여기 로직만 바꿔)
-                        return this.pickedItems
-                            .reduce((s, i) => s + Number(i.shippingFee || 0), 0);
+                    shippingFeeC() {
+                        // 선택된 항목 기준으로 배송비 결정
+                        const items = this.pickedItems;
+                        if (!items.length) return 0;
+
+                        // fulfillment 필드가 없다면 기본값 'delivery'
+                        const hasDelivery = items.some(i => {
+                            const f = String(i.fulfillment || i.FULFILLMENT || 'delivery').toLowerCase();
+                            return f === 'delivery';
+                        });
+
+                        return hasDelivery ? 3000 : 0;
                     },
                     finalPriceC() {
                         return this.totalPrice + this.shippingFeeC;
@@ -1665,28 +1664,6 @@
                                 map: self.map
                             });
                         })
-                    },
-
-                    fnAllRemove: function () {
-                        let self = this;
-                        console.log(self.selectItem);
-                        var fList = JSON.stringify(self.selectItem);
-                        var param = { selectItem: fList };
-                        $.ajax({
-                            url: "/cart/Allremove.dox",
-                            type: "POST",
-                            dataType: "json",
-                            data: { selectItem: JSON.stringify(this.selectedIds) },
-                            success: (data) => {
-                                if (data.result === 'success') {
-                                    alert('삭제되었습니다.');
-                                    this.fnLoadCart();
-                                    this.selectedIds = [];
-                                } else {
-                                    alert('삭제 실패');
-                                }
-                            }
-                        });
                     },
 
                     unitPrice(i) {

@@ -665,11 +665,6 @@
                             <button :disabled="qnaPage === qnaTotalPage"
                                 @click="fnChangeQnaPage(qnaPage + 1)">다음</button>
                         </div>
-
-                        <!-- ✅ 문의글 작성 버튼 -->
-                        <button class="btn-write-inquiry" @click="fnGoToQnaWrite">
-                            ✏️ 상품문의 작성
-                        </button>
                     </c:if>
 
                     <!-- ✅ 고객문의 (비밀번호 모달 적용) -->

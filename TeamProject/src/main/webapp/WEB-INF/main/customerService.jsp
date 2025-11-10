@@ -267,7 +267,11 @@
                         </details>
                         <details>
                             <summary class="faq-question"><span class="faq-question-text">[계정관련] 탈퇴는 어떻게 하나요?</span><span class="faq-arrow">▼</span></summary>
-                            <div class="faq-answer">마이 페이지 - 회원 정보 란에서 탈퇴 가능합니다.</div>
+                            <div class="faq-answer">상단의 마이페이지 -> 내 정보 관리 탭에서 회원 탈퇴 하실 수 있습니다</div>
+                        </details>
+                        <details>
+                            <summary class="faq-question"><span class="faq-question-text">[기타] 판매자에게 상품 문의를 하고 싶어요</span><span class="faq-arrow">▼</span></summary>
+                            <div class="faq-answer">상품 상세 페이지에서 문의하기를 남기실 수 있습니다</div>
                         </details>
                     </div>
                 </div>

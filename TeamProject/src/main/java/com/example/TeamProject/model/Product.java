@@ -36,4 +36,15 @@ public class Product {
 	private int addPrice;	
 	private String userName;
 	private double rating;
+	
+	private int topNo;
+	private int midNo;
+	private int leafNo;
+	private int optionNo;
+	
+	private String businessName;
+	
+	private String region;
+	private int productCount;
+	
 }

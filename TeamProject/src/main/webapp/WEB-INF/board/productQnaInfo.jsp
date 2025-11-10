@@ -161,7 +161,8 @@
                             </div>
 
                             <!-- ✅ 답변 없고 판매자일 경우 -->
-                            <div class="answer-container" v-else-if="sessionStatus === 'SELLER'">
+                            <div class="answer-container"
+                                v-else-if="sessionStatus === 'SELLER' && qna && qna.sellerId === sessionId">
                                 <div class="answer-title">답변 작성</div>
                                 <div class="answer-form">
                                     <textarea v-model="newAnswer" placeholder="답변을 입력하세요."></textarea>
@@ -199,11 +200,13 @@
                                         url: "/productQnaInfo.dox",
                                         type: "POST",
                                         dataType: "json",
-                                        data: { 
-                                            qnaNo: this.qnaNo 
+                                        data: {
+                                            qnaNo: this.qnaNo
                                         },
                                         success: (res) => {
-                                            if (res.result === "success") this.qna = res.info;
+                                            if (res.result === "success")
+                                                console.log(res);
+                                            this.qna = res.info;
                                         }
                                     });
                                 },
@@ -214,8 +217,8 @@
                                         url: "/productQnaAnswerInfo.dox",
                                         type: "POST",
                                         dataType: "json",
-                                        data: { 
-                                            qnaNo: this.qnaNo 
+                                        data: {
+                                            qnaNo: this.qnaNo
                                         },
                                         success: (res) => {
                                             if (res.result === "success" && res.info) this.answer = res.info;
@@ -244,6 +247,8 @@
                                                 Swal.fire("등록 완료", "답변이 등록되었습니다.", "success");
                                                 this.fnLoadAnswer();
                                                 this.newAnswer = "";
+                                            } else if (res.result === "notSeller") {
+                                                Swal.fire("권한 없음", "이 문의의 판매자만 답변할 수 있습니다", "error");
                                             } else {
                                                 Swal.fire("실패", "등록 중 오류가 발생했습니다.", "error");
                                             }

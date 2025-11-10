@@ -1,6 +1,8 @@
 package com.example.TeamProject.dao;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -17,12 +19,15 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.TeamProject.mapper.UserMapper;
 import com.example.TeamProject.model.Cart;
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.SellerVO;
 import com.example.TeamProject.model.User;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -46,6 +51,9 @@ public class UserService {
 	
 	@Autowired 
 	SellerService sellerService;
+	
+	@Autowired
+    private ObjectMapper objectMapper;
 
 	public HashMap<String, Object> addUser(HashMap<String, Object> map) {
 		// TODO Auto-generated method stub
@@ -629,6 +637,149 @@ public class UserService {
 		return resultMap;
 	}
 	
+	public HashMap<String, Object> getSellerProductDetail(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			Product detail = userMapper.getsellerProductDetail(map);
+			List<Product> option = userMapper.getsellerProductOption(map);
+			List<Product> image = userMapper.getsellerProductImage(map);
+			Product category = userMapper.getsellerProductCategory(toInt(detail.getCategoryNo(), null));
+			
+			resultMap.put("detail", detail);
+			resultMap.put("option", option);
+			resultMap.put("image", image);
+			resultMap.put("category", category);
+			
+			resultMap.put("result", "sucess");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
+	@Transactional
+    public Map<String, Object> updateProductAll(
+            Integer productNo,
+            Integer categoryNo,
+            String pname,
+            String pinfo,
+            Integer price,
+            String origin,
+            String productStatus,
+            // JSON 문자열
+            String optionsJson,              // [{optionNo, optionName, addPrice, stock}]
+            String deletedOptionNosJson,     // [101,102,...]
+            String deletedImageNosJson,      // [201,202,...]
+            // 파일
+            MultipartFile thumbnail,
+            List<MultipartFile> galleryImages,
+            List<MultipartFile> detailImages,
+            // 파일 저장 경로
+            String uploadDir
+    ) throws Exception {
+
+        Map<String, Object> out = new HashMap<>();
+
+        /* 1) 기본 상품 업데이트 */
+        Map<String, Object> base = new HashMap<>();
+        base.put("productNo", productNo);
+        base.put("categoryNo", categoryNo);
+        base.put("pname", pname);
+        base.put("pinfo", pinfo);
+        base.put("price", price);
+        base.put("origin", origin);
+        base.put("productStatus", productStatus); // SELLING / SOLDOUT / HIDDEN
+
+        userMapper.updateProduct(base);
+
+        /* 2) 삭제 옵션 처리 */
+        List<Integer> deletedOptionNos = parseIntList(deletedOptionNosJson);
+        if (!deletedOptionNos.isEmpty()) {
+            Map<String, Object> delParam = new HashMap<>();
+            delParam.put("productNo", productNo);
+            delParam.put("optionNos", deletedOptionNos);
+            userMapper.deleteOptions(delParam);
+        }
+
+        /* 3) 옵션 upsert (optionNo 있으면 update, 없으면 insert) */
+        List<Map<String, Object>> options = parseOptionList(optionsJson);
+        for (Map<String, Object> op0 : options) {
+            Integer optionNo = toInt(op0.get("optionNo"), null);
+            String optionName = String.valueOf(op0.getOrDefault("optionName", "")).trim(); // → UNIT
+            Integer addPriceV = toInt(op0.get("addPrice"), 0);
+            Integer stockV = toInt(op0.get("stock"), 0);                                   // → STOCK_QTY
+
+            Map<String, Object> op = new HashMap<>();
+            op.put("productNo", productNo);
+            op.put("unit", optionName);
+            op.put("addPrice", addPriceV);
+            op.put("stockQty", stockV);
+
+            if (optionNo != null) {
+                op.put("optionNo", optionNo);
+                userMapper.updateOption(op);
+            } else {
+            	userMapper.insertOption(op); // 시퀀스/AI는 XML에서 처리
+            }
+        }
+
+        /* 4) 삭제 이미지 처리 */
+        List<Integer> deletedImageNos = parseIntList(deletedImageNosJson);
+        if (!deletedImageNos.isEmpty()) {
+            Map<String, Object> delParam = new HashMap<>();
+            delParam.put("productNo", productNo);
+            delParam.put("imageNos", deletedImageNos);
+            userMapper.deleteImages(delParam);
+        }
+
+        /* 5) 썸네일 / 갤러리 / 상세 이미지 저장 */
+        new File(uploadDir).mkdirs();
+
+        // 썸네일 새로 올라오면 기존 썸네일 해제 + 신규 저장
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+        	userMapper.clearThumbnail(productNo); // 기존 'Y' → 'N' 처리
+            String url = saveFile(thumbnail, uploadDir);
+            Map<String, Object> img = new HashMap<>();
+            img.put("productNo", productNo);
+            img.put("imageUrl", url);
+            img.put("imageType", "Y"); // 썸네일
+            userMapper.insertImage(img);
+        }
+
+        if (galleryImages != null) {
+            for (MultipartFile f : galleryImages) {
+                if (f != null && !f.isEmpty()) {
+                    String url = saveFile(f, uploadDir);
+                    Map<String, Object> img = new HashMap<>();
+                    img.put("productNo", productNo);
+                    img.put("imageUrl", url);
+                    img.put("imageType", "A"); // 갤러리
+                    userMapper.insertImage(img);
+                }
+            }
+        }
+
+        if (detailImages != null) {
+            for (MultipartFile f : detailImages) {
+                if (f != null && !f.isEmpty()) {
+                    String url = saveFile(f, uploadDir);
+                    Map<String, Object> img = new HashMap<>();
+                    img.put("productNo", productNo);
+                    img.put("imageUrl", url);
+                    img.put("imageType", "N"); // 상세
+                    userMapper.insertImage(img);
+                }
+            }
+        }
+
+        out.put("result", "success");
+        out.put("productNo", productNo);
+        return out;
+    }
+	
 	/* ===== 유틸 ===== */
 	private String safeStr(Object v){ return v==null? null : String.valueOf(v); }
 	private String safeStrOrDefault(Object v, String def){
@@ -653,5 +804,34 @@ public class UserService {
 	private String normalizeFulfillment(String f){
 	    return "pickup".equalsIgnoreCase(f) ? "pickup" : "delivery";
 	}
+	private List<Integer> parseIntList(String json) {
+        try {
+            if (json == null || json.isBlank()) return List.of();
+            return objectMapper.readValue(json, new TypeReference<List<Integer>>() {});
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    private List<Map<String, Object>> parseOptionList(String json) {
+        try {
+            if (json == null || json.isBlank()) return List.of();
+            return objectMapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+    private String saveFile(MultipartFile file, String uploadDir) throws IOException {
+        String ext = "";
+        String name = file.getOriginalFilename();
+        if (name != null && name.lastIndexOf('.') >= 0) {
+            ext = name.substring(name.lastIndexOf('.'));
+        }
+        String saved = java.util.UUID.randomUUID() + ext;
+        File dest = new File(uploadDir, saved);
+        file.transferTo(dest);
+        // 웹경로는 프로젝트 구조에 맞게 매핑
+        return "/resources/uploads/productImage/" + saved;
+    }
 
 }

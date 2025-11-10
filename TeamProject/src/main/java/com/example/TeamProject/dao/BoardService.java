@@ -241,9 +241,13 @@ public class BoardService {
 		// TODO Auto-generated method stub
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
 		try {
-	        boardMapper.productQnaAnswerInsert(map);
-	        
-	        resultMap.put("result", "success");
+			Board idCheck = boardMapper.qnaIdCheck(map);
+			if (idCheck != null) {
+				boardMapper.productQnaAnswerInsert(map);	        
+		        resultMap.put("result", "success");
+			} else {
+				resultMap.put("result", "notSeller");
+			}	        
 		} catch (Exception e) {
 			// TODO: handle exception
 			resultMap.put("result", "fail");
