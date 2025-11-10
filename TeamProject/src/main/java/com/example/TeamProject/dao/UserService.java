@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.TeamProject.mapper.UserMapper;
 import com.example.TeamProject.model.Cart;
+import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.SellerVO;
 import com.example.TeamProject.model.User;
 
@@ -579,6 +580,35 @@ public class UserService {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		try {
 			int cnt = userMapper.allDelete(map);
+			resultMap.put("result", "sucess");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> getSellerProductList(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			List<Product> list = userMapper.getSellerProductList(map);
+			resultMap.put("list", list);
+			resultMap.put("result", "sucess");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> hiddenSellerProduct(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			userMapper.hiddenSellerProduct(map);
 			resultMap.put("result", "sucess");
 		} catch (Exception e) {
 			// TODO: handle exception

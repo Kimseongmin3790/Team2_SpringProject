@@ -115,6 +115,19 @@ public class UserController {
 
 		return "user/cart";
 	}
+	
+	@RequestMapping("/sellerProductList.do")
+	public String sellerProductList(Model model) throws Exception {
+
+		return "user/sellerProductList";
+	}
+	
+	@RequestMapping("/sellerProductEdit.do")
+	public String sellerProductEdit(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		request.setAttribute("productNo", map.get("productNo"));
+		
+		return "user/sellerProductEdit";
+	}
 
 	@RequestMapping(value = "/join.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
@@ -476,6 +489,24 @@ public class UserController {
 		String userId = (String) session.getAttribute("sessionId");
 
 		HashMap<String, Object> resultMap = orderService.getOrderHistory(userId);
+
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/myPage/list.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String getSellerProductList(@RequestBody HashMap<String, Object> map) throws Exception {
+		
+		HashMap<String, Object> resultMap = userService.getSellerProductList(map);
+
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/myPage/delete.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String hiddenSellerProduct(@RequestBody HashMap<String, Object> map) throws Exception {
+		
+		HashMap<String, Object> resultMap = userService.hiddenSellerProduct(map);
 
 		return new Gson().toJson(resultMap);
 	}
