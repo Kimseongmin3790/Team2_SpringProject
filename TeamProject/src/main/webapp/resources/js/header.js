@@ -146,4 +146,33 @@ $(document).ready(function() {
 		$(".search-section").stop(true, true).toggleClass("active");
 		$(".nav-menu").removeClass("active");
 	});
+	
+	function markActiveNav() {
+	  // 컨텍스트 경로 얻기 (header.js 방식/inline 둘 다 커버)
+	  const ctx = $("body").data("context") || "${pageContext.request.contextPath}" || "";
+	  const p = location.pathname.replace(ctx, "") || location.pathname; // ex) /productCategory.do
+	  const h = location.hash || "";
+
+	  $(".nav-menu a").removeClass("active").removeAttr("aria-current");
+
+	  // 어떤 메뉴로 표시할지 매칭
+	  let pick = null;
+	  if (/^\/(main|default)\.do$/.test(p)) pick = "/main.do";
+	  else if (/^\/productCategory\.do$/.test(p) || /#.*\b(v|p|c|s)=/.test(h)) pick = "/productCategory.do";
+	  else if (/^\/product\/recommendList\.do$/.test(p)) pick = "/product/recommendList.do";
+	  else if (/^\/board\.do$/.test(p) || /^\/customerService\.do$/.test(p)) pick = "/board.do";
+
+	  if (pick) {
+	    $(`.nav-menu a[href$="${pick}"]`).addClass("active").attr("aria-current", "page");
+	  }
+	}
+
+	markActiveNav();
+	$(window).on("hashchange", markActiveNav);
+
+	// (추가) 네비 클릭 직후에도 즉시 강조(페이지 전환 전)
+	$(".nav-menu a").on("click", function () {
+	  $(".nav-menu a").removeClass("active");
+	  $(this).addClass("active");
+	});
 });
