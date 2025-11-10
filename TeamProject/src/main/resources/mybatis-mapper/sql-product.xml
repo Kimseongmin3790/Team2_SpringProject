@@ -96,7 +96,7 @@
         
         REGEXP_REPLACE(
             REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'),
-            '(특별시|광역시|도)',
+            '(특별시|광역시|도|특별자치도)',
             ''
         ) AS region,  
        
@@ -148,7 +148,7 @@
 	        SELECT 
 	            REGEXP_REPLACE(
 	                REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'), 
-	                '(특별시|광역시|도)', 
+	                '(특별시|광역시|도|특별자치도)', 
 	                ''
 	            ) AS region,
 	            COUNT(P.PRODUCT_NO) AS productCount
@@ -158,7 +158,7 @@
 	        WHERE U.USER_ROLE = 'SELLER'
 	        GROUP BY REGEXP_REPLACE(
 	            REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'), 
-	            '(특별시|광역시|도)', 
+	            '(특별시|광역시|도|특별자치도)', 
 	            ''
 	        )
 	        ORDER BY region
@@ -172,7 +172,7 @@
 	        SELECT 
 	            REGEXP_REPLACE(
 	                REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'), 
-	                '(특별시|광역시|도)', 
+	                '(특별시|광역시|도|특별자치도)', 
 	                ''
 	            ) AS region
 	        FROM PRODUCT P
@@ -181,7 +181,7 @@
 	        WHERE U.USER_ROLE = 'SELLER'
 	        GROUP BY REGEXP_REPLACE(
 	            REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'), 
-	            '(특별시|광역시|도)', 
+	            '(특별시|광역시|도|특별자치도)', 
 	            ''
 	        )
 	    )
