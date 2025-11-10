@@ -666,7 +666,9 @@
                     },
 
                     filteredProducts() {
-                        let result = this.productList || [];
+                        let result = (this.productList || []).filter(
+                            p => (p.productStatus || '').toUpperCase() === 'SELLING'
+                        );
                         console.log('------ ', this.productList && this.productList[0]);
                         console.log('현재 선택된 가격범위 index:', this.selectedPriceRange);
                         console.log('현재 선택된 가격범위 값:', this.priceRanges[this.selectedPriceRange]);
@@ -720,8 +722,13 @@
                             dataType: "json",
                             type: "POST",
                             success: (data) => {
+                                console.log(data);
                                 this.categoryList = (data.categories || []).map(this.normalize);
-                                this.productList = (data.list || []).map(p => ({ ...p, categoryNo: String(p.categoryNo) }));
+                                this.productList = (data.list || []).map(p => ({
+                                    ...p,
+                                    categoryNo: String(p.categoryNo),
+                                    productStatus: (p.productStatus || '').toUpperCase()
+                                }));
 
                                 // 1) 해시가 있으면 해시로 복원 (쿼리 무시)
                                 if (this.applyFromHash()) return;
