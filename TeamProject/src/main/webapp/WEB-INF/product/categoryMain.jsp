@@ -84,6 +84,7 @@
                     font-size: 24px;
                     margin-bottom: 15px;
                     font-weight: bold;
+                    margin: 35px 0;
                 }
 
                 .sidebar ul {
@@ -355,8 +356,7 @@
                 .custom-price-range {
                     display: flex;
                     align-items: center;
-                    margin-top: 8px;
-
+                    margin-bottom: 35px;
                 }
 
                 .custom-price-range button {
@@ -367,6 +367,7 @@
                     margin-left: 2px;
                     height: 40px;
                     font-size: 18px;
+                    margin-bottom: 5px;
                 }
 
                 .custom-price-range button:hover {
@@ -380,6 +381,7 @@
                     font-size: 18px;
                     color: black;
                     border: solid 1px #ebe3e3;
+                    margin-bottom: 5px;
                 }
 
                 .custom-price-range-left {
@@ -393,14 +395,14 @@
 
                 /* ===== 생산지역필터 ==== */
                 .region-filter {
-                    margin-top: 20px;
+                    margin-top: 40px;
                     padding-top: 10px;
                     border-top: 1px solid #ddd;
                 }
 
                 .region-filter h3 {
                     font-size: 16px;
-                    margin-bottom: 10px;
+                    margin: 30px 0;
                     font-weight: 600;
                     color: #333;
                 }
@@ -472,7 +474,7 @@
 
                 /* ===== 구분선 ===== */
                 .sidebar-divider {
-                    width: 80%;
+                    width: 100%;
                     height: 1px;
                     background-color: #ddd;
                     margin: 25px 0;
@@ -711,7 +713,7 @@
                         <div class="region-filer">
                             <h3>전국 아그리콜라들의 상품</h3>
 
-                            <button v-if="selectedRegion" @click="clearRegion" class="clear-region">
+                            <button @click="clearRegion" class="clear-region">
                                 모든 상품 보기
                             </button>
 
@@ -807,7 +809,12 @@
                                         <img :src="p.filePath || '/resources/img/category/noimage.jpg'" alt="상품 이미지">
                                     </div>
                                     <div class="info">
-                                        <h4 class="wave-text">{{ p.pName || '-' }}</h4>
+                                        <span v-if="p.productStatus === 'SOLDOUT'">
+                                            <h4 class="wave-text" style="color:red">{{ p.pName || '-' }}::({{p.productStatus}})</h4>
+                                        </span> 
+                                        <span v-else-if>
+                                            <h4 class="wave-text">{{ p.pName || '-' }}::({{p.productStatus}})</h4>
+                                        </span>    
                                         <div class="desc">{{p.pInfo || ''}}</div>
                                         <div class="price wave-price">{{ (Number(p.price || 0).toLocaleString()) }}원
                                         </div>
@@ -891,9 +898,10 @@
                     },
 
                     filteredProducts() {
-                        let result = (this.productList || []).filter(
-                            p => (p.productStatus || '').toUpperCase() === 'SELLING'
-                        );
+                        let result = this.productList || [];
+                        // let result = (this.productList || []).filter(
+                        //     p => (p.productStatus || '').toUpperCase() === 'SELLING'
+                        // );
                         console.log('------ ', this.productList && this.productList[0]);
                         console.log('현재 선택된 가격범위 index:', this.selectedPriceRange);
                         console.log('현재 선택된 가격범위 값:', this.priceRanges[this.selectedPriceRange]);

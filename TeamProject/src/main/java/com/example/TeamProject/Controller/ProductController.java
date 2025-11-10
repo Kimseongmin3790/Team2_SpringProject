@@ -86,12 +86,8 @@ public class ProductController {
 	@RequestMapping(value = "/sellerRegions.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String sellerRegions(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		
-		System.out.println(">>> sellerRegions.dox 호출됨");
-		resultMap = productService.getSellerRegionsAndCount(map);
-		
-		System.out.println(">>> sellerRegions called with params: " + resultMap);
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();				
+		resultMap = productService.getSellerRegionsAndCount(map);				
 		return new Gson().toJson(resultMap);
 	}
 

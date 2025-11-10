@@ -111,6 +111,7 @@ public class ProductService {
             resultMap.put("list", products);
             resultMap.put("categories", categories);
             resultMap.put("result", "success");
+            
         } catch (Exception e) {
             resultMap.put("result", "fail");
             System.out.println(e.getMessage());
@@ -129,15 +130,14 @@ public class ProductService {
         	map.put("pageSize", pageSize);
         	
             List<Product> regions = productMapper.selectSellerRegions(map);
-            int totalCount = productMapper.countSellerRegions(map);
-            
-            System.out.println(">>> sellerRegions called at Service totalCount: " + totalCount);
+            int totalCount = productMapper.countSellerRegions(map);     
             
             resultMap.put("list", regions);
             resultMap.put("totalCount", totalCount);
             resultMap.put("page", page);
             resultMap.put("pageSize", pageSize);
             resultMap.put("result", "success");
+            
         } catch (Exception e) {
             resultMap.put("result", "fail");
             System.out.println(e.getMessage());
