@@ -14,6 +14,10 @@
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
             <style>
+                [v-cloak] {
+                    display: none !important;
+                }
+
                 body {
                     font-family: "Noto Sans KR", sans-serif;
                     background: #f9f9f9;
@@ -64,7 +68,7 @@
                     height: 50px;
                     padding: 12px 20px;
                     font-size: 18px;
-                    
+
                     cursor: pointer;
                     transition: background-color 0.2s, transform 0.1s;
                     flex-shrink: 0;
@@ -73,8 +77,8 @@
                 .btn-register:hover {
                     background-color: #ddd;
                     transform: scale(1.05);
-                }              
-                
+                }
+
                 .sidebar h3 {
                     color: #1a5d1a;
                     font-size: 24px;
@@ -349,17 +353,17 @@
                 }
 
                 .custom-price-range {
-                    display: flex;                    
+                    display: flex;
                     align-items: center;
                     margin-top: 8px;
-                                      
-                }               
 
-                .custom-price-range button{
+                }
+
+                .custom-price-range button {
                     border-radius: 5px;
                     border-color: #388e3c;
                     background-color: #388e3c;
-                    color:white;                    
+                    color: white;
                     margin-left: 2px;
                     height: 40px;
                     font-size: 18px;
@@ -372,19 +376,19 @@
                 .custom-price-range input {
                     width: 80px;
                     height: 30px;
-                    padding: 4px;       
+                    padding: 4px;
                     font-size: 18px;
-                    color:black;
+                    color: black;
                     border: solid 1px #ebe3e3;
                 }
 
-                .custom-price-range-left{
-                   margin-left: 20px; 
-                   margin-right: 10px;
+                .custom-price-range-left {
+                    margin-left: 20px;
+                    margin-right: 10px;
                 }
 
-                .custom-price-range-right{
-                   margin-left: 10px; 
+                .custom-price-range-right {
+                    margin-left: 10px;
                 }
 
                 /* ===== 생산지역필터 ==== */
@@ -455,7 +459,7 @@
                     margin-bottom: 0px;
                     background-color: #388e3c;
                     border: 1px solid #388e3c;
-                    color:white;
+                    color: white;
                     border-radius: 6px;
                     padding: 4px 8px;
                     cursor: pointer;
@@ -642,12 +646,13 @@
         <body>
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-                <div id="app" class="product-category-page">
+                <div id="app" class="product-category-page" data-session-status="<c:out value='${sessionStatus}'/>">
                     <!-- 좌측 트리 -->
                     <div class="sidebar">
                         <div class="sidebar-header">
                             <h3>카테고리</h3>
-                            <button class="btn-register" @click="goToProductRegister">상품등록</button>
+                            <button class="btn-register" @click="goToProductRegister" v-cloak
+                                v-if="isSeller">상품등록</button>
                         </div>
 
                         <ul>
@@ -687,9 +692,11 @@
                                     </li>
                                 </ul>
                                 <div class="custom-price-range">
-                                    <input class="custom-price-range-left" type="number" v-model.number="customMinPrice" placeholder="최소가격" />
+                                    <input class="custom-price-range-left" type="number" v-model.number="customMinPrice"
+                                        placeholder="최소가격" />
                                     ~
-                                    <input class="custom-price-range-right" type="number" v-model.number="customMaxPrice" placeholder="최대가격" />
+                                    <input class="custom-price-range-right" type="number"
+                                        v-model.number="customMaxPrice" placeholder="최대가격" />
                                     <span>(원)</span>
                                     <button @click="applyCustomPrice">검색</button>
                                     <button v-if="selectedPriceRange === 'custom'"
@@ -864,7 +871,8 @@
                         regionList: [],
                         selectedRegion: null,
                         currentRegionPage: 1,
-                        regionsPerPage: 10
+                        regionsPerPage: 10,
+                        sessionStatus: ''
                     };
                 },
 
@@ -933,6 +941,10 @@
                         if (this.selectedChild) r.push(this.getCategoryName(this.selectedChild));
                         if (this.selectedSub) r.push(this.getCategoryName(this.selectedSub));
                         return r;
+                    },
+
+                    isSeller() {
+                        return (this.sessionStatus || '').toUpperCase() === 'SELLER';
                     }
                 },
 
@@ -1007,8 +1019,6 @@
                                     ...p,
                                     categoryNo: String(p.categoryNo),
                                     productStatus: (p.productStatus || '').toUpperCase()
-                                }));
-
                                 }));
                                 console.log('*******=== 서버에서 받은 상품데이터 샘플 ===', data.list[0]);
 
@@ -1232,6 +1242,17 @@
                     if (!this.initialCategoryNo) {
                         this.initialCategoryNo = this.readCategoryNoFromURL();
                     }
+
+                    const root = document.getElementById('app');
+                    // 1차: 현재 페이지의 data-session-status
+                    let role = root?.dataset?.sessionStatus || '';
+                    // 2차 보조: 헤더의 마이페이지 버튼에 data-status가 박혀있다면 활용
+                    if (!role) {
+                        role = document.querySelector('#btnMyPage')?.dataset?.status || '';
+                    }
+                    this.sessionStatus = role;
+
+
                     window.addEventListener('hashchange', () => this.applyFromHash());
                     this.fnList();
                     this.fnSellerRegionList();
