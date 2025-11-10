@@ -65,6 +65,8 @@ public class OrderService {
 		paramMap.put("startRow", startRow);
 		paramMap.put("endRow", endRow);
 		
+		System.out.println("DB 쿼리 파라미터 (selectOrderListBySeller): " + paramMap.toString());
+		
 		// 3. 페이징 및 필터 적용된 목록 조회
 		List<Order> orderList = orderMapper.selectOrderListBySeller(paramMap);
 		
@@ -325,5 +327,63 @@ public class OrderService {
             return null;
         }
     }
+    
+    // 환불 요청 등록 및 결과 반환
+ 	public HashMap<String, Object> requestRefund(HashMap<String, Object> paramMap) {
+ 		 HashMap<String, Object> resultMap = new HashMap<>();
+ 	     try {
+ 	    	 int result = orderMapper.insertRefundRequest(paramMap);
+ 	         if (result > 0) {
+ 	        	 resultMap.put("result", "success");
+ 	         } else {
+ 	             resultMap.put("result", "fail");
+ 	             resultMap.put("message", "환불 요청 처리에 실패했습니다.");
+ 	         }
+ 	     } catch (Exception e) {
+ 	    	 e.printStackTrace(); 
+ 	         resultMap.put("result", "fail");
+ 	         resultMap.put("message", "환불 요청 중 오류가 발생했습니다.");
+ 	     }
+ 	     	return resultMap;
+ 	 }
+ 	
+ 	// 환불 요청 취소
+ 	public HashMap<String, Object> cancelRefund(HashMap<String, Object> paramMap) {
+ 	    HashMap<String, Object> resultMap = new HashMap<>();
+ 	    try {
+ 	        int result = orderMapper.deleteRefundRequest(paramMap);
+ 	        if (result > 0) {
+ 	            resultMap.put("result", "success");
+ 	        } else {
+ 	            resultMap.put("result", "fail");
+ 	            resultMap.put("message", "취소할 환불 요청이 없습니다.");
+ 	        }
+ 	    } catch (Exception e) {
+ 	        e.printStackTrace();
+ 	        resultMap.put("result", "fail");
+ 	        resultMap.put("message", "환불 요청 취소 중 오류가 발생했습니다.");
+ 	    }
+ 	    return resultMap;
+ 	}
+ 	
+ 	// 환불 요청 처리 (승인/거절)
+ 	public HashMap<String, Object> processRefund(HashMap<String, Object> paramMap) {
+ 	    HashMap<String, Object> resultMap = new HashMap<>();
+ 	    try {
+ 	        int result = orderMapper.updateRefundStatus(paramMap);
+ 	        if (result > 0) {
+ 	            resultMap.put("result", "success");
+ 	           
+ 	        } else {
+ 	            resultMap.put("result", "fail");
+ 	            resultMap.put("message", "이미 처리되었거나 존재하지 않는 환불 요청입니다.");
+ 	        }
+ 	    } catch (Exception e) {
+ 	        e.printStackTrace();
+ 	        resultMap.put("result", "fail");
+ 	        resultMap.put("message", "환불 처리 중 오류가 발생했습니다.");
+ 	    }
+ 	    return resultMap;
+ 	}
     
 }

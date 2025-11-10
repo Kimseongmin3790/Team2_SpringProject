@@ -144,7 +144,7 @@
 		WHERE Q.PRODUCT_NO = #{productNo}
     </select>
     
-<<<<<<< HEAD
+
     <!-- 판매자 탈퇴 시 모든 상품 숨김 처리 -->
 	<update id="hideAllProductsBySeller" parameterType="String">
 	    UPDATE PRODUCT
@@ -154,7 +154,7 @@
 	        SELLER_ID = #{userId}
 	</update>
     
-=======
+    
     <insert id="insertProductOptions" parameterType="map">
 	  <if test="options != null and options.size() &gt; 0">
 	    MERGE INTO PRODUCT_OPTION t
@@ -180,5 +180,4 @@
 	  </if>
 	</insert>
 	
->>>>>>> branch 'develop' of https://github.com/Kimseongmin3790/Team2_SpringProject.git
 </mapper>

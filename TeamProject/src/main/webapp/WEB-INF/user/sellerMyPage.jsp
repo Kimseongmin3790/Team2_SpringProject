@@ -542,8 +542,8 @@
     }
 
     .sales-summary-card {
-        display: grid; /* grid로 변경 */
-        grid-template-columns: 1fr 1fr; /* 2개 열 */
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); 
         justify-content: space-around;
         background-color: #f9fafb;
         border: 1px solid #e5e7eb;
@@ -656,7 +656,30 @@
         border-color: #16a34a;
         font-weight: 600;
     }
-</style>
+    .badge-refund-request {
+        background-color: #fef3c7; 
+        color: #92400e;
+    }
+
+    .badge-success {
+        background-color: #dcfce7; 
+        color: #166534;
+    }
+
+    .badge-danger {
+        background-color: #fee2e2; 
+        color: #991b1b;
+    }
+    .orders-table td.text-center > div {
+        justify-content: center;
+        display: flex;
+    }
+    .date-range {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem; 
+    }
+    </style>
 </head>
 
 <body>
@@ -686,7 +709,7 @@
                         <div class="action-title">주문 관리</div>
                         <div class="action-desc">주문 내역을 확인하세요</div>
                     </div>
-                    <div class="action-card" @click="goToPage('product-manage')">
+                    <div class="action-card" @click="goToPage('delivery-manage')">
                         <div class="action-icon">🚚</div>
                         <div class="action-title">배송 상태 확인</div>
                         <div class="action-desc">배송 상태를 업데이트하세요</div>
@@ -770,8 +793,14 @@
                                 <td>{{ order.productName }}</td>
                                 <td>{{ order.productCount }}개</td>
                                 <td>{{ formatPrice(order.totalPrice) }}원</td>
-                                <td>
-                                    <span class="status-badge" :class="getStatusClass(order.status)">
+                                 <td>
+                                    <!-- 환불 관련 상태가 있을 경우 우선 표시 -->
+                                    <span v-if="order.primaryRefundStatus"
+                                        class="status-badge" :class="getRefundStatusBadgeClass(order.primaryRefundStatus)">
+                                        환불 {{ order.primaryRefundStatus }}
+                                    </span>
+                                    <!-- 환불 관련 상태가 없을 경우에만 기존 주문 상태 표시 -->
+                                    <span v-else class="status-badge" :class="getStatusClass(order.status)">
                                         {{ order.status }}
                                     </span>
                                 </td>
@@ -797,12 +826,31 @@
                         </div>
                         <div class="filter-group">
                             <label class="filter-label">조회 날짜</label>
-                            <!-- 일별 선택 -->
-                            <input v-if="salesPeriod.type === 'daily'" type="date" v-model="salesPeriod.date" class="form-input">
-                            <!-- 월별 선택 -->
-                            <input v-if="salesPeriod.type === 'monthly'" type="month" v-model="salesPeriod.month" class="form-input">
-                            <!-- 연도별 선택 -->
-                            <input v-if="salesPeriod.type === 'yearly'" type="number" v-model="salesPeriod.year" class="form-input" placeholder= "YYYY">
+                            <!-- 일별 조회 -->
+                            <div v-if="salesPeriod.type === 'daily'" class="date-range">
+                                <select v-model.number="salesPeriod.year" class="form-select">
+                                    <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년</option>
+                                </select>
+                                <select v-model.number="salesPeriod.month" class="form-select">
+                                    <option v-for="m in monthOptions" :key="m" :value="m">{{ m }}월</option>
+                                </select>
+                            </div>
+                            <!-- 월별 조회 -->
+                            <div v-if="salesPeriod.type === 'monthly'" class="date-range">
+                                <select v-model.number="salesPeriod.year" class="form-select">
+                                    <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년</option>
+                                </select>
+                            </div>
+                            <!-- 연별 조회 -->
+                            <div v-if="salesPeriod.type === 'yearly'" class="date-range">
+                                <select v-model.number="salesPeriod.startYear" class="form-select">
+                                    <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년</option>
+                                </select>
+                                <span>~</span>
+                                <select v-model.number="salesPeriod.endYear" class="form-select">
+                                    <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년</option>
+                                </select>
+                            </div>
                         </div>
                         <button @click="loadSalesHistory" class="btn btn-primary">조회</button>
                     </div>
@@ -810,21 +858,35 @@
                     <!-- 기간 내 총계 요약 -->
                     <div class="sales-summary-card">
                         <div class="summary-item">
+                            <div class="summary-label">총 주문건수</div>
+                            <div class="summary-value">{{ salesSummary.totalOrderCountSum }}<span class="summary-unit">건</span></div>
+                        </div>
+                        <div class="summary-item">
                             <div class="summary-label">총 매출</div>
                             <div class="summary-value">{{ formatPrice(salesSummary.totalSalesSum) }}<span class="summary-unit">원</span></div>
                         </div>
                         <div class="summary-item">
                             <div class="summary-label">총 플랫폼 수수료</div>
-                            <div class="summary-value">{{ formatPrice(salesSummary.totalPlatformFeeSum) }}<span class="summary-unit">원</span></div>
+                            <div class="summary-value">{{ formatPrice(salesSummary.totalPlatformFeeSum) }}<span class="summary-unit">원</span>
+                    </div>
                         </div>
                     </div>
 
                     <!-- 매출 내역 테이블 -->
                     <div class="sales-history-table">
                         <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>기간</th>
+                                    <th>주문 건수</th>
+                                    <th>매출액</th>
+                                    <th>플랫폼 수수료</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 <tr v-for="record in paginatedSalesHistory" :key="record.period">
                                     <td>{{ record.period }}</td>
+                                    <td>{{ record.orderCount }}건</td>
                                     <td>{{ formatPrice(record.totalSales) }}원</td>
                                     <td>{{ formatPrice(record.platformFee) }}원</td>
                                 </tr>
@@ -1002,11 +1064,13 @@
                 recentOrders: [],
                 salesHistory: [],
                 salesPeriod: {
-                    type: 'monthly', // 'daily', 'monthly', 'yearly'
-                    date: new Date().toISOString().slice(0, 10), // 일별 기본값 (오늘)
-                    month: new Date().toISOString().slice(0, 7), // 월별 기본값 (이번 달)
-                    year: new Date().getFullYear() // 연도별 기본값 (올해)
+                    type: 'daily',
+                    month: new Date().getMonth() + 1, 
+                    year: new Date().getFullYear(),
+                    startYear: new Date().getFullYear() - 3,
+                    endYear: new Date().getFullYear()
                 },
+                monthOptions: Array.from({ length: 12 }, (_, i) => i + 1), 
                 salesPagination: { 
                     currentPage: 1,
                     rowsPerPage: 10 
@@ -1031,17 +1095,29 @@
             };
         },
         computed: {
+            yearOptions() {
+                const currentYear = new Date().getFullYear();
+                const startYear = 2024; 
+                const years = [];
+                for (let i = currentYear; i >= startYear; i--) {
+                    years.push(i);
+                }
+                return years;
+            },
             salesSummary: function() {
                 let self = this;
                 let totalSalesSum = 0;
                 let totalPlatformFeeSum = 0;
+                let totalOrderCountSum = 0; 
                 self.salesHistory.forEach(record => {
                     totalSalesSum += record.totalSales || 0;
                     totalPlatformFeeSum += record.platformFee || 0;
+                    totalOrderCountSum += record.orderCount || 0; 
                 });
                 return {
                     totalSalesSum: totalSalesSum,
-                    totalPlatformFeeSum: totalPlatformFeeSum
+                    totalPlatformFeeSum: totalPlatformFeeSum,
+                    totalOrderCountSum: totalOrderCountSum 
                 };
             },
             totalPages: function() {
@@ -1218,7 +1294,7 @@
                             success: function (response) {
                                 if (response.result === 'success') {
                                     alert('판매자 계정이 성공적으로 탈퇴되었습니다.');
-                                    location.href = '${pageContext.request.contextPath}/main.do';
+                                    location.href = '${pageContext.request.contextPath}/login.do';
                                 } else {
                                     alert(response.message || '계정 탈퇴 중 오류가 발생했습니다.');
                                 }
@@ -1361,37 +1437,44 @@
             },
             loadSalesHistory: function() {
                 let self = this;
-                
+
                 self.salesPagination.currentPage = 1;
-                
+
                 let params = {
                     type: self.salesPeriod.type
                 };
 
-                if (self.salesPeriod.type === 'daily') {
-                    params.date = self.salesPeriod.date; 
+               if (self.salesPeriod.type === 'daily') {
+                    if (self.salesPeriod.year && self.salesPeriod.month) {
+                        params.month = self.salesPeriod.year + '-' + String(self.salesPeriod.month).padStart(2, '0');
+                    }
                 } else if (self.salesPeriod.type === 'monthly') {
-                    params.month = self.salesPeriod.month; 
+                    if (self.salesPeriod.year) {
+                        params.year = self.salesPeriod.year;
+                    }
                 } else if (self.salesPeriod.type === 'yearly') {
-                    params.year = self.salesPeriod.year; 
+                    if (self.salesPeriod.startYear && self.salesPeriod.endYear) {
+                        params.startYear = self.salesPeriod.startYear;
+                        params.endYear = self.salesPeriod.endYear;
+                    }
                 }
 
                 $.ajax({
                     url: "${pageContext.request.contextPath}/seller/salesHistory.dox",
                     dataType: "json",
                     type: "GET",
-                    data: params, 
+                    data: params,
                     success: function(response) {
                         if (response.result === 'success') {
                             self.salesHistory = response.history;
                         } else {
                             alert('매출 내역을 불러오는데 실패했습니다: ' + response.message);
-                            self.salesHistory = []; 
+                            self.salesHistory = [];
                         }
                     },
                     error: function() {
                         alert('매출 내역을 불러오는 중 오류가 발생했습니다.');
-                        self.salesHistory = []; 
+                        self.salesHistory = [];
                     }
                 });
             },
@@ -1400,13 +1483,23 @@
                 if (page > 0 && page <= self.totalPages) {
                     self.salesPagination.currentPage = page;
                 }
+            },
+            getRefundStatusBadgeClass(status) {
+                const classes = {
+                    '대기': 'badge badge-refund-request', 
+                    '승인': 'badge badge-success', 
+                    '거절': 'badge badge-danger' 
+                };
+                return classes[status] || 'badge';
             }
+
         },
         mounted() {
             let self = this;
             self.loadDashboardData(); 
             self.loadFarmInfo();
             self.loadReviews();
+            self.loadSalesHistory();
         }
     });
 

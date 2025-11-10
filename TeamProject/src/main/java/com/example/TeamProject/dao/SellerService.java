@@ -159,8 +159,10 @@ public class SellerService {
             dashboardData.put("todayOrders", todayOrders);
 
             // 2. 오늘 매출
-            Long todaySales = sellerMapper.getTodaySalesAmount(sellerId);
-            dashboardData.put("todaySales", todaySales != null ? todaySales : 0L);
+            Long todayGrossSales = sellerMapper.getTodaySalesAmount(sellerId); 
+            Long todayRefunds = sellerMapper.getTodayRefundAmount(sellerId); 
+            long todayNetSales = (todayGrossSales != null ? todayGrossSales : 0L) - (todayRefunds != null ? todayRefunds : 0L);
+            dashboardData.put("todaySales", todayNetSales); 
 
             // 3. 등록 상품 수
             int totalProducts = sellerMapper.getTotalProductsCount(sellerId);

@@ -13,8 +13,11 @@ public class OrderItem {
 	private String imageUrl;
 	
 	private int hasReview;
-	 private String optionUnit;  
-	 private int optionAddPrice; 
+	private String optionUnit;  
+	private int optionAddPrice; 
+	private String refundStatus;
+	private String refundReason;
+	private int refundQuantity;
 	
 	
 }

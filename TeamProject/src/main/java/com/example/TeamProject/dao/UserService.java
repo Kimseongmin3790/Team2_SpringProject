@@ -415,7 +415,6 @@ public class UserService {
 					return resultMap;
 				}
 			}
-			// 소셜 로그인 사용자는 비밀번호 확인을 건너뜁니다.
 
 			// 3. 사용자 정보 변경
 			userMapper.updateUserStatus(userId, "WITHDRAWN");

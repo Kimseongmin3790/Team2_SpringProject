@@ -28,6 +28,12 @@ public interface OrderMapper {
     Order selectOrderDetail(HashMap<String, Object> map);
     // 총 주문 건수 조회 메소드
     int selectOrderListCountBySeller(HashMap<String, Object> map);
+    // 환불 
+    int insertRefundRequest(HashMap<String, Object> paramMap);
+    // 환불 요청 취소
+    int deleteRefundRequest(HashMap<String, Object> paramMap);
+    // 환불 요청 상태 변경 (승인/거절)
+    int updateRefundStatus(HashMap<String, Object> paramMap);
 
  
 

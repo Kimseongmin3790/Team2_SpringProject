@@ -37,5 +37,7 @@ public interface SellerMapper {
 	List<HashMap<String, Object>> getSalesHistory(HashMap<String, Object> paramMap);
 	// 판매자 인증 상태 변경
 	void updateSellerVerification(@Param("userId") String userId, @Param("status") String status);
+	// 오늘 환불액 조회
+	Long getTodayRefundAmount(String sellerId);
 	
 }

@@ -93,13 +93,13 @@
 
     <!-- 대시보드 - 오늘 매출 -->
     <select id="getTodaySalesAmount" parameterType="String" resultType="Long">
-        SELECT NVL(SUM(O.TOTAL_PRICE), 0)
-        FROM ORDERS O
-        JOIN ORDER_ITEM OI ON O.ORDER_NO = OI.ORDER_NO
-        JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
-        WHERE P.SELLER_ID = #{sellerId}
-          AND TRUNC(O.ORDERDATE) = TRUNC(SYSDATE)
-    </select>
+	    SELECT NVL(SUM(OI.PRICE), 0)
+	    FROM ORDERS O
+	    JOIN ORDER_ITEM OI ON O.ORDER_NO = OI.ORDER_NO
+	    JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
+	    WHERE P.SELLER_ID = #{sellerId}
+	      AND TRUNC(O.ORDERDATE) = TRUNC(SYSDATE)
+	</select>
 
     <!-- 대시보드 - 총 등록 상품 수 -->
     <select id="getTotalProductsCount" parameterType="String" resultType="int">
@@ -119,72 +119,94 @@
     <!-- 대시보드 - 최근 주문 목록 (최대 3개) -->
     <select id="getRecentOrders" parameterType="String" resultType="com.example.TeamProject.model.Order">
 	    SELECT *
-	    FROM (
-	        SELECT
-	            o.ORDER_NO, o.ORDERDATE, o.TOTAL_PRICE, o.STATUS,
-	            (SELECT p_inner.PNAME FROM PRODUCT p_inner JOIN ORDER_ITEM oi_inner ON p_inner.PRODUCT_NO =
-	            oi_inner.PRODUCT_NO WHERE oi_inner.ORDER_NO = o.ORDER_NO AND ROWNUM = 1) as PRODUCT_NAME,
-	            (SELECT COUNT(*) FROM ORDER_ITEM oi_inner WHERE oi_inner.ORDER_NO = o.ORDER_NO) as PRODUCT_COUNT
-	        FROM
-	            ORDERS o
-	        WHERE
-	            EXISTS (
-	                SELECT 1 FROM ORDER_ITEM oi_sec JOIN PRODUCT p_sec ON oi_sec.PRODUCT_NO = p_sec.PRODUCT_NO
-	                WHERE oi_sec.ORDER_NO = o.ORDER_NO AND p_sec.SELLER_ID = #{sellerId}
-	            )
-	        ORDER BY o.ORDERDATE DESC
-	    )
-	    WHERE ROWNUM &lt; 3
+		FROM (
+		    SELECT
+		        o.ORDER_NO, o.ORDERDATE, o.TOTAL_PRICE, o.STATUS,
+		        (SELECT p_inner.PNAME FROM PRODUCT p_inner JOIN ORDER_ITEM oi_inner ON p_inner.PRODUCT_NO =
+		        oi_inner.PRODUCT_NO WHERE oi_inner.ORDER_NO = o.ORDER_NO AND ROWNUM = 1) as PRODUCT_NAME,
+		        (SELECT COUNT(*) FROM ORDER_ITEM oi_inner WHERE oi_inner.ORDER_NO = o.ORDER_NO) as PRODUCT_COUNT,
+		
+		        -- 환불 상태를 확인하는 서브쿼리 추가 --
+		        (SELECT r.STATUS FROM (
+		            SELECT
+		                oi_inner.ORDER_NO,
+		                r_inner.STATUS,
+		                ROW_NUMBER() OVER (PARTITION BY oi_inner.ORDER_NO ORDER BY DECODE(r_inner.STATUS, '대기',
+		1, '승인', 2, '거절', 3, 99)) as rn
+		            FROM REFUND r_inner
+		            JOIN ORDER_ITEM oi_inner ON r_inner.ORDER_ITEM_NO = oi_inner.ORDER_ITEM_NO
+		            WHERE oi_inner.ORDER_NO = o.ORDER_NO
+		        ) r WHERE r.ORDER_NO = o.ORDER_NO AND r.rn = 1) AS primaryRefundStatus
+		
+		    FROM
+		        ORDERS o
+		    WHERE
+		        EXISTS (
+		            SELECT 1 FROM ORDER_ITEM oi_sec JOIN PRODUCT p_sec ON oi_sec.PRODUCT_NO = p_sec.PRODUCT_NO
+		            WHERE oi_sec.ORDER_NO = o.ORDER_NO AND p_sec.SELLER_ID = #{sellerId}
+		        )
+		    ORDER BY o.ORDERDATE DESC
+		)
+		WHERE ROWNUM &lt; 3
+
 	</select>
 	
 	    <!-- 매출 내역 조회 -->
     <select id="getSalesHistory" parameterType="hashmap" resultType="com.example.TeamProject.model.SalesHistoryDTO">
-        SELECT
-            <choose>
-                <when test="type == 'monthly'">
-                    TO_CHAR(o.ORDERDATE, 'YYYY-MM-DD') AS period
-                </when>
-                <when test="type == 'yearly'">
-                    TO_CHAR(o.ORDERDATE, 'YYYY-MM') AS period
-                </when>
-                <otherwise> 
-                    TO_CHAR(o.ORDERDATE, 'YYYY-MM-DD') AS period
-                </otherwise>
-            </choose>
-            , SUM(oi.PRICE * oi.QUANTITY) AS totalSales
-            , TRUNC(SUM(oi.PRICE * oi.QUANTITY) * 0.1) AS platformFee
-        FROM
-            ORDERS o
-        JOIN
-            ORDER_ITEM oi ON o.ORDER_NO = oi.ORDER_NO
-        JOIN
-            PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
-        WHERE
-            p.SELLER_ID = #{sellerId}
-            <if test="type == 'monthly' and month != null and month != ''">
-                AND TO_CHAR(o.ORDERDATE, 'YYYY-MM') = #{month}
-            </if>
-            <if test="type == 'yearly' and year != null and year != ''">
-                AND TO_CHAR(o.ORDERDATE, 'YYYY') = #{year}
-            </if>
-            <if test="type == 'daily' and date != null and date != ''">
-                AND TRUNC(o.ORDERDATE) = TO_DATE(#{date}, 'YYYY-MM-DD')
-            </if>
-        GROUP BY
-            <choose>
-                <when test="type == 'monthly'">
-                    TO_CHAR(o.ORDERDATE, 'YYYY-MM-DD')
-                </when>
-                <when test="type == 'yearly'">
-                    TO_CHAR(o.ORDERDATE, 'YYYY-MM')
-                </when>
-                <otherwise> 
-                    TO_CHAR(o.ORDERDATE, 'YYYY-MM-DD')
-                </otherwise>
-            </choose>
-        ORDER BY
-            period DESC
-    </select>
+	    WITH sales_and_refunds AS (
+	        SELECT
+	            o.ORDERDATE AS event_date,
+	            oi.PRICE AS amount,
+	            o.ORDER_NO AS order_no
+	        FROM ORDERS o
+	        JOIN ORDER_ITEM oi ON o.ORDER_NO = oi.ORDER_NO
+	        JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
+	        WHERE p.SELLER_ID = #{sellerId}
+	
+	        UNION ALL
+	        
+	        SELECT
+	            r.COMPLETED_AT AS event_date,
+	            -1 * (oi.PRICE / oi.QUANTITY) * r.REFUND_AMOUNT AS amount,
+	            NULL AS order_no
+	        FROM REFUND r
+	        JOIN ORDER_ITEM oi ON r.ORDER_ITEM_NO = oi.ORDER_ITEM_NO
+	        JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
+	        WHERE p.SELLER_ID = #{sellerId}
+	          AND r.STATUS = '승인'
+	    )
+	    SELECT
+	        <choose>
+	            <when test="type == 'yearly'"> TO_CHAR(sr.event_date, 'YYYY') </when>
+	            <when test="type == 'monthly'"> TO_CHAR(sr.event_date, 'YYYY-MM') </when>
+	            <otherwise> TO_CHAR(sr.event_date, 'YYYY-MM-DD') </otherwise>
+	        </choose> AS period,
+	        NVL(SUM(sr.amount), 0) AS totalSales,
+	        GREATEST(NVL(TRUNC(SUM(sr.amount) * 0.1), 0), 0) AS platformFee,
+	        COUNT(DISTINCT sr.order_no) AS orderCount
+	    FROM sales_and_refunds sr
+	    <where>
+		    <!-- 일별 조회: YYYY-MM 형식의 month 파라미터 사용 -->
+		    <if test="type == 'daily' and month != null and month != ''">
+		        AND TO_CHAR(sr.event_date, 'YYYY-MM') = #{month}
+		    </if>
+		    <!-- 월별 조회: YYYY 형식의 year 파라미터 사용 -->
+		    <if test="type == 'monthly' and year != null and year != ''">
+		        AND TO_CHAR(sr.event_date, 'YYYY') = #{year}
+		    </if>
+		    <!-- 연별 조회: startYear와 endYear 파라미터 사용 -->
+		    <if test="type == 'yearly' and startYear != null and startYear != '' and endYear != null and endYear != ''">
+		        AND TO_CHAR(sr.event_date, 'YYYY') BETWEEN #{startYear} AND #{endYear}
+		    </if>
+		</where>
+	    GROUP BY
+	        <choose>
+	            <when test="type == 'yearly'"> TO_CHAR(sr.event_date, 'YYYY') </when>
+	            <when test="type == 'monthly'"> TO_CHAR(sr.event_date, 'YYYY-MM') </when>
+	            <otherwise> TO_CHAR(sr.event_date, 'YYYY-MM-DD') </otherwise>
+	        </choose>
+	    ORDER BY period DESC
+	</select>
     
     <!-- 판매자 인증 상태 업데이트 -->
 	<update id="updateSellerVerification">
@@ -194,6 +216,17 @@
 	    WHERE
 	        USER_ID = #{userId}
 	</update>
+	
+	<!-- 대시보드 - 오늘 승인된 환불액 -->
+	<select id="getTodayRefundAmount" parameterType="String" resultType="Long">
+	    SELECT NVL(SUM( (OI.PRICE / OI.QUANTITY) * R.REFUND_AMOUNT ), 0)
+	    FROM REFUND R
+	    JOIN ORDER_ITEM OI ON R.ORDER_ITEM_NO = OI.ORDER_ITEM_NO
+	    JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
+	    WHERE P.SELLER_ID = #{sellerId}
+	      AND R.STATUS = '승인'
+	      AND TRUNC(R.COMPLETED_AT) = TRUNC(SYSDATE)
+	</select>
 
 	 
 </mapper>

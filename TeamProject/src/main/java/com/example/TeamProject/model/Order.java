@@ -25,5 +25,10 @@ public class Order {
 	private String paymentMethod;
 	private String courier;
 	private String trackingNo;
+	private String primaryRefundStatus;
+	
+	private int totalItemCount; 
+	private int processedRefundItemCount; 
+	private int pendingRefundItemCount; 
 	
 }
