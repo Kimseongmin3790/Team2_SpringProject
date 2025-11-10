@@ -343,7 +343,9 @@
                 th {
                     border: 1px solid #000;
                     border-collapse: collapse;
-                    padding: 5px 10px;
+                    padding: 5px 140px;
+                    margin: 0 auto;
+                    text-align: center;
                 }
 
                 th {
@@ -532,21 +534,35 @@
 
                 .detail-img-wrap {
                     width: 100%;
-                    aspect-ratio: 4 / 3;
-                    /* 모두 같은 비율로 맞춤 (원하면 1/1 로 바꿔도 됨) */
-                    margin: 0;
-                    /* 카드 사이 여백 제거 */
                     overflow: hidden;
                     border-radius: 8px;
-                    background: #000;
+                    background: #fff;
+                    /* 여백 색상 */
                 }
 
                 .detail-img {
-                    display: block;
-                    /* img의 하단 기본 공백 제거 */
                     width: 100%;
                     height: 100%;
+                    object-fit: contain;
+                    /* 잘림 없음 */
+                    display: block;
                 }
+
+                .detail--portrait {
+                    aspect-ratio: 3 / 4;
+                }
+
+                /* 세로형(포스터 같은 이미지) */
+                .detail--land {
+                    aspect-ratio: 4 / 3;
+                }
+
+                /* 가로형 */
+                .detail--square {
+                    aspect-ratio: 1 / 1;
+                }
+
+                /* 정사각 */
 
                 .detail-img.cover {
                     object-fit: cover;
@@ -1250,8 +1266,7 @@
                         </div>
 
                         <section id="in">
-                            <img src="<c:url value='/resources/img/class.png'/>"
-                                style="max-width:100%;width:1100px;height:auto;display:block;">
+
                         </section>
 
                         <div v-if="!showDetail" style="margin:16px 0; text-align:center;">
@@ -1262,16 +1277,17 @@
                         </div>
 
                         <div v-show="showDetail">
-                            <div v-for="img in detailOnly" :key="img" class="detail-img-wrap">
-                                <img :src="img" :alt="info.pName || '상세 이미지'" class="detail-img cover" loading="lazy">
+                            <div v-for="img in detailOnly" :key="img" class="detail-img-wrap" :class="pickAR(img)">
+                                <img :src="img" :alt="info.pName || '상세 이미지'" class="detail-img" loading="lazy"
+                                    @load="onDetailLoad($event, img)">
                             </div>
 
-                            <div>
+                            <div style="margin: 30px 40px;">
                                 상품정보 제공고시
                                 <table>
                                     <tr>
                                         <th>품목 또는 명칭</th>
-                                        <td>연지홍게</td>
+                                        <td>{{info.pName}}</td>
                                     </tr>
                                     <tr>
                                         <th>포장단위별 용량(중량), 수량, 크기</th>
@@ -1412,6 +1428,7 @@
                         week: false,
                         before: false,
                         liked: false,
+                        detailMeta: {},
 
                         userId: "${sessionScope.sessionId}",
                         userName: "${sessionScope.sessionName}",
@@ -1629,6 +1646,20 @@
                             error(xhr) { console.error('product-view.dox error', xhr?.status, xhr?.responseText); }
 
                         });
+                    },
+
+                    onDetailLoad(e, url) {
+                        const w = e.target.naturalWidth || 1;
+                        const h = e.target.naturalHeight || 1;
+                        this.detailMeta[url] = { w, h };
+                    },
+                    pickAR(url) {
+                        const m = this.detailMeta[url];
+                        if (!m) return 'detail--portrait';      // 로딩 전 임시값(세로형이 많다면 이렇게)
+                        const r = m.w / m.h;                   // 가로/세로 비
+                        if (r > 1.15) return 'detail--land';   // 충분히 가로 넓으면 4:3
+                        if (r < 0.87) return 'detail--portrait'; // 충분히 세로 길면 3:4
+                        return 'detail--square';               // 애매하면 정사각
                     },
 
                     onImgError(e) {
