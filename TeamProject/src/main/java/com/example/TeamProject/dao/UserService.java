@@ -161,6 +161,7 @@ public class UserService {
 
 	public HashMap<String, Object> logout(HashMap<String, Object> map, HttpSession session) {
 	    HashMap<String, Object> resultMap = new HashMap<>();
+		session.invalidate();
 	    resultMap.put("result", "success");
 	    return resultMap;
 	}
