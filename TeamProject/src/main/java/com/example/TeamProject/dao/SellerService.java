@@ -4,18 +4,34 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.TeamProject.mapper.ProductMapper;
 import com.example.TeamProject.mapper.SellerMapper;
+import com.example.TeamProject.mapper.UserMapper;
+import com.example.TeamProject.model.Order;
 import com.example.TeamProject.model.SellerVO;
-import com.example.TeamProject.model.User; 
+import com.example.TeamProject.model.User;
+
+import jakarta.servlet.http.HttpSession; 
 
 @Service
 public class SellerService {
 
     @Autowired
     private SellerMapper sellerMapper;
+    
+    @Autowired
+    private UserMapper userMapper;
+    
+    @Autowired
+    private ProductMapper productMapper;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
 
     public HashMap<String, Object> getSellerInfoForMyPage(String userId) {
         HashMap<String, Object> resultMap = new HashMap<>();
@@ -143,8 +159,10 @@ public class SellerService {
             dashboardData.put("todayOrders", todayOrders);
 
             // 2. 오늘 매출
-            Long todaySales = sellerMapper.getTodaySalesAmount(sellerId);
-            dashboardData.put("todaySales", todaySales != null ? todaySales : 0L);
+            Long todayGrossSales = sellerMapper.getTodaySalesAmount(sellerId); 
+            Long todayRefunds = sellerMapper.getTodayRefundAmount(sellerId); 
+            long todayNetSales = (todayGrossSales != null ? todayGrossSales : 0L) - (todayRefunds != null ? todayRefunds : 0L);
+            dashboardData.put("todaySales", todayNetSales); 
 
             // 3. 등록 상품 수
             int totalProducts = sellerMapper.getTotalProductsCount(sellerId);
@@ -155,7 +173,7 @@ public class SellerService {
             dashboardData.put("avgRating", avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
 
             // 5. 최근 주문 목록
-            List<HashMap<String, Object>> recentOrders = sellerMapper.getRecentOrders(sellerId);
+            List<Order> recentOrders = sellerMapper.getRecentOrders(sellerId);
             dashboardData.put("recentOrders", recentOrders);
 
             dashboardData.put("result", "success");
@@ -166,5 +184,91 @@ public class SellerService {
             dashboardData.put("message", "대시보드 데이터 조회 중 오류가 발생했습니다.");
         }
         return dashboardData;
+    }
+    
+    public HashMap<String, Object> getSalesHistory(HashMap<String, Object> paramMap) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+        try {
+            List<HashMap<String, Object>> salesHistory = sellerMapper.getSalesHistory(paramMap);
+
+            resultMap.put("result", "success");
+            resultMap.put("history", salesHistory); // 프론트엔드에서 salesHistory로 받도록 설정
+        } catch (Exception e) {
+            System.out.println("매출 내역 조회 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            resultMap.put("result", "fail");
+            resultMap.put("message", "매출 내역 조회 중 오류가 발생했습니다.");
+        }
+        return resultMap;
+    }
+    
+    // 판매자 탈퇴
+    public HashMap<String, Object> withdrawSeller(HashMap<String, Object> map, HttpSession session) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+
+        try {
+            String userId = (String) session.getAttribute("sessionId");
+            if (userId == null) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "로그인이 필요합니다.");
+                return resultMap;
+            }
+            map.put("userId", userId);
+
+            // 1. 사용자 정보 조회 (구매자 탈퇴 로직과 동일)
+            HashMap<String, Object> paramMap = new HashMap<>();
+            paramMap.put("userId", userId);
+            User userProfile = userMapper.loginUser(paramMap);
+
+            if (userProfile == null) {
+                resultMap.put("result", "fail");
+                resultMap.put("message", "사용자 정보를 찾을 수 없습니다.");
+                return resultMap;
+            }
+
+            String loginType = (userProfile.getPassword() == null) ? "SOCIAL" : "NORMAL";
+
+            // 2. 본인 확인 (구매자 탈퇴 로직과 동일)
+            if (loginType.equals("NORMAL")) {
+                String inputPassword = (String) map.get("password");
+                if (inputPassword == null || !passwordEncoder.matches(inputPassword, userProfile.getPassword())) {
+                    resultMap.put("result", "fail");
+                    resultMap.put("message", "비밀번호가 일치하지 않습니다.");
+                    return resultMap;
+                }
+            }
+
+            // 판매자 탈퇴 ---
+
+            // 3. USERS 테이블 상태 변경
+            userMapper.updateUserStatus(userId, "WITHDRAWN");
+
+            // 4. SELLER_INFO 테이블 상태 변경 (판매 자격 박탈)
+            sellerMapper.updateSellerVerification(userId, "N");
+
+            // 5. PRODUCT 테이블 상태 변경 (판매 중인 모든 상품을 'hidden'으로)
+            productMapper.hideAllProductsBySeller(userId);
+
+            // 6. 세션 무효화
+            session.invalidate();
+
+            resultMap.put("result", "success");
+            resultMap.put("message", "판매자 계정 탈퇴가 성공적으로 처리되었습니다.");
+
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+            resultMap.put("message", "판매자 탈퇴 처리 중 오류가 발생했습니다.");
+            e.printStackTrace();
+            // @Transactional에 의해 오류 발생 시 모든 DB 변경이 롤백됩니다.
+        }
+
+        return resultMap;
+    }
+    
+    // 판매자 계정 정보 복구
+    @Transactional
+    public void recoverSellerAccount(String userId) {
+        sellerMapper.updateSellerVerification(userId, "Y");
+     
     }
 }
