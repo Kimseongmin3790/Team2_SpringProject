@@ -1536,6 +1536,7 @@
                             type: "POST",
                             data: param,
                             success: function (data) {
+                                console.log(data);
                                 self.info = data.info;
                                 self.fileList = data.fileList;
                                 self.options = data.options;

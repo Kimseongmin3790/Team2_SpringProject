@@ -399,6 +399,7 @@
                                     fulfillment: SINGLE.fulfillment
                                 },
                                 success: (res) => {
+                                    console.log(res);
                                     if (res.result === 'success') {
                                         this.products = (res.list || []).map(p => ({
                                             ...p,
