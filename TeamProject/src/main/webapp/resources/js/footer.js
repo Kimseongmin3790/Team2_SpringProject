@@ -67,7 +67,7 @@ $(document).ready(function() {
 	  let answer = "";
 
 	  if (msg.includes("배송")) {
-	    answer = "🚚 배송은 결제 후 2~3일 이내 도착합니다.<br>상세 조회는 <a href='" + CONTEXT_PATH + "/buyerMyPage.do'>여기</a>에서 확인하세요.";
+	    answer = "🚚 배송은 결제 후 2~3일 이내 도착합니다.<br>상세 조회는 <a href='" + CONTEXT_PATH + "/buyerMyPage.do'>마이페이지</a>->주문내역 에서 확인하세요.";
 	  } else if (msg.includes("환불") || msg.includes("취소")) {
 	    answer = "💳 환불은 상품 회수 완료 후 2~5일 내 처리됩니다.<br>자세한 안내는 <a href='" + CONTEXT_PATH + "/customerService.do?tab=faq'>여기</a>에서 확인하세요.";
 	  } else if (msg.includes("문의")) {

@@ -510,7 +510,7 @@
                                     success: function (data) {
                                         if (data.result == "success") {
                                             alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
-                                            location.href = "${path}/product/payment.do";
+                                            location.href = "${path}/buyerMyPage.do";
                                         } else {
                                             alert("결제 저장 실패:" + data.message);
                                         }
