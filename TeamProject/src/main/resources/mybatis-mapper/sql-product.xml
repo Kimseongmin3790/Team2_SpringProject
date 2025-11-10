@@ -93,6 +93,13 @@
         -- USERS, SELLER_INFO, REVIEW 정보
         U.NAME             AS userName,
         SI.BUSINESS_NAME   AS businessName,
+        
+        REGEXP_REPLACE(
+            REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'),
+            '(특별시|광역시|도|특별자치도)',
+            ''
+        ) AS region,  
+       
         NVL(ROUND(R.RATING, 1), 0) AS rating
 
 	    FROM PRODUCT P
@@ -123,7 +130,6 @@
 	
 	    ORDER BY P.PRODUCT_NO
     </select>
-
    
     <select id="selectCategoryList" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductCategory">
         SELECT 
@@ -136,37 +142,57 @@
         ORDER BY C.CATEGORY_NO
     </select>
     
+    <select id="selectSellerRegions" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+	    SELECT *
+	    FROM (
+	        SELECT 
+	            REGEXP_REPLACE(
+	                REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'), 
+	                '(특별시|광역시|도|특별자치도)', 
+	                ''
+	            ) AS region,
+	            COUNT(P.PRODUCT_NO) AS productCount
+	        FROM PRODUCT P
+	        JOIN SELLER_INFO SI ON P.SELLER_ID = SI.USER_ID
+	        JOIN USERS U ON SI.USER_ID = U.USER_ID
+	        WHERE U.USER_ROLE = 'SELLER'
+	        GROUP BY REGEXP_REPLACE(
+	            REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'), 
+	            '(특별시|광역시|도|특별자치도)', 
+	            ''
+	        )
+	        ORDER BY region
+	    )
+	    OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+	</select>
+
+    <select id="countSellerRegions" parameterType="hashmap" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM (
+	        SELECT 
+	            REGEXP_REPLACE(
+	                REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'), 
+	                '(특별시|광역시|도|특별자치도)', 
+	                ''
+	            ) AS region
+	        FROM PRODUCT P
+	        JOIN SELLER_INFO SI ON P.SELLER_ID = SI.USER_ID
+	        JOIN USERS U ON SI.USER_ID = U.USER_ID
+	        WHERE U.USER_ROLE = 'SELLER'
+	        GROUP BY REGEXP_REPLACE(
+	            REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'), 
+	            '(특별시|광역시|도|특별자치도)', 
+	            ''
+	        )
+	    )
+	</select>      
+    
+    
     <select id="selectProductQuestions" parameterType="hashmap" resultType="com.example.TeamProject.model.ProductQuestions">
-    	SELECT Q.TITLE, Q.USER_ID, Q.STATUS, TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD') AS REG_DATE, A.CONTENT AS ANSWER, Q.IS_SECRET, P.SELLER_ID, Q.CONTENT
+    	SELECT Q.TITLE, Q.USER_ID, Q.STATUS, TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD') AS REG_DATE, A.CONTENT AS ANSWER, Q.IS_SECRET, P.SELLER_ID
 		FROM PRODUCT_QNA Q
 		JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
 		LEFT JOIN PRODUCT_QNA_ANSWER A ON Q.QNA_NO = A.QNA_NO
 		WHERE Q.PRODUCT_NO = #{productNo}
     </select>
-    
-    <insert id="insertProductOptions" parameterType="map">
-	  <if test="options != null and options.size() &gt; 0">
-	    MERGE INTO PRODUCT_OPTION t
-	    USING (
-	      <foreach collection="options" item="opt" separator=" UNION ALL ">
-	        SELECT
-	          #{productNo}    AS PRODUCT_NO,
-	          #{opt.unit}     AS UNIT,
-	          #{opt.stock}    AS STOCK_QTY,
-	          #{opt.addPrice} AS ADD_PRICE
-	        FROM DUAL
-	      </foreach>
-	    ) s
-	    ON (t.PRODUCT_NO = s.PRODUCT_NO AND t.UNIT = s.UNIT)
-	    WHEN NOT MATCHED THEN
-	      INSERT (OPTION_NO, PRODUCT_NO, UNIT, STOCK_QTY, ADD_PRICE, IS_ACTIVE, CDATETIME)
-	      VALUES (PRODUCT_OPTION_SEQ.NEXTVAL, s.PRODUCT_NO, s.UNIT, s.STOCK_QTY, s.ADD_PRICE, 'Y', SYSDATE)
-	    WHEN MATCHED THEN
-	      UPDATE SET t.STOCK_QTY = s.STOCK_QTY,
-	                 t.ADD_PRICE = s.ADD_PRICE,
-	                 t.IS_ACTIVE = NVL(t.IS_ACTIVE,'Y'),
-	                 t.UDATETIME = SYSDATE
-	  </if>
-	</insert>
-	
 </mapper>

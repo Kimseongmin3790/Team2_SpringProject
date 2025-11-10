@@ -153,76 +153,39 @@ public class UserController {
 	// 장바구니 추가
 	@RequestMapping(value = "/cart/add.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public String addCart(Model model, @RequestParam HashMap<String, Object> map, HttpSession session) throws Exception {
+	public String addCart(Model model, @RequestParam HashMap<String, Object> map, HttpSession session)
+			throws Exception {
 
-	    HashMap<String, Object> res = new HashMap<>();
+		// 프론트에서 넘어온 수령방법 (기본값: delivery)
+		String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
 
-	    try {
-	        // 1) 세션 사용자 우선 사용 (보안)
-	        String sessionUser = (String) session.getAttribute("sessionId");
-	        String userId = (sessionUser != null && !sessionUser.isBlank())
-	                ? sessionUser
-	                : String.valueOf(map.get("userId"));
+		// ★ 장바구니 저장 -> 서비스 결과 사용(여기서 cartNo를 받아옴)
+		HashMap<String, Object> resultMap = userService.addCart(map);
 
-	        if (userId == null || userId.isBlank()) {
-	            res.put("result", "fail");
-	            res.put("message", "로그인이 필요합니다.");
-	            return new com.google.gson.Gson().toJson(res);
-	        }
+		// cartNo 뽑기
+		Long cartNo = null;
+		Object cno = resultMap.get("cartNo");
+		if (cno instanceof Number) {
+			cartNo = ((Number) cno).longValue();
+		} else if (cno != null) {
+			try {
+				cartNo = Long.parseLong(String.valueOf(cno));
+			} catch (Exception ignore) {
+			}
+		}
 
-	        // 2) 숫자/문자 정규화
-	        Integer productNo  = toInt(map.get("productNo"), null);
-	        Integer optionNo   = toInt(map.get("optionNo"), null);   // CART.OPTION_NO 존재 가정 (nullable)
-	        Integer quantity   = Math.max(1, toInt(map.get("quantity"), 1));
+		// cartNo가 있으면 세션 맵(cartFulfillment)에 cartNo→fulfillment 저장
+		if (cartNo != null) {
+			@SuppressWarnings("unchecked")
+			Map<Long, String> fMap = (Map<Long, String>) session.getAttribute("cartFulfillment");
+			if (fMap == null) {
+				fMap = new HashMap<>();
+				session.setAttribute("cartFulfillment", fMap);
+			}
+			fMap.put(cartNo, "pickup".equalsIgnoreCase(fulfillment) ? "pickup" : "delivery");
+		}
 
-	        // 3) 수령 방법 & 배송비는 서버에서 결정 (클라 shippingFee 무시)
-	        String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
-	        fulfillment = "pickup".equalsIgnoreCase(fulfillment) ? "pickup" : "delivery";
-	        int shippingFee = "delivery".equals(fulfillment) ? 3000 : 0;
-
-	        // 4) 필수값 검증
-	        if (productNo == null) {
-	            res.put("result", "fail");
-	            res.put("message", "productNo가 없습니다.");
-	            return new com.google.gson.Gson().toJson(res);
-	        }
-
-	        // 5) 서비스에 넘길 '클린 파라미터' 구성 (불신 필드 제거: unitPrice/totalPrice/optionUnit 등)
-	        HashMap<String, Object> clean = new HashMap<>();
-	        clean.put("userId", userId);
-	        clean.put("productNo", productNo);
-	        clean.put("optionNo", optionNo);
-	        clean.put("quantity", quantity);
-	        clean.put("fulfillment", fulfillment);
-	        clean.put("shippingFee", shippingFee);
-
-	        // 6) 장바구니 저장 (MERGE or INSERT) -> cartNo 반환 기대
-	        HashMap<String, Object> resultMap = userService.addCart(clean);
-
-	        // 7) cartNo 세션 보조 저장 (선택)
-	        Long cartNo = toLong(resultMap.get("cartNo"));
-	        if (cartNo != null) {
-	            @SuppressWarnings("unchecked")
-	            Map<Long, String> fMap = (Map<Long, String>) session.getAttribute("cartFulfillment");
-	            if (fMap == null) {
-	                fMap = new HashMap<>();
-	                session.setAttribute("cartFulfillment", fMap);
-	            }
-	            fMap.put(cartNo, fulfillment);
-	        }
-
-	        // 8) 응답
-	        if (!resultMap.containsKey("result")) {
-	            resultMap.put("result", "success");
-	        }
-	        return new com.google.gson.Gson().toJson(resultMap);
-
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        res.put("result", "fail");
-	        res.put("message", e.getMessage());
-	        return new com.google.gson.Gson().toJson(res);
-	    }
+		return new Gson().toJson(resultMap);
 	}
 
 	// 장바구니 목록

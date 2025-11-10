@@ -59,22 +59,22 @@
                     color: white;
                     border: none;
                     border-radius: 8px;
-                    min-width: 90px;
-                    max-width: 110px;
+                    min-width: 160px;
+                    max-width: 160px;
                     height: 50px;
                     padding: 12px 20px;
                     font-size: 18px;
-                    
+                    font-weight: bold;
                     cursor: pointer;
                     transition: background-color 0.2s, transform 0.1s;
                     flex-shrink: 0;
                 }
 
                 .btn-register:hover {
-                    background-color: #ddd;
+                    background-color: #3d8c40;
                     transform: scale(1.05);
-                }              
-                
+                }
+
                 .sidebar h3 {
                     color: #1a5d1a;
                     font-size: 24px;
@@ -107,7 +107,7 @@
                 /* ===== 좌우 구분선 ===== */
                 .division-bar {
                     width: 1px;
-                    background: #ddd;
+                    background: linear-gradient(to bottom, #d0d0d0, #e8e8e8);
                     border-radius: 1px;
                     align-self: stretch;
                     height: auto;
@@ -348,45 +348,6 @@
                     border-left: 5px solid #388e3c;
                 }
 
-                .custom-price-range {
-                    display: flex;                    
-                    align-items: center;
-                    margin-top: 8px;
-                                      
-                }               
-
-                .custom-price-range button{
-                    border-radius: 5px;
-                    border-color: #388e3c;
-                    background-color: #388e3c;
-                    color:white;                    
-                    margin-left: 2px;
-                    height: 40px;
-                    font-size: 18px;
-                }
-
-                .custom-price-range button:hover {
-                    background-color: #ddd;
-                }
-
-                .custom-price-range input {
-                    width: 80px;
-                    height: 30px;
-                    padding: 4px;       
-                    font-size: 18px;
-                    color:black;
-                    border: solid 1px #ebe3e3;
-                }
-
-                .custom-price-range-left{
-                   margin-left: 20px; 
-                   margin-right: 10px;
-                }
-
-                .custom-price-range-right{
-                   margin-left: 10px; 
-                }
-
                 /* ===== 생산지역필터 ==== */
                 .region-filter {
                     margin-top: 20px;
@@ -448,22 +409,6 @@
                 .pagination button:disabled {
                     opacity: 1.4;
                     cursor: not-allowed;
-                }
-
-                .clear-region {
-                    font-size: 18px;
-                    margin-bottom: 0px;
-                    background-color: #388e3c;
-                    border: 1px solid #388e3c;
-                    color:white;
-                    border-radius: 6px;
-                    padding: 4px 8px;
-                    cursor: pointer;
-                    margin-left: 22px;
-                }
-
-                .clear-region:hover {
-                    background-color: #ddd;
                 }
 
                 /* ===== 구분선 ===== */
@@ -564,7 +509,7 @@
 
                     /* 반응형에서도 버튼 크기 유지 */
                     .btn-register {
-                        width: 110px !important;
+                        width: 160px !important;
                         font-size: 18px !important;
                         padding: 12px 20px !important;
                     }
@@ -578,7 +523,7 @@
                     }
 
                     .btn-register {
-                        width: 110px !important;
+                        width: 160px !important;
                         font-size: 18px !important;
                         padding: 12px 20px !important;
                     }
@@ -604,37 +549,9 @@
                     }
 
                     .btn-register {
-                        width: 110px !important;
+                        width: 160px !important;
                         font-size: 18px !important;
                         padding: 12px 20px !important;
-                    }
-
-                    /* 카테고리 그리드일 때: 카드 폭/간격 축소, 너비 100% */
-                    .content .grid:has(.grid-item:not(.product)) {
-                        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                        gap: 24px;
-                        width: 100%;
-                    }
-
-                    /* 카테고리 카드 비율을 낮게(가로가 더 넓게) */
-                    .grid-item:not(.product) {
-                        aspect-ratio: 4 / 3;
-                        /* 기존 3/5.5 → 4/3 로 변경 */
-                        max-width: 260px;
-                        /* 필요 시 최대폭 제한 */
-                        margin: 10px auto;
-                        /* 가운데 정렬 느낌 */
-                    }
-
-                    /* 카테고리 카드 이미지 래퍼 높이 안정화 */
-                    .grid-item:not(.product) .image-wrapper {
-                        border-radius: 8px;
-                    }
-
-                    /* 카테고리 텍스트도 살짝 축소 */
-                    .grid-item:not(.product) .info h4 {
-                        font-size: 18px;
-                        margin-top: 2px;
                     }
                 }
             </style>
@@ -686,28 +603,14 @@
                                         {{ range.label }}
                                     </li>
                                 </ul>
-                                <div class="custom-price-range">
-                                    <input class="custom-price-range-left" type="number" v-model.number="customMinPrice" placeholder="최소가격" />
-                                    ~
-                                    <input class="custom-price-range-right" type="number" v-model.number="customMaxPrice" placeholder="최대가격" />
-                                    <span>(원)</span>
-                                    <button @click="applyCustomPrice">검색</button>
-                                    <button v-if="selectedPriceRange === 'custom'"
-                                        @click="resetCustomPrice">초기화</button>
-                                </div>
                             </div>
                         </span>
 
-
+                        <!-- <span v-if="viewLevel === 'product'"> -->
                         <div class="sidebar-divider"></div>
 
                         <div class="region-filer">
-                            <h3>전국 아그리콜라들의 상품</h3>
-
-                            <button v-if="selectedRegion" @click="clearRegion" class="clear-region">
-                                모든 상품 보기
-                            </button>
-
+                            <h3>내 주변 아그리콜라들</h3>
                             <ul>
                                 <li v-for="region in pagedRegions" :key="region.region"
                                     :class="{ active: selectedRegion === region.region }"
@@ -725,6 +628,7 @@
                             </div>
 
                         </div>
+                        </span>
 
                     </div>
 
@@ -817,13 +721,12 @@
                                         </div>
                                         <div class="date">📅생산일: {{p.cdate || '정보없음'}}</div>
                                         <div class="region">🌾원산지: {{p.origin || '-'}}</div>
-                                        <div class="seller">👨‍🌾Agricola: {{p.businessName || '-'}}({{p.sellerId}})
-                                        </div>
+                                        <div class="seller">👨‍🌾Agricola: {{p.businessName || '-'}}({{p.sellerId}})</div>
                                     </div>
                                 </div>
                             </div>
                             <div v-if="filteredProducts.length === 0"
-                                style="font-size: 50px; text-align: left; color: #2e7d32; padding-top: 30px;">
+                                style="font-size: 50px; text-align: center; color: #2e7d32; padding-top: 30px;">
                                 등록된 상품이 없습니다. 곧 다시 뵙겠습니다.
                             </div>
                         </div>
@@ -858,8 +761,6 @@
                             { label: '30,000원 이상', min: 30000, max: Infinity }
                         ],
                         selectedPriceRange: null,
-                        customMinPrice: null,
-                        cutomMaxPrice: null,
 
                         regionList: [],
                         selectedRegion: null,
@@ -872,20 +773,15 @@
                     parentCategories() {
                         return this.categoryList.filter(c => c.parentCategoryNo === '');
                     },
-
                     pagedRegions() {
                         const start = (this.currentRegionPage - 1) * this.regionsPerPage;
                         return this.regionList.slice(start, start + this.regionsPerPage);
                     },
-
                     totalRegionPages() {
                         return Math.ceil(this.regionList.length / this.regionsPerPage);
                     },
-
                     filteredProducts() {
-                        let result = (this.productList || []).filter(
-                            p => (p.productStatus || '').toUpperCase() === 'SELLING'
-                        );
+                        let result = this.productList || [];
                         console.log('------ ', this.productList && this.productList[0]);
                         console.log('현재 선택된 가격범위 index:', this.selectedPriceRange);
                         console.log('현재 선택된 가격범위 값:', this.priceRanges[this.selectedPriceRange]);
@@ -898,15 +794,7 @@
                         }
 
                         // 가격 필터
-                        if (this.selectedPriceRange === 'custom') {
-                            const min = this.customMinPrice || 0;
-                            const max = this.customMaxPrice || Infinity;
-                            result = result.filter(p => {
-                                const price = Number(p.price);
-                                if (isNaN(price)) return false;
-                                return price >= min && price <= max;
-                            });
-                        } else if (this.selectedPriceRange !== null && this.selectedPriceRange !== undefined) {
+                        if (this.selectedPriceRange !== null && this.selectedPriceRange !== undefined) {
                             const range = this.priceRanges[this.selectedPriceRange];
                             result = result.filter((p) => {
                                 const price = Number(p.price);
@@ -926,7 +814,6 @@
                         console.log('필터 적용 후 지역 수:', this.selectedRegion);
                         return result;
                     },
-
                     breadcrumb() {
                         const r = [];
                         if (this.selectedParent) r.push(this.getCategoryName(this.selectedParent));
@@ -956,12 +843,6 @@
                             categoryName: c.categoryName || '',
                             imageUrl: c.imageUrl || ''
                         };
-                    },
-
-                    clearRegion() {
-                        console.log('지역 선택 해제: ', this.selectedRegion);
-                        this.selectedRegion = null;
-                        this.viewLevel = 'product';
                     },
 
                     // ✅ 지역 클릭 → 상품 목록 화면으로 이동
@@ -1001,14 +882,11 @@
                             dataType: "json",
                             type: "POST",
                             success: (data) => {
-                                console.log(data);
                                 this.categoryList = (data.categories || []).map(this.normalize);
                                 this.productList = (data.list || []).map(p => ({
                                     ...p,
                                     categoryNo: String(p.categoryNo),
-                                    productStatus: (p.productStatus || '').toUpperCase()
-                                }));
-
+                                    
                                 }));
                                 console.log('*******=== 서버에서 받은 상품데이터 샘플 ===', data.list[0]);
 
@@ -1203,29 +1081,7 @@
                         if (last && /^\d+$/.test(last)) return String(last);
                         return '';
                     },
-
-                    goToProductRegister() {
-                        window.location.href = '/product/add.do';
-                    },
-
-                    // 가격범위 입력
-                    selectPriceRange(index) {
-                        this.selectedPriceRange = index;
-                        this.customMinPrice = null;
-                        this.customMaxPrice = null;
-                    },
-
-                    applyCustomPrice() {
-                        if (this.customMinPrice == null && this.customMaxPrice == null) return;
-                        this.selectedPriceRange = 'custom';
-                    },
-
-                    resetCustomPrice() {
-                        this.customMinPrice = null;
-                        this.customMaxPrice = null;
-                        this.selectedPriceRange = null;
-                    }
-
+                    goToProductRegister() { window.location.href = '/product/add.do'; }
                 },
 
                 mounted() {

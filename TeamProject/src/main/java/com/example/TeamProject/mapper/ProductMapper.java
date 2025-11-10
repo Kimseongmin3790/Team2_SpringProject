@@ -2,6 +2,7 @@ package com.example.TeamProject.mapper;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -29,10 +30,12 @@ public interface ProductMapper {
 	List<Product> selectProductList(HashMap<String, Object> map);
 	// 상품 카테고리
     List<ProductCategory> selectCategoryList(HashMap<String, Object> map);
+    // 상품판매지역 및 총수
+    List<Product> selectSellerRegions(HashMap<String, Object> map);
+    int countSellerRegions(HashMap<String, Object> map);    
+   
     // 상품문의 글 목록
     List<ProductQuestions> selectProductQuestions(HashMap<String, Object> map);
     // 상품 옵션 목록
     List<Product> selectProductOptions(HashMap<String, Object> map);
-    // 상품 옵션 등록
-    int insertProductOptions(HashMap<String, Object> map);
 }
