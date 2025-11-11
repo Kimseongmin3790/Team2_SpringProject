@@ -146,7 +146,7 @@ Team2_SpringProject/
 * [ ] 관리자 대시보드(통계/관리)
 
 
-## 👥 팀원별 역할 분담
+## 👥 팀원별 역할 분담(예시)
 
 - **김성민** 🎨 Frontend
   - Vue 3, HTML, CSS, jQuery, AJAX(예시)
