@@ -56,23 +56,28 @@
 
                     <div class="icon-group">
                        <c:if test="${not empty sessionId}">
-                            <!-- 일반 사용자 or 승인된 판매자만 마이페이지 표시 -->
                             <c:choose>
                                 <c:when test="${sessionScope.sessionStatus eq 'SELLER'}">
                                     <c:if test="${sessionScope.sellerVerifiedStatus eq 'Y'}">
-                                        <a href="javascript:;" id="btnMyPage" title="마이페이지" data-status="${sessionScope.sessionStatus}">
-                                            <i class="fa-solid fa-user"></i>
-                                        </a>
+                                        <div class="mypage-dropdown">
+                                            <a href="javascript:;" id="btnMyPage" data-status="${sessionScope.sessionStatus}">
+                                                <i class="fa-solid fa-user"></i>
+                                            </a>
+                                            <ul class="mypage-menu">
+                                                <li><a href="${path}/buyerMyPage.do">소비자 마이페이지</a></li>
+                                                <li><a href="${path}/sellerMyPage.do">판매자 마이페이지</a></li>
+                                            </ul>
+                                        </div>
                                     </c:if>
                                 </c:when>
                                 <c:otherwise>
-                                    <!-- 일반 사용자 -->
-                                    <a href="javascript:;" id="btnMyPage" title="마이페이지" data-status="${sessionScope.sessionStatus}">
+                                    <a href="${path}/buyerMyPage.do" id="btnMyPage" data-status="${sessionScope.sessionStatus}">
                                         <i class="fa-solid fa-user"></i>
                                     </a>
                                 </c:otherwise>
                             </c:choose>
                         </c:if>
+
                         <a href="javascript:;" id="btnCart" title="장바구니" data-status="${sessionScope.sessionStatus}">
                             <i class="fa-solid fa-cart-shopping"></i>
                         </a>

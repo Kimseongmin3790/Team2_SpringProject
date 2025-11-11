@@ -684,3 +684,50 @@ body {
 .nav-menu a.active::after {
   width: 100%;
 }
+
+/* 판매자 마이페이지 드롭다운 */
+.mypage-dropdown {
+	position: relative;
+	display: inline-block;
+}
+
+.mypage-menu {
+	display: none;
+	position: absolute;
+	top: 110%; /* 버튼 아래 살짝 띄우기 */
+	right: 0;
+	background: #ffffff;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	padding: 5px 0;
+	min-width: 180px;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+	opacity: 0;
+	transform: translateY(-5px);
+	transition: opacity 0.25s ease, transform 0.25s ease;
+	z-index: 1000;
+	list-style: none;
+}
+
+.mypage-menu.show {
+	display: block;
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.mypage-menu li a {
+	display: block;
+	padding: 10px 20px;
+	color: #1a5d1a;
+	font-weight: 500;
+	text-decoration: none;
+	border-radius: 6px;
+	transition: all 0.2s;
+}
+
+.mypage-menu li a:hover {
+	background: #4caf50;
+	color: #fff;
+	transform: translateX(2px);
+}
+
