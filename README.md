@@ -62,17 +62,6 @@
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 
-
-
-
-
-## 🏗 시스템 아키텍처
-
-* 아키텍처 다이어그램: `docs/architecture/architecture.png`
-* 모듈 구성: Web (JSP/Vue) ↔ API (Spring) ↔ DB (Oracle)
-
-<p align="center"><img src="docs/architecture/architecture.png" width="90%" alt="Architecture" /></p>
-
 ## 🗂 프로젝트 구조
 ```
 Team2_SpringProject/
