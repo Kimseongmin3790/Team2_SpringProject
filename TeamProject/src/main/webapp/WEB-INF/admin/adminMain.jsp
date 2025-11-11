@@ -13,7 +13,7 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3"></script>
-            <script src="https://kit.fontawesome.com/3fd2d94b47.js" crossorigin="anonymous"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
             <!-- 공통 CSS -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
@@ -176,12 +176,17 @@
                             <div class="admin-card" @click="goPage('productManage.do')">
                                 <i class="fa-solid fa-box-open"></i>
                                 <h3>상품관리</h3>
-                                <p>카테고리 관리 / 상품 추천여부</p>
+                                <p>상품 목록 / 상품 추천여부</p>
                             </div>
                             <div class="admin-card" @click="goPage('stats.do')">
                                 <i class="fa-solid fa-chart-line"></i>
                                 <h3>통계</h3>
                                 <p>회원/ 매출 / 품목 / 가입자 통계 및 추이</p>
+                            </div>
+                            <div class="admin-card" @click="goPage('categoryManage.do')">
+                                <i class="fa-solid fa-tags"></i>
+                                <h3>카테고리 관리</h3>
+                                <p>대/중/소 분류 관리</p>
                             </div>
                         </div>
 

@@ -828,7 +828,7 @@
                                                     style="width:100%;height:100%;object-fit:cover;border-radius:8px;">
                                             </div>
                                             <div class="cart-item-info">
-                                                <h3>{{ item.productName }}</h3>
+                                                <h3>{{ item.pName }} {{ item.unit }}</h3>
                                                 <p>수량: {{ item.quantity }}개</p>
                                                 <p class="cart-item-price">
                                                     {{ Number(item.unitPrice || 0).toLocaleString() }}원
@@ -1354,7 +1354,6 @@
                             type: "GET",
                             success: function (data) {
                                 if (data.status === 'error') {
-                                    alert(data.message);
                                     location.href = CTX + '/login.do';
                                     return;
                                 }
@@ -1535,6 +1534,7 @@
                             dataType: "json",
                             data: param,
                             success: function (data) {
+                                console.log(data);
                                 if (data.result == 'success') {
                                     self.cartItems = data.list || [];
                                 } else {

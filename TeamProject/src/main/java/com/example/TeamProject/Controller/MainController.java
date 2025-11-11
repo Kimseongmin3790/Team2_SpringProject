@@ -37,6 +37,11 @@ public class MainController {
 		return "main/sellerDetail";
 	}
 	
+	@GetMapping("/map/nearby.do")
+	public String nearby() throws Exception {
+		return "map/nearby-map";
+	}
+	
 
 	// 3. 메인 배너 데이터 응답
 	@RequestMapping(value = "/main/data/banners", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")

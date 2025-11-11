@@ -35,14 +35,14 @@ public class AdminController {
     public String productManage(Model model) throws Exception{
 
         return "admin/productManage"; 
-    }		
-	
-	@RequestMapping("/locationMap.do") 
-    public String locationMap(Model model) throws Exception{
-
-        return "admin/locationMap"; 
     }
 	
+	@RequestMapping("/admin/categoryManage.do") 
+    public String categoryManage(Model model) throws Exception{
+
+        return "admin/categoryManage"; 
+    }
+			
 	
 	@RequestMapping(value = "/userList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
