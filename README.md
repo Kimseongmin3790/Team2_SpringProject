@@ -4,18 +4,6 @@
 
 > **한 줄 소개:** 농수산물 직거래 플랫폼, 생산자와 소비자를 연결합니다.
 
-<!-- 깃허브 상단에 보이는 배지들: 필요 시 수정/삭제 -->
-
-<p align="left">
-  <img src="https://img.shields.io/badge/Java-17-black" alt="Java" />
-  <img src="https://img.shields.io/badge/Spring_Boot-3.x-brightgreen" alt="Spring Boot" />
-  <img src="https://img.shields.io/badge/JSP%2FServlet-2.3-lightgrey" alt="JSP" />
-  <img src="https://img.shields.io/badge/Vue-3.x-blue" alt="Vue" />
-  <img src="https://img.shields.io/badge/Oracle_DB-19c-orange" alt="Oracle" />
-  <img src="https://img.shields.io/badge/MyBatis-3.x-yellow" alt="MyBatis" />
-  <img src="https://img.shields.io/badge/Build-Gradle-02303A" alt="Gradle" />
-</p>
-
 ---
 
 ## 📌 대표 이미지
@@ -87,23 +75,75 @@
 
 ## 🗂 프로젝트 구조
 
-```text
-project-root/
-├─ docs/                   # 문서, 다이어그램, 스크린샷
-├─ src/
-│  ├─ main/
-│  │  ├─ java/...          # Controller, Service, Mapper
-│  │  ├─ resources/
-│  │  │  ├─ mapper/*.xml   # MyBatis 매퍼
-│  │  │  └─ application.yml
-│  │  └─ webapp/
-│  │     ├─ WEB-INF/views/ # JSP
-│  │     └─ resources/     # css/js/img
-│  └─ test/java/...        # 테스트 코드
-├─ build.gradle
-└─ README.md
-```
-
+Team2_SpringProject/
+├── pom.xml                # Maven 빌드 설정 파일
+├── README.md              # 프로젝트 설명 파일
+└── src/
+    ├── main/
+    │   ├── java/
+    │   │   └── com/
+    │   │       └── example/
+    │   │           └── TeamProject/
+    │   │               ├── TeamProjectApplication.java  # 스프링 부트 시작점
+    │   │               │
+    │   │               ├── common/              # 공통 기능 (보안 설정, 예외 처리 등)
+    │   │               │   ├── SecurityConfig.java
+    │   │               │   └── GlobalExceptionHandler.java
+    │   │               │
+    │   │               ├── config/              # 설정 관련 클래스 (OAuth 등)
+    │   │               │   └── auth/
+    │   │               │
+    │   │               ├── controller/          # 웹 요청을 처리하는 컨트롤러
+    │   │               │   ├── UserController.java
+    │   │               │   ├── ProductController.java
+    │   │               │   ├── OrderController.java
+    │   │               │   └── ... (기타 컨트롤러)
+    │   │               │
+    │   │               ├── dao/                 # 비즈니스 로직을 처리하는 서비스
+    │   │               │   ├── UserService.java
+    │   │               │   ├── ProductService.java
+    │   │               │   └── ... (기타 서비스)
+    │   │               │
+    │   │               ├── mapper/              # MyBatis 매퍼 인터페이스
+    │   │               │   ├── UserMapper.java
+    │   │               │   ├── ProductMapper.java
+    │   │               │   └── ... (기타 매퍼)
+    │   │               │
+    │   │               └── model/               # 데이터 모델 (VO, DTO)
+    │   │                   ├── User.java
+    │   │                   ├── Product.java
+    │   │                   └── ... (기타 모델)
+    │   │
+    │   ├── resources/
+    │   │   ├── application.properties   # 애플리케이션 설정 파일
+    │   │   │
+    │   │   ├── mybatis-mapper/          # MyBatis SQL 쿼리 XML 파일
+    │   │        ├── sql-user.xml
+    │   │        ├── sql-product.xml
+    │   │        └── ... (기타 SQL 파일)
+    │   │   
+    │   │   
+    │   │       
+    │   │
+    │   └── webapp/
+    │       ├── resources/               # 정적 리소스 (JSP에서 주로 사용)
+    │       │   ├── css/
+    │       │   ├── js/
+    │       │   └── img/
+    │       │
+    │       └── WEB-INF/                 # JSP 뷰 파일 위치
+    │           ├── default.jsp          # 기본 템플릿 JSP
+    │           ├── index.jsp
+    │           ├── admin/
+    │           ├── board/
+    │           ├── user/
+    │           ├── product/
+    │           └── views/
+    │               └── common/          # 공통 뷰 (헤더, 푸터)
+    │                   ├── header.jsp
+    │                   └── footer.jsp
+    │ 
+    └── 
 ## ✨ 주요 기능
 
 * [ ] 회원가입/로그인, 소셜 로그인(옵션)
@@ -125,50 +165,8 @@ project-root/
 | 배송/지도   | 이프론트  | Kakao Maps, 배송 추적    |
 | 인프라/배포  | 박데브옵스 | CI/CD, 서버/도메인, 로그    |
 
-## ⚙️ 설치 및 실행 방법
 
-### 1) 필수 요구사항
 
-* JDK 17+, Gradle 8+
-* Node 18+ (프론트 빌드 사용 시)
-* Oracle DB (로컬/원격), 계정/스키마 준비
-
-### 2) 환경 변수 설정
-
-`.env` 또는 `application-local.yml` 예시:
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:oracle:thin:@localhost:1521/XE
-    username: YOUR_ID
-    password: YOUR_PW
-  servlet:
-    multipart:
-      max-file-size: 20MB
-      max-request-size: 100MB
-jwt:
-  secret: your-secret
-```
-
-### 3) 로컬 실행
-
-```bash
-# 1) 의존성 다운로드 & 빌드
-./gradlew clean build
-
-# 2) 애플리케이션 실행
-./gradlew bootRun
-
-# 3) 접속
-http://localhost:8080
-```
-
-### 4) 테스트 계정(예시)
-
-* Admin: `admin / admin123!`
-* Seller: `seller1 / seller123!`
-* Buyer: `user1 / user123!`
 
 ## ☁️ 배포 정보
 
