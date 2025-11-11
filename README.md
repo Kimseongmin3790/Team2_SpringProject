@@ -168,30 +168,10 @@ Team2_SpringProject/
 
 
 
-
-
-## ☁️ 배포 정보
-
-* **도메인**: [https://your-domain.com](https://your-domain.com)
-* **아키텍처**: Nginx → Spring Boot → Oracle
-* **CI/CD**: GitHub Actions (build/test/deploy)
-* **로그/모니터링**: (예) Spring Actuator, CloudWatch, Grafana
-
 ## 🗄 ERD & DB 설계
 
 * [![ERD 다이어그램](TeamProject/src/main/webapp/resources/img/erd.PNG)](TeamProject/src/main/webapp/resources/img/erd.PNG)
 * 스키마/DDL: `docs/db/schema.sql`
-
-## 📖 API 명세
-
-* 문서: Swagger UI / Notion 링크
-* 인증: JWT (Authorization: Bearer {token})
-* 예시
-
-```http
-GET /api/products?category=grain&page=1
-Authorization: Bearer {token}
-```
 
 ## 🖥 발표 자료 & 시연 영상
 
@@ -206,22 +186,6 @@ Authorization: Bearer {token}
 * 화면 설계서(Figma): [링크]()
 * 테스트 케이스/리포트: [링크]()
 * 회고/느낀점: [링크]()
-
-## 📏 개발 컨벤션
-
-* **Git 브랜치 전략**: `main` / `develop` / `feature/*`
-* **커밋 컨벤션**: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
-* **코드 스타일**: Checkstyle/Spotless (옵션)
-* **이슈/PR 템플릿**: `.github/ISSUE_TEMPLATE.md`, `.github/PULL_REQUEST_TEMPLATE.md`
-
-<details>
-<summary>커밋 메시지 예시</summary>
-
-```
-feat(product): 옵션 SKU 생성 로직 추가
-- 옵션 조합 빌더 적용
-- 재고 검증 로직 및 유효성 보강
-```
 
 </details>
 
