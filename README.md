@@ -179,7 +179,7 @@ Team2_SpringProject/
 
 ## 🗄 ERD & DB 설계
 
-* ERD 이미지: `docs/db/erd.png`
+* ERD 이미지: `https://www.erdcloud.com/d/rkCfSHd6zyzgTdy8t`
 * 스키마/DDL: `docs/db/schema.sql`
 
 ## 📖 API 명세
