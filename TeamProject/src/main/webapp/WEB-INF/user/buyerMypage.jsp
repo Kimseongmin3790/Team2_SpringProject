@@ -776,7 +776,7 @@
 
         <body>
             <div id="app" data-ctx="<c:out value='${pageContext.request.contextPath}'/>"
-                data-user-id="<c:out value='${sessionId}'/>" data-active-tab="<c:out value='${activeTab}'/>">
+                data-user-id="<c:out value='${sessionId}'/>" data-active-tab="<c:out value='${param.activeTab}'/>">
                 <!-- 공통 헤더 -->
                 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
