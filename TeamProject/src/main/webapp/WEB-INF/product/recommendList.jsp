@@ -186,7 +186,7 @@
                                     <div class="product-price">{{ p.price.toLocaleString() }}원</div>
                                     <div class="date">📅생산일: {{ p.cdate }}</div>
                                     <div class="region">🌾원산지: {{ p.origin }}</div>
-                                    <div class="seller">👨‍🌾Agricola:{{p.businessName}}({{ p.userName }})</div>
+                                    <div class="seller">👨‍🌾Agricola:{{p.businessName}}</div>
                                 </span>
                             </div>
                         </div>
