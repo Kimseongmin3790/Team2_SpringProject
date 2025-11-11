@@ -67,17 +67,39 @@
                     object-fit: cover;
                     border-radius: 8px;
                 }
+                
+                .info {
+                    padding: 12px;
+                    text-align: left;
+                }
 
                 .product-name {
                     font-weight: 600;
-                    margin-top: 10px;
-                    color: #333;
+                    margin-top: -10px;
+                    color:#2e7d32;
+                }
+
+                .product-desc{
+                    color:blue;
                 }
 
                 .product-price {
-                    color: #1a5d1a;
+                    color: orange;
                     font-weight: 700;
                     margin-top: 5px;
+                }
+
+                .date{
+                    color:black
+                }
+
+                .region{
+                    color:cornflowerblue;
+                }
+
+                .seller{
+                    color:green;
+                    margin-bottom: -20px;
                 }
 
                 /* 이미지 래퍼 */
@@ -158,10 +180,14 @@
                                         }}</span>
                                     <!-- 1~4만 표시하려면 위 span에 v-if="i < 4" 추가 -->
                                 </div>
-
-                                <div class="product-name">{{ p.pName }}</div>
-                                <div class="product-info">{{ p.pInfo }}</div>
-                                <div class="product-price">{{ p.price.toLocaleString() }}원</div>
+                                <span class="info">
+                                    <div class="product-name">{{ p.pName }}</div>
+                                    <div class="product-desc">{{ p.pInfo }}</div>
+                                    <div class="product-price">{{ p.price.toLocaleString() }}원</div>
+                                    <div class="date">📅생산일: {{ p.cdate }}</div>
+                                    <div class="region">🌾원산지: {{ p.origin }}</div>
+                                    <div class="seller">👨‍🌾Agricola:{{p.businessName}}({{ p.userName }})</div>
+                                </span>
                             </div>
                         </div>
                     </main>

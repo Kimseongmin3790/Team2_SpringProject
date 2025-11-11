@@ -13,4 +13,7 @@ public class Main {
     private String recommend;
     private String imageUrl;
     
+    private double rating;
+    private String businessName;
+    
 }

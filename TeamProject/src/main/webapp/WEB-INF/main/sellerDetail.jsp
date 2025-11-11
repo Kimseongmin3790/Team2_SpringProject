@@ -109,13 +109,25 @@
                 .product-info h4 {
                     font-size: 1rem;
                     margin: 0 0 5px;
-                    color: #333;
+                    color: #2e7d32;
                     font-weight: 600;
+                }
+
+                .product-info .desc{
+                    color:blue;
                 }
 
                 .product-price {
                     font-weight: bold;
-                    color: #388e3c;
+                    color: orange;
+                }
+
+                .product-info .region{
+                    color:cornflowerblue;
+                }
+
+                .product-info .seller{
+                    color:green;
                 }
 
                 .product-stock {
@@ -156,9 +168,14 @@
                         <div class="product-card" v-for="p in products" :key="p.productNo"
                             @click="goProduct(p.productNo)">
                             <img :src="fullUrl(p.imageUrl)" alt="">
+
                             <div class="product-info">
                                 <h4>{{ p.pName }}</h4>
+                                <div class="desc">{{ p.pInfo }}</div>
                                 <span class="product-price">{{ p.price.toLocaleString() }}원</span>                                
+                                <div class="date">📅생산일: {{ p.cdate }}</div>
+                                <div class="region">🌾원산지: {{ p.origin }}</div>
+                                <div class="seller">👨‍🌾Agricola 이름: {{ p.userName }}</div>
                             </div>
                         </div>
                     </div>

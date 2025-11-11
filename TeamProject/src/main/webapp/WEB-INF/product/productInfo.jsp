@@ -140,7 +140,7 @@
 
                 .dd {
                     position: relative;
-                    width: 500px;
+                    width: 490px;
                     font-size: 16px;
                 }
 
@@ -1167,6 +1167,7 @@
 
                             <!-- 오른쪽: 정보 -->
                             <div class="prod-info" id="container">
+                                <div><a href="javascript:;" style="text-decoration:none; color:inherit;" @click="fnMovement(info.sellerId)">{{info.businessName}}</a></div>
                                 <div id="title">{{ info.pName }}</div>
 
                                 <div class="badge-row">
@@ -1273,15 +1274,15 @@
                                             <div>
                                                 {{ info.pName }} <span style="color:#666">/ {{ selectedOption?.unit
                                                     }}</span>
-                                                <button @click="removeProduct" style="margin-left:270px">삭제</button>
+                                                <button @click="removeProduct" style="margin-left:85px">삭제</button>
                                             </div>
                                             <hr
-                                                style="border-width:1px 0 0 0; border-style:dashed; border-color:#9d9d9d; width:480px;">
+                                                style="border-width:1px 0 0 0; border-style:dashed; border-color:#9d9d9d; width:480px; margin: 10px 0px;">
                                             <div
                                                 style="font-size:18px;font-weight:700; display:flex; align-items:center; gap:8px; margin-top:6px">
                                                 <button @click="fnMinus" style="width:30px; height:30px;">-</button>
                                                 <input v-model.number="qty" @input="recomputeTotal"
-                                                    style="width:50px; text-align:center; height:24px; margin:5px -9px;">
+                                                    style="width:50px; text-align:center; height:30px; margin:5px -9px;">
                                                 <button @click="fnPlus" style="width:30px; height:30px;">+</button>
                                                 <span style="margin-left:auto;">{{ (qty * price).toLocaleString()
                                                     }}원</span>
@@ -1560,6 +1561,9 @@
                             return !tset.has(nu) && nu !== main;
                         });
                     },
+
+                    
+
                     //====== 리뷰 ======
                     filteredReviews() {
                         let self = this;
@@ -1715,6 +1719,10 @@
                             error(xhr) { console.error('product-view.dox error', xhr?.status, xhr?.responseText); }
 
                         });
+                    },
+
+                    fnMovement : function(sellerId){
+                        location.href = "/seller/detail.do?sellerId=" + sellerId;
                     },
 
                     onDetailLoad(e, url) {
