@@ -106,16 +106,16 @@ Team2_SpringProject/
     │   ├── resources/
     │   │   ├── application.properties   # 애플리케이션 설정 파일
     │   │   │
-    │   │   ├── mybatis-mapper/          # MyBatis SQL 쿼리 XML 파일
-    │   │   │   ├── sql-user.xml
-    │   │   │   ├── sql-product.xml
-    │   │   │   └── ... (기타 SQL 파일)
-    │   │   │
-    │   │   └── static/                  # 정적 리소스 (CSS, JS, 이미지 등 - Spring Boot 방식)
-    │   │       └── favicon.ico
+    │   │   └── mybatis-mapper/          # MyBatis SQL 쿼리 XML 파일
+    │   │          ├── sql-user.xml
+    │   │          ├── sql-product.xml
+    │   │          └── ... (기타 SQL 파일)
+    │   │   
+    │   │  
+    │   │      
     │   │
     │   └── webapp/
-    │       ├── resources/               # 정적 리소스 (JSP에서 주로 사용)
+    │       ├── resources/               # 정적 리소스 
     │       │   ├── css/
     │       │   ├── js/
     │       │   └── img/
