@@ -19,5 +19,6 @@ public class Cart {
     private Integer quantity;
     private String fulfillment;
     private Integer shippingFee;
+    private String unit;
 	
 }

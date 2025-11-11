@@ -42,7 +42,7 @@ $(document).ready(function() {
 
 	    // ⭐ 처음 열었을 때만 환영 메시지 출력
 	    if (!chatbotWelcomed) {
-	      appendMessage('bot', "👋 '배송', '환불', '입점', '제휴', '공지'등의 키워드를 입력하여 궁금하신점을 물어보세요!");
+	      appendMessage('bot', "👋 '배송', '환불', '입점', '제휴', '공지',  '지도'등의 키워드를 입력하여 궁금하신점을 물어보세요!");
 	      chatbotWelcomed = true;
 	    }
 
@@ -82,6 +82,8 @@ $(document).ready(function() {
 	    answer = "🌾 쌀은 <a href='" + CONTEXT_PATH + "/productCategory.do#p=10&c=100&s=1000&v=product'>여기</a>에서 찾으실 수 있습니다.";
 	  } else if (msg.includes("안녕")) {
 	    answer = "안녕하세요 저는 AGRICOLA 사이트 도우미 입니다.<br>'배송', '환불', '입점', '제휴', '공지' 등으로 물어보세요!";
+	  } else if (msg.includes("지도")) {
+		answer = "지도는 메인페이지 -> 내 주변 생산자에서 볼 수 있고 키워드 검색으로 생산자를 찾기 원하시면 지도 오른쪽 아래에 있는 '지도를 크게보기' 버튼을 눌러 이동해주세요!";
 	  } else {
 	    answer = "🤖 죄송해요, 아직 그 질문은 준비 중이에요.<br>예: '배송', '환불', '입점', '제휴', '공지' 등으로 물어보세요!";
 	  }

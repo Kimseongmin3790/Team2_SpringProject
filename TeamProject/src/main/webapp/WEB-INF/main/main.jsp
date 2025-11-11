@@ -415,7 +415,7 @@
 
             <!-- 🧑‍🌾 입점업체 -->
             <section class="main-section">
-              <h2>내 주변 농부</h2>
+              <h2>내 주변 생산자</h2>
               <p class="section-desc">가장 가까운 생산자를 찾아보세요. ※ 위치 권한 없으면 기본으로 서울시청으로 지정됩니다</p>
               <div id="map" style="width:100%;height:400px;border-radius:12px;margin-bottom:12px;"></div>
 
@@ -426,6 +426,7 @@
                 <label><input type="radio" name="range" :value="5" v-model.number="rangeKm">5km</label>
                 <span class="sep"></span>
                 <label><input type="checkbox" v-model="onlyInRange">범위 내만 보기</label>
+                <button class="btn-map-detail" @click="goFullMap" style="margin-left:8px;">지도를 크게 보기</button>
               </div>
 
               <div class="producer-list">
@@ -785,7 +786,15 @@
                   });
                 },
 
+                _saveMapState() {
+                  const c = this.mapCenter || this.center;
+                  sessionStorage.setItem('agri_only', this.onlyInRange ? '1' : '0');
+                  sessionStorage.setItem('agri_range', String(this.rangeKm || 3));
+                  if (c) sessionStorage.setItem('agri_center', JSON.stringify(c));
+                },
+
                 goSeller(userId) {
+                  this._saveMapState();
                   location.href = "/seller/detail.do?sellerId=" + userId;
                 },
 
@@ -947,6 +956,44 @@
                     this._circles.push(circle);
                   });
                 },
+
+                goFullMap() {
+                  this._saveMapState();
+                  const lat = (this.mapCenter && this.mapCenter.lat) || 37.5665;   // 서울시청 기본값
+                  const lng = (this.mapCenter && this.mapCenter.lng) || 126.9780;
+                  const range = this.rangeKm || 3;
+                  const only = this.onlyInRange ? 'Y' : 'N';
+                  location.href = this.path + `/map/nearby.do?lat=\${lat}&lng=\${lng}&rangeKm=\${range}&onlyInRange=\${only}`;
+                },
+
+                _onPageShow() {
+                  this.drawRangeCircles && this.drawRangeCircles();
+                  this.updateMarkerVisibility && this.updateMarkerVisibility();
+                },
+
+                _restoreMapState({ preferQuery = false } = {}) {
+                  // preferQuery=true 이면 URL 파라미터 우선
+                  if (preferQuery) {
+                    const sp = new URLSearchParams(location.search);
+                    const o = sp.get('onlyInRange');
+                    const r = parseInt(sp.get('rangeKm'), 10);
+                    const lat = parseFloat(sp.get('lat')), lng = parseFloat(sp.get('lng'));
+                    if (o !== null) this.onlyInRange = (o === 'Y');
+                    if (!isNaN(r)) this.rangeKm = r;
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                      if ('mapCenter' in this) this.mapCenter = { lat, lng }; else this.center = { lat, lng };
+                    }
+                  }
+                  // 세션값 (URL이 없을 때 사용)
+                  if (!preferQuery || location.search === '') {
+                    const only = sessionStorage.getItem('agri_only');
+                    if (only !== null) this.onlyInRange = (only === '1');
+                    const rk = parseInt(sessionStorage.getItem('agri_range'), 10);
+                    if (!isNaN(rk)) this.rangeKm = rk;
+                    const c = sessionStorage.getItem('agri_center');
+                    if (c) { const v = JSON.parse(c); ('mapCenter' in this) ? (this.mapCenter = v) : (this.center = v); }
+                  }
+                }
               },
 
               computed: {
@@ -967,11 +1014,14 @@
               },
 
               mounted() {
+                this._restoreMapState();
                 this.loadAll();
+                window.addEventListener('pageshow', this._onPageShow);
                 window.addEventListener("resize", this.measure);
               },
               unmounted() {
                 this.stopAuto();
+                window.removeEventListener('pageshow', this._onPageShow);
                 window.removeEventListener("resize", this.measure);
               },
 
