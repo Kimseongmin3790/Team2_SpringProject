@@ -192,7 +192,7 @@
                     font-size: 25px;
                     font-weight: 600;
                     margin-top: -10px;
-                    color: #333;
+                    color: #1a5d1a;
                 }
 
                 /* ===== 상품 카드 ===== */
@@ -395,16 +395,16 @@
 
                 /* ===== 생산지역필터 ==== */
                 .region-filter {
-                    margin-top: 40px;
+                    margin-top: -30px;
                     padding-top: 10px;
-                    border-top: 1px solid #ddd;
+                    /* border-top: 1px solid #ddd; */
                 }
 
                 .region-filter h3 {
-                    font-size: 16px;
-                    margin: 30px 0;
-                    font-weight: 600;
-                    color: #333;
+                    color: #1a5d1a;
+                    font-size: 22px;
+                    margin-bottom: 15px;
+                    font-weight: bold;
                 }
 
                 .region-filter ul {
@@ -458,14 +458,14 @@
 
                 .clear-region {
                     font-size: 18px;
-                    margin-bottom: 0px;
+                    margin: 10px 0;
                     background-color: #388e3c;
                     border: 1px solid #388e3c;
                     color: white;
                     border-radius: 6px;
                     padding: 4px 8px;
                     cursor: pointer;
-                    margin-left: 22px;
+                    margin-left: 10px;
                 }
 
                 .clear-region:hover {
@@ -868,7 +868,7 @@
                                         </div>
                                         <div class="date">📅생산일: {{ p.cdate }}</div>
                                         <div class="region">🌾원산지: {{ p.origin }}</div>
-                                        <div class="seller">👨‍🌾Agricola: {{ p.userName }}</div>
+                                        <div class="seller">👨‍🌾Agricola: {{p.businessName}}({{ p.userName }})</div>
                                     </div>
                                 </div>
                             </div>

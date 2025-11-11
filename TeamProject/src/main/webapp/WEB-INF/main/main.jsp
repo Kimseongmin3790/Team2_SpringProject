@@ -425,7 +425,7 @@
                 <label><input type="radio" name="range" :value="3" v-model.number="rangeKm">3km</label>
                 <label><input type="radio" name="range" :value="5" v-model.number="rangeKm">5km</label>
                 <span class="sep"></span>
-                <label><input type="checkbox" v-model="onlyInRange">범위 내만 보기</label>
+                <label><input type="checkbox" v-model="onlyInRange" :value="onlyInRange">범위 내만 보기</label>
               </div>
 
               <div class="producer-list">
