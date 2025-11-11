@@ -22,7 +22,9 @@
 	</insert>
     
     <select id="selectProduct" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
-    	SELECT * FROM PRODUCT
+    	SELECT * 
+		FROM PRODUCT P
+		INNER JOIN SELLER_INFO S ON P.SELLER_ID = S.USER_ID
 		WHERE PRODUCT_NO = #{productNo}
     </select>
     

@@ -1167,6 +1167,7 @@
 
                             <!-- 오른쪽: 정보 -->
                             <div class="prod-info" id="container">
+                                <div><a href="javascript:;" style="text-decoration:none; color:inherit;" @click="fnMovement(info.sellerId)">{{info.businessName}}</a></div>
                                 <div id="title">{{ info.pName }}</div>
 
                                 <div class="badge-row">
@@ -1560,6 +1561,9 @@
                             return !tset.has(nu) && nu !== main;
                         });
                     },
+
+                    
+
                     //====== 리뷰 ======
                     filteredReviews() {
                         let self = this;
@@ -1715,6 +1719,10 @@
                             error(xhr) { console.error('product-view.dox error', xhr?.status, xhr?.responseText); }
 
                         });
+                    },
+
+                    fnMovement : function(sellerId){
+                        location.href = "/seller/detail.do?sellerId=" + sellerId;
                     },
 
                     onDetailLoad(e, url) {
