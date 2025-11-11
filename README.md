@@ -12,6 +12,7 @@
 
 <p align="center"><img src="docs/images/cover.png" width="100%" alt="프로젝트 대표 이미지" /></p>
 
+---
 
 ## 🧭 프로젝트 소개
 
@@ -32,6 +33,8 @@
 | 이민형 | 프론트엔드/백엔드  | [@id](https://github.com/) | 
 | 문병서 | 인프라    | [@id](https://github.com/) |
 
+---
+
 ## 🧰 사용 스킬
 
 ### 🎨 프론트엔드
@@ -42,7 +45,6 @@
 ![jQuery](https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white)
 ![AJAX](https://img.shields.io/badge/AJAX-00599C?style=for-the-badge&logo=jquery&logoColor=white)
 
----
 
 ### 💻 백엔드
 ![Java](https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=openjdk&logoColor=white)
@@ -51,16 +53,16 @@
 ![MyBatis](https://img.shields.io/badge/MyBatis-000000?style=for-the-badge&logoColor=white)
 ![JSP](https://img.shields.io/badge/JSP-007396?style=for-the-badge&logo=java&logoColor=white)
 
----
 
 ### 🗄️ 데이터베이스
 ![Oracle](https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=white)
 
----
 
 ### ⚙️ 기타
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+
+---
 
 ## 🗂 프로젝트 구조
 ```
