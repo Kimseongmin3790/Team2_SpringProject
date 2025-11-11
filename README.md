@@ -10,7 +10,7 @@
 
 <!-- 프로젝트 대표 스크린샷 또는 배너 (예: /docs/images/cover.png) -->
 
-<p align="center"><img src="docs/images/cover.png" width="100%" alt="프로젝트 대표 이미지" /></p>
+<p align="center"><img src="TeamProject/src/main/webapp/resources/img/logo.png" width="100%" alt="프로젝트 대표 이미지" /></p>
 
 ---
 
