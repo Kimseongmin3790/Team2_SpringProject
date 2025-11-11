@@ -38,11 +38,16 @@ public class OAuthAttributes {
 
     private static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-        return new OAuthAttributes(attributes, userNameAttributeName,
+        return new OAuthAttributes(
+                response,       
+                "id",             
                 (String) response.get("name"),
                 (String) response.get("email"),
-        		(String) response.get("mobile"));
+                (String) response.get("mobile")
+        );
     }
+
+
 
     private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");

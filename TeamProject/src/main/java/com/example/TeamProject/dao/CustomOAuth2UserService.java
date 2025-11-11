@@ -47,6 +47,8 @@ userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().g
                 Collections.singleton(new SimpleGrantedAuthority(user.getUserRole())),
                 attributes.getAttributes(),
                 attributes.getNameAttributeKey());
+        
+        
     }
 
     private User saveOrUpdate(OAuthAttributes attributes) {
