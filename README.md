@@ -149,23 +149,28 @@ Team2_SpringProject/
 * [ ] 관리자 대시보드(통계/관리)
 
 
-## 👥 팀원별 역할 분담(예시)
+## 👥 팀원별 역할 분담
 
 - **김성민** 🎨 Frontend
-  - Vue 3, HTML, CSS, jQuery, AJAX(예시)
+  - Vue 3, HTML, CSS, jQuery, AJAX
   - UI/UX 구현 및 화면 단 테스트
 
 - **권혁준** 💻 Backend
-  - Java(Spring MVC/Boot), MyBatis(예시)
+  - Java(Spring MVC/Boot), MyBatis
   - REST API 개발, 서비스 로직 구현
 
-- **이민형** 🗄 Database
-  - Oracle DB 설계 및 관리(예시)
-  - SQL 쿼리 작성, MyBatis 매퍼 관리
+ 
+-   **이민형** 🖥 Full-Stack 개발
+    - 사용자 인증/마이페이지: 소셜 로그인, 회원 정보/주문/리뷰 관리
+    - 주문/결제/환불 페이지: 장바구니, 주문 내역, 환불 요청·상태 관리
+    - 판매자 센터: 주문 관리, 대시보드, 매출 통계·정산, 백오피스
+    - 공통 서비스 페이지: 고객센터 게시판, 계층형 대댓글 시스템
+    - 데이터베이스 설계 및 ERD 작성
 
 - **문병서** ⚙️ DevOps/Integration
-  - Git/GitHub 관리(예시)
-  - 빌드/배포, 테스트 환경 설정
+  - Git/GitHub 관리
+  - 빌드/배포 및 테스트 환경 설정
+
 
 
 
