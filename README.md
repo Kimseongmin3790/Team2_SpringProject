@@ -46,33 +46,36 @@
 
 ## 🧰 사용 스킬
 
-[![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D?style=for-the-badge&logo=vuedotjs&logoColor=white
-)](https://vuejs.org/)
-[![JavaScript](
-https://img.shields.io/badge/JavaScript-ES6%2B-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black
-)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![HTML5](https://img.shields.io/badge/HTML5-Markup-E34F26?style=for-the-badge&logo=html5&logoColor=white
-)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![CSS3](https://img.shields.io/badge/CSS3-Styling-1572B6?style=for-the-badge&logo=css3&logoColor=white)](
-https://developer.mozilla.org/en-US/docs/Web/CSS)
-[![Java](https://img.shields.io/badge/Java-Backend-007396?style=for-the-badge&logo=java&logoColor=white)](
-https://www.java.com/)
-[![Spring MVC](
-https://img.shields.io/badge/Spring_MVC-Framework-6DB33F?style=for-the-badge&logo=spring&logoColor=white
-)](https://spring.io/projects/spring-framework)
-[![MyBatis](
-https://img.shields.io/badge/MyBatis-ORM-000000?style=for-the-badge&logo=mybatis&logoColor=white)](
-https://mybatis.org/)
-[![Oracle Database](
-https://img.shields.io/badge/Oracle_Database-RDBMS-F80000?style=for-the-badge&logo=oracle&logoColor=white
-)](https://www.oracle.com/database/)
-[![JSP](https://img.shields.io/badge/JSP-View-blue?style=for-the-badge)](
-https://www.oracle.com/java/technologies/java-server-pages.html)
-[![jQuery](https://img.shields.io/badge/jQuery-AJAX-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-)](https://jquery.com/)
-[![Spring Boot](
-https://img.shields.io/badge/Spring_Boot-Application-6DB33F?style=for-the-badge&logo=springboot&logoColor=
-white)](https://spring.io/projects/spring-boot)
+### 🎨 Frontend
+![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![jQuery](https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white)
+![AJAX](https://img.shields.io/badge/AJAX-00599C?style=for-the-badge&logo=jquery&logoColor=white)
+
+---
+
+### 💻 Backend
+![Java](https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring MVC](https://img.shields.io/badge/Spring%20MVC-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![MyBatis](https://img.shields.io/badge/MyBatis-000000?style=for-the-badge&logoColor=white)
+![JSP](https://img.shields.io/badge/JSP-007396?style=for-the-badge&logo=java&logoColor=white)
+
+---
+
+### 🗄️ Database
+![Oracle](https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=white)
+
+---
+
+### ⚙️ Others
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+
+
+
 
 
 ## 🏗 시스템 아키텍처
