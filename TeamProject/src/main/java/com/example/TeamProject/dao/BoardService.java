@@ -101,16 +101,16 @@ public class BoardService {
 	
 	public void insertAnswerAndUpdateStatus(HashMap<String, Object> map) {
 	    try {
-	        // 1️⃣ 답변 등록
+	        // 답변 등록
 	        boardMapper.insertAnswer(map);
 
-	        // 2️⃣ 문의 상태 '답변완료'로 업데이트
+	        // 문의 상태 '답변완료'로 업데이트
 	        int inquiryNo = Integer.parseInt(map.getOrDefault("inquiryNo", "1").toString());
 	        boardMapper.updateInquiryStatusAnswered(inquiryNo);
 
-	        System.out.println("✅ 답변 등록 및 상태 업데이트 완료");
+	        System.out.println("답변 등록 및 상태 업데이트 완료");
 	    } catch (Exception e) {
-	        System.out.println("❌ 답변 등록 중 오류 발생: " + e.getMessage());
+	        System.out.println("답변 등록 중 오류 발생: " + e.getMessage());
 	    }
 	}
 	

@@ -19,7 +19,7 @@ public class AdminDashboardService {
 		try {
 			
 			resultMap.put("userCount", adminDashboardMapper.selectUserCountByRole());
-			resultMap.put("ageGenderDistribution", adminDashboardMapper.selectAgeGenderDistribution()); // ✅ 나이대+성별
+			resultMap.put("ageGenderDistribution", adminDashboardMapper.selectAgeGenderDistribution());
 			resultMap.put("regionRatio", adminDashboardMapper.selectRegionRatio());                   
 			resultMap.put("salesByMonth", adminDashboardMapper.selectSalesByMonth(map)); 
 			resultMap.put("newUserTrend", adminDashboardMapper.selectNewUserTrend(map));

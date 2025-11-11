@@ -29,7 +29,6 @@ public class PaymentController {
 		request.setAttribute("userId", map.get("userId"));
 		request.setAttribute("qty", map.get("qty"));
 		
-		// ✅ 옵션/수령방식/배송비(상세에서 pageChange로 함께 보냄)
 		request.setAttribute("optionNo", map.get("optionNo"));
 	    request.setAttribute("optionUnit", map.get("optionUnit"));
 	    request.setAttribute("optionAddPrice", map.get("optionAddPrice"));
@@ -66,10 +65,10 @@ public class PaymentController {
 	        String impUid = (String) map.get("impUid");
 	        String merchantUid = (String) map.get("merchantUid");
 
-	        // 1️⃣ PortOne Access Token 발급
+	        // PortOne Access Token 발급
 	        String accessToken = paymentService.getPortOneAccessToken();
 
-	        // 2️⃣ imp_uid로 결제 정보 조회
+	        // imp_uid로 결제 정보 조회
 	        HashMap<String, Object> paymentData = paymentService.getPaymentData(impUid, accessToken);
 
 	        // PortOne 결제 정보 파싱
@@ -81,7 +80,7 @@ public class PaymentController {
 	        int amount = ((Double) paymentData.get("amount")).intValue();
 	        String transactionNo = impUid; // PortOne 고유 결제번호
 	        
-	        // ✅ 3. 주문 정보 생성 (ORDER 테이블에 insert)
+	        // 주문 정보 생성 (ORDER 테이블에 insert)
 	        HashMap<String, Object> orderMap = new HashMap<>();
 	        orderMap.put("totalPrice", amount);
 	        orderMap.put("status", "결제완료");
@@ -103,7 +102,7 @@ public class PaymentController {
 	        payMap.put("transactionNo", transactionNo);
 	        payMap.put("amount", amount);
 
-	        // 4️⃣ DB Insert 실행
+	        // DB Insert 실행
 	        paymentService.insertPayment(payMap);
 	        
 	        // 주문 정보 생성(ORDER_ITEM 테이블에 INSERT) 

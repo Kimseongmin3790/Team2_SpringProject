@@ -98,7 +98,7 @@ public class UserController {
     throws Exception {
         String userId = (String) session.getAttribute("sessionId");
 
-        // 1. userId가 null인지 먼저 확인
+        // userId가 null인지 먼저 확인
         if (userId == null || userId.isEmpty()) {
             redirectAttributes.addFlashAttribute("redirectMessage", "로그인이 필요합니다.");
             return "redirect:/login.do"; // 로그인 페이지로 리다이렉트
@@ -109,8 +109,6 @@ public class UserController {
         String message = (String) serviceResult.get("message");
 
         if ("success".equals(resultStatus)) {
-            // loginType은 이미 세션에 저장되어 프론트엔드로 전달되고 있다고 가정
-            // 여기서는 단순히 모델에 추가만 합니다.
             String loginType = (String) session.getAttribute("loginType");
             if (loginType == null) { // 혹시 세션에 없는 경우를 대비한 기본값
                 loginType = "NORMAL"; // 또는 "UNKNOWN" 등 적절한 기본값
@@ -173,7 +171,7 @@ public class UserController {
 	    HashMap<String, Object> res = new HashMap<>();
 
 	    try {
-	        // 1) 세션 사용자 우선 사용 (보안)
+	        // 세션 사용자 우선 사용 (보안)
 	        String sessionUser = (String) session.getAttribute("sessionId");
 	        String userId = (sessionUser != null && !sessionUser.isBlank())
 	                ? sessionUser
@@ -185,24 +183,24 @@ public class UserController {
 	            return new com.google.gson.Gson().toJson(res);
 	        }
 
-	        // 2) 숫자/문자 정규화
+	        // 숫자/문자 정규화
 	        Integer productNo  = toInt(map.get("productNo"), null);
 	        Integer optionNo   = toInt(map.get("optionNo"), null);   // CART.OPTION_NO 존재 가정 (nullable)
 	        Integer quantity   = Math.max(1, toInt(map.get("quantity"), 1));
 
-	        // 3) 수령 방법 & 배송비는 서버에서 결정 (클라 shippingFee 무시)
+	        // 수령 방법 & 배송비는 서버에서 결정 (클라 shippingFee 무시)
 	        String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
 	        fulfillment = "pickup".equalsIgnoreCase(fulfillment) ? "pickup" : "delivery";
 	        int shippingFee = "delivery".equals(fulfillment) ? 3000 : 0;
 
-	        // 4) 필수값 검증
+	        // 필수값 검증
 	        if (productNo == null) {
 	            res.put("result", "fail");
 	            res.put("message", "productNo가 없습니다.");
 	            return new com.google.gson.Gson().toJson(res);
 	        }
 
-	        // 5) 서비스에 넘길 '클린 파라미터' 구성 (불신 필드 제거: unitPrice/totalPrice/optionUnit 등)
+	        // 서비스에 넘길 '클린 파라미터' 구성 (불신 필드 제거: unitPrice/totalPrice/optionUnit 등)
 	        HashMap<String, Object> clean = new HashMap<>();
 	        clean.put("userId", userId);
 	        clean.put("productNo", productNo);
@@ -211,10 +209,10 @@ public class UserController {
 	        clean.put("fulfillment", fulfillment);
 	        clean.put("shippingFee", shippingFee);
 
-	        // 6) 장바구니 저장 (MERGE or INSERT) -> cartNo 반환 기대
+	        // 장바구니 저장 (MERGE or INSERT) -> cartNo 반환 기대
 	        HashMap<String, Object> resultMap = userService.addCart(clean);
 
-	        // 7) cartNo 세션 보조 저장 (선택)
+	        // cartNo 세션 보조 저장 (선택)
 	        Long cartNo = toLong(resultMap.get("cartNo"));
 	        if (cartNo != null) {
 	            @SuppressWarnings("unchecked")
@@ -226,7 +224,7 @@ public class UserController {
 	            fMap.put(cartNo, fulfillment);
 	        }
 
-	        // 8) 응답
+	        // 응답
 	        if (!resultMap.containsKey("result")) {
 	            resultMap.put("result", "success");
 	        }
@@ -297,7 +295,7 @@ public class UserController {
 
 	    Map<String, Object> response = new HashMap<>();
 
-	    // ✅ 파일 업로드 처리
+	    // 파일 업로드 처리
 	    String fileWebPath = null;
 	    if (bizLicense != null && !bizLicense.isEmpty()) {
 	        try {
@@ -325,7 +323,7 @@ public class UserController {
 	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	    }
 	    
-	    // ✅ 프로필사진 업로드 처리 (선택사항)
+	    // 프로필사진 업로드 처리 (선택사항)
 	    String profileWebPath = null;
 	    if (profileImage != null && !profileImage.isEmpty()) {
 	        try {
@@ -348,12 +346,12 @@ public class UserController {
 	    }
 
 	    try {
-	        // ✅ 주소 → 좌표 변환
+	        // 주소 -> 좌표 변환
 	        double[] coords = userService.getCoordinatesFromAddress(userAddr);
 	        double lat = coords[0];
 	        double lng = coords[1];
 
-	        // ✅ DB 저장용 데이터 구성
+	        // DB 저장용 데이터 구성
 	        HashMap<String, Object> sellerData = new HashMap<>();
 	        sellerData.put("userId", userId);
 	        sellerData.put("businessName", farmName);
@@ -367,7 +365,7 @@ public class UserController {
 	        sellerData.put("profileImg", profileWebPath);
 	        sellerData.put("verified", "N");
 
-	        // ✅ DB insert 실행
+	        // DB insert 실행
 	        userService.addSeller(sellerData);
 
 	        response.put("status", "success");

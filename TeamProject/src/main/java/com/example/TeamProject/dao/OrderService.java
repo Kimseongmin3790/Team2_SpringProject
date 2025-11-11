@@ -56,10 +56,10 @@ public class OrderService {
 		paramMap.put("endDate", endDate);
 		paramMap.put("searchKeyword", searchKeyword);
 		
-		// 1. 필터 조건이 적용된 전체 주문 건수 조회
+		// 필터 조건이 적용된 전체 주문 건수 조회
 		int totalCount = orderMapper.selectOrderListCountBySeller(paramMap);
 		
-		// 2. 페이징 계산
+		// 페이징 계산
 		int startRow = (currentPage - 1) * itemsPerPage + 1;
 		int endRow = currentPage * itemsPerPage;
 		paramMap.put("startRow", startRow);
@@ -67,7 +67,7 @@ public class OrderService {
 		
 		System.out.println("DB 쿼리 파라미터 (selectOrderListBySeller): " + paramMap.toString());
 		
-		// 3. 페이징 및 필터 적용된 목록 조회
+		// 페이징 및 필터 적용된 목록 조회
 		List<Order> orderList = orderMapper.selectOrderListBySeller(paramMap);
 		
 		resultMap.put("list", orderList);
@@ -98,7 +98,7 @@ public class OrderService {
                 return resultMap;
             }
 
-            // 1. 현재 주문 상태 조회
+            // 현재 주문 상태 조회
             HashMap<String, Object> currentOrderParam = new HashMap<>();
             currentOrderParam.put("orderNo", orderNoStr);
             currentOrderParam.put("sellerId", sellerId);
@@ -112,7 +112,7 @@ public class OrderService {
 
             String currentStatus = currentOrder.getStatus();
 
-            // 2. 상태 변경 유효성 검사
+            // 상태 변경 유효성 검사
             boolean isValidTransition = false;
             switch (currentStatus) {
                 case "결제완료": 
@@ -153,7 +153,7 @@ public class OrderService {
                 return resultMap;
             }
 
-            // 3. 유효한 경우에만 상태 업데이트 진행
+            // 유효한 경우에만 상태 업데이트 진행
             int updatedRows = orderMapper.updateOrderStatus(map);
 
             if (updatedRows > 0) {
@@ -243,7 +243,7 @@ public class OrderService {
                 return resultMap;
             }
 
-            // 1. 모든 주문에 대해 유효성 검사를 먼저 수행
+            // 모든 주문에 대해 유효성 검사를 먼저 수행
             for (String orderNo : orderNoList) {
                 HashMap<String, Object> param = new HashMap<>();
                 param.put("orderNo", orderNo);
@@ -281,7 +281,7 @@ public class OrderService {
                 }
             }
 
-            // 2. 모든 검사가 통과되면 일괄 업데이트 실행
+            // 모든 검사가 통과되면 일괄 업데이트 실행
             HashMap<String, Object> updateParam = new HashMap<>();
             updateParam.put("orderNoList", orderNoList);
             updateParam.put("status", newStatus);

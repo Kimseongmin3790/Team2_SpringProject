@@ -233,7 +233,7 @@ public class UserService {
 		message.setSubject("[AGRICOLA] 비밀번호 재설정 인증코드 안내");
 		message.setText("안녕하세요 AGRICOLA입니다.\n\n" + "요청하신 인증코드는 아래와 같습니다.\n\n" + "인증코드: " + code + "\n\n"
 				+ "본인이 요청하지 않았다면 본 메일을 무시해주세요.\n\n감사합니다.");
-		message.setFrom("sungmin3790@gmail.com"); // Gmail 계정과 동일하게
+		message.setFrom("sungmin3790@gmail.com");
 		mailSender.send(message);
 	}
 
@@ -308,10 +308,10 @@ public class UserService {
 		HashMap<String, Object> resultMap = new HashMap<>();
 
 		try {
-			// 1. 전화번호 유효성 검사 및 하이픈 제거
+			// 전화번호 유효성 검사 및 하이픈 제거
 			if (map.containsKey("phone")) {
 				String phone = (String) map.get("phone");
-				String rawPhone = phone.replaceAll("-", ""); // 하이픈 제거
+				String rawPhone = phone.replaceAll("-", "");
 
 				// 정규식: 10~11자리의 숫자
 				if (!rawPhone.matches("^\\d{10,11}$")) {
@@ -322,7 +322,7 @@ public class UserService {
 				map.put("phone", rawPhone); // 정제된 데이터로 교체
 			}
 
-			// 2. 비밀번호 유효성 검사 및 암호화
+			// 비밀번호 유효성 검사 및 암호화
 			if (map.containsKey("password") && map.get("password") != null
 					&& !((String) map.get("password")).isEmpty()) {
 				String password = (String) map.get("password");
@@ -350,9 +350,9 @@ public class UserService {
 		return resultMap;
 	}
 
-	// ✅ 주소를 좌표로 변환
+	// 주소를 좌표로 변환
 	public double[] getCoordinatesFromAddress(String address) {
-		double[] result = new double[2]; // [lat, lng]
+		double[] result = new double[2];
 		try {
 			String query = URLEncoder.encode(address, "UTF-8");
 			String apiUrl = "https://dapi.kakao.com/v2/local/search/address.json?query=" + query;
@@ -373,8 +373,8 @@ public class UserService {
 			if (json.getJSONArray("documents").length() > 0) {
 				JSONObject addr = json.getJSONArray("documents").getJSONObject(0);
 				JSONObject addressObj = addr.getJSONObject("address");
-				result[0] = addressObj.getDouble("y"); // lat
-				result[1] = addressObj.getDouble("x"); // lng
+				result[0] = addressObj.getDouble("y");
+				result[1] = addressObj.getDouble("x");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -395,7 +395,7 @@ public class UserService {
 			}
 			map.put("userId", userId);
 
-			// 1. 사용자 정보 조회 (비밀번호 및 로그인 타입 확인용)
+			// 사용자 정보 조회 (비밀번호 및 로그인 타입 확인용)
 			HashMap<String, Object> paramMap = new HashMap<>();
 			paramMap.put("userId", userId);
 			User userProfile = userMapper.loginUser(paramMap);
@@ -409,7 +409,7 @@ public class UserService {
 			String loginType = (userProfile.getPassword() == null
 					|| "social_user_password".equals(userProfile.getPassword())) ? "SOCIAL" : "NORMAL";
 
-			// 2. 로그인 타입에 따른 비밀번호 확인
+			// 로그인 타입에 따른 비밀번호 확인
 			if (loginType.equals("NORMAL")) {
 				String inputPassword = (String) map.get("password");
 				if (inputPassword == null || inputPassword.isEmpty()) {
@@ -424,10 +424,10 @@ public class UserService {
 				}
 			}
 
-			// 3. 사용자 정보 변경
+			// 사용자 정보 변경
 			userMapper.updateUserStatus(userId, "WITHDRAWN");
 
-			// 4. 세션 무효화
+			// 세션 무효화
 			session.invalidate();
 
 			resultMap.put("result", "success");
@@ -455,16 +455,16 @@ public class UserService {
 	            return resultMap;
 	        }
 
-	        // 1. 기본 사용자 계정 복구 (STATUS를 'ACTIVE'로)
+	        // 기본 사용자 계정 복구 (STATUS를 'ACTIVE'로)
 	        int updatedRows = userMapper.updateUserStatus(userId, "ACTIVE");
 
 	        if (updatedRows > 0) {
-	            // 2. 복구된 사용자의 정보 다시 조회 (USER_ROLE 확인용)
+	            // 복구된 사용자의 정보 다시 조회 (USER_ROLE 확인용)
 	            HashMap<String, Object> paramMap = new HashMap<>();
 	            paramMap.put("userId", userId);
 	            User recoveredUser = userMapper.loginUser(paramMap);
 
-	            // 3. 만약 사용자가 판매자라면, 판매자 관련 정보도 복구
+	            // 사용자가 판매자라면, 판매자 관련 정보도 복구
 	            if (recoveredUser != null && "SELLER".equals(recoveredUser.getUserRole())) {
 	                sellerService.recoverSellerAccount(userId); // 새로운 판매자 복구 서비스 호출
 	            }
@@ -488,13 +488,13 @@ public class UserService {
 	public HashMap<String, Object> addCart(HashMap<String, Object> in) {
 	    HashMap<String, Object> out = new HashMap<>();
 	    try {
-	        // 1) 파라미터 정규화
+	        // 파라미터 정규화
 	        String userId     = safeStr(in.get("userId"));
 	        Integer productNo = toInt(in.get("productNo"), null);
-	        Integer optionNo  = toInt(in.get("optionNo"), null); // nullable
+	        Integer optionNo  = toInt(in.get("optionNo"), null);
 	        Integer qty       = Math.max(1, toInt(in.get("quantity"), 1));
 	        String fulfillment= normalizeFulfillment(safeStrOrDefault(in.get("fulfillment"), "delivery"));
-	        Integer shippingFee = "delivery".equals(fulfillment) ? 3000 : 0; // 서버에서 확정
+	        Integer shippingFee = "delivery".equals(fulfillment) ? 3000 : 0;
 
 	        if (userId == null || userId.isBlank() || productNo == null) {
 	            out.put("result", "fail");
@@ -502,7 +502,7 @@ public class UserService {
 	            return out;
 	        }
 
-	        // 2) 동일 라인(cart key) 존재 여부
+	        // 동일 라인(cart key) 존재 여부
 	        Map<String,Object> key = new HashMap<>();
 	        key.put("userId", userId);
 	        key.put("productNo", productNo);
@@ -512,21 +512,20 @@ public class UserService {
 	        Long cartNo = userMapper.selectCartNoByKey(key);
 
 	        if (cartNo != null) {
-	            // 3-A) 있으면 수량 누적 + 배송비 최신화
+	            // 있으면 수량 누적 + 배송비 최신화
 	            Map<String,Object> upd = new HashMap<>(key);
 	            upd.put("quantity", qty);
 	            upd.put("shippingFee", shippingFee);
-	            int updated = userMapper.updateCartQtyByKey(upd); // WHERE key
+	            int updated = userMapper.updateCartQtyByKey(upd);
 	            if (updated <= 0) throw new IllegalStateException("장바구니 수량 업데이트 실패");
 	        } else {
-	            // 3-B) 없으면 신규 INSERT (시퀀스로 cartNo 생성)
+	            // 없으면 신규 INSERT
 	            Map<String,Object> ins = new HashMap<>(key);
 	            ins.put("quantity", qty);
 	            ins.put("shippingFee", shippingFee);
-	            userMapper.insertCarts(ins); // selectKey로 cartNo 세팅
+	            userMapper.insertCarts(ins);
 	            cartNo = toLong(ins.get("cartNo"));
 	            if (cartNo == null) {
-	                // Oracle MERGE/INSERT 환경에 따라 selectKey가 안 잡히면 재조회
 	                cartNo = userMapper.selectCartNoByKey(key);
 	            }
 	            if (cartNo == null) throw new IllegalStateException("장바구니 행 생성 실패");
@@ -552,7 +551,7 @@ public class UserService {
 		HashMap<String, Object> resultMap = new HashMap<>();
 		try {
 			List<Cart> list = userMapper.selectCartList(map);
-			int total = userMapper.selectCartTotal(map); // 합계(상품합)
+			int total = userMapper.selectCartTotal(map);
 			resultMap.put("list", list);
 			resultMap.put("total", total);
 			resultMap.put("result", "success");
@@ -669,21 +668,18 @@ public class UserService {
             Integer price,
             String origin,
             String productStatus,
-            // JSON 문자열
-            String optionsJson,              // [{optionNo, optionName, addPrice, stock}]
-            String deletedOptionNosJson,     // [101,102,...]
-            String deletedImageNosJson,      // [201,202,...]
-            // 파일
+            String optionsJson,              
+            String deletedOptionNosJson,     
+            String deletedImageNosJson, 
             MultipartFile thumbnail,
             List<MultipartFile> galleryImages,
             List<MultipartFile> detailImages,
-            // 파일 저장 경로
             String uploadDir
     ) throws Exception {
 
         Map<String, Object> out = new HashMap<>();
 
-        /* 1) 기본 상품 업데이트 */
+        // 기본 상품 업데이트
         Map<String, Object> base = new HashMap<>();
         base.put("productNo", productNo);
         base.put("categoryNo", categoryNo);
@@ -695,7 +691,7 @@ public class UserService {
 
         userMapper.updateProduct(base);
 
-        /* 2) 삭제 옵션 처리 */
+        // 삭제 옵션 처리
         List<Integer> deletedOptionNos = parseIntList(deletedOptionNosJson);
         if (!deletedOptionNos.isEmpty()) {
             Map<String, Object> delParam = new HashMap<>();
@@ -704,13 +700,13 @@ public class UserService {
             userMapper.deleteOptions(delParam);
         }
 
-        /* 3) 옵션 upsert (optionNo 있으면 update, 없으면 insert) */
+        // 옵션 upsert
         List<Map<String, Object>> options = parseOptionList(optionsJson);
         for (Map<String, Object> op0 : options) {
             Integer optionNo = toInt(op0.get("optionNo"), null);
-            String optionName = String.valueOf(op0.getOrDefault("optionName", "")).trim(); // → UNIT
+            String optionName = String.valueOf(op0.getOrDefault("optionName", "")).trim();
             Integer addPriceV = toInt(op0.get("addPrice"), 0);
-            Integer stockV = toInt(op0.get("stock"), 0);                                   // → STOCK_QTY
+            Integer stockV = toInt(op0.get("stock"), 0);
 
             Map<String, Object> op = new HashMap<>();
             op.put("productNo", productNo);
@@ -722,11 +718,11 @@ public class UserService {
                 op.put("optionNo", optionNo);
                 userMapper.updateOption(op);
             } else {
-            	userMapper.insertOption(op); // 시퀀스/AI는 XML에서 처리
+            	userMapper.insertOption(op);
             }
         }
 
-        /* 4) 삭제 이미지 처리 */
+        // 삭제 이미지 처리
         List<Integer> deletedImageNos = parseIntList(deletedImageNosJson);
         if (!deletedImageNos.isEmpty()) {
             Map<String, Object> delParam = new HashMap<>();
@@ -735,12 +731,12 @@ public class UserService {
             userMapper.deleteImages(delParam);
         }
 
-        /* 5) 썸네일 / 갤러리 / 상세 이미지 저장 */
+        // 썸네일 / 갤러리 / 상세 이미지 저장
         new File(uploadDir).mkdirs();
 
         // 썸네일 새로 올라오면 기존 썸네일 해제 + 신규 저장
         if (thumbnail != null && !thumbnail.isEmpty()) {
-        	userMapper.clearThumbnail(productNo); // 기존 'Y' → 'N' 처리
+        	userMapper.clearThumbnail(productNo);
             String url = saveFile(thumbnail, uploadDir);
             Map<String, Object> img = new HashMap<>();
             img.put("productNo", productNo);
@@ -756,7 +752,7 @@ public class UserService {
                     Map<String, Object> img = new HashMap<>();
                     img.put("productNo", productNo);
                     img.put("imageUrl", url);
-                    img.put("imageType", "A"); // 갤러리
+                    img.put("imageType", "A");
                     userMapper.insertImage(img);
                 }
             }
@@ -769,7 +765,7 @@ public class UserService {
                     Map<String, Object> img = new HashMap<>();
                     img.put("productNo", productNo);
                     img.put("imageUrl", url);
-                    img.put("imageType", "N"); // 상세
+                    img.put("imageType", "N");
                     userMapper.insertImage(img);
                 }
             }
@@ -830,7 +826,6 @@ public class UserService {
         String saved = java.util.UUID.randomUUID() + ext;
         File dest = new File(uploadDir, saved);
         file.transferTo(dest);
-        // 웹경로는 프로젝트 구조에 맞게 매핑
         return "/resources/uploads/productImage/" + saved;
     }
 

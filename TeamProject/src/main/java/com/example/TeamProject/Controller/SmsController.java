@@ -78,7 +78,7 @@ public class SmsController {
         	SingleMessageSentResponse response = this.messageService.sendOne(new SingleMessageSendingRequest(message));
             System.out.println("문자 전송 결과" + response);
             
-            // ✅ 세션에 인증번호 저장 (3분간 유효)
+            // 세션에 인증번호 저장 (3분간 유효)
             session.setAttribute("authCode", ranStr);
             session.setAttribute("authPhone", phone);
             session.setMaxInactiveInterval(180);
@@ -95,7 +95,7 @@ public class SmsController {
         return resultMap;
     }
     
-    // ✅ 인증번호 확인용 API 추가
+    // 인증번호 확인용 API 추가
     @PostMapping("/verify-code")
     public HashMap<String, Object> verifyCode(
             @RequestParam("phone") String phone,
