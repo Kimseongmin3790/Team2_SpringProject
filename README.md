@@ -170,7 +170,7 @@ Team2_SpringProject/
 
 ## 🗄 ERD & DB 설계
 
-ERD 이미지
+ERD 이미지(https://www.erdcloud.com/d/rkCfSHd6zyzgTdy8t)
 
  <!-- ERD 이미지를 클릭하면 원본 크기로 볼 수 있습니다. -->
  [<img src="TeamProject/src/main/webapp/resources/img/erd.PNG" alt="ERD 다이어그램" width="400px">](
