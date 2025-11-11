@@ -112,13 +112,28 @@ $(document).ready(function() {
 		});
 	});
 
-	$("#btnMyPage").on("click", function() {
-		const sessionStatus = $("#btnMyPage").data("status");
-		if (!sessionStatus) return (location.href = path + "/login.do");
-		if (sessionStatus === "BUYER") location.href = path + "/buyerMyPage.do";
-		else if (sessionStatus === "SELLER") location.href = path + "/sellerMyPage.do";
-		else alert("잘못된 사용자 정보입니다.");
+	const mypageBtn = $("#btnMyPage");
+	const dropdown = mypageBtn.siblings(".mypage-menu");
+
+	mypageBtn.on("click", function(e) {
+		e.preventDefault();
+		if(dropdown.length > 0){
+			dropdown.toggleClass("show"); // 모던 드롭다운 토글
+		} else {
+			// 일반 사용자: 기존 이동
+			const sessionStatus = mypageBtn.data("status");
+			if(!sessionStatus) return location.href = path + "/login.do";
+			if(sessionStatus === "BUYER") location.href = path + "/buyerMyPage.do";
+		}
 	});
+
+	// 외부 클릭 시 닫기
+	$(document).on("click", function(e) {
+		if(!$(e.target).closest(".mypage-dropdown").length){
+			dropdown.removeClass("show");
+		}
+	});
+
 
 	$("#btnFavorite").on("click", () => location.href = path + "/favorite");
 	$("#btnCart").on("click", function() {
