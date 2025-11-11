@@ -40,4 +40,6 @@ public interface AdminMapper {
 	List<ProductCategory> selectLeafList(HashMap<String, Object> map);
 	// 상품 추천여부 업데이트
 	int updateRecommend(int productNo, String recommend);
+	// 상품 상태 변경
+	int updateProductStatus(int productNo, String productStatus);
 }

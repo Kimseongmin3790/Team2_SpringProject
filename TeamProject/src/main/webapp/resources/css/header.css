@@ -381,6 +381,26 @@ body {
 	display: none !important;
 }
 
+/* 부모-자식 사이 갭 제거 및 기준점 */
+.category-menu li { position: relative; }
+.category-menu li > ul {
+  position: absolute;
+  top: 0;
+  left: calc(100% - 1px); /* 1px 겹쳐서 갭 제거 */
+  z-index: 10000;         /* 겹침 보호 */
+}
+
+/* ← 여기 추가: 자식 ul이 있는 li의 a 오른쪽에 투명 브리지 생성 */
+.category-menu li:has(> ul) > a::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -12px;     /* a의 오른쪽을 12px 확장해 ‘다리’ 역할 */
+  width: 12px;
+  height: 100%;
+  /* 배경/보더 없음(투명) */
+}
+
 /* 🌿 등장 애니메이션 */
 @keyframes fadeIn {
 	from {
@@ -645,12 +665,16 @@ body {
 /* 레이어 겹침 방지 */
 .header {
 	position: relative;
-	z-index: 5;
+	z-index: 100000;
+}
+
+.category-container { 
+	position: relative; 
 }
 
 #dropdownMenu {
-	position: absolute;
-	z-index: 9999;
+  position: absolute;
+  z-index: 100001; /* 헤더보다 한 단계 더 위 */
 }
 
 .nav-menu a.active {
