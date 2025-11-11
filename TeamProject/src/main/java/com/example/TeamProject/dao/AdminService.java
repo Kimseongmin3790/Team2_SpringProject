@@ -200,4 +200,19 @@ public class AdminService {
 		return resultMap;
 	}
 	
+	public HashMap<String, Object> updateProductStatus(int productNo, String productStatus) {
+		// TODO Auto-generated method stub
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();			
+
+		try {
+			adminMapper.updateProductStatus(productNo, productStatus);			
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			// TODO: handle exception
+			resultMap.put("result", "fail");
+			System.out.println(e.getMessage());
+		}
+		return resultMap;
+	}
+	
 }

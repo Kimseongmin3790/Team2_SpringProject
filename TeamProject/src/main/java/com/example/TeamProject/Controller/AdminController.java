@@ -145,6 +145,16 @@ public class AdminController {
 	    resultMap = adminService.updateRecommend(productNo, recommend);
 		
 		return new Gson().toJson(resultMap);
-	}		
+	}
+	
+	@RequestMapping(value = "/updateProductStatus.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String updateProductStatus(@RequestParam("productNo") int productNo, @RequestParam("productStatus") String productStatus) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		
+	    resultMap = adminService.updateProductStatus(productNo, productStatus);
+		
+		return new Gson().toJson(resultMap);
+	}
 	
 }

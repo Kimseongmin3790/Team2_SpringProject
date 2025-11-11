@@ -209,7 +209,6 @@
                                         <th>가입일</th>
                                         <th>전화번호</th>
                                         <th>유형</th>
-                                        <th>포인트</th>
                                         <th>판매자승인상태</th>
                                         <th>판매자승인관리</th>
                                         <th>유저상태</th>
@@ -226,7 +225,6 @@
                                         <td>{{ item.cdatetime }}</td>
                                         <td>{{ item.phone }}</td>
                                         <td>{{ item.userRole }}</td>
-                                        <td>{{ item.totalPoint }}</td>
                                         <td>{{ item.verified }}</td>
                                         <td>
                                             <!-- 🔹 판매자만 승인/거절 버튼 표시 -->

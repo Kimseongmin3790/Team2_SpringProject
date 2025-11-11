@@ -116,5 +116,10 @@
 		WHERE PRODUCT_NO = #{productNo}
 	</update>
 	
+	<update id="updateProductStatus">
+		UPDATE PRODUCT
+			SET PRODUCT_STATUS = #{productStatus}
+		WHERE PRODUCT_NO = #{productNo}
+	</update>	
 	
 </mapper>
