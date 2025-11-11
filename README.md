@@ -37,16 +37,16 @@
 
 ## 👥 팀원 구성
 
-| 이름    | 역할     | 깃허브                        | 담당 영역 키워드     |
-| ----- | ------ | -------------------------- | ------------- |
-| 김성민 | 팀장/프론트엔드/백엔드 | [@id](https://github.com/) |  자신의 담당영역 입력    |
-| 권혁준 | 프론트엔드/백엔드    | [@id](https://github.com/) |   자신의 담당영역 입력    |
-| 이민형 | 프론트엔드/백엔드  | [@id](https://github.com/) | 판매자,소비자 마이페이지 /  |
-| 문병서 | 인프라    | [@id](https://github.com/) | 자신의 담당영역 입력 |
+| 이름    | 역할     | 깃허브                     
+| ----- | ------ | -------------------------- |
+| 김성민 | 팀장/프론트엔드/백엔드 | [@id](https://github.com/) | 
+| 권혁준 | 프론트엔드/백엔드    | [@id](https://github.com/) |  
+| 이민형 | 프론트엔드/백엔드  | [@id](https://github.com/) | 
+| 문병서 | 인프라    | [@id](https://github.com/) |
 
 ## 🧰 사용 스킬
 
-### 🎨 Frontend
+### 🎨 프론트엔드
 ![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
@@ -56,7 +56,7 @@
 
 ---
 
-### 💻 Backend
+### 💻 백엔드
 ![Java](https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring MVC](https://img.shields.io/badge/Spring%20MVC-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
@@ -65,12 +65,12 @@
 
 ---
 
-### 🗄️ Database
+### 🗄️ 데이터베이스
 ![Oracle](https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=white)
 
 ---
 
-### ⚙️ Others
+### ⚙️ 기타
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 
