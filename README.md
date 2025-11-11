@@ -206,9 +206,7 @@ ERD 이미지(https://www.erdcloud.com/d/rkCfSHd6zyzgTdy8t)
 ## 🗃 기타 산출물
 
 * 회의록: [Notion]()
-* 요구사항 정의서/WBS: [링크]()
 * 화면 설계서(Figma): [링크]()
-* 테스트 케이스/리포트: [링크]()
 * 회고/느낀점: [링크]()
 
 </details>
