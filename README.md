@@ -39,20 +39,41 @@
 
 | 이름    | 역할     | 깃허브                        | 담당 영역 키워드     |
 | ----- | ------ | -------------------------- | ------------- |
-| 김성민 | 팀장/프론트엔드/백엔드 | [@id](https://github.com/) | 사용자/권한/보안     |
-| 권혁준 | 프론트엔드/백엔드    | [@id](https://github.com/) | 상품/주문/결제      |
-| 이민형 | 프론트엔드/백엔드  | [@NARANG06](https://github.com/) | UI/UX/Vue/JSP |
-| 문병서 | 인프라    | [@id](https://github.com/) | CI/CD/배포/모니터링 |
+| 김성민 | 팀장/프론트엔드/백엔드 | [@id](https://github.com/) |  자신의 담당영역 입력    |
+| 권혁준 | 프론트엔드/백엔드    | [@id](https://github.com/) |   자신의 담당영역 입력    |
+| 이민형 | 프론트엔드/백엔드  | [@id](https://github.com/) | 판매자,소비자 마이페이지 /  |
+| 문병서 | 인프라    | [@id](https://github.com/) | 자신의 담당영역 입력 |
 
 ## 🧰 사용 스킬
 
-**Frontend**: HTML/CSS, JSP, Vue 3, jQuery, Axios, SweetAlert2, FontAwesome
-**Backend**: Java 17, Spring Boot 3.x, Spring Security, Spring MVC, MyBatis
-**Database**: Oracle 19c, SQL Developer, ERDCloud
-**Infra/DevOps**: Gradle, Git/GitHub, Github Actions, Nginx, Docker(옵션)
-**Collaboration**: Notion, Figma, Jira(또는 Trello), Google Drive
+[![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D?style=for-the-badge&logo=vuedotjs&logoColor=white
+)](https://vuejs.org/)
+[![JavaScript](
+https://img.shields.io/badge/JavaScript-ES6%2B-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black
+)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![HTML5](https://img.shields.io/badge/HTML5-Markup-E34F26?style=for-the-badge&logo=html5&logoColor=white
+)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![CSS3](https://img.shields.io/badge/CSS3-Styling-1572B6?style=for-the-badge&logo=css3&logoColor=white)](
+https://developer.mozilla.org/en-US/docs/Web/CSS)
+[![Java](https://img.shields.io/badge/Java-Backend-007396?style=for-the-badge&logo=java&logoColor=white)](
+https://www.java.com/)
+[![Spring MVC](
+https://img.shields.io/badge/Spring_MVC-Framework-6DB33F?style=for-the-badge&logo=spring&logoColor=white
+)](https://spring.io/projects/spring-framework)
+[![MyBatis](
+https://img.shields.io/badge/MyBatis-ORM-000000?style=for-the-badge&logo=mybatis&logoColor=white)](
+https://mybatis.org/)
+[![Oracle Database](
+https://img.shields.io/badge/Oracle_Database-RDBMS-F80000?style=for-the-badge&logo=oracle&logoColor=white
+)](https://www.oracle.com/database/)
+[![JSP](https://img.shields.io/badge/JSP-View-blue?style=for-the-badge)](
+https://www.oracle.com/java/technologies/java-server-pages.html)
+[![jQuery](https://img.shields.io/badge/jQuery-AJAX-0769AD?style=for-the-badge&logo=jquery&logoColor=white
+)](https://jquery.com/)
+[![Spring Boot](
+https://img.shields.io/badge/Spring_Boot-Application-6DB33F?style=for-the-badge&logo=springboot&logoColor=
+white)](https://spring.io/projects/spring-boot)
 
-> 버전/의존성은 `/build.gradle` 및 `/docs/`에 명시합니다.
 
 ## 🏗 시스템 아키텍처
 
