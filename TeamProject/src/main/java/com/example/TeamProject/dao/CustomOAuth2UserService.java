@@ -60,7 +60,7 @@ userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().g
                 // 탈퇴된 계정은 로그인 방지
                 // 예외 메시지를 HttpSession에 저장하여 CustomOAuth2AuthenticationFailureHandler에서 사용
                 httpSession.setAttribute("oauth2ErrorMessage", "탈퇴 처리된 계정입니다. 계정 복구를 시면 관리자에게 문의해주세요.");
-                throw new OAuth2AuthenticationException("WITHDRAWN_ACCOUNT"); // 고유한 코드만 던집니다.
+                throw new OAuth2AuthenticationException("WITHDRAWN_ACCOUNT");
             }
 
             // 이미 가입된 회원이면 정보만 업데이트

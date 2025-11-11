@@ -15,7 +15,7 @@ public class ProductCategoryService {
     @Autowired
     ProductCategoryMapper productCategoryMapper;
 
-    /** 카테고리 전체 목록 */
+    // 카테고리 전체 목록
     public HashMap<String, Object> getCategoryList(HashMap<String, Object> param) {
         HashMap<String, Object> res = new HashMap<>();
         try {
@@ -29,7 +29,7 @@ public class ProductCategoryService {
         return res;
     }
 
- // 번호 규칙 검증
+	// 번호 규칙 검증
     private void validateNumberRule(Integer categoryNo, Integer parentNo) {
         if (categoryNo == null) throw new IllegalArgumentException("카테고리 번호를 입력하세요.");
 
@@ -84,7 +84,7 @@ public class ProductCategoryService {
             if (productCategoryMapper.existsByNo(dup) > 0)
                 throw new IllegalStateException("이미 존재하는 카테고리 번호입니다: " + categoryNo);
 
-            // (선택) 동일 부모 내 중복명 체크
+            // 동일 부모 내 중복명 체크
             HashMap<String,Object> dupName = new HashMap<>();
             dupName.put("categoryName", name);
             dupName.put("parentCategoryNo", parentNo);
@@ -106,7 +106,7 @@ public class ProductCategoryService {
         return res;
     }
 
-    /** 카테고리 수정 */
+    // 카테고리 수정
     @Transactional
     public HashMap<String, Object> updateCategory(HashMap<String, Object> param) {
         HashMap<String, Object> res = new HashMap<>();
@@ -128,7 +128,7 @@ public class ProductCategoryService {
                 throw new IllegalArgumentException("부모 카테고리를 자기 자신으로 지정할 수 없습니다.");
             }
 
-            // (선택) 중복명 방지
+            // 중복명 방지
             param.put("exceptCategoryNo", categoryNo);
             int dup = productCategoryMapper.existsNameUnderParent(param);
             if (dup > 0) {
@@ -146,7 +146,7 @@ public class ProductCategoryService {
         return res;
     }
 
-    /** 카테고리 삭제 (하위 있으면 금지) */
+    // 카테고리 삭제 (하위 있으면 금지)
     @Transactional
     public HashMap<String, Object> deleteCategory(HashMap<String, Object> param) {
         HashMap<String, Object> res = new HashMap<>();

@@ -69,7 +69,7 @@ public class ProductController {
 		return "product/newList";
 	}
 	
-	@GetMapping("/category/{categoryNo}") // header dropdwon에서 보내온 categoryNo 받기
+	@GetMapping("/category/{categoryNo}") // header dropdown에서 보내온 categoryNo 받기
 	public String categoryMain(@PathVariable("categoryNo") int categoryNo, Model model) {
 		model.addAttribute("categoryNo", categoryNo);
 		return "product/categoryMain"; // categoryMain.jsp 경로 (변경 시 맞게 수정)
@@ -194,17 +194,16 @@ public class ProductController {
 				    	).replaceAll("\\s+"," ").trim(); // 공백/케이스 차이 최소화
 
 				    	m.put("unit", unit);
-				    m.put("productNo", productNo);         // ✅ 필수				    				    
+				    m.put("productNo", productNo);			    				    
 				    m.put("addPrice", toInt(o.get("addPrice")));
 				    m.put("stock",    toInt(o.get("stock")));
 				    normalized.add(m);
 				}
 				
 				HashMap<String, Object> productOptions = new HashMap<>();
-				productOptions.put("productNo", productNo);  // ✅ 상위에 보관 (foreach에서 #{productNo}로 접근)
+				productOptions.put("productNo", productNo);
 				productOptions.put("options", normalized);
 
-				// 서비스로 넘겨서 mapper 호출은 네가 진행
 				productService.insertProductOptions(productOptions);
 				
 			}

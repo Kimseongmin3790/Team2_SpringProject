@@ -20,13 +20,12 @@ public class MainService {
 	SqlSession sqlSession;
 	
 	@Autowired
-	MainMapper mainMapper; // DB 연결을 위한 Mapper
+	MainMapper mainMapper;
 
-	// 1. 메인 배너 데이터 조회 (fnGetMainBanners용)
+	// 메인 배너 데이터 조회
 	public HashMap<String, Object> selectMainBanners() {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		try {
-			// Mapper에서 List<Main>을 가져옵니다.
 			List<Main> list = mainMapper.selectMainBanners();			
 			resultMap.put("list", list);
 			resultMap.put("result", "success");
@@ -38,7 +37,7 @@ public class MainService {
 		return resultMap;
 	}
 	
-	// 2. 메인 추천 데이터 조회
+	// 메인 추천 데이터 조회
 	public HashMap<String, Object> selectRecommendList() {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		try {
@@ -54,7 +53,7 @@ public class MainService {
 		return resultMap;
 	}
 	
-	// 3. 메인 신상품 데이터 조회
+	// 메인 신상품 데이터 조회
 	public HashMap<String, Object> selectNewList() {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		try {
@@ -70,7 +69,7 @@ public class MainService {
 		return resultMap;
 	}
 	
-	// 4. 메인 농부 데이터 조회
+	// 메인 농부 데이터 조회
 	public HashMap<String, Object> selectSellerList(HashMap<String, Object> map) {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		try {
@@ -86,7 +85,7 @@ public class MainService {
 		return resultMap;
 	}
 	
-	// 5. 농부 상세 데이터 조회
+	// 농부 상세 데이터 조회
 	public HashMap<String, Object> getSellerDetail(HashMap<String, Object> map) {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		try {
@@ -104,7 +103,7 @@ public class MainService {
 		return resultMap;
 	}
 	
-	// 6. 검색 데이터 조회
+	// 검색 데이터 조회
 	public HashMap<String, Object> getSearchList(HashMap<String, Object> map) {
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		try {
@@ -119,7 +118,7 @@ public class MainService {
 		return resultMap;
 	}
 	
-	// 7. 유저 좌표 조회
+	// 유저 좌표 조회
 	public HashMap<String, Object> selectUserLocation(String userId) throws Exception {
 	    return new HashMap<>(mainMapper.selectUserLocation(userId));
 	}

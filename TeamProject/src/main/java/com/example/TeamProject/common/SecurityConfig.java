@@ -39,7 +39,6 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationSuccessHandler chatAwareSuccessHandler() {
 		return (request, response, authentication) -> {
-			// ✅ 성공 시 세션 키 주입 (OAuth2 포함)
 			HttpSession s = request.getSession();
 			Object p = authentication.getPrincipal();
 			if (p instanceof OAuth2User o) {
@@ -73,18 +72,15 @@ public class SecurityConfig {
 		};
 	}
 
-	// ★ 이 빈 하나만 유지하세요. (기존 filterChain(...) 메서드는 삭제)
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable()).sessionManagement(sm -> sm.sessionFixation().migrateSession()) // ✅ 추가: 세션 고정
-																											// 보호 + 새 세션
-																											// 발급
+		http.csrf(csrf -> csrf.disable()).sessionManagement(sm -> sm.sessionFixation().migrateSession()) 
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/img/**", "/css/**", "/js/**", "/webjars/**", "/resources/**", "/uploads/**")
 						.permitAll().requestMatchers("/ws-chat/**", "/chatting.do").permitAll().anyRequest()
 						.permitAll())
 				.oauth2Login(oauth2 -> oauth2.loginPage("/login.do").defaultSuccessUrl("/main.do", true)
-						.successHandler(chatAwareSuccessHandler()) // ← 이미 추가하신 줄 유지
+						.successHandler(chatAwareSuccessHandler())
 						.failureHandler(failureHandler)
 						.userInfoEndpoint(ui -> ui.userService(customOAuth2UserService)));
 		return http.build();

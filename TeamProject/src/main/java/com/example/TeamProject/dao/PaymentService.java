@@ -31,7 +31,7 @@ public class PaymentService {
 	@Value("${portone.rest-secret}")
 	private String REST_SECRET;
 	
-    // ✅ Access Token 발급
+    // Access Token 발급
     public String getPortOneAccessToken() throws Exception {
         URL url = new URL("https://api.iamport.kr/users/getToken");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -58,7 +58,7 @@ public class PaymentService {
         return response.getJSONObject("response").getString("access_token");
     }
 
-    // ✅ 결제정보 조회
+    // 결제정보 조회
     public HashMap<String, Object> getPaymentData(String impUid, String accessToken) throws Exception {
         URL url = new URL("https://api.iamport.kr/payments/" + impUid);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -82,7 +82,7 @@ public class PaymentService {
         HashMap<String, Object> map = new HashMap<>();
         map.put("amount", res.optDouble("amount", 0));
         map.put("status", res.optString("status", "unknown"));
-        map.put("pay_method", res.optString("pay_method", "unknown")); // ✅ 안전하게
+        map.put("pay_method", res.optString("pay_method", "unknown"));
         map.put("merchant_uid", res.optString("merchant_uid", "unknown"));
         map.put("pg_provider", res.optString("pg_provider", "none"));
         return map;
@@ -103,12 +103,11 @@ public class PaymentService {
     public HashMap<String, Object> getPaymentList(HashMap<String, Object> in) {
         HashMap<String, Object> out = new HashMap<>();
         try {
-            // 1) 입력 정규화
+            // 입력 정규화
             Map<String, Object> p = new HashMap<>();
             String userId = safeStr(in.get("userId"));
             if (userId != null) p.put("userId", userId);
 
-            // cartNos: "12,15,  99"
             String cartNosCsv = safeStr(in.get("cartNos"));
             if (cartNosCsv != null && !cartNosCsv.isBlank()) {
                 List<Long> cartNoList = Arrays.stream(cartNosCsv.split(","))
@@ -116,13 +115,13 @@ public class PaymentService {
                         .filter(s -> !s.isEmpty())
                         .map(Long::valueOf)
                         .collect(java.util.stream.Collectors.toList());
-                p.put("cartNoList", cartNoList); // <-- Mapper에서 foreach로 사용
+                p.put("cartNoList", cartNoList);
             } else {
                 // 단건 모드
                 Long productNo = toLong(in.get("productNo"));
                 Integer quantity = toIntOrDefault(in.get("quantity"), 1);
-                Long optionNo = toLongNullable(in.get("optionNo")); // "", null 모두 null 처리
-                String fulfillment = normalizeFulfillment(safeStr(in.get("fulfillment"))); // delivery/visit/pickup
+                Long optionNo = toLongNullable(in.get("optionNo"));
+                String fulfillment = normalizeFulfillment(safeStr(in.get("fulfillment")));
                 Integer shippingFee = toIntNullable(in.get("shippingFee"));
 
                 if (productNo != null) p.put("productNo", productNo);
@@ -132,7 +131,7 @@ public class PaymentService {
                 if (shippingFee != null) p.put("shippingFee", shippingFee);
             }
 
-            // 2) 조회
+            // 조회
             List<Cart> list = paymentMapper.selectPaymentLines(p);
 
             out.put("result", "success");

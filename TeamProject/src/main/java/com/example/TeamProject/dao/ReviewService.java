@@ -26,7 +26,7 @@ public class ReviewService {
     @Autowired
     private ReviewMapper reviewMapper;
 
-   // 리뷰 등록
+    // 리뷰 등록
     @Transactional(rollbackFor = Exception.class)
     public HashMap<String, Object> addReview(HashMap<String, Object> params, List<MultipartFile> images, String uploadPath) {
         HashMap<String, Object> resultMap = new HashMap<>();
@@ -121,7 +121,6 @@ public class ReviewService {
             if (userId == null || userId.isEmpty()) {
                 throw new Exception("로그인이 필요합니다.");
             }
-            // Mapper를 호출하여 특정 사용자의 리뷰 목록을 조회합니다.
             List<Review> reviewList = reviewMapper.selectReviewsByUserId(userId);
 
             resultMap.put("result", "success");
@@ -138,11 +137,11 @@ public class ReviewService {
     public HashMap<String, Object> getReviewDetail(int reviewNo) {
         HashMap<String, Object> resultMap = new HashMap<>();
         try {
-            // 1. 리뷰 기본 정보 조회
+            // 리뷰 기본 정보 조회
             Review review = reviewMapper.selectReviewDetailByReviewNo(reviewNo);
 
             if (review != null) {
-                // 2. 리뷰 이미지 목록 조회
+                // 리뷰 이미지 목록 조회
             	List<ReviewImage> images = reviewMapper.selectReviewImagesByReviewNo(reviewNo);
 
                 
@@ -180,19 +179,19 @@ public class ReviewService {
     	     String deletedImageNosJson, String uploadPath) {
         HashMap<String, Object> resultMap = new HashMap<>();
         try {
-            // 1. 리뷰 기본 정보(별점, 내용) 수정
+            // 리뷰 기본 정보(별점, 내용) 수정
             reviewMapper.updateReview(params);
 
             int reviewNo = Integer.parseInt((String) params.get("reviewNo"));
 
-            // 2. 선택한 기존 이미지 삭제
+            // 선택한 기존 이미지 삭제
             if (deletedImageNosJson != null && !deletedImageNosJson.isEmpty()) {
                 List<Integer> deletedImageNos = new Gson().fromJson(deletedImageNosJson, new com.google.gson.reflect.TypeToken<List<Integer>>() {}.getType());
                 if (deletedImageNos != null && !deletedImageNos.isEmpty()) {
                     reviewMapper.deleteSpecificReviewImages(deletedImageNos); 
                 }
             }
-            // 3. 새로 추가된 이미지 등록
+            // 새로 추가된 이미지 등록
             if (newImages != null && !newImages.isEmpty()) {
                 File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) {
@@ -256,10 +255,10 @@ public class ReviewService {
     public HashMap<String, Object> getProductReviews(int productNo, String currentUserId, int page, int pageSize) {
         HashMap<String, Object> resultMap = new HashMap<>();
         try {
-            // 1. 페이징을 위한 offset 계산
+            // 페이징을 위한 offset 계산
             int offset = (page - 1) * pageSize;
 
-            // 2. 해당 페이지의 리뷰 목록과 전체 리뷰 개수를 매퍼에서 가져옴
+            // 해당 페이지의 리뷰 목록과 전체 리뷰 개수를 매퍼에서 가져옴
             List<Review> reviewList = reviewMapper.selectReviewsByProductNo(productNo, offset, pageSize);
             int totalReviews = reviewMapper.countReviewsByProductNo(productNo);        
 
@@ -272,7 +271,7 @@ public class ReviewService {
                     review.setComments(comments);
                 }
 
-            // 4. 리뷰 통계 정보 계산
+            // 리뷰 통계 정보 계산
             double averageRating = 0;
             Map<Integer, Integer> ratingDistribution = new HashMap<>();
             for (int i = 1; i <= 5; i++) {
@@ -296,7 +295,7 @@ public class ReviewService {
                 averageRating = (double) totalRatingSum / totalReviews;
             }
 
-            // 5. 최종 결과 resultMap에 담기
+            // 최종 결과 resultMap에 담기
             resultMap.put("result", "success");
             resultMap.put("reviews", reviewList);
             resultMap.put("totalReviews", totalReviews);
@@ -324,29 +323,29 @@ public class ReviewService {
         }
 
         try {
-            // 1. 사용자가 이미 추천했는지 확인 
+            // 사용자가 이미 추천했는지 확인 
             boolean isRecommended = reviewMapper.checkIfUserRecommended(reviewNo, userId);
 
-            if ("increment".equals(action)) { // 추천 요청
+            if ("increment".equals(action)) {
                 if (isRecommended) {
                     resultMap.put("message", "이미 추천한 리뷰입니다.");
                     resultMap.put("result", "already_recommended"); 
                 } else {
-                    // 2. 추천 기록 추가 (매퍼 메서드 필요)
+                    // 추천 기록 추가
                     reviewMapper.insertReviewRecommend(reviewNo, userId);
-                    // 3. 리뷰의 추천 수 증가 (매퍼 메서드 필요)
+                    // 리뷰의 추천 수 증가
                     reviewMapper.incrementReviewRecommend(reviewNo);
                     resultMap.put("result", "success");
                     resultMap.put("message", "리뷰를 추천했습니다.");
                 }
-            } else if ("decrement".equals(action)) { // 추천 취소 요청
+            } else if ("decrement".equals(action)) {
                 if (!isRecommended) {
                     resultMap.put("message", "추천하지 않은 리뷰입니다.");
                     resultMap.put("result", "not_recommended"); 
                 } else {
-                    // 2. 추천 기록 삭제 
+                    // 추천 기록 삭제 
                     reviewMapper.deleteReviewRecommend(reviewNo, userId);
-                    // 3. 리뷰의 추천 수 감소 
+                    // 리뷰의 추천 수 감소 
                     reviewMapper.decrementReviewRecommend(reviewNo);
                     resultMap.put("result", "success");
                     resultMap.put("message", "리뷰 추천을 취소했습니다.");
@@ -365,10 +364,10 @@ public class ReviewService {
     
     // 해당 판매자 상품 리뷰 조회
     public List<Review> getReviewsBySellerId(String sellerId) {
-        // 1. 판매자의 리뷰 목록을 기본 정보와 함께 가져옵니다.
+        // 판매자의 리뷰 목록을 기본 정보와 함께 가져옵니다.
         List<Review> reviewList = reviewMapper.selectReviewsBySellerId(sellerId);
 
-        // 2. 각 리뷰에 해당하는 이미지 URL 목록을 조회하여 설정합니다.
+        // 각 리뷰에 해당하는 이미지 URL 목록을 조회하여 설정합니다.
         for (Review review : reviewList) {
             // review_no를 사용하여 해당 리뷰의 이미지들을 가져옵니다.
             List<ReviewImage> images = reviewMapper.selectReviewImagesByReviewNo(review.getReviewNo());
