@@ -29,7 +29,7 @@
 | 이름    | 역할     | 깃허브 | 이메일 
 | ----- | ------ | -------------------------- | ------ |
 | 김성민 | 팀장/프론트엔드/백엔드 | https://github.com/Kimseongmin3790 | sungmin3790@gmail.com 
-| 권혁준 | 프론트엔드/백엔드    | [@id](https://github.com/) |  
+| 권혁준 | 프론트엔드/백엔드    | [@id](https://github.com/) |  sinso5281532@gmail.com
 | 이민형 | 프론트엔드/백엔드  | [@id](https://github.com/) | 
 | 문병서 | 인프라    | [@id](https://github.com/) |
 
@@ -151,11 +151,11 @@ Team2_SpringProject/
 
 ## 👥 팀원별 역할 분담
 
-- **김성민** 🎨 Frontend
+- **김성민** 🎨 Frontend(예시)
   - Vue 3, HTML, CSS, jQuery, AJAX
   - UI/UX 구현 및 화면 단 테스트
 
-- **권혁준** 💻 Backend
+- **권혁준** 💻 Backend(예시)
   - Java(Spring MVC/Boot), MyBatis
   - REST API 개발, 서비스 로직 구현
 
@@ -167,7 +167,7 @@ Team2_SpringProject/
     - 공통 서비스 페이지: 고객센터 게시판, 계층형 대댓글 시스템
     - 데이터베이스 설계 및 ERD 작성
 
-- **문병서** ⚙️ DevOps/Integration
+- **문병서** ⚙️ DevOps/Integration(예시)
   - Git/GitHub 관리
   - 빌드/배포 및 테스트 환경 설정
 
