@@ -74,35 +74,77 @@
 <p align="center"><img src="docs/architecture/architecture.png" width="90%" alt="Architecture" /></p>
 
 ## 🗂 프로젝트 구조
-
-eam2_SpringProject/
-├── pom.xml # Maven 빌드 설정
-├── README.md # 프로젝트 설명
+```
+Team2_SpringProject/
+├── pom.xml                # Maven 빌드 설정 파일
+├── README.md              # 프로젝트 설명 파일
 └── src/
-├── main/
-│ ├── java/
-│ │ └── com.example.TeamProject/
-│ │ ├── TeamProjectApplication.java
-│ │ ├── common/ # 공통 기능 (보안, 예외 처리)
-│ │ ├── config/ # 설정 관련 (OAuth 등)
-│ │ ├── controller/ # 웹 요청 처리
-│ │ ├── dao/ # 비즈니스 로직
-│ │ ├── mapper/ # MyBatis 매퍼
-│ │ └── model/ # VO, DTO 등 데이터 모델
-│ │
-│ ├── resources/
-│ │ ├── application.properties
-│ │ └── mybatis-mapper/ # SQL 매퍼
-│ │
-│ └── webapp/
-│ ├── resources/ # 정적 리소스 (css, js, img)
-│ └── WEB-INF/ # JSP 뷰 파일
-│ ├── index.jsp
-│ ├── admin/
-│ ├── board/
-│ ├── user/
-│ ├── product/
-│ └── common/ # 헤더, 푸터 등 공통 뷰
+    ├── main/
+    │   ├── java/
+    │   │   └── com/
+    │   │       └── example/
+    │   │           └── TeamProject/
+    │   │               ├── TeamProjectApplication.java  # 스프링 부트 시작점
+    │   │               │
+    │   │               ├── common/              # 공통 기능 (보안 설정, 예외 처리 등)
+    │   │               │   ├── SecurityConfig.java
+    │   │               │   └── GlobalExceptionHandler.java
+    │   │               │
+    │   │               ├── config/              # 설정 관련 클래스 (OAuth 등)
+    │   │               │   └── auth/
+    │   │               │
+    │   │               ├── controller/          # 웹 요청을 처리하는 컨트롤러
+    │   │               │   ├── UserController.java
+    │   │               │   ├── ProductController.java
+    │   │               │   ├── OrderController.java
+    │   │               │   └── ... (기타 컨트롤러)
+    │   │               │
+    │   │               ├── dao/                 # 비즈니스 로직을 처리하는 서비스
+    │   │               │   ├── UserService.java
+    │   │               │   ├── ProductService.java
+    │   │               │   └── ... (기타 서비스)
+    │   │               │
+    │   │               ├── mapper/              # MyBatis 매퍼 인터페이스
+    │   │               │   ├── UserMapper.java
+    │   │               │   ├── ProductMapper.java
+    │   │               │   └── ... (기타 매퍼)
+    │   │               │
+    │   │               └── model/               # 데이터 모델 (VO, DTO)
+    │   │                   ├── User.java
+    │   │                   ├── Product.java
+    │   │                   └── ... (기타 모델)
+    │   │
+    │   ├── resources/
+    │   │   ├── application.properties   # 애플리케이션 설정 파일
+    │   │   │
+    │   │   ├── mybatis-mapper/          # MyBatis SQL 쿼리 XML 파일
+    │   │   │   ├── sql-user.xml
+    │   │   │   ├── sql-product.xml
+    │   │   │   └── ... (기타 SQL 파일)
+    │   │   │
+    │   │   └── static/                  # 정적 리소스 (CSS, JS, 이미지 등 - Spring Boot 방식)
+    │   │       └── favicon.ico
+    │   │
+    │   └── webapp/
+    │       ├── resources/               # 정적 리소스 (JSP에서 주로 사용)
+    │       │   ├── css/
+    │       │   ├── js/
+    │       │   └── img/
+    │       │
+    │       └── WEB-INF/                 # JSP 뷰 파일 위치
+    │           ├── default.jsp          # 기본 템플릿 JSP
+    │           ├── index.jsp
+    │           ├── admin/
+    │           ├── board/
+    │           ├── user/
+    │           ├── product/
+    │           └── views/
+    │               └── common/          # 공통 뷰 (헤더, 푸터)
+    │                   ├── header.jsp
+    │                   └── footer.jsp
+    │
+    └──
+```
 
 ## ✨ 주요 기능
 
@@ -114,16 +156,25 @@ eam2_SpringProject/
 * [ ] 상품문의/리뷰, 공지/이벤트
 * [ ] 관리자 대시보드(통계/관리)
 
-## 🧩 팀원별 역할 분담
 
-| 기능      | 담당자   | 상세 업무                |
-| ------- | ----- | -------------------- |
-| 회원/권한   | 홍길동   | JWT, Security, 예외 처리 |
-| 상품/카테고리 | 김개발   | 이미지 업로드, 옵션/재고       |
-| 주문/결제   | 김개발   | 장바구니, 결제 연동          |
-| 프론트/UI  | 이프론트  | 공통 헤더/푸터, 반응형, 접근성   |
-| 배송/지도   | 이프론트  | Kakao Maps, 배송 추적    |
-| 인프라/배포  | 박데브옵스 | CI/CD, 서버/도메인, 로그    |
+## 👥 팀원별 역할 분담
+
+- **김성민** 🎨 Frontend
+  - Vue 3, HTML, CSS, jQuery, AJAX(예시)
+  - UI/UX 구현 및 화면 단 테스트
+
+- **권혁준** 💻 Backend
+  - Java(Spring MVC/Boot), MyBatis(예시)
+  - REST API 개발, 서비스 로직 구현
+
+- **이민형** 🗄 Database
+  - Oracle DB 설계 및 관리(예시)
+  - SQL 쿼리 작성, MyBatis 매퍼 관리
+
+- **문병서** ⚙️ DevOps/Integration
+  - Git/GitHub 관리(예시)
+  - 빌드/배포, 테스트 환경 설정
+
 
 
 
@@ -183,10 +234,4 @@ feat(product): 옵션 SKU 생성 로직 추가
 
 </details>
 
-## 📝 라이선스
 
-이 프로젝트는 [LICENSE](LICENSE) 조항을 따릅니다.
-
----
-
-> 📎 **Tip:** README 최상단에 대표 이미지와 짧은 소개, 바로 아래에 `배포 링크`와 `시연 영상`을 배치하면 심사/발표 때 가독성이 좋아집니다.
