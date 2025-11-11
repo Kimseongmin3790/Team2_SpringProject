@@ -72,7 +72,6 @@
                     font-weight: bold;
                 }
 
-                /* ✅ 상품 리스트 */
                 .product-list {
                     display: flex;
                     flex-wrap: wrap;
@@ -142,7 +141,6 @@
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                 <div id="app" class="seller-container">
-                    <!-- ✅ 판매자 기본 정보 -->
                     <div class="seller-header">
                         <div class="seller-profile"
                             :style="{ backgroundImage: 'url(' + fullUrl(seller.profileImg) + ')' }"></div>
@@ -158,7 +156,6 @@
                         </div>
                     </div>
 
-                    <!-- ✅ 판매중인 상품 목록 -->
                     <h3 style="color:#1a5d1a;margin-bottom:20px;">판매 중인 상품</h3>
                     <div v-if="products.length === 0" style="text-align:center;color:#888;margin-top:30px;">
                         현재 등록된 상품이 없습니다.
@@ -173,9 +170,9 @@
                                 <h4>{{ p.pName }}</h4>
                                 <div class="desc">{{ p.pInfo }}</div>
                                 <span class="product-price">{{ p.price.toLocaleString() }}원</span>                                
-                                <div class="date">📅생산일: {{ p.cdate }}</div>
-                                <div class="region">🌾원산지: {{ p.origin }}</div>
-                                <div class="seller">👨‍🌾Agricola 이름: {{ p.userName }}</div>
+                                <div class="date">생산일: {{ p.cdate }}</div>
+                                <div class="region">원산지: {{ p.origin }}</div>
+                                <div class="seller">Agricola 이름: {{ p.userName }}</div>
                             </div>
                         </div>
                     </div>

@@ -19,6 +19,9 @@ public class AdminController {
 	@Autowired
 	AdminService adminService;
 	
+	@org.springframework.web.bind.annotation.GetMapping("/error/403")
+    public String error403() { return "error/403"; }
+	
 	@RequestMapping("/dashboard.do") 
     public String dashboard(Model model) throws Exception{
 

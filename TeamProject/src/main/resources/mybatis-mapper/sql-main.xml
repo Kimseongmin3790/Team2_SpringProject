@@ -84,7 +84,6 @@
 	    AND S.LAT BETWEEN -90 AND 90
 	    AND S.LNG BETWEEN -180 AND 180
 	  ORDER BY DISTANCE ASC NULLS LAST
-	  FETCH FIRST 10 ROWS ONLY
 	</select>
     
     <select id="selectSellerDetail" parameterType="hashmap" resultType="com.example.TeamProject.model.Producer">
@@ -149,7 +148,7 @@
 	        GROUP BY PRODUCT_NO
 	    ) R ON P.PRODUCT_NO = R.PRODUCT_NO
 	    
-	    WHERE P.SELLER_ID = #{sellerId}
+	    WHERE P.SELLER_ID = #{sellerId} AND P.PRODUCT_STATUS = 'SELLING'
 	
 	    ORDER BY P.PRODUCT_NO	    
 	    
