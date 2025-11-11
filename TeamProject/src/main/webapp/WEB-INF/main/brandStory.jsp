@@ -512,7 +512,7 @@
                             <div class="feature-item">
                                 <div class="feature-icon">💬</div>
                                 <div>
-                                    <h4 class="feature-title">실시간 소통</h4>
+                                    <h4 class="feature-title">실시간 소통(예정)</h4>
                                     <p class="feature-description">실시간 채팅으로 궁금한 것을 물어보세요. 생산자가 직접 답변합니다.</p>
                                 </div>
                             </div>
