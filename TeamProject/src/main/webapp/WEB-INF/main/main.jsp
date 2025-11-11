@@ -29,7 +29,6 @@
           padding-bottom: 80px;
         }
 
-        /* 🌿 슬라이더 (이전 코드 그대로 유지) */
         .main-slider {
           width: 100%;
           max-width: 1200px;
@@ -122,7 +121,6 @@
           background: #4caf50;
         }
 
-        /* 🌱 섹션 공통 */
         section.main-section {
           max-width: 1200px;
           margin: 80px auto 0;
@@ -143,7 +141,6 @@
           margin-bottom: 40px;
         }
 
-        /* 🌾 상품 카드 */
         .product-grid {
           display: flex;
           flex-wrap: wrap;
@@ -195,29 +192,22 @@
           color: #388e3c;
         }
 
-        /* 🧑‍🌾 입점업체 */
         .producer-list {
           display: flex;
           flex-wrap: nowrap;
-          /* ✅ 줄바꿈 금지 */
           overflow-x: auto;
-          /* ✅ 가로 스크롤 활성화 */
           gap: 40px;
           padding: 10px 0;
           scroll-behavior: smooth;
-          /* ✅ 부드러운 스크롤 */
           scroll-snap-type: x mandatory;
-          /* ✅ 스냅 효과 */
         }
 
         .producer-list::-webkit-scrollbar {
           height: 8px;
-          /* 스크롤바 높이 */
         }
 
         .producer-list::-webkit-scrollbar-thumb {
           background: #c8e6c9;
-          /* 연한 초록색 스크롤바 */
           border-radius: 4px;
         }
 
@@ -227,11 +217,9 @@
 
         .producer-card {
           flex: 0 0 auto;
-          /* ✅ 카드 너비 고정 (스크롤용) */
           width: 180px;
           text-align: center;
           scroll-snap-align: start;
-          /* ✅ 카드 기준으로 스냅 */
           cursor: pointer;
           transition: transform 0.3s;
         }
@@ -250,7 +238,6 @@
           border: 1px solid #ddd;
         }
 
-        /* 🔝 맨위/맨아래 리모컨 */
         .quick-remote {
           position: fixed;
           right: 20px;
@@ -293,11 +280,9 @@
           display: flex;
           align-items: center;
           justify-content: flex-end;
-          /* 버튼만 오른쪽으로 정렬 */
           margin-bottom: 15px;
         }
 
-        /* 제목만 중앙 배치 */
         .section-header h2 {
           position: absolute;
           left: 50%;
@@ -391,7 +376,6 @@
 
         <div id="app">
           <main class="content">
-            <!-- 🌿 슬라이더 -->
             <section class="main-slider">
               <div v-if="loading" style="text-align:center; line-height:400px;">배너 로딩 중...</div>
               <div v-else-if="error" style="text-align:center; line-height:400px; color:red;">{{ error }}</div>
@@ -413,7 +397,6 @@
               </div>
             </section>
 
-            <!-- 🧑‍🌾 입점업체 -->
             <section class="main-section">
               <h2>내 주변 생산자</h2>
               <p class="section-desc">가장 가까운 생산자를 찾아보세요. ※ 위치 권한 없으면 기본으로 서울시청으로 지정됩니다</p>
@@ -439,7 +422,6 @@
               </div>
             </section>
 
-            <!-- 🌾 추천 섹션 -->
             <section class="main-section">
               <div class="section-header">
                 <h2>AGRICOLA 추천 상품</h2>
@@ -459,7 +441,6 @@
               </div>
             </section>
 
-            <!-- 🆕 신상품 -->
             <section class="main-section">
               <div class="section-header">
                 <h2>AGRICOLA 신상품</h2>
@@ -479,7 +460,6 @@
               </div>
             </section>
 
-            <!-- 🔝 맨위/아래 리모컨 -->
             <div class="quick-remote">
               <button @click="scrollTop">🔝<br>맨 위로</button>
               <button @click="scrollBottom">⬇️<br>맨 아래로</button>
@@ -511,8 +491,8 @@
                   width: 0,
                   topFarmers: [],
 
-                  rangeKm: 3,             // ✅ 기본 반경 3km
-                  onlyInRange: true,      // ✅ 체크 시 범위 내만 표시
+                  rangeKm: 3,             // 기본 반경 3km
+                  onlyInRange: true,      // 체크 시 범위 내만 표시
                   mapRef: null,           // kakao.maps.Map 인스턴스
                   mapCenter: null,        // {lat,lng}
                   _markers: [],           // [{ marker, info, p }]
@@ -550,7 +530,6 @@
                   return base.endsWith('/') ? (base + url) : (base + '/' + url);
                 },
 
-                /* ------------ AJAX ------------ */
                 loadAll() {
                   this.loadBanners();
                   this.loadRecommend();
@@ -575,11 +554,11 @@
                 loadRecommend() {
                   const self = this;
                   $.ajax({
-                    url: "/main/data/recommend.dox",  // ✅ 실제 호출 URL
-                    type: "POST",                                 // dox → POST
+                    url: "/main/data/recommend.dox",  
+                    type: "POST",                               
                     dataType: "json",
                     success(res) {
-                      self.recommend = res.list;                  // ✅ 백엔드에서 list로 리턴
+                      self.recommend = res.list;                 
                     },
                     error(xhr, status, err) {
                       console.error("추천 상품 로드 실패:", err);
@@ -590,11 +569,11 @@
                 loadNew() {
                   const self = this;
                   $.ajax({
-                    url: "/main/data/newList.dox",  // ✅ 신상품 데이터 요청 경로
+                    url: "/main/data/newList.dox",  
                     type: "POST",
                     dataType: "json",
                     success(res) {
-                      self.newProducts = res.list || [];       // ✅ 응답의 list 배열로 세팅
+                      self.newProducts = res.list || [];       
                     },
                     error(xhr, status, err) {
                       console.error("신상품 로드 실패:", err);
@@ -605,7 +584,6 @@
                 loadProducers() {
                   const self = this;
 
-                  // ✅ 1. 로그인 여부 및 위치 정보 확인
                   $.ajax({
                     url: "/main/data/userLocation.dox",
                     type: "POST",
@@ -626,7 +604,6 @@
                   });
                 },
 
-                // ✅ 2. 비로그인 시 브라우저 위치
                 loadLocationFromBrowser() {
                   const self = this;
                   if (navigator.geolocation) {
@@ -689,24 +666,20 @@
 
                   this.mapCenter = { lat, lng };
 
-                  // ✅ 내 위치 마커 + 인포
                   const userMarker = new kakao.maps.Marker({
                     position: new kakao.maps.LatLng(lat, lng),
                     map: map
                   });
                   new kakao.maps.InfoWindow({ content: "<div style='padding:5px;'>내 위치</div>" }).open(map, userMarker);
 
-                  // ✅ 거리값 보정(백엔드에서 넘어오지 않으면 직접 계산)
                   (list || []).forEach(p => {
                     if (typeof p.distance !== 'number' && p.lat && p.lng) {
                       p.distance = this.calcDistanceKm(lat, lng, p.lat, p.lng);
                     }
                   });
 
-                  // ✅ 반경 원 그리기
                   this.drawRangeCircles();
 
-                  // ✅ 마커 그리기
                   this.renderMarkers(list || []);
                 },
 
@@ -798,7 +771,6 @@
                   location.href = "/seller/detail.do?sellerId=" + userId;
                 },
 
-                /* ------------ 슬라이드 ------------ */
                 measure() {
                   const track = this.$refs.track; if (!track) return;
                   const container = track.parentElement;
@@ -896,7 +868,6 @@
                   const href = this.bannerHref(banner);
                   if (!href || href === '#') return;
 
-                  // 새창여부를 쓰고싶다면 banner.target === '_blank' 같이 확장 가능
                   window.location.href = href;
                 },
                 /* ------------ 스크롤 리모컨 ------------ */
@@ -917,7 +888,7 @@
                 },
 
                 fnGoTopSellerList() {
-                  location.href = this.path + "/seller/topList.do"; // ✅ 더보기 페이지로 이동
+                  location.href = this.path + "/seller/topList.do";
                 },
 
                 goInfo(productNo) {
@@ -997,7 +968,6 @@
               },
 
               computed: {
-                // ✅ 리스트에 보여줄 판매자 (반경 필터 반영 + 거리 오름차순)
                 visibleProducers() {
                   if (!this.onlyInRange || !this.mapCenter) {
                     return (this.producers || []).slice().sort((a, b) => (a.distance || 9999) - (b.distance || 9999));

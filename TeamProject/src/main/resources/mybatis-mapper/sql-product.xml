@@ -110,7 +110,7 @@
 	        P.PRICE            AS price,
 	        P.ORIGIN	       AS origin,
 	        P.PRODUCT_STATUS   AS productStatus,
-	        TO_CHAR(P.CDATETIME, 'YYYY-MM-DD') AS cdate,
+	        TO_CHAR(P.CDATETIME, 'YY-MM-DD') AS cdate,
 	        NVL(IMG.IMAGE_URL, '/resources/img/category/noimage.jpg') AS filePath,
 	
 	        -- USERS, SELLER_INFO, REVIEW 정보
