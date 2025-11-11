@@ -943,7 +943,7 @@
                                             <div v-else>
                                                 <button class="btn btn-outline-success btn-sm"
                                                     @click="fnWriteReview(item.productNo, item.orderItemNo)"
-                                                    v-if="order.status === '배송완료' && item.hasReview === 0">리뷰작성</button>
+                                                    v-if="order.status === '배송 완료' && item.hasReview === 0">리뷰작성</button>
                                                 <button class="btn btn-outline btn-sm text-danger"
                                                     @click="openRefundModal(item)"
                                                     v-if="order.status === '결제완료' || order.status === '배송준비중'">환불신청</button>
