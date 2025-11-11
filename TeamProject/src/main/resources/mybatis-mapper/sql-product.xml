@@ -53,15 +53,30 @@
 	
 	<select id="selectRecommendList" resultType="com.example.TeamProject.model.Product">
 		SELECT
-        P.PRODUCT_NO,
-        P.PNAME,
-        P.PINFO,
-        P.PRICE,
-        I.IMAGE_URL
+	        P.PRODUCT_NO		AS productNo,
+	        P.PNAME				AS pName,
+	        P.PINFO				AS pInfo,	
+	        P.PRICE				AS price,
+	        P.ORIGIN			AS origin,
+	        TO_CHAR(P.CDATETIME, 'YYYY-MM-DD') AS cdate,
+	        I.IMAGE_URL,
+	        
+	        U.NAME             AS userName,
+	        SI.BUSINESS_NAME   AS businessName
+	        
 	    FROM PRODUCT P
 	    LEFT JOIN PRODUCT_IMAGE I 
 	        ON P.PRODUCT_NO = I.PRODUCT_NO 
-	       AND I.IS_THUMBNAIL = 'Y'
+	        AND I.IS_THUMBNAIL = 'Y'
+	    
+	    LEFT JOIN USERS U ON P.SELLER_ID = U.USER_ID
+	    LEFT JOIN SELLER_INFO SI ON U.USER_ID = SI.USER_ID
+	    LEFT JOIN (
+	        SELECT PRODUCT_NO, AVG(RATING) AS RATING
+	        FROM REVIEW
+	        GROUP BY PRODUCT_NO
+	    ) R ON P.PRODUCT_NO = R.PRODUCT_NO
+	    
 	    WHERE P.RECOMMEND = 'Y'
 	    ORDER BY P.PRODUCT_NO DESC
 	</select>
@@ -81,28 +96,28 @@
 	</select>
 	<select id="selectProductList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
 		SELECT
-        P.PRODUCT_NO       AS productNo,
-        P.SELLER_ID        AS sellerId,     -- 이미 user_id와 동일 의미
-        P.CATEGORY_NO      AS categoryNo,
-        P.PNAME            AS pName,
-        P.PINFO            AS pInfo,
-        P.PRICE            AS price,
-        P.ORIGIN	       AS origin,
-        P.PRODUCT_STATUS   AS productStatus,
-        TO_CHAR(P.CDATETIME, 'YYYY-MM-DD') AS cdate,
-        NVL(IMG.IMAGE_URL, '/resources/img/category/noimage.jpg') AS filePath,
-
-        -- USERS, SELLER_INFO, REVIEW 정보
-        U.NAME             AS userName,
-        SI.BUSINESS_NAME   AS businessName,
-        
-        REGEXP_REPLACE(
-            REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'),
-            '(특별시|광역시|도|특별자치도)',
-            ''
-        ) AS region,  
-       
-        NVL(ROUND(R.RATING, 1), 0) AS rating
+	        P.PRODUCT_NO       AS productNo,
+	        P.SELLER_ID        AS sellerId,     -- 이미 user_id와 동일 의미
+	        P.CATEGORY_NO      AS categoryNo,
+	        P.PNAME            AS pName,
+	        P.PINFO            AS pInfo,
+	        P.PRICE            AS price,
+	        P.ORIGIN	       AS origin,
+	        P.PRODUCT_STATUS   AS productStatus,
+	        TO_CHAR(P.CDATETIME, 'YYYY-MM-DD') AS cdate,
+	        NVL(IMG.IMAGE_URL, '/resources/img/category/noimage.jpg') AS filePath,
+	
+	        -- USERS, SELLER_INFO, REVIEW 정보
+	        U.NAME             AS userName,
+	        SI.BUSINESS_NAME   AS businessName,
+	        
+	        REGEXP_REPLACE(
+	            REGEXP_SUBSTR(U.ADDRESS, '^[^ ]+ [^ ]+'),
+	            '(특별시|광역시|도|특별자치도)',
+	            ''
+	        ) AS region,  
+	       
+	        NVL(ROUND(R.RATING, 1), 0) AS rating
 
 	    FROM PRODUCT P
 	
