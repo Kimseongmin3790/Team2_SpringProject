@@ -217,6 +217,7 @@
 		    Q.CNT,
 		    Q.STATUS,
 		    TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS REG_DATE,
+		    P.SELLER_ID,
 		    P.PNAME,
 		    I.IMAGE_URL AS THUMB_URL
 		FROM PRODUCT_QNA Q
@@ -248,6 +249,16 @@
 		VALUES(PRODUCT_QNA_SEQ.NEXTVAL, #{productNo}, #{userId}, #{title}, #{content}, #{isSecret}, #{password}, '답변대기', 0, SYSDATE, SYSDATE)
 	</insert>
 	
+	<insert id="productQnaAnswerInsert" parameterType="hashmap">
+		INSERT INTO PRODUCT_QNA_ANSWER	
+		VALUES(PRODUCT_QNA_ANSWER_SEQ.NEXTVAL, #{qnaNo}, #{sellerId}, #{content}, SYSDATE, SYSDATE)
+	</insert>
 	
+	<select id="qnaIdCheck" parameterType="hashmap" resultType="com.example.TeamProject.model.Board">
+		SELECT Q.*, P.SELLER_ID
+		FROM PRODUCT_QNA Q
+		INNER JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO AND P.SELLER_ID = #{sellerId}
+		WHERE QNA_NO = #{qnaNo}
+	</select>
 
 </mapper>

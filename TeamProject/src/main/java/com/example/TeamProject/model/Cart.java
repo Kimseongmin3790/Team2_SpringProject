@@ -5,15 +5,20 @@ import lombok.Data;
 @Data
 public class Cart {
 	
-	private String cartNo;
-	private String productNo;
-	private String userId;
-	private String quantity;
-	private String addedAt;
-	private String pName;
-	private int price;
-	private String lineTotal;
-	private String thumbPath;
-	private String fulfillment;
-	private String shippingFee;
+	private Long cartNo;
+    private Long productNo;
+    private String pName;
+    private String sellerId;
+    private Integer basePrice;
+    private Integer addPrice;
+    private Integer unitPrice;
+    private Long optionNo;
+    private String optionUnit;
+    private Integer stockQty;
+    private String thumbPath;
+    private Integer quantity;
+    private String fulfillment;
+    private Integer shippingFee;
+    private String unit;
+	
 }

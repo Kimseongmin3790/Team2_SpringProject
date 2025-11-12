@@ -19,6 +19,9 @@ public class AdminController {
 	@Autowired
 	AdminService adminService;
 	
+	@org.springframework.web.bind.annotation.GetMapping("/error/403")
+    public String error403() { return "error/403"; }
+	
 	@RequestMapping("/dashboard.do") 
     public String dashboard(Model model) throws Exception{
 
@@ -35,14 +38,14 @@ public class AdminController {
     public String productManage(Model model) throws Exception{
 
         return "admin/productManage"; 
-    }		
-	
-	@RequestMapping("/locationMap.do") 
-    public String locationMap(Model model) throws Exception{
-
-        return "admin/locationMap"; 
     }
 	
+	@RequestMapping("/admin/categoryManage.do") 
+    public String categoryManage(Model model) throws Exception{
+
+        return "admin/categoryManage"; 
+    }
+			
 	
 	@RequestMapping(value = "/userList.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
@@ -145,6 +148,16 @@ public class AdminController {
 	    resultMap = adminService.updateRecommend(productNo, recommend);
 		
 		return new Gson().toJson(resultMap);
-	}		
+	}
+	
+	@RequestMapping(value = "/updateProductStatus.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String updateProductStatus(@RequestParam("productNo") int productNo, @RequestParam("productStatus") String productStatus) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		
+	    resultMap = adminService.updateProductStatus(productNo, productStatus);
+		
+		return new Gson().toJson(resultMap);
+	}
 	
 }

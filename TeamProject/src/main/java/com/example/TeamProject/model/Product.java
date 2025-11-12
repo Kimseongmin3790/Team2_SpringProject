@@ -31,8 +31,19 @@ public class Product {
 	private String orderdate;
 	private String isActive;
 	
+	private int optionNo;
 	private String stockQty;
 	private int addPrice;	
 	private String userName;
 	private double rating;
+	
+	private int topNo;
+	private int midNo;
+	private int leafNo;
+	
+	private String businessName;
+	
+	private String region;
+	private int productCount;
+	
 }

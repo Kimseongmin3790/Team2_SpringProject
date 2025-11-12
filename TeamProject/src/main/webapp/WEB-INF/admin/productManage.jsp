@@ -9,12 +9,10 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>상품관리</title>
 
-            <!-- Vue & jQuery -->
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3"></script>
 
-            <!-- 공통 스타일 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css" />
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css" />
 
@@ -40,7 +38,6 @@
                     text-align: center;
                 }
 
-                /* 검색 및 필터 */
                 .product-filter {
                     display: flex;
                     justify-content: flex-start;
@@ -66,7 +63,7 @@
                     box-sizing: border-box;
                 }
 
-                .filter-right button {
+                .filter-left .btn-action {
                     background: #5dbb63;
                     border: none;
                     color: white;
@@ -76,11 +73,10 @@
                     transition: 0.2s;
                 }
 
-                .filter-right button:hover {
+                .filter-left .btn-action:hover {
                     background: #4aa954;
                 }
 
-                /* 테이블 */
                 .table-wrap {
                     width: 100%;
                     overflow-x: auto;
@@ -124,7 +120,7 @@
                     background: #5dbb63;
                     color: white;
                     border: none;
-                    padding: 5px 10px;
+                    padding: 6px 12px;
                     border-radius: 6px;
                     font-size: 13px;
                     cursor: pointer;
@@ -138,6 +134,11 @@
 
                 .btn-action:hover {
                     opacity: 0.9;
+                }
+
+                .btn-action:disabled {
+                    opacity: .5;
+                    cursor: not-allowed;
                 }
 
                 .no-data {
@@ -184,11 +185,53 @@
                 .btn-recommend.active:hover {
                     background: #a83e3e;
                 }
+
+                .status-badge {
+                    display: inline-block;
+                    padding: 4px 10px;
+                    border-radius: 999px;
+                    font-size: 12px;
+                    font-weight: 700;
+                }
+
+                .status-selling {
+                    background: #e6f4ea;
+                    color: #1a5d1a;
+                    border: 1px solid #5dbb63;
+                }
+
+                .status-hidden {
+                    background: #f1f1f1;
+                    color: #666;
+                    border: 1px solid #bbb;
+                }
+
+                .status-soldout {
+                    background: #fdeaea;
+                    color: #b00020;
+                    border: 1px solid #e57373;
+                }
+
+                .status-control {
+                    display: inline-flex;
+                    gap: 6px;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .status-select {
+                    padding: 6px 10px;
+                    border: 1px solid #ccc;
+                    border-radius: 6px;
+                    font-size: 13px;
+                    background: #fff;
+                }
             </style>
         </head>
 
         <body>
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
+
                 <div id="app">
                     <div class="admin-container">
                         <div class="admin-header">
@@ -196,7 +239,6 @@
                             <h2 class="admin-title">상품관리</h2>
                         </div>
 
-                        <!-- 검색 & 필터 -->
                         <div class="product-filter">
                             <div class="filter-left">
                                 <select v-model="selectedParentCategory">
@@ -223,11 +265,10 @@
                                 </select>
 
                                 <input type="text" v-model="keyword" placeholder="상품명 검색" />
-                                <button @click="fnSearch">검색</button>
+                                <button class="btn-action" @click="fnSearch">검색</button>
                             </div>
                         </div>
 
-                        <!-- 상품 목록 테이블 -->
                         <div class="table-wrap">
                             <table class="product-table">
                                 <thead>
@@ -240,8 +281,9 @@
                                         <th>단위</th>
                                         <th>재고</th>
                                         <th>등록일</th>
-                                        <th>상품추천여부</th>
+                                        <th>추천</th>
                                         <th>상태</th>
+                                        <th>상태 설정</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -260,20 +302,41 @@
                                                 {{ item.recommend === 'Y' ? '추천안하기' : '추천하기' }}
                                             </button>
                                         </td>
-                                        <td v-if="item.productStatus === 'SOLDOUT'" style="color: red">{{
-                                            item.productStatus }}</td>
-                                        <td v-else>{{ item.productStatus }}</td>
+
+                                        <td>
+                                            <span :class="['status-badge', statusClass(item.productStatus)]">
+                                                {{ statusLabel(item.productStatus) }}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <div class="status-control">
+                                                <select class="status-select" v-model="item.newStatus">
+                                                    <option value="SELLING">판매중</option>
+                                                    <option value="SOLDOUT">품절</option>
+                                                    <option value="HIDDEN">숨김</option>
+                                                </select>
+                                                <button class="btn-action" @click="fnChangeStatus(item)"
+                                                    :disabled="item.newStatus === item.productStatus || item._saving">
+                                                    {{ item._saving ? '저장중...' : '적용' }}
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
+
                                     <tr v-if="filteredList.length === 0">
-                                        <td colspan="8" class="no-data">등록된 상품이 없습니다.</td>
+                                        <td colspan="11" class="no-data">등록된 상품이 없습니다.</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+
                 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+
                     <script>
+
                         const app = Vue.createApp({
                             data() {
                                 return {
@@ -287,33 +350,31 @@
                                 };
                             },
                             computed: {
-
                                 parentCategories() {
                                     return this.categoryList.filter(c => !c.parentCategoryNo);
                                 },
                                 middleCategories() {
                                     if (!this.selectedParentCategory) return [];
                                     return this.categoryList.filter(
-                                        c => c.parentCategoryNo === this.selectedParentCategory
+                                        c => String(c.parentCategoryNo) === String(this.selectedParentCategory)
                                     );
                                 },
                                 subCategories() {
                                     if (!this.selectedMiddleCategory) return [];
                                     return this.categoryList.filter(
-                                        c => c.parentCategoryNo === this.selectedMiddleCategory
+                                        c => String(c.parentCategoryNo) === String(this.selectedMiddleCategory)
                                     );
                                 },
                                 filteredList() {
                                     const kw = (this.keyword || "").trim().toLowerCase();
 
-                                    return this.productList.filter(item => {
+                                    // 1) 카테고리 필터링
+                                    let filtered = this.productList.filter(item => {
                                         const itemCat = String(item.categoryNo);
 
-                                        // ✅ (1) 카테고리 필터
                                         if (this.selectedSubCategory) {
                                             return itemCat === String(this.selectedSubCategory);
                                         }
-
                                         if (this.selectedMiddleCategory) {
                                             const subCats = this.categoryList
                                                 .filter(c => String(c.parentCategoryNo) === String(this.selectedMiddleCategory))
@@ -321,7 +382,6 @@
                                             subCats.push(String(this.selectedMiddleCategory));
                                             return subCats.includes(itemCat);
                                         }
-
                                         if (this.selectedParentCategory) {
                                             const middleCats = this.categoryList.filter(
                                                 c => String(c.parentCategoryNo) === String(this.selectedParentCategory)
@@ -336,17 +396,17 @@
                                             ];
                                             return allChildCats.includes(itemCat);
                                         }
-
-                                        // ✅ (2) 검색어 필터
-                                        if (kw) {
-                                            // 부분일치 → 정확일치로 바꾸려면 === 로 변경
-                                            return item.pName && item.pName.toLowerCase().includes(kw);
-                                        }
-
-                                        return true; // 아무 조건도 없으면 전체 표시
+                                        return true;
                                     });
 
-                                    // ✅ productNo 기준으로 중복 제거
+                                    // 2) 키워드 필터링
+                                    if (kw) {
+                                        filtered = filtered.filter(item =>
+                                            item.pName && item.pName.toLowerCase().includes(kw)
+                                        );
+                                    }
+
+                                    // 3) productNo 기준 중복 제거
                                     const seen = new Set();
                                     return filtered.filter(it => {
                                         if (seen.has(it.productNo)) return false;
@@ -358,32 +418,31 @@
                             methods: {
                                 fnGoBack() {
                                     if (document.referrer && document.referrer !== location.href) {
-                                        // ✅ 이전 페이지로 이동
                                         history.back();
                                     } else {
-                                        // ✅ 이전 페이지 정보가 없으면 관리자 메인으로
-                                        location.href = this.path + "/admin/dashboard.do";
+                                        location.href = CONTEXT_PATH + "/admin/dashboard.do";
                                     }
                                 },
 
                                 fnProductList() {
                                     const self = this;
                                     $.ajax({
-                                        url: "/productList.dox",
+                                        url: CONTEXT_PATH + "/productList.dox",
                                         type: "POST",
                                         dataType: "json",
                                         success(data) {
                                             if (data.result === "success") {
-                                                console.log(data);
-                                                self.productList = [];
-                                                self.categoryList = [];
-
-                                                self.productList = data.list;
-                                                self.categoryList = data.categories;
+                                                self.categoryList = data.categories || [];
+                                                self.productList = (data.list || []).map(it => ({
+                                                    ...it,
+                                                    newStatus: it.productStatus,
+                                                    _saving: false 
+                                                }));
                                             } else {
                                                 alert("데이터 로딩 실패");
                                             }
                                         },
+                                        error() { alert("서버 오류로 데이터를 가져오지 못했습니다."); }
                                     });
                                 },
 
@@ -396,7 +455,7 @@
                                     const newStatus = item.recommend === "Y" ? "N" : "Y";
 
                                     $.ajax({
-                                        url: "/updateRecommend.dox",
+                                        url: CONTEXT_PATH + "/updateRecommend.dox",
                                         type: "POST",
                                         data: {
                                             productNo: item.productNo,
@@ -405,14 +464,68 @@
                                         dataType: "json",
                                         success(res) {
                                             if (res.result === "success") {
-                                                item.recommend = newStatus; // ✅ 즉시 화면 반영
+                                                item.recommend = newStatus;
                                             } else {
                                                 alert("변경 실패");
                                             }
                                         },
-                                        error() {
-                                            alert("서버 오류로 변경할 수 없습니다.");
+                                        error() { alert("서버 오류로 변경할 수 없습니다."); },
+                                    });
+                                },
+
+                                statusLabel(st) {
+                                    switch ((st || '').toUpperCase()) {
+                                        case "SELLING": return "판매중";
+                                        case "SOLDOUT": return "품절";
+                                        case "HIDDEN": return "숨김";
+                                        default: return st || "-";
+                                    }
+                                },
+                                statusClass(st) {
+                                    switch ((st || '').toUpperCase()) {
+                                        case "SELLING": return "status-selling";
+                                        case "SOLDOUT": return "status-soldout";
+                                        case "HIDDEN": return "status-hidden";
+                                        default: return "";
+                                    }
+                                },
+
+                                fnChangeStatus(item) {
+                                    if (!item || !item.productNo) return;
+
+                                    const next = (item.newStatus || "").toUpperCase();
+                                    if (!["SELLING", "SOLDOUT", "HIDDEN"].includes(next)) {
+                                        alert("유효하지 않은 상태값입니다.");
+                                        return;
+                                    }
+                                    if (next === item.productStatus) {
+                                        alert("현재 상태와 동일합니다.");
+                                        return;
+                                    }
+
+                                    item._saving = true;
+                                    $.ajax({
+                                        url: CONTEXT_PATH + "/updateProductStatus.dox",
+                                        type: "POST",
+                                        data: {
+                                            productNo: item.productNo,
+                                            productStatus: next
                                         },
+                                        dataType: "json",
+                                        success: (res) => {
+                                            if (res.result === "success") {
+                                                item.productStatus = next;
+                                                alert("상품 상태가 변경되었습니다.");
+                                            } else {
+                                                alert(res.message || "상태 변경에 실패했습니다.");
+                                                item.newStatus = item.productStatus;
+                                            }
+                                        },
+                                        error: () => {
+                                            alert("서버 오류로 상태를 변경할 수 없습니다.");
+                                            item.newStatus = item.productStatus;
+                                        },
+                                        complete: () => { item._saving = false; }
                                     });
                                 }
                             },
@@ -422,6 +535,7 @@
                         });
                         app.mount("#app");
                     </script>
+
         </body>
 
         </html>

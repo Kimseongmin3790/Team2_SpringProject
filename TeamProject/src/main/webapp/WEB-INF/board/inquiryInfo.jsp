@@ -8,13 +8,11 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>고객문의 상세보기 | AGRICOLA</title>
 
-            <!-- ✅ 외부 라이브러리 -->
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-            <!-- ✅ 공통 헤더 / 푸터 CSS -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
@@ -41,7 +39,6 @@
                     padding: 60px 20px;
                 }
 
-                /* ✅ 상세보기 박스 */
                 .detail-container {
                     width: 100%;
                     max-width: 800px;
@@ -75,7 +72,6 @@
                     margin-bottom: 40px;
                 }
 
-                /* ✅ 답변 영역 */
                 .answer-container {
                     background: #f9f9f9;
                     border: 1px solid #ddd;
@@ -98,7 +94,6 @@
                     white-space: pre-line;
                 }
 
-                /* ✅ 답변 작성 폼 */
                 .answer-form textarea {
                     width: 100%;
                     height: 120px;
@@ -172,7 +167,6 @@
         </head>
 
         <body>
-            <!-- ✅ 공통 헤더 -->
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                 <div id="app">
@@ -184,13 +178,11 @@
                             </div>
                             <div class="detail-content">{{ inquiry.content }}</div>
 
-                            <!-- ✅ 수정 / 삭제 버튼 영역 -->
                             <div class="detail-actions" v-if="canEditOrDelete">
                                 <button class="btn-edit" @click="fnGoEdit">수정</button>
                                 <button class="btn-delete" @click="fnDelete">삭제</button>
                             </div>
 
-                            <!-- ✅ 답변 영역 -->
                             <div class="answer-container" v-if="answer">
                                 <div class="answer-title">관리자 답변</div>
                                 <div class="answer-content">{{ answer.content }}</div>
@@ -199,7 +191,6 @@
                                 </div>
                             </div>
 
-                            <!-- ✅ 답변이 없고 관리자일 경우 -->
                             <div class="answer-container" v-else-if="sessionStatus === 'ADMIN'">
                                 <div class="answer-title">답변 작성</div>
                                 <div class="answer-form">
@@ -217,16 +208,14 @@
                     </main>
                 </div>
 
-                <!-- ✅ 공통 푸터 -->
                 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
-                    <!-- ✅ Vue 스크립트 -->
                     <script>
                         const app = Vue.createApp({
                             data() {
                                 return {
                                     sessionId: "${sessionId}",
-                                    sessionStatus: "${sessionStatus}", // ✅ 세션 권한
+                                    sessionStatus: "${sessionStatus}",
                                     inquiryNo: null,
                                     inquiry: null,
                                     answer: "",
@@ -234,14 +223,12 @@
                                 };
                             },
                             computed: {
-                                // ✅ 관리자이거나 본인일 경우만 수정/삭제 가능
                                 canEditOrDelete() {
                                     if (!this.inquiry) return false;
                                     return this.sessionStatus === "ADMIN" || this.sessionId === this.inquiry.userId;
                                 }
                             },
                             methods: {
-                                // ✅ 문의글 상세 조회
                                 fnLoadDetail() {
                                     const self = this;
 
@@ -267,7 +254,6 @@
                                     location.href = "/inquiry/edit.do?inquiryNo=" + this.inquiryNo;
                                 },
 
-                                // ✅ 글 삭제
                                 fnDelete() {
                                     Swal.fire({
                                         title: "정말 삭제하시겠습니까?",
@@ -310,7 +296,6 @@
                                     });
                                 },
 
-                                // ✅ 답변 조회
                                 fnLoadAnswer() {
                                     const self = this;
                                     $.ajax({
@@ -328,7 +313,6 @@
                                     });
                                 },
 
-                                // ✅ 관리자 답변 등록
                                 fnSubmitAnswer() {
                                     const self = this;
 

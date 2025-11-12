@@ -16,4 +16,5 @@ public class Board {
 	private String isSecret;
 	private String pname;
 	private String thumbUrl;
+	private String sellerId;
 }

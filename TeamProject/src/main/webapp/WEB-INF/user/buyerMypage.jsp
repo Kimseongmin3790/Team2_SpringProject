@@ -174,6 +174,12 @@
                     border-radius: 8px;
                     flex-shrink: 0;
                 }
+                .cart-item-image img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    border-radius: 8px;
+                }
 
                 .cart-item-info {
                     flex: 1;
@@ -495,7 +501,7 @@
                     gap: 1rem;
                 }
 
-                /* 이미지는 고정 폭/높이 + 줄어들지 않게 */
+             
                 .cart-item-image {
                     width: 80px;
                     height: 80px;
@@ -503,14 +509,12 @@
                     border-radius: 8px;
                     flex-shrink: 0;
                 }
-
-                /* 이미지+텍스트만 클릭되도록 하되, 우측 버튼을 오른쪽으로 밀어냄 */
+   
                 .cart-link {
                     display: flex;
                     align-items: center;
                     gap: 1rem;
                     flex: 1;
-                    /* ← 이게 포인트! */
                     min-width: 0;
                     text-decoration: none;
                     color: inherit;
@@ -526,7 +530,6 @@
                     outline: none;
                 }
 
-                /* 우측 액션들 약간 간격 */
                 .quantity-control {
                     margin-left: 1rem;
                 }
@@ -535,7 +538,31 @@
                     margin-left: .5rem;
                 }
 
-                /* 반응형에서 줄바꿈 방지 (선택) */
+                .bulk-actions {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin: .75rem 0 1rem;
+                }
+
+                .bulk-actions .toggle-all {
+                    display: flex;
+                    align-items: center;
+                    gap: .5rem;
+                    font-size: .9rem;
+                    color: #374151;
+                }
+
+                .bulk-actions-right {
+                    display: flex;
+                    gap: .5rem;
+                }
+
+                .btn[disabled] {
+                    opacity: .5;
+                    cursor: not-allowed;
+                }
+
                 @media (max-width: 480px) {
                     .cart-item {
                         flex-wrap: wrap;
@@ -546,11 +573,210 @@
                         margin-top: .5rem;
                     }
                 }
+                .order-details-section {
+                    padding: 15px;
+                    background-color: #f9f9f9;
+                    border-top: 1px solid #eee;
+                    margin-top: 10px;
+                    border-radius: 0 0 8px 8px;
+                }
+
+                .order-details-section .detail-row {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 5px 0;
+                    font-size: 0.9em;
+                }
+
+                .order-details-section .detail-row span:first-child {
+                    font-weight: bold;
+                    color: #555;
+                }
+
+                .order-details-section .total-price {
+                    font-size: 1.1em;
+                    font-weight: bold;
+                    color: #333;
+                    border-top: 1px dashed #ddd;
+                    padding-top: 10px;
+                    margin-top: 10px;
+                }
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5); 
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000; 
+                }
+
+                .modal-content {
+                    background-color: #fff;
+                    padding: 25px;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                    width: 90%;
+                    max-width: 500px;
+                    position: relative;
+                    box-sizing: border-box; 
+                }
+
+                .modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                    border-bottom: 1px solid #eee;
+                    padding-bottom: 10px;
+                }
+
+                .modal-header h3 {
+                    margin: 0;
+                    font-size: 1.4em;
+                    color: #333;
+                }
+
+                .modal-header .close-button {
+                    background: none;
+                    border: none;
+                    font-size: 2em;
+                    cursor: pointer;
+                    color: #999;
+                }
+
+                .modal-body {
+                    margin-bottom: 20px;
+                }
+
+                .modal-body p {
+                    font-size: 1em;
+                    margin-bottom: 15px;
+                    color: #333;
+                }
+
+                .modal-body label {
+                    display: block;
+                    margin-bottom: 8px;
+                    font-weight: bold;
+                    color: #555;
+                }
+
+                .modal-body textarea.form-input {
+                    width: 100%;
+                    padding: 10px;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    font-size: 1em;
+                    resize: vertical;
+                    box-sizing: border-box; 
+                }
+                .form-group {
+                    margin-bottom: 15px;
+                }
+                .modal-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 10px; 
+                    border-top: 1px solid #eee;
+                    padding-top: 15px;
+                }
+
+                .modal-footer .btn {
+                    padding: 8px 18px; 
+                    font-size: 0.95em;
+                }
+                .item-option-info {
+                    font-size: 0.9em;
+                    color: #666;
+                    background-color: #f5f5f5;
+                    padding: 3px 8px;
+                    border-radius: 4px;
+                    display: inline-block;
+                    margin-top: 5px;
+                    margin-bottom: 5px;
+                }
+                .quantity-control {
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+
+                .quantity-control .quantity-btn {
+                    width: 30px;
+                    height: 30px;
+                    border: 1px solid #ccc;
+                    background-color: #f0f0f0;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 1.2em;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 0;
+                }
+
+                .quantity-control .quantity-btn:disabled {
+                    background-color: #e0e0e0;
+                    cursor: not-allowed;
+                    color: #aaa;
+                }
+
+                .quantity-control .quantity-input {
+                    width: 60px; 
+                    text-align: center;
+                    -moz-appearance: textfield; /
+                }
+
+                .quantity-control .quantity-input::-webkit-outer-spin-button,
+                .quantity-control .quantity-input::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+                .refund-status-badge {
+                    display: inline-block;
+                    padding: 4px 8px;
+                    margin-left: 10px;
+                    border-radius: 5px;
+                    font-size: 0.8em;
+                    font-weight: bold;
+                    color: #fff;
+                    background-color: #ffc107; 
+                    vertical-align: middle;
+                }
+                .refund-status-badge.approved { background-color: #28a745; } 
+                .refund-status-badge.rejected { background-color: #dc3545; }
+                .refund-action-group {
+                    display: flex; 
+                    align-items: center; 
+                    gap: 8px; 
+                }
+                .refund-action-group .btn-secondary {
+                    background-color: #6c757d; 
+                    color: #fff;
+                    border-color: #6c757d;
+                }
+                .badge-info {
+                    background-color: #e0f7fa; 
+                    color: #006064; 
+                }
+                .badge-shipping { 
+                    background-color: #e9d5ff;
+                    color: #6b21a8;
+                }
+                .badge-completed { 
+                    background-color: #d1fae5;
+                    color: #065f46;
+                }
             </style>
         </head>
 
         <body>
-            <div id="app">
+            <div id="app" data-ctx="<c:out value='${pageContext.request.contextPath}'/>"
+                data-user-id="<c:out value='${sessionId}'/>" data-active-tab="<c:out value='${param.activeTab}'/>">
                 <!-- 공통 헤더 -->
                 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
@@ -584,25 +810,28 @@
                                     회원정보
                                 </button>
                             </div>
-                            <div>
-                                <input type="checkbox" @click="fnAllCheck">전체선택
-                                <span>
-                                    <button @click="fnAllRemove">선택삭제</button>
-                                </span>
-                            </div>
                             <!-- 장바구니 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'cart' }">
+                                <div class="bulk-actions" v-if="activeTab === 'cart' && cartItems.length">
+                                    <label class="toggle-all">
+                                        <input type="checkbox" v-model="allSelected" />
+                                        전체선택
+                                    </label>
+                                </div>
+
                                 <div class="card" v-for="item in cartItems" :key="item.cartNo">
                                     <div class="cart-item">
-                                        <input type="checkbox" :value="item.cartNo" v-model="selectItem">
+                                        <input type="checkbox" :value="item.cartNo" v-model="selectedIds">
                                         <a href="javascript:;" @click="fnBack(item.productNo)" class="cart-link">
                                             <div class="cart-item-image">
                                                 <img :src="item.thumbPath" alt=""
                                                     style="width:100%;height:100%;object-fit:cover;border-radius:8px;">
                                             </div>
                                             <div class="cart-item-info">
-                                                <h3>{{ item.pName }}</h3>
-                                                <p class="cart-item-price">{{ Number(item.price||0).toLocaleString() }}원
+                                                <h3>{{ item.pName }} {{ item.unit }}</h3>
+                                                <p>수량: {{ item.quantity }}개</p>
+                                                <p class="cart-item-price">
+                                                    {{ Number(item.unitPrice || 0).toLocaleString() }}원
                                                 </p>
                                             </div>
                                         </a>
@@ -635,32 +864,128 @@
                                 </div>
                             </div>
 
-                            <!-- 주문 탭 --> 
-                            <div class="tab-content" :class="{ active: activeTab === 'orders' }"> 
-                                <div class="card" v-for="order in orders" :key="order.orderNo"> 
-                                    <div class="order-header"> 
-                                        <div> 
-                                            <p class="order-date">{{ order.orderDate }}</p> 
-                                            <p class="order-number">주문번호: {{ order.orderNo }}</p> 
-                                        </div> 
-                                        <div class="order-header-actions"> 
-                                            <span class="badge">{{ order.status }}</span> 
-                                            <button class="btn btn-outline-info btn-sm">배송조회</button> 
-                                        </div> 
-                                    </div> 
-                                    <div class="cart-item order-item-divider" v-for="item in order.items" :key="item.orderItemNo"> 
-                                        <div class="cart-item-image"></div> 
-                                        <div class="cart-item-info"> 
-                                            <h3>{{ item.productName }}</h3> 
-                                            <p>수량: {{ item.quantity }}개</p> 
-                                            <p class="cart-item-price">{{ item.price.toLocaleString() }}원</p> 
-                                        </div> <button class="btn btn-outline-success btn-sm" @click="fnWriteReview(item.productNo, item.orderItemNo)">리뷰작성</button> 
-                                        <button class="btn btn-outline btn-sm text-danger">환불신청</button> 
-                                    </div> 
-                                </div> 
-                                <div v-if="orders.length === 0" class="card"> 
-                                    <p class="text-center text-muted">주문 내역이 없습니다.</p> 
-                                </div> 
+                            <!-- 주문 탭 -->
+                            <div class="tab-content" :class="{ active: activeTab === 'orders' }">
+                                <div class="card" v-for="order in orders" :key="order.orderNo">
+                                    <div class="order-header">
+                                        <div>
+                                            <p class="order-date">{{ order.orderdate }}</p>
+                                            <p class="order-number">주문번호: {{ order.orderNo }}</p>
+                                        </div>
+                                        <div class="order-header-actions">
+                                            <span v-if="getOrderOverallRefundStatus(order) === '대기'"
+                                                class="badge badge-warning">
+                                                환불 요청
+                                            </span>
+                                            <span v-else-if="getOrderOverallRefundStatus(order) === '전체 환불 완료'"
+                                                class="badge badge-danger">
+                                                전체 환불 완료
+                                            </span>
+                                            <span v-else-if="getOrderOverallRefundStatus(order) === '부분 환불 완료'"
+                                                class="badge badge-info">
+                                                부분 환불 완료
+                                            </span>
+                                            <!-- 환불 관련 상태가 없을 경우에만 기존 주문 상태 표시 -->
+                                            <span v-else :class="getStatusClass(order.status)">
+                                                {{ order.status }}
+                                            </span>
+                                            <!-- 배송조회 버튼은 별도로 유지 -->
+                                            <button class="btn btn-outline-info btn-sm" @click="trackDelivery(order)" v-if="order.courier && order.trackingNo &&
+                                        getOrderOverallRefundStatus(order) !== '전체 환불 완료'">배송조회</button>
+                                            <button class="btn btn-outline-secondary btn-sm" @click="toggleDetails(order)">
+                                                {{ order.isDetailsVisible ? '상세보기 닫기' : '상세보기' }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="cart-item order-item-divider" v-for="item in order.items"
+                                        :key="item.orderItemNo">
+                                         <div class="cart-item-image">
+                                            <img :src="item.imageUrl" alt="상품 이미지">
+                                        </div>         
+
+                                         <div class="cart-item-info">
+                                            <h3>{{ item.productName }}</h3>
+                                            <p class="item-option-info" v-if="item.optionUnit">
+                                                옵션: {{ item.optionUnit }}
+                                                <span v-if="item.optionAddPrice > 0">
+                                                    (+{{ Number(item.optionAddPrice).toLocaleString() }}원)
+                                                </span>
+                                            </p>
+                                            <!-- 수량 표시 조정 -->
+                                            <p v-if="item.refundStatus === '승인'">
+                                                수량: {{ item.quantity - item.refundQuantity }}개
+                                                <span class="text-muted">(원래 {{ item.quantity }}개, {{ item.refundQuantity }}개 환불)</span>
+                                            </p>
+                                            <p v-else>수량: {{ item.quantity }}개</p>
+
+                                            <!-- 가격 표시 조정 -->
+                                            <p v-if="item.refundStatus === '승인'" class="cart-item-price">
+                                                {{ (Number(item.price || 0) - (item.price / item.quantity * item.refundQuantity)).toLocaleString() }}원
+                                                <span class="text-muted">(원래 {{ Number(item.price || 0).toLocaleString() }}원)</span>
+                                            </p>
+                                            <p v-else class="cart-item-price">
+                                                {{ Number(item.price || 0).toLocaleString() }}원
+                                            </p>
+                                        </div>
+                                        <!-- 버튼 영역: v-if/v-else로 상태에 따라 분기 -->
+                                        <div class="order-actions">
+                                            <!-- 환불 요청이 있을 경우 -->
+                                            <div v-if="item.refundStatus" class="refund-action-group">
+                                                <span class="refund-status-badge">
+                                                    {{ item.refundStatus === '대기' ? '환불 요청됨' : item.refundStatus }}
+                                                </span>
+                                                <!-- '대기' 상태일 때만 환불 취소 버튼 표시 -->
+                                                <button class="btn btn-secondary btn-sm"
+                                                        @click="cancelRefund(item)"
+                                                        v-if="item.refundStatus === '대기'">환불 취소</button>
+                                            </div>
+                                            <!-- 환불 요청이 없을 경우 -->
+                                            <div v-else>
+                                                <button class="btn btn-outline-success btn-sm"
+                                                    @click="fnWriteReview(item.productNo, item.orderItemNo)"
+                                                    v-if="order.status === '배송 완료' && item.hasReview === 0">리뷰작성</button>
+                                                <button class="btn btn-outline btn-sm text-danger"
+                                                    @click="openRefundModal(item)"
+                                                    v-if="order.status === '결제완료' || order.status === '배송준비중'">환불신청</button>
+                                            </div>
+                                        </div>                              
+                                    </div>
+                                    <div class="order-details-section" v-if="order.isDetailsVisible">
+                                        <hr>
+                                        <div class="detail-row">
+                                            <span>받는 사람:</span>
+                                            <span>{{ order.receivName }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span>연락처:</span>
+                                            <span>{{ order.receivPhone }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span>배송지:</span>
+                                            <span>{{ order.deliverAddr }}</span>
+                                        </div>
+                                        <div class="detail-row" v-if="order.memo">
+                                            <span>배송 요청사항:</span>
+                                            <span>{{ order.memo }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span>총 주문 금액</span>
+                                            <span>{{ Number(order.totalPrice || 0).toLocaleString() }}원</span>
+                                        </div>
+                                        <div v-if="getRefundedAmount(order) > 0" class="detail-row text-danger">
+                                            <span>- 환불된 금액</span>
+                                            <span>{{ getRefundedAmount(order).toLocaleString() }}원</span>
+                                        </div>
+                                        <div class="detail-row total-price">
+                                            <span>최종 결제 금액</span>
+                                            <span>{{ (Number(order.totalPrice || 0) - getRefundedAmount(order)).toLocaleString() }}원</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-if="orders.length === 0" class="card">
+                                    <p class="text-center text-muted">주문 내역이 없습니다.</p>
+                                </div>
                             </div>
 
 
@@ -759,10 +1084,44 @@
                             </div>
                         </div>
                     </main>
+                    <div class="modal-overlay" v-if="isRefundModalVisible" @click.self="closeRefundModal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3>환불 신청</h3>
+                                <button class="close-button" @click="closeRefundModal">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>상품명:</strong> {{ refundRequest.productName }}</p>
+
+                                <div class="form-group">
+                                    <label for="refundQuantity">환불 수량:</label>
+                                    <div class="quantity-control">
+                                        <button class="quantity-btn" @click="changeRefundQuantity(-1)" :disabled= "refundRequest.quantity <= 1">-</button>
+                                        <input type="number" id="refundQuantity" class="form-input quantity-input"
+                                            v-model.number="refundRequest.quantity"
+                                            min="1" :max="refundRequest.maxQuantity"
+                                            @change="validateRefundQuantity">
+                                        <button class="quantity-btn" @click="changeRefundQuantity(1)" :disabled= "refundRequest.quantity >= refundRequest.maxQuantity">+</button>
+                                    </div>
+                                    <small class="text-muted">최대 {{ refundRequest.maxQuantity }}개까지 환불 가능합니다.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="refundReason">환불 사유:</label>
+                                    <textarea id="refundReason" class="form-input" v-model="refundRequest.reason"
+                                            placeholder="환불 사유를 상세히 입력해 주세요." rows="5"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-primary" @click="submitRefundRequest">요청 제출</button>
+                                <button class="btn btn-outline" @click="closeRefundModal">취소</button>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- 공통 푸터 -->
                     <%@ include file="/WEB-INF/views/common/footer.jsp" %>
             </div>
+
         </body>
 
         </html>
@@ -772,47 +1131,72 @@
                 window.vueObj.fnResult(roadFullAddr, addrDetail, zipNo);
             }
 
-            const contextPath = "<%= request.getContextPath() %>";
+            const root = document.getElementById('app');
+            const zap = s => (s || '').replace(/[\u200B-\u200D\uFEFF]/g, '');
+
+            const CTX = zap(root?.dataset?.ctx);
+            const USER = zap(root?.dataset?.userId);
+            const TAB = zap(root?.dataset?.activeTab) || 'cart';
 
             const app = Vue.createApp({
                 data() {
                     return {
-                        userId: "${sessionId}",
-                        activeTab: '${activeTab}',
+                        userId: root?.dataset?.userId || '',
+                        activeTab: root?.dataset?.activeTab || 'cart',
                         userName: "",
                         userEmail: "",
-                        cartItems: [],          
+                        cartItems: [],
                         orders: [],
                         reviews: [],
                         profile: {},
                         loginType: '',
                         errors: {},
-                        selectItem: [],
-                        selectFlg: false
+                        selectedIds: [],   // ✅ 체크된 cartNo들이 들어가는 배열
+                        isRefundModalVisible: false,
+                        refundRequest: {
+                            orderItemNo: null,
+                            productName: '',
+                            reason: '',
+                            quantity: 1,  
+                            maxQuantity: 1
+
+                        }
+
                     };
                 },
                 computed: {
-                    selectedItems() {
-                        // 체크된 productNo만 필터링
-                        return (this.cartItems || []).filter(it =>
-                            this.selectItem.includes(it.cartNo)
-                        );
+                    pickedItems() {
+                        return this.selectedIds.length
+                            ? this.cartItems.filter(i => this.selectedIds.includes(i.cartNo))
+                            : this.cartItems;
                     },
-
                     totalPrice() {
-                        return this.selectedItems.reduce((sum, it) => {
-                            const price = Number(it.price || 0);
-                            const qty = Number(it.quantity || 0);
-                            return sum + price * qty;
-                        }, 0);
+                        return this.pickedItems
+                            .reduce((s, i) => s + Number(i.unitPrice || 0) * Number(i.quantity || 1), 0);
                     },
-
                     shippingFeeC() {
-                        return this.selectedItems.reduce((sum, it) =>
-                            sum + Number(it.shippingFee || 0), 0);
+                        // 선택된 항목 기준으로 배송비 결정
+                        const items = this.pickedItems;
+                        if (!items.length) return 0;
+
+                        // fulfillment 필드가 없다면 기본값 'delivery'
+                        const hasDelivery = items.some(i => {
+                            const f = String(i.fulfillment || i.FULFILLMENT || 'delivery').toLowerCase();
+                            return f === 'delivery';
+                        });
+
+                        return hasDelivery ? 3000 : 0;
                     },
                     finalPriceC() {
                         return this.totalPrice + this.shippingFeeC;
+                    },
+                    allSelected: {
+                        get() {
+                            return this.cartItems.length > 0 && this.selectedIds.length === this.cartItems.length;
+                        },
+                        set(v) {
+                            this.selectedIds = v ? this.cartItems.map(i => i.cartNo) : [];
+                        }
                     }
                 },
 
@@ -827,6 +1211,126 @@
                 },
 
                 methods: {
+                    cancelRefund(item) {
+                        if (!confirm('"' + item.productName + '" 상품에 대한 환불 요청을 취소하시겠습니까?')) {
+                            return;
+                        }
+
+                        const self = this;
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/refund/cancel.dox", 
+                            type: "POST",
+                            dataType: "json",
+                            data: {
+                                orderItemNo: item.orderItemNo
+                            },
+                            success: function(response) {
+                                if (response.result === 'success') {
+                                    alert('환불 요청이 취소되었습니다.');
+                                    self.fnLoadOrders();
+                                } else {
+                                    alert(response.message || '환불 요청 취소에 실패했습니다.');
+                                }
+                            },
+                            error: function() {
+                                alert('서버와 통신 중 오류가 발생했습니다.');
+                            }
+                        });
+                    },
+                    changeRefundQuantity(diff) {
+                        let self = this;
+                        const current = self.refundRequest.quantity;
+                        const next = current + diff;
+                        if (next >= 1 && next <= self.refundRequest.maxQuantity) {
+                            self.refundRequest.quantity = next;
+                        }
+                    },
+                    validateRefundQuantity() {
+                        let self = this;
+                        let qty = self.refundRequest.quantity;
+                        if (qty < 1) {
+                            self.refundRequest.quantity = 1;
+                        } else if (qty > self.refundRequest.maxQuantity) {
+                            self.refundRequest.quantity = self.refundRequest.maxQuantity;
+                        }
+                        // Ensure it's an integer
+                        self.refundRequest.quantity = Math.floor(self.refundRequest.quantity);
+                    },
+                    trackDelivery(order) {
+                        if (!order.courier || !order.trackingNo) {
+                            alert('배송 정보가 없습니다.');
+                            return;
+                        }
+
+                        // 택배사별 조회 URL 맵
+                        const courierUrls = {
+                            'CJ대한통운': 'https://www.cjlogistics.com/ko/tool/parcel/tracking?gnbInvcNo=',
+                            '우체국택배': 'https://service.epost.go.kr/trace.RetrieveDomRmgTrace.comm?sid1=',
+                            '로젠택배': 'https://www.ilogen.com/web/personal/trace/',
+                            '한진택배': 'https://www.hanjin.co.kr/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnum=',
+                            '롯데택배': 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo='
+                        };
+
+                        const baseUrl = courierUrls[order.courier];
+
+                        if (!baseUrl) {
+                            alert('지원하지 않는 택배사입니다: ' + order.courier);
+                            return;
+                        }
+
+                        // 운송장 번호에서 숫자 외 문자 제거 (필요시)
+                        const trackingNumber = order.trackingNo.replace(/[^0-9]/g, '');
+                        const trackingUrl = baseUrl + trackingNumber;
+
+                        // 새 창에서 배송조회 페이지 열기
+                        window.open(trackingUrl, '_blank', 'noopener,noreferrer');
+                    },
+                    openRefundModal(item) {
+                        let self = this;
+                        self.refundRequest = {
+                            orderItemNo: item.orderItemNo,
+                            productName: item.productName,
+                            reason: '',
+                            quantity: 1, 
+                            maxQuantity: item.quantity 
+                        };
+                        self.isRefundModalVisible = true;
+                    },
+                    closeRefundModal() {
+                        const self = this;
+                        self.isRefundModalVisible = false;
+                    },
+                    submitRefundRequest() {
+                        const self = this;
+
+                        if (!self.refundRequest.reason.trim()) {
+                            alert('환불 사유를 입력해주세요.');
+                            return;
+                        }
+                     
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/refund/request.dox", 
+                            type: "POST",
+                            dataType: "json",
+                            data: {
+                                orderItemNo: self.refundRequest.orderItemNo,
+                                reason: self.refundRequest.reason,
+                                refundAmount: self.refundRequest.quantity
+                            },
+                            success: function(response) {
+                                if (response.result === 'success') {
+                                    alert('환불 요청이 정상적으로 접수되었습니다.');
+                                    self.closeRefundModal();
+                                    self.fnLoadOrders();
+                                } else {
+                                    alert(response.message || '환불 요청 접수에 실패했습니다.');
+                                }
+                            },
+                            error: function() {
+                                alert('서버와 통신 중 오류가 발생했습니다.');
+                            }
+                        });
+                    },
                     increaseQuantity(item) {
                         item.quantity++;
                     },
@@ -845,13 +1349,12 @@
                     fnUserInfo() {
                         let self = this;
                         $.ajax({
-                            url: "${pageContext.request.contextPath}/userInfo.dox",
+                            url: CTX + "/userInfo.dox",
                             dataType: "json",
                             type: "GET",
                             success: function (data) {
                                 if (data.status === 'error') {
-                                    alert(data.message);
-                                    location.href = '${pageContext.request.contextPath}/login.do';
+                                    location.href = CTX + '/login.do';
                                     return;
                                 }
 
@@ -870,26 +1373,25 @@
                         });
                     },
 
-                    fnPurchase: function () {
-                        if (this.selectedItems.length === 0) {
+                    fnPurchase() {
+                        const cartNos = this.selectedIds.length
+                            ? this.selectedIds
+                            : this.cartItems.map(i => i.cartNo);
+
+                        if (cartNos.length === 0) {
                             alert('구매할 상품을 선택하세요.');
                             return;
                         }
-                        // A안: 단건 결제(선택된 첫 항목 기준)
-                        const first = this.selectedItems[0];
-                        const productNo = first.productNo;
-                        const qty = first.quantity;
 
-                        // 결제페이지로 이동 (product/payment.do)
-                        pageChange('/product/payment.do', {
-                            productNo,
-                            qty,
-                            userId: this.userId
+                        // 결제 페이지로 이동 (장바구니 다건 결제)
+                        pageChange(CTX + '/product/payment.do', {
+                            userId: this.userId,
+                            cartNos: cartNos.join(',')   // payment.jsp에서 분해해서 /payment/list.dox 호출
                         });
                     },
 
                     fnBack: function (productNo) {
-                        pageChange('/productInfo.do', { productNo });
+                        pageChange(CTX + '/productInfo.do', { productNo });
                     },
 
                     // 프로필 저장 로직
@@ -953,7 +1455,7 @@
                         });
                     },
                     fnAddr() {
-                        window.open("/addr.do", "addr", "width=500, height=500");
+                        window.open(CTX + "/addr.do", "addr", "width=500, height=500");
                     },
                     fnResult(roadFullAddr, addrDetail, zipNo) {
                         let self = this;
@@ -1027,11 +1529,12 @@
                             userId: self.userId
                         };
                         $.ajax({
-                            url: "/cart/list.dox",
+                            url: CTX + "/cart/list.dox",
                             type: "POST",
                             dataType: "json",
                             data: param,
                             success: function (data) {
+                                console.log(data);
                                 if (data.result == 'success') {
                                     self.cartItems = data.list || [];
                                 } else {
@@ -1050,7 +1553,7 @@
                         }
                         let self = this;
                         $.ajax({
-                            url: "/cart/qty.dox",
+                            url: CTX + "/cart/qty.dox",
                             type: "POST",
                             dataType: "json",
                             data: { cartNo: item.cartNo, userId: self.userId, quantity: next },
@@ -1076,34 +1579,34 @@
                             userId: self.userId
                         };
                         $.ajax({
-                            url: "/cart/remove.dox",
+                            url: CTX + "/cart/remove.dox",
                             type: "POST",
                             dataType: "json",
-                            data: param,
-                            success: function (data) {
+                            data: { cartNo: item.cartNo, userId: this.userId },
+                            success: (data) => {
                                 if (data.result == 'success') {
-                                    self.cartItems = self.cartItems.filter(x => x.cartNo !== item.cartNo);
+                                    this.cartItems = this.cartItems.filter(x => x.cartNo !== item.cartNo);
+                                    this.selectedIds = this.selectedIds.filter(id => id !== item.cartNo); // ✅ 선택에서도 제거
                                 } else {
                                     alert('삭제 실패');
                                 }
                             },
-                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                            error: (xhr) => alert('서버오류: ' + xhr.status)
                         });
                     },
 
                     fnLoadOrders() {
                         let self = this;
                         $.ajax({
-                            url: "<%= request.getContextPath() %>/myPage/orders.dox",
+                            url: CTX + '/myPage/orders.dox',
                             dataType: "json",
                             type: "GET",
                             success: function (data) {
-                                if (data.result === "success") {
-                                    self.orders = data.list;
-                                    self.orders.forEach(order => {
-                                        console.log("주문번호:", order.orderNo);
-                                        console.log("items:", order.items);
-                                    });
+                                 if (data.result === "success") {
+                                    self.orders = data.list.map(order => ({
+                                        ...order,
+                                        isDetailsVisible: false
+                                    }));
                                 } else {
                                     alert("주문 내역을 불러오는 데 실패했습니다: " + data.message);
                                     console.error("Error:", data.message);
@@ -1115,10 +1618,13 @@
                             }
                         });
                     },
+                     toggleDetails(order) {
+                        order.isDetailsVisible = !order.isDetailsVisible;
+                    },
                     fnWriteReview(productNo, orderItemNo) {
                         console.log("productNo:", productNo, "orderItemNo:", orderItemNo);
 
-                        const url = contextPath + "/reviewWrite.do?productNo=" + encodeURIComponent(productNo)
+                        const url = CTX + "/reviewWrite.do?productNo=" + encodeURIComponent(productNo)
                             + "&orderItemNo=" + encodeURIComponent(orderItemNo);
 
                         console.log("생성된 URL:", url);
@@ -1127,7 +1633,7 @@
                     fnLoadReviews() {
                         let self = this;
                         $.ajax({
-                            url: "${pageContext.request.contextPath}/review/list.dox",
+                            url: CTX + '/review/list.dox',
                             type: "GET",
                             dataType: "json",
                             success: function (response) {
@@ -1144,7 +1650,7 @@
                         });
                     },
                     fnUpdateReview(reviewNo) {
-                        window.location.href = '${pageContext.request.contextPath}/reviewUpdate.do?reviewNo=' + reviewNo;
+                        window.location.href = CTX + '/reviewUpdate.do?reviewNo=' + reviewNo;
                     },
                     fnDeleteReview(reviewNo) {
                         if (confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
@@ -1184,38 +1690,59 @@
                         })
                     },
 
-                    fnAllCheck: function () {
-                        let self = this;
-                        self.selectFlg = !self.selectFlg;
+                    unitPrice(i) {
+                        const hasUnit = i.unitPrice !== null && i.unitPrice !== undefined && !Number.isNaN(Number(i.unitPrice));
+                        if (hasUnit) return Number(i.unitPrice);
 
-                        if (self.selectFlg) {
-                            self.selectItem = [];
-                            for (let i = 0; i < self.cartItems.length; i++) {
-                                self.selectItem.push(self.cartItems[i].cartNo);
+                        const base = Number(i.basePrice || 0);
+                        const add = Number(i.addPrice || 0);
+                        const combo = base + add;
+                        return combo > 0 ? combo : Number(i.price || 0);
+                    },
+                    getRefundedAmount(order) {
+                        if (!order || !order.items) {
+                            return 0;
+                        }
+
+                        return order.items.reduce((total, item) => {
+                            if (item.refundStatus === '승인') {
+                                const unitPrice = item.price / item.quantity;
+                                const refundValue = unitPrice * item.refundQuantity;
+                                return total + refundValue;
                             }
+                            return total;
+                        }, 0);
+                    },
+                    getOrderOverallRefundStatus(order) {
+                        if (!order || order.totalItemCount === undefined) {
+                            return null;
+                        }
+
+                        const totalItems = order.totalItemCount;
+                        const pendingRefundItems = order.pendingRefundItemCount;
+                        const processedRefundItems = order.processedRefundItemCount;
+
+                        if (pendingRefundItems > 0) {
+                            return '대기'; // 하나라도 대기 중인 환불이 있으면 '대기'
+                        } else if (processedRefundItems > 0 && processedRefundItems === totalItems) {
+                            return '전체 환불 완료'; // 모든 상품이 환불 처리됨 (승인 또는 거절)
+                        } else if (processedRefundItems > 0 && processedRefundItems < totalItems) {
+                            return '부분 환불 완료'; // 일부 상품만 환불 처리됨 (승인 또는 거절)
                         } else {
-                            self.selectItem = [];
+                            return null; // 환불 관련 없음
                         }
                     },
-
-                    fnAllRemove: function () {
-                        let self = this;
-                        console.log(self.selectItem);
-                        var fList = JSON.stringify(self.selectItem);
-                        var param = { selectItem: fList };
-                        $.ajax({
-                            url: "/cart/Allremove.dox",
-                            dataType: "json",
-                            type: "POST",
-                            data: param,
-                            success: function (data) {
-                                console.log(data);
-                                alert("삭제되었습니다.");
-                                self.fnLoadCart();
-                            }
-                        });
-                    }
-
+                    getStatusClass(status) {
+                        const classes = {
+                            "결제완료": "badge badge-new",
+                            "배송 준비중": "badge badge-preparing",
+                            "배송중": "badge badge-shipping",
+                            "배송 완료": "badge badge-completed",
+                            "취소/반품": "badge badge-cancelled"
+                        };
+                        return classes[status] || "badge";
+                    },
+    
                 },
                 mounted() {
                     let self = this;

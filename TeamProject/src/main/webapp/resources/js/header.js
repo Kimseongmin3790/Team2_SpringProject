@@ -6,7 +6,6 @@ $(document).ready(function() {
 		type: "POST",
 		dataType: "json",
 		success: function(res) {
-			// 해시 링크 빌더
 			const linkTop = (pNo) =>
 				path + "/productCategory.do#p=" + encodeURIComponent(String(pNo)) + "&v=child";
 			const linkMid = (pNo, cNo) =>
@@ -20,7 +19,6 @@ $(document).ready(function() {
 			const menu = $("#dropdownMenu");
 			menu.empty();
 
-			// categories 기준으로만 사용 (없으면 방어적 대체)
 			const raw = Array.isArray(res.categories)
 				? res.categories
 				: Array.isArray(res.list) ? res.list : [];
@@ -42,7 +40,6 @@ $(document).ready(function() {
 			const topLevel = list.filter(isRoot);
 			const children = list.filter(c => !isRoot(c));
 
-			// 그리기
 			topLevel.forEach(top => {
 				const liTop = $("<li>");
 				const aTop = $("<a>").text(top.categoryName).attr("href", linkTop(top.categoryNo));
@@ -87,7 +84,6 @@ $(document).ready(function() {
 		}
 	});
 
-	// 이하 기존 클릭 핸들러들 그대로…
 	$("#logoClick").on("click", function() { location.href = path + "/main.do"; });
 	$("#btnSearch").on("click", function() {
 		const keyword = $("#searchInput").val().trim();
@@ -112,13 +108,28 @@ $(document).ready(function() {
 		});
 	});
 
-	$("#btnMyPage").on("click", function() {
-		const sessionStatus = $("#btnMyPage").data("status");
-		if (!sessionStatus) return (location.href = path + "/login.do");
-		if (sessionStatus === "BUYER") location.href = path + "/buyerMyPage.do";
-		else if (sessionStatus === "SELLER") location.href = path + "/sellerMyPage.do";
-		else alert("잘못된 사용자 정보입니다.");
+	const mypageBtn = $("#btnMyPage");
+	const dropdown = mypageBtn.siblings(".mypage-menu");
+
+	mypageBtn.on("click", function(e) {
+		e.preventDefault();
+		if(dropdown.length > 0){
+			dropdown.toggleClass("show"); // 모던 드롭다운 토글
+		} else {
+			// 일반 사용자: 기존 이동
+			const sessionStatus = mypageBtn.data("status");
+			if(!sessionStatus) return location.href = path + "/login.do";
+			if(sessionStatus === "BUYER") location.href = path + "/buyerMyPage.do";
+		}
 	});
+
+	// 외부 클릭 시 닫기
+	$(document).on("click", function(e) {
+		if(!$(e.target).closest(".mypage-dropdown").length){
+			dropdown.removeClass("show");
+		}
+	});
+
 
 	$("#btnFavorite").on("click", () => location.href = path + "/favorite");
 	$("#btnCart").on("click", function() {
@@ -145,5 +156,32 @@ $(document).ready(function() {
 	$("#btnSearchToggle").on("click", function() {
 		$(".search-section").stop(true, true).toggleClass("active");
 		$(".nav-menu").removeClass("active");
+	});
+	
+	function markActiveNav() {
+	  const ctx = $("body").data("context") || "${pageContext.request.contextPath}" || "";
+	  const p = location.pathname.replace(ctx, "") || location.pathname;
+	  const h = location.hash || "";
+
+	  $(".nav-menu a").removeClass("active").removeAttr("aria-current");
+
+	  // 어떤 메뉴로 표시할지 매칭
+	  let pick = null;
+	  if (/^\/(main|default)\.do$/.test(p)) pick = "/main.do";
+	  else if (/^\/productCategory\.do$/.test(p) || /#.*\b(v|p|c|s)=/.test(h)) pick = "/productCategory.do";
+	  else if (/^\/product\/recommendList\.do$/.test(p)) pick = "/product/recommendList.do";
+	  else if (/^\/board\.do$/.test(p) || /^\/customerService\.do$/.test(p)) pick = "/board.do";
+
+	  if (pick) {
+	    $(`.nav-menu a[href$="${pick}"]`).addClass("active").attr("aria-current", "page");
+	  }
+	}
+
+	markActiveNav();
+	$(window).on("hashchange", markActiveNav);
+
+	$(".nav-menu a").on("click", function () {
+	  $(".nav-menu a").removeClass("active");
+	  $(this).addClass("active");
 	});
 });

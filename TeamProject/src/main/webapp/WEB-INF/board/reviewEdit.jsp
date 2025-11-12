@@ -10,7 +10,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"
         integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
     <style>
@@ -35,7 +34,6 @@
             width: 100%;
         }
 
-        /* Product Info Card */
         .product-card {
             background: white;
             border-radius: 12px;
@@ -74,7 +72,6 @@
             color: #6b7280;
         }
 
-        /* Review Form Card */
         .review-card {
             background: white;
             border-radius: 12px;
@@ -98,7 +95,6 @@
             color: #111827;
         }
 
-        /* Rating Stars */
         .rating-container {
             display: flex;
             align-items: center;
@@ -136,7 +132,6 @@
             color: #374151;
         }
 
-        /* Textarea */
         .review-textarea {
             width: 100%;
             min-height: 200px;
@@ -162,7 +157,6 @@
             color: #6b7280;
         }
 
-        /* Image Upload */
         .image-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -240,7 +234,6 @@
             display: none;
         }
 
-        /* Guidelines */
         .guidelines {
             background-color: #f9fafb;
             border-radius: 8px;
@@ -265,7 +258,6 @@
             margin-bottom: 0.25rem;
         }
 
-        /* Action Buttons */
         .action-buttons {
             display: flex;
             gap: 0.75rem;
@@ -307,7 +299,6 @@
             cursor: not-allowed;
         }
 
-        /* Responsive */
         @media (max-width: 640px) {
             .content {
                 padding: 1rem;
@@ -335,12 +326,10 @@
 </head>
 
 <body>
-    <!-- 공통 헤더 -->
     <%@ include file="/WEB-INF/views/common/header.jsp" %>
     
     <div id="app">                     
         <main class="content">
-            <!-- Product Info -->
             <div class="product-card">
                 <div class="product-info">
                     <img :src="product.imageUrl" class="product-image" alt="상품 이미지" v-if="product.imageUrl">
@@ -355,9 +344,7 @@
                 </div>
             </div>
 
-            <!-- Review Form -->
             <div class="review-card">
-                <!-- Rating -->
                 <div class="form-section">
                     <label class="form-label">상품은 어떠셨나요?</label>
                     <div class="rating-container">
@@ -383,7 +370,6 @@
                     </div>
                 </div>
 
-                <!-- Content -->
                 <div class="form-section">
                     <label class="form-label">리뷰 내용</label>
                     <textarea 
@@ -398,16 +384,13 @@
                     </div>
                 </div>
 
-                <!-- Image Upload -->
                 <div class="form-section">
             <label class="form-label">사진 첨부 (선택)</label>
             <div class="image-grid">
-                <!-- 기존 이미지 표시 -->
                 <div v-for="(image, index) in images" :key="'old-'+image.imageNo" class="image-item">
                     <img :src="image.imageUrl" class="image-preview" style="width:100%; height:100%; object-fit:cover;">
                     <button class="image-remove" @click="removeImage(index)">×</button>
                 </div>
-                <!-- 새로 추가할 이미지 미리보기 -->
                 <div v-for="(item, index) in newImageFiles" :key="'new-'+index" class="image-item">
                     <img :src="item.previewUrl" class="image-preview" style="width:100%; height:100%; object-fit:cover;">
                     <button class="image-remove" @click="removeNewImage(index)">×</button>
@@ -429,7 +412,6 @@
                     <p class="image-upload-info">최대 5장까지 첨부 가능합니다 </p>
                 </div>
 
-                <!-- Guidelines -->
                 <div class="form-section">
                     <div class="guidelines">
                         <h4>리뷰 작성 가이드</h4>
@@ -441,7 +423,6 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="action-buttons">
                     <button class="btn btn-cancel" @click="cancel">취소</button>
                     <button 
@@ -456,7 +437,6 @@
         </main>                
     </div>
     
-    <!-- 공통 푸터 -->
     <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 </body>
 
@@ -479,9 +459,9 @@
                 rating: 0,
                 hoverRating: 0,
                 content: "",
-                images: [], // 기존 이미지
-                newImageFiles: [], // 새로 추가할 이미지
-                deletedImageNos: [] // 삭제할 기존 이미지
+                images: [],
+                newImageFiles: [],
+                deletedImageNos: []
 
             };
         },
@@ -507,7 +487,6 @@
             },
             removeImage(index) {
                 let self = this;
-                // 기존 이미지를 삭제하는 경우
                 const imageToRemove = self.images[index];
                 if (imageToRemove && imageToRemove.imageNo) {
                     self.deletedImageNos.push(imageToRemove.imageNo);
@@ -600,7 +579,6 @@
                 formData.append('rating', self.rating);
                 formData.append('content', self.content);
                 
-                // 이미지 파일 추가
                 self.newImageFiles.forEach(file => {
                     formData.append('newImages', file.file);
                 });

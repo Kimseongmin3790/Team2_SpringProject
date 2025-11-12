@@ -9,13 +9,11 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>관리자 대시보드</title>
 
-            <!-- jQuery & Vue -->
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3"></script>
-            <script src="https://kit.fontawesome.com/3fd2d94b47.js" crossorigin="anonymous"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-            <!-- 공통 CSS -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
@@ -42,25 +40,18 @@
                     font-weight: 700;
                 }
 
-                /* 카드 그리드 */
                 .admin-grid {
                     display: flex;
                     flex-wrap: wrap;
-                    /* 👉 줄바꿈 허용 */
                     justify-content: center;
-                    /* 가운데 정렬 */
                     gap: 25px;
-                    /* 카드 간 간격 */
                     margin-bottom: 40px;
                 }
 
                 .admin-card {
                     flex: 1 1 calc(20% - 25px);
-                    /* 👉 5개 균등 (100% / 5) */
                     max-width: 230px;
-                    /* 카드 최대 폭 */
                     min-width: 200px;
-                    /* 너무 작아지지 않게 제한 */
                     background-color: #f3ebd3;
                     border-radius: 14px;
                     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
@@ -69,7 +60,6 @@
                     cursor: pointer;
                     transition: 0.25s ease;
                     box-sizing: border-box;
-                    /* 👉 padding 포함 폭 계산 */
                 }
 
                 .admin-card:hover {
@@ -94,12 +84,10 @@
                     color: #555;
                 }
 
-                /* 통계 영역 */
                 .admin-stats {
                     margin-top: 60px;
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                    /* 4개 균등 */
                     gap: 25px;
                     justify-items: center;
                 }
@@ -129,31 +117,26 @@
                     font-weight: 700;
                 }
 
-                /* footer 상단 여백 보정 */
                 .admin-bottom-space {
                     height: 40px;
                 }
 
 
-                /* ✅ 반응형 대응 */
                 @media (max-width: 1200px) {
                     .admin-card {
                         flex: 1 1 calc(33.33% - 25px);
-                        /* 👉 3개씩 */
                     }
                 }
 
                 @media (max-width: 992px) {
                     .admin-card {
                         flex: 1 1 calc(50% - 25px);
-                        /* 👉 2개씩 */
                     }
                 }
 
                 @media (max-width: 600px) {
                     .admin-card {
                         flex: 1 1 100%;
-                        /* 👉 1개씩 */
                     }
                 }
             </style>
@@ -163,7 +146,6 @@
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
                 <div id="app">
 
-                    <!-- ↓↓ 관리자 콘텐츠 래퍼 ↓↓ -->
                     <div class="admin-container">
                         <h2 class="admin-title">관리자 대시보드</h2>
 
@@ -176,12 +158,17 @@
                             <div class="admin-card" @click="goPage('productManage.do')">
                                 <i class="fa-solid fa-box-open"></i>
                                 <h3>상품관리</h3>
-                                <p>카테고리 관리 / 상품 추천여부</p>
+                                <p>상품 목록 / 상품 추천여부</p>
                             </div>
                             <div class="admin-card" @click="goPage('stats.do')">
                                 <i class="fa-solid fa-chart-line"></i>
                                 <h3>통계</h3>
                                 <p>회원/ 매출 / 품목 / 가입자 통계 및 추이</p>
+                            </div>
+                            <div class="admin-card" @click="goPage('categoryManage.do')">
+                                <i class="fa-solid fa-tags"></i>
+                                <h3>카테고리 관리</h3>
+                                <p>대/중/소 분류 관리</p>
                             </div>
                         </div>
 
@@ -222,8 +209,7 @@
                                     const path = "${pageContext.request.contextPath}";
                                     location.href = path + "/admin/" + page;
                                 },
-                                fnLoadStats() {
-                                    // this.stats = { members: 1342, products: 286, orders: 117 };
+                                fnLoadStats() {                                   
                                     let self = this;
                                     let param = {};
                                     $.ajax({

@@ -17,7 +17,7 @@ public class CommonService {
     CommonMapper commonMapper;
 
     
-//      구매자 ID로 주문 목록을 조회하는 서비스
+    // 구매자 ID로 주문 목록을 조회하는 서비스
     public HashMap<String, Object> getOrdersByBuyerId(HashMap<String, Object> map) {
 
         HashMap<String, Object> resultMap = new HashMap<>();
@@ -50,8 +50,7 @@ public class CommonService {
 		return resultMap;
 	}
     
-    // 최상위 카테고리 확인
-    
+    // 최상위 카테고리 확인 
     public HashMap<String, Object> allCategory(HashMap<String, Object> map) {
 
         HashMap<String, Object> resultMap = new HashMap<>();

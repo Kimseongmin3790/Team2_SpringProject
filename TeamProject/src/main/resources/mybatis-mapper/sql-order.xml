@@ -4,33 +4,37 @@
 
 <mapper namespace="com.example.TeamProject.mapper.OrderMapper">
 
-    <!--
-        [수정 1] <result> 태그들을 <collection> 앞으로 이동
-    -->
     <resultMap id="orderResultMap" type="com.example.TeamProject.model.Order">
-        <id property="orderNo" column="orderNo"/>
-        <result property="buyerId" column="buyerId"/>
-        <result property="orderDate" column="orderDate"/>
-        <result property="totalPrice" column="totalAmount"/>
-        <result property="status" column="status"/>
-        <result property="receivName" column="receivName"/>
-        <result property="receivPhone" column="receivPhone"/>
-        <result property="deliverAddr" column="deliverAddr"/>
-        <result property="memo" column="memo"/>
-        <result property="uDatetime" column="uDatetime"/>
-
-        <!-- selectOrderListBySeller 쿼리에서 추가로 사용하는 필드들 -->
-        <result property="productName" column="productName"/>
-        <result property="productCount" column="productCount"/>
-        <result property="buyerName" column="buyerName"/>
-        <result property="imageUrl" column="imageUrl"/>
-
-        <!-- 각 주문에 속한 상품 목록(items)을 조회하기 위한 collection 설정 -->
-        <collection property="items"
-                    column="orderNo"
-                    ofType="com.example.TeamProject.model.OrderItem"
-                    select="selectOrderItemsByOrderNo"/>
-    </resultMap>
+	    <id property="orderNo" column="orderNo"/>
+	    <result property="buyerId" column="buyerId"/>
+	    <result property="orderDate" column="orderDate"/>
+	    <result property="totalPrice" column="totalAmount"/>
+	    <result property="status" column="status"/>
+	    <result property="receivName" column="receivName"/>
+	    <result property="receivPhone" column="receivPhone"/>
+	    <result property="deliverAddr" column="deliverAddr"/>
+	    <result property="memo" column="memo"/>
+	    <result property="uDatetime" column="uDatetime"/>
+	    <result property="optionUnit" column="optionUnit"/>
+		<result property="optionAddPrice" column="optionAddPrice"/>
+	
+	    <!-- 배송 정보를 위한 매핑 추가 -->
+	    <result property="courier" column="courier"/>
+	    <result property="trackingNo" column="trackingNo"/>
+	
+	    <!-- selectOrderListBySeller 쿼리에서 추가로 사용하는 필드들 -->
+	    <result property="productName" column="productName"/>
+	    <result property="productCount" column="productCount"/>
+	    <result property="buyerName" column="buyerName"/>
+	    <result property="imageUrl" column="imageUrl"/>
+	
+	    <!-- 각 주문에 속한 상품 목록(items)을 조회하기 위한 collection 설정 -->
+	    <collection property="items"
+	                column="orderNo"
+	                ofType="com.example.TeamProject.model.OrderItem"
+	                select="selectOrderItemsByOrderNo"/>
+	                
+	</resultMap>
 
     <resultMap id="orderItemResultMap" type="com.example.TeamProject.model.OrderItem">
         <id property="orderItemNo" column="ORDER_ITEM_NO"/>
@@ -41,6 +45,7 @@
         <result property="productName" column="productName"/>
         <result property="imageUrl" column="imageUrl"/>
         <result property="hasReview" column="hasReview"/>
+        <result property="refundStatus" column="refundStatus"/>
     </resultMap>
     
      <resultMap id="orderDetailResultMap" type="com.example.TeamProject.model.Order">
@@ -68,57 +73,87 @@
          <result property="imageUrl" column="IMAGE_URL"/>
          <result property="optionUnit" column="OPTION_UNIT"/>
          <result property="optionAddPrice" column="OPTION_ADD_PRICE"/>
+         <result property="refundStatus" column="REFUND_STATUS"/>
+		 <result property="refundReason" column="REFUND_REASON"/>
+		 <result property="refundQuantity" column="REFUND_QUANTITY"/>
      </collection>
  </resultMap>
 
     <!-- 사용자 ID로 주문 내역을 조회-->
-    <select id="selectOrderHistoryByUserId" resultMap="orderResultMap">
-        SELECT
-            ORDER_NO AS orderNo,
-            BUYER_ID AS buyerId,
-            TO_CHAR(ORDERDATE, 'YYYY-MM-DD HH24:MI:SS') AS orderDate,
-            TOTAL_PRICE AS totalAmount,
-            STATUS AS status,
-            RECEIV_NAME AS receivName,
-            RECEIV_PHONE AS receivPhone,
-            DELIVER_ADDR AS deliverAddr,
-            MEMO AS memo,
-            TO_CHAR(UDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS uDatetime
-        FROM ORDERS
-        WHERE BUYER_ID = #{userId}
-        ORDER BY ORDERDATE DESC
-    </select>
-
+     <select id="selectOrderHistoryByUserId" resultMap="orderResultMap">
+		    SELECT
+		        O.ORDER_NO AS orderNo,
+		        O.BUYER_ID AS buyerId,
+		        TO_CHAR(O.ORDERDATE, 'YYYY-MM-DD HH24:MI:SS') AS orderDate,
+		        O.TOTAL_PRICE AS totalAmount,
+		        O.STATUS AS status,
+		        O.RECEIV_NAME AS receivName,
+		        O.RECEIV_PHONE AS receivPhone,
+		        O.DELIVER_ADDR AS deliverAddr,
+		        O.MEMO AS memo,
+		        TO_CHAR(O.UDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS uDatetime,
+		        D.COURIER AS courier,
+		        D.TRACKING_NO AS trackingNo,
+		     
+		        (SELECT COUNT(OI_TOTAL.ORDER_ITEM_NO) FROM ORDER_ITEM OI_TOTAL WHERE OI_TOTAL.ORDER_NO = o.ORDER_NO) AS totalItemCount,
+		        
+		        (SELECT COUNT(OI_PROC.ORDER_ITEM_NO) FROM ORDER_ITEM OI_PROC JOIN REFUND R_PROC ON OI_PROC.ORDER_ITEM_NO =
+		R_PROC.ORDER_ITEM_NO WHERE OI_PROC.ORDER_NO = o.ORDER_NO AND (R_PROC.STATUS = '승인' OR R_PROC.STATUS = '거절')) AS
+		processedRefundItemCount,
+		     
+		        (SELECT COUNT(OI_PEND.ORDER_ITEM_NO) FROM ORDER_ITEM OI_PEND JOIN REFUND R_PEND ON OI_PEND.ORDER_ITEM_NO =
+		R_PEND.ORDER_ITEM_NO WHERE OI_PEND.ORDER_NO = o.ORDER_NO AND R_PEND.STATUS = '대기') AS pendingRefundItemCount
+		    FROM ORDERS O
+		    LEFT JOIN DELIVERY D ON O.ORDER_NO = D.ORDER_NO
+		    WHERE O.BUYER_ID = #{userId}
+		    ORDER BY O.ORDERDATE DESC
+		</select>
 
     <select id="selectOrderItemsByOrderNo" resultMap="orderItemResultMap">
-        SELECT
-            OI.ORDER_ITEM_NO,
-            OI.ORDER_NO,
-            OI.PRODUCT_NO,
-            OI.QUANTITY,
-            OI.PRICE,
-            P.PNAME AS productName,
-            (SELECT PI.IMAGE_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = P.PRODUCT_NO AND PI.IS_THUMBNAIL = 'Y' AND ROWNUM = 1) AS imageUrl,
-            (SELECT COUNT(*) FROM REVIEW R WHERE R.ORDER_ITEM_NO = OI.ORDER_ITEM_NO) AS hasReview
-        FROM ORDER_ITEM OI
-        JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
-        WHERE OI.ORDER_NO = #{orderNo}
-    </select>
+	    SELECT
+	        OI.ORDER_ITEM_NO,
+	        OI.ORDER_NO,
+	        OI.PRODUCT_NO,
+	        OI.QUANTITY,
+	        OI.PRICE,
+	        P.PNAME AS productName,
+	        (SELECT PI.IMAGE_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = P.PRODUCT_NO AND PI.IS_THUMBNAIL
+	= 'Y' AND ROWNUM = 1) AS imageUrl,
+	        (SELECT COUNT(*) FROM REVIEW R WHERE R.ORDER_ITEM_NO = OI.ORDER_ITEM_NO) AS hasReview,
+	        PO.UNIT AS optionUnit,
+	        PO.ADD_PRICE AS optionAddPrice,
+	        R.STATUS AS refundStatus,
+	        R.REFUND_AMOUNT AS refundQuantity 
+	    FROM ORDER_ITEM OI
+	    JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
+	    LEFT JOIN PRODUCT_OPTION PO ON OI.OPTION_NO = PO.OPTION_NO
+	    LEFT JOIN REFUND R ON OI.ORDER_ITEM_NO = R.ORDER_ITEM_NO
+	    WHERE OI.ORDER_NO = #{orderNo}
+	</select>
 
     <!-- 판매자 ID 주문목록 조회  -->
     <select id="selectOrderListBySeller" parameterType="hashmap" resultType="com.example.TeamProject.model.Order">
-	    SELECT *
-	    FROM (
-	        SELECT
-	            o.ORDER_NO, o.BUYER_ID, o.ORDERDATE, o.TOTAL_PRICE, o.STATUS, o.RECEIV_NAME, o.RECEIV_PHONE, o.DELIVER_ADDR, o.MEMO,
-	            u.NAME as BUYER_NAME,
-	            (SELECT p_inner.PNAME FROM PRODUCT p_inner JOIN ORDER_ITEM oi_inner ON p_inner.PRODUCT_NO = 
-	            oi_inner.PRODUCT_NO WHERE oi_inner.ORDER_NO = o.ORDER_NO AND ROWNUM = 1) as PRODUCT_NAME,
-	            (SELECT COUNT(*) FROM ORDER_ITEM oi_inner WHERE oi_inner.ORDER_NO = o.ORDER_NO) as PRODUCT_COUNT,
-	            ROW_NUMBER() OVER (ORDER BY o.ORDERDATE DESC) as RNUM
-	        FROM
-	            ORDERS o
-	        JOIN USERS u ON o.BUYER_ID = u.USER_ID
+	     SELECT *
+		FROM (
+		    SELECT
+		        o.ORDER_NO, o.BUYER_ID, o.ORDERDATE, o.TOTAL_PRICE, o.STATUS, o.RECEIV_NAME, o.RECEIV_PHONE, o.DELIVER_ADDR,
+		o.MEMO,
+		        u.NAME as BUYER_NAME,
+		        (SELECT p_inner.PNAME FROM PRODUCT p_inner JOIN ORDER_ITEM oi_inner ON p_inner.PRODUCT_NO =
+		        oi_inner.PRODUCT_NO WHERE oi_inner.ORDER_NO = o.ORDER_NO AND ROWNUM = 1) as PRODUCT_NAME,
+		        (SELECT COUNT(*) FROM ORDER_ITEM oi_inner WHERE oi_inner.ORDER_NO = o.ORDER_NO) as PRODUCT_COUNT,
+		
+		        (SELECT COUNT(OI_TOTAL.ORDER_ITEM_NO) FROM ORDER_ITEM OI_TOTAL WHERE OI_TOTAL.ORDER_NO = o.ORDER_NO) AS totalItemCount,
+		      
+		        (SELECT COUNT(OI_PROC.ORDER_ITEM_NO) FROM ORDER_ITEM OI_PROC JOIN REFUND R_PROC ON OI_PROC.ORDER_ITEM_NO =
+		R_PROC.ORDER_ITEM_NO WHERE OI_PROC.ORDER_NO = o.ORDER_NO AND (R_PROC.STATUS = '승인' OR R_PROC.STATUS = '거절')) AS processedRefundItemCount, 
+		        (SELECT COUNT(OI_PEND.ORDER_ITEM_NO) FROM ORDER_ITEM OI_PEND JOIN REFUND R_PEND ON OI_PEND.ORDER_ITEM_NO =
+		R_PEND.ORDER_ITEM_NO WHERE OI_PEND.ORDER_NO = o.ORDER_NO AND R_PEND.STATUS = '대기') AS pendingRefundItemCount,
+		
+		        ROW_NUMBER() OVER (ORDER BY o.ORDERDATE DESC) as RNUM
+		    FROM
+		        ORDERS o
+		    JOIN USERS u ON o.BUYER_ID = u.USER_ID
 	        <where>
 	            <if test="sellerId != null and sellerId != ''">
 	                AND EXISTS (
@@ -213,35 +248,41 @@
 	 </select>
 	 
 	<!-- 주문 상태 일괄 변경 -->
-	<select id="selectOrderDetail" parameterType="hashmap" resultMap="orderDetailResultMap">
-	    SELECT
-	        o.ORDER_NO, o.BUYER_ID, o.ORDERDATE, o.TOTAL_PRICE, o.STATUS, o.RECEIV_NAME, o.RECEIV_PHONE, o.DELIVER_ADDR, o.MEMO,
-	        u.NAME as BUYER_NAME,
-	        pay.PAYMENT_METHOD,
-	        d.COURIER, d.TRACKING_NO,
-	        oi.ORDER_ITEM_NO, oi.PRODUCT_NO, oi.QUANTITY, oi.PRICE as ITEM_PRICE,
-	        p.PNAME as PRODUCT_NAME,
-	        po.UNIT as OPTION_UNIT, po.ADD_PRICE as OPTION_ADD_PRICE,
-	        (SELECT pi.IMAGE_URL FROM PRODUCT_IMAGE pi WHERE pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_THUMBNAIL = 'Y' AND ROWNUM = 1) as IMAGE_URL
-	    FROM
-	        ORDERS o
-	    LEFT JOIN USERS u ON o.BUYER_ID = u.USER_ID
-	    LEFT JOIN DELIVERY d ON o.ORDER_NO = d.ORDER_NO
-	    LEFT JOIN PAYMENT pay ON o.ORDER_NO = pay.ORDER_NO
-	    LEFT JOIN ORDER_ITEM oi ON o.ORDER_NO = oi.ORDER_NO
-	    LEFT JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
-	    LEFT JOIN PRODUCT_OPTION po ON oi.OPTION_NO = po.OPTION_NO
-	    WHERE
-	        o.ORDER_NO = #{orderNo}
-	        AND EXISTS (
-	            SELECT 1
-	            FROM ORDER_ITEM oi_sec
-	            JOIN PRODUCT p_sec ON oi_sec.PRODUCT_NO = p_sec.PRODUCT_NO
-	            WHERE oi_sec.ORDER_NO = #{orderNo}
-	            AND p_sec.SELLER_ID = #{sellerId}
-	        )
-	</select>
-	
+ 	<select id="selectOrderDetail" parameterType="hashmap" resultMap="orderDetailResultMap">
+	     SELECT
+	         o.ORDER_NO, o.BUYER_ID, o.ORDERDATE, o.TOTAL_PRICE, o.STATUS, o.RECEIV_NAME, o.RECEIV_PHONE, o.DELIVER_ADDR, o.MEMO,
+	         u.NAME as BUYER_NAME,
+	         pay.PAYMENT_METHOD,
+	         d.COURIER, d.TRACKING_NO,
+	         oi.ORDER_ITEM_NO, oi.PRODUCT_NO, oi.QUANTITY, oi.PRICE as ITEM_PRICE,
+	         p.PNAME as PRODUCT_NAME,
+	         po.UNIT as OPTION_UNIT, po.ADD_PRICE as OPTION_ADD_PRICE,
+	         (SELECT pi.IMAGE_URL FROM PRODUCT_IMAGE pi WHERE pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_THUMBNAIL
+	 = 'Y' AND ROWNUM = 1) as IMAGE_URL,
+	         -- 환불 정보 추가 (대문자 별칭으로 수정)
+	         r.STATUS as REFUND_STATUS,
+	         r.REASON as REFUND_REASON,
+	         r.REFUND_AMOUNT as REFUND_QUANTITY
+	     FROM
+	         ORDERS o
+	     LEFT JOIN USERS u ON o.BUYER_ID = u.USER_ID
+	     LEFT JOIN DELIVERY d ON o.ORDER_NO = d.ORDER_NO
+	     LEFT JOIN PAYMENT pay ON o.ORDER_NO = pay.ORDER_NO
+	     LEFT JOIN ORDER_ITEM oi ON o.ORDER_NO = oi.ORDER_NO
+	     LEFT JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
+	     LEFT JOIN PRODUCT_OPTION po ON oi.OPTION_NO = po.OPTION_NO
+	     LEFT JOIN REFUND r ON oi.ORDER_ITEM_NO = r.ORDER_ITEM_NO -- REFUND 테이블 조인
+	     WHERE
+	         o.ORDER_NO = #{orderNo}
+	         AND EXISTS (
+	             SELECT 1
+	             FROM ORDER_ITEM oi_sec
+	             JOIN PRODUCT p_sec ON oi_sec.PRODUCT_NO = p_sec.PRODUCT_NO
+	             WHERE oi_sec.ORDER_NO = #{orderNo}
+	             AND p_sec.SELLER_ID = #{sellerId}
+	         )
+	 </select>	
+	 
 	<!-- 판매자의 전체 주문 건수 조회 -->
 	<select id="selectOrderListCountBySeller" parameterType="hashmap" resultType="int">
 	    SELECT
@@ -280,5 +321,40 @@
 	        </if>
 	    </where>
 	</select>
-
+	
+	<!-- 환불 요청 등록 -->
+	<insert id="insertRefundRequest" parameterType="hashmap">
+	    INSERT INTO REFUND (
+	        REFUND_NO,
+	        ORDER_ITEM_NO,
+	        REFUND_AMOUNT,
+	        REASON,
+	        STATUS,
+	        REQUESTED_AT
+	    ) VALUES (
+	        REFUND_SEQ.NEXTVAL,
+	        #{orderItemNo},
+	        #{refundAmount}, 
+	        #{reason},
+	        '대기', 
+	        SYSDATE
+	    )
+	</insert>
+	
+	<!-- 환불 요청 취소 -->
+	<delete id="deleteRefundRequest" parameterType="hashmap">
+	    DELETE FROM REFUND
+	    WHERE ORDER_ITEM_NO = #{orderItemNo}
+	</delete>
+	
+	<!-- 환불 요청 상태 변경 (승인/거절) -->
+	<update id="updateRefundStatus" parameterType="hashmap">
+	    UPDATE REFUND
+	    SET
+	        STATUS = #{status},
+	        COMPLETED_AT = SYSDATE
+	    WHERE ORDER_ITEM_NO = #{orderItemNo}
+	      AND STATUS = '대기'
+	</update>
+	
 </mapper>

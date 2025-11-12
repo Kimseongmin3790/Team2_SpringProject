@@ -27,64 +27,76 @@ $(document).ready(function() {
         $('#privacy-modal').fadeOut();
     });
 	
-	/* ============================== */
-	  /* 💬 챗봇 열기 / 닫기 토글 */
-	  /* ============================== */
-	  $('#chatbot-toggle').on('click', function () {
-	    $('#chatbot-box').toggleClass('hidden');
-	    $(this).toggleClass('active');
+	/* 처음 안내를 띄웠는지 여부 */
+	let chatbotWelcomed = false;
 
-	    if ($(this).hasClass('active')) {
-	      $(this).html('✖'); // 닫기 아이콘
-	    } else {
-	      $(this).html('💬'); // 열기 아이콘
+	/* 챗봇 열기 / 닫기 토글 */
+	$('#chatbot-toggle').on('click', function () {
+	  $('#chatbot-box').toggleClass('hidden');
+	  $(this).toggleClass('active');
+
+	  if ($(this).hasClass('active')) {
+	    $(this).html('✖'); // 닫기 아이콘
+
+	    // ⭐ 처음 열었을 때만 환영 메시지 출력
+	    if (!chatbotWelcomed) {
+	      appendMessage('bot', "👋 '배송', '환불', '입점', '제휴', '공지',  '지도'등의 키워드를 입력하여 궁금하신점을 물어보세요!");
+	      chatbotWelcomed = true;
 	    }
-	  });
-	
-	
-	/* ============================== */
-  	 /* 💬 AGRICOLA 챗봇 기능 */
-   /* ============================== */
-   $("#chat-send").on("click", function () {
-       const msg = $("#chat-input").val().trim();
-       if (!msg) return;
 
-       appendMessage("user", msg);
-       $("#chat-input").val("");
+	    // 열렸을 때 입력창 포커스
+	    $("#chat-input").focus();
+	  } else {
+	    $(this).html('💬'); // 열기 아이콘
+	  }
+	});
 
-       let answer = "";
 
-       if (msg.includes("배송")) {
-           answer = "🚚 배송은 결제 후 2~3일 이내 도착합니다.<br>상세 조회는 <a href='" + CONTEXT_PATH + "/buyerMyPage.do'>여기</a>에서 확인하세요.";
-       } else if (msg.includes("환불") || msg.includes("취소")) {
-           answer = "💳 환불은 상품 회수 완료 후 2~5일 내 처리됩니다.<br>자세한 안내는 <a href='" + CONTEXT_PATH + "/customerService.do?tab=faq'>여기</a>에서 확인하세요.";
-       } else if (msg.includes("문의")) {
-           answer = "📞 고객센터 1:1 문의는 <a href='" + CONTEXT_PATH + "/customerService.do?tab=inquiry'>이곳</a>에서 가능합니다.";
-       } else if (msg.includes("입점") || msg.includes("제휴")) {
-           answer = "🧑‍🌾 입점 및 제휴문의는 <a href='" + CONTEXT_PATH + "/partnership.do'>여기</a>에서 진행할 수 있습니다.";
-       } else if (msg.includes("공지") || msg.includes("이벤트")) {
-           answer = "🎉 공지사항과 문의사항은 <a href='" + CONTEXT_PATH + "/board.do'>이곳</a>에서 확인하세요.";
-       } else if (msg.includes("로그인")) {
-           answer = "🔑 로그인은 <a href='" + CONTEXT_PATH + "/login.do'>여기</a>에서 할 수 있습니다.";
-       } else if (msg.includes("쌀")) {
-		   answer = "🌾 쌀은 <a href='" + CONTEXT_PATH + "/productCategory.do#p=10&c=100&s=1000&v=product'>여기</a>에서 찾으실 수 있습니다."
-	   } else {
-           answer = "🤖 죄송해요, 아직 그 질문은 준비 중이에요.<br>예: '배송', '환불', '입점', '제휴', '공지' 등으로 물어보세요!";
-       }
+	/* 챗봇 기능 */
+	$("#chat-send").on("click", function () {
+	  const msg = $("#chat-input").val().trim();
+	  if (!msg) return;
 
-       appendMessage("bot", answer);
-   });
+	  appendMessage("user", msg);
+	  $("#chat-input").val("");
 
-   // Enter 키로 전송
-   $("#chat-input").on("keypress", function (e) {
-       if (e.which === 13) $("#chat-send").click();
-   });
+	  let answer = "";
 
-   // 메시지 추가 함수
-   function appendMessage(sender, text) {
-       $("#chatbot-messages").append(`<div class='chat-msg ${sender}'>${text}</div>`);
-       $("#chatbot-messages").scrollTop($("#chatbot-messages")[0].scrollHeight);
-   }
+	  if (msg.includes("배송")) {
+	    answer = "🚚 배송은 결제 후 2~3일 이내 도착합니다.<br>상세 조회는 <a href='" + CONTEXT_PATH + "/buyerMyPage.do'>마이페이지</a>->주문내역 에서 확인하세요.";
+	  } else if (msg.includes("환불") || msg.includes("취소")) {
+	    answer = "💳 환불은 상품 회수 완료 후 2~5일 내 처리됩니다.<br>자세한 안내는 <a href='" + CONTEXT_PATH + "/customerService.do?tab=faq'>여기</a>에서 확인하세요.";
+	  } else if (msg.includes("문의")) {
+	    answer = "📞 고객센터 1:1 문의는 <a href='" + CONTEXT_PATH + "/customerService.do?tab=inquiry'>이곳</a>에서 가능합니다.";
+	  } else if (msg.includes("입점") || msg.includes("제휴")) {
+	    answer = "🧑‍🌾 입점 및 제휴문의는 <a href='" + CONTEXT_PATH + "/partnership.do'>여기</a>에서 진행할 수 있습니다.";
+	  } else if (msg.includes("공지") || msg.includes("이벤트")) {
+	    answer = "🎉 공지사항과 문의사항은 <a href='" + CONTEXT_PATH + "/board.do'>이곳</a>에서 확인하세요.";
+	  } else if (msg.includes("로그인")) {
+	    answer = "🔑 로그인은 <a href='" + CONTEXT_PATH + "/login.do'>여기</a>에서 할 수 있습니다.";
+	  } else if (msg.includes("쌀")) {
+	    answer = "🌾 쌀은 <a href='" + CONTEXT_PATH + "/productCategory.do#p=10&c=100&s=1000&v=product'>여기</a>에서 찾으실 수 있습니다.";
+	  } else if (msg.includes("안녕")) {
+	    answer = "안녕하세요 저는 AGRICOLA 사이트 도우미 입니다.<br>'배송', '환불', '입점', '제휴', '공지' 등으로 물어보세요!";
+	  } else if (msg.includes("지도")) {
+		answer = "지도는 메인페이지 -> 내 주변 생산자에서 볼 수 있고 키워드 검색으로 생산자를 찾기 원하시면 지도 오른쪽 아래에 있는 '지도를 크게보기' 버튼을 눌러 이동해주세요!";
+	  } else {
+	    answer = "🤖 죄송해요, 아직 그 질문은 준비 중이에요.<br>예: '배송', '환불', '입점', '제휴', '공지' 등으로 물어보세요!";
+	  }
+
+	  appendMessage("bot", answer);
+	});
+
+	// Enter 키로 전송
+	$("#chat-input").on("keypress", function (e) {
+	  if (e.which === 13) $("#chat-send").click();
+	});
+
+	// 메시지 추가 함수
+	function appendMessage(sender, text) {
+	  $("#chatbot-messages").append(`<div class='chat-msg ${sender}'>${text}</div>`);
+	  $("#chatbot-messages").scrollTop($("#chatbot-messages")[0].scrollHeight);
+	}
 
 	
 });

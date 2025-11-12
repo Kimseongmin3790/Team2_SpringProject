@@ -90,7 +90,6 @@
                     height: 18px;
                     cursor: pointer;
                     accent-color: #5dbb63;
-                    /* ✅ 최신 브라우저에서 초록색 체크 표시 */
                     margin: 0;
                 }
 
@@ -156,7 +155,6 @@
                         <div class="write-container">
                             <h2>고객문의 작성</h2>
 
-                            <!-- 작성 폼 -->
                             <div class="form-group">
                                 <label>작성자</label>
                                 <input type="text" v-model="sessionId" readonly>
@@ -208,7 +206,7 @@
                         const app = Vue.createApp({
                             data() {
                                 return {
-                                    sessionId: "${sessionId}", // 로그인 사용자
+                                    sessionId: "${sessionId}",
                                     category: "",
                                     title: "",
                                     content: "",
@@ -220,7 +218,6 @@
                                 fnSubmit() {
                                     const self = this;
 
-                                    // 유효성 검사
                                     if (!self.title.trim()) {
                                         Swal.fire("제목을 입력하세요.", "", "warning");
                                         return;
@@ -238,7 +235,6 @@
                                         return;
                                     }
 
-                                    // 등록 요청
                                     $.ajax({
                                         url: "/inquiryInsert.dox",
                                         type: "POST",

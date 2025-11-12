@@ -56,7 +56,7 @@
                     text-align: center;
                     cursor: pointer;
                 }
-                
+
                 .product-card:hover {
                     transform: translateY(-3px);
                 }
@@ -67,17 +67,99 @@
                     object-fit: cover;
                     border-radius: 8px;
                 }
+                
+                .info {
+                    padding: 12px;
+                    text-align: left;
+                }
 
                 .product-name {
                     font-weight: 600;
-                    margin-top: 10px;
-                    color: #333;
+                    margin-top: -10px;
+                    color:#2e7d32;
+                }
+
+                .product-desc{
+                    color:blue;
                 }
 
                 .product-price {
-                    color: #1a5d1a;
+                    color: orange;
                     font-weight: 700;
                     margin-top: 5px;
+                }
+
+                .date{
+                    color:black
+                }
+
+                .region{
+                    color:cornflowerblue;
+                }
+
+                .seller{
+                    color:green;
+                    margin-bottom: -20px;
+                }
+
+                /* 이미지 래퍼 */
+                .image-wrap {
+                    position: relative;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    /* 배지가 둥근 모서리 밖으로 삐져나오지 않게 */
+                }
+
+                /* 순위 배지(기본) */
+                .rank-badge {
+                    position: absolute;
+                    top: 10px;
+                    left: 10px;
+                    /* 오른쪽 상단을 원하면 right: 10px 로 바꾸세요 */
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: #1a5d1a;
+                    /* 브랜드 그린 */
+                    color: #fff;
+                    font-weight: 800;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+                    user-select: none;
+                    pointer-events: none;
+                    /* 배지 클릭이 카드 클릭을 막지 않게 */
+                }
+
+                /* TOP3 강조 (선택) */
+                .rank-1 {
+                    background: #f1c40f;
+                    color: #3a2c00;
+                }
+
+                /* 금 */
+                .rank-2 {
+                    background: #bdc3c7;
+                    color: #2c3e50;
+                }
+
+                /* 은 */
+                .rank-3 {
+                    background: #cd7f32;
+                    color: #fff;
+                }
+
+                /* 동 */
+
+                /* 호버 시 살짝 올라가는 기존 효과 유지 */
+                .product-card {
+                    transition: transform .15s ease;
+                }
+
+                .product-card:hover {
+                    transform: translateY(-3px);
                 }
             </style>
         </head>
@@ -86,14 +168,26 @@
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
                 <div id="app">
                     <main class="content">
-                        <h2 class="title">🌿 AGRICOLA 추천 상품</h2>
+                        <h2 class="title">🌿 AGRICOLA 베스트 상품</h2>
                         <div class="product-list">
-                            <div v-for="p in list" :key="p.productNo" class="product-card"
+                            <div v-for="(p, i) in list" :key="p.productNo" class="product-card"
                                 @click="goInfo(p.productNo)">
-                                <img :src="p.imageUrl" alt="상품 이미지">
-                                <div class="product-name">{{ p.pName }}</div>
-                                <div class="product-info">{{ p.pInfo }}</div>
-                                <div class="product-price">{{ p.price.toLocaleString() }}원</div>
+                                <div class="image-wrap">
+                                    <img :src="p.imageUrl" :alt="p.pName + ' 이미지'">
+                                    <!-- 순위 배지 -->
+                                    <span class="rank-badge"
+                                        :class="{'rank-1': i === 0, 'rank-2': i === 1, 'rank-3': i === 2}">{{ i + 1
+                                        }}</span>
+                                    <!-- 1~4만 표시하려면 위 span에 v-if="i < 4" 추가 -->
+                                </div>
+                                <span class="info">
+                                    <div class="product-name">{{ p.pName }}</div>
+                                    <div class="product-desc">{{ p.pInfo }}</div>
+                                    <div class="product-price">{{ p.price.toLocaleString() }}원</div>
+                                    <div class="date">📅생산일: {{ p.cdate }}</div>
+                                    <div class="region">🌾원산지: {{ p.origin }}</div>
+                                    <div class="seller">👨‍🌾Agricola:{{p.businessName}}</div>
+                                </span>
                             </div>
                         </div>
                     </main>

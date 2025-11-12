@@ -37,6 +37,11 @@ public class MainController {
 		return "main/sellerDetail";
 	}
 	
+	@GetMapping("/map/nearby.do")
+	public String nearby() throws Exception {
+		return "map/nearby-map";
+	}
+	
 
 	// 3. 메인 배너 데이터 응답
 	@RequestMapping(value = "/main/data/banners", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
@@ -108,7 +113,7 @@ public class MainController {
         
         model.addAttribute("keyword", keyword);
         model.addAttribute("list", new Gson().toJson(resultMap.get("list")));
-        return "main/search"; // => /WEB-INF/views/product/search.jsp
+        return "main/search";
     }
 	
 	// 9. 로그인 유저 좌표 데이터 응답
@@ -120,7 +125,6 @@ public class MainController {
 
 	    try {
 	        if (userId != null) {
-	            // ✅ DB에서 사용자 좌표 조회
 	            HashMap<String, Object> userLoc = mainService.selectUserLocation(userId);
 
 	            if (userLoc != null) {

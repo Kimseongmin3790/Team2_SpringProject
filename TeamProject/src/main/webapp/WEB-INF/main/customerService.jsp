@@ -27,52 +27,9 @@
         .main-title { 
             font-size: 1.5rem; 
             font-weight: 700; 
-            margin-bottom: 1rem; 
+            margin-bottom: 4rem; 
             text-align: center; 
         }
-        /* 검색창 섹션 */
-        .search-wrapper { 
-            margin-bottom: 3rem; 
-            max-width: 640px; 
-            margin-left: auto; 
-            margin-right: auto; 
-        }
-        .search-form { 
-            display: flex; 
-            border: 1px solid #d1d5db; 
-            border-radius: 0.5rem; 
-            overflow: hidden; 
-            background-color: #fff; 
-            transition: all 0.2s 
-            ease-in-out; 
-        }
-        .search-form:focus-within { 
-            border-color: #059669; 
-            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-        }
-        .search-input { 
-            flex-grow: 1; 
-            border: none; 
-            padding: 0.875rem 1rem; 
-            font-size: 1rem; 
-            outline:none; 
-            background: transparent; 
-        }
-        .search-button { 
-            border: none; 
-            background-color: #059669; 
-            color: white; 
-            padding: 0.75rem 1.25rem;
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1.25rem; 
-        }
-        .search-button:hover { 
-            background-color: #047857; 
-        }
-        /* 서비스 카드 섹션 */
         .service-card-grid { 
             display: grid; 
             gap: 1.5rem; 
@@ -274,20 +231,14 @@
     <%@ include file="/WEB-INF/views/common/header.jsp" %> <div id="app">
         <main class="container main-content">
             <div class="max-w-5xl mx-auto">
-                <h2 class="main-title">무엇을 도와드릴까요?</h2> <div class="search-wrapper">
-                    <div class="search-form">
-                        <input type="text" placeholder="궁금한 점을 검색해보세요" class="search-input" v-model="searchText">
-                        <button class="search-button" aria-label="검색" @click="fnSearch"><span>🔍</span></button>
-                    </div>
-                </div>
-
+                <h2 class="main-title">고객센터</h2>
                 <div class="service-card-grid">
                     <div class="service-card" @click="activeTab = 'faq'" :class="{ 'active': activeTab === 'faq' }">
                         <div class="card-icon-wrapper"><span class="card-icon">❓</span></div>
                         <h3 class="card-title">자주 묻는 질문</h3>
                         <p class="card-description">고객님들이 자주 묻는 질문과 답변을 확인하세요</p>
                     </div>
-                    <div class="service-card" @click="activeTab = 'inquiry'" :class="{ 'active': activeTab === 'inquiry' }">
+                    <div class="service-card" @click="fnShowInquiryTab" :class="{ 'active': activeTab === 'inquiry' }">
                         <div class="card-icon-wrapper"><span class="card-icon">💬</span></div>
                         <h3 class="card-title">1대1 문의</h3>
                         <p class="card-description">궁금한 사항을 직접 문의해주세요</p>
@@ -316,11 +267,11 @@
                         </details>
                         <details>
                             <summary class="faq-question"><span class="faq-question-text">[계정관련] 탈퇴는 어떻게 하나요?</span><span class="faq-arrow">▼</span></summary>
-                            <div class="faq-answer">못합니다.</div>
+                            <div class="faq-answer">상단의 마이페이지 -> 내 정보 관리 탭에서 회원 탈퇴 하실 수 있습니다</div>
                         </details>
                         <details>
-                            <summary class="faq-question"><span class="faq-question-text">ㅇㅇ</span><span class="faq-arrow">▼</span></summary>
-                            <div class="faq-answer">ㅇㅇ</div>
+                            <summary class="faq-question"><span class="faq-question-text">[기타] 판매자에게 상품 문의를 하고 싶어요</span><span class="faq-arrow">▼</span></summary>
+                            <div class="faq-answer">상품 상세 페이지에서 문의하기를 남기실 수 있습니다</div>
                         </details>
                     </div>
                 </div>
@@ -402,8 +353,6 @@
                 selectedOrderNo: null,
                 inquiryPassword: "",
 
-                // 검색기능
-                searchText: "",
                 noticeList : [],
                 filteredFaqList: [],
                 filteredNoticeList: [],
@@ -421,7 +370,16 @@
             }
         },
         methods: {
-            fnOrderInfo (){ // 주문정보 가져오는 함수
+            fnShowInquiryTab() {
+                let self = this;
+                if (!self.id) { 
+                    alert('로그인이 필요한 서비스입니다.');
+                    location.href = '/login.do'; 
+                } else {
+                    self.activeTab = 'inquiry';
+                }
+            },
+            fnOrderInfo (){ 
                 let self = this;
                 let param = {
                     buyerId : self.id
@@ -502,16 +460,25 @@
         },
         mounted() {
             let self = this;
-            self.fnOrderInfo();
-            self.fnLoadLatestNotices();
 
             const urlParams = new URLSearchParams(window.location.search);
-            const tabFromUrl = urlParams.get('tab'); 
+            const tabFromUrl = urlParams.get('tab');
             const validTabs = ['faq', 'inquiry', 'notice'];
 
             if (tabFromUrl && validTabs.includes(tabFromUrl)) {
+                if (tabFromUrl === 'inquiry' && !self.id) {
+                    alert('로그인이 필요한 서비스입니다.');
+                    location.href = '/login.do'; 
+                    return; 
+                }
                 self.activeTab = tabFromUrl;
             }
+
+            if (self.id) {
+                self.fnOrderInfo();
+            }
+
+            self.fnLoadLatestNotices();
         }
     });
     app.mount('#app');

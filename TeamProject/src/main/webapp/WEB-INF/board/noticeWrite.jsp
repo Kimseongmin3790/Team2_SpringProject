@@ -7,13 +7,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공지사항 작성 | AGRICOLA</title>
-    <!-- jQuery와 Vue.js 스크립트 태그 -->
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- Quill CDN -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
@@ -104,7 +101,6 @@
     </style>
 </head>
 <body>
-    <!-- 공통 헤더 -->
     <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
     <div id="app">
@@ -132,10 +128,8 @@
         </main>
     </div>
 
-    <!-- 공통 푸터 -->
     <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
-    <!-- Vue.js 스크립트 블록 -->
     <script>
         const app = Vue.createApp({
             data() {

@@ -204,7 +204,12 @@
         <body>
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-                <div id="app">
+                <div id="app" data-ctx="<c:out value='${pageContext.request.contextPath}'/>"
+                    data-user-id="<c:out value='${sessionId}'/>" data-cart-nos="<c:out value='${param.cartNos}'/>"
+                    data-product-no="<c:out value='${param.productNo}'/>" data-qty="<c:out value='${param.qty}'/>"
+                    data-option-no="<c:out value='${param.optionNo}'/>"
+                    data-fulfillment="<c:out value='${param.fulfillment}'/>">
+
                     <main class="content">
                         <!-- 좌측 -->
                         <section class="left-section">
@@ -216,7 +221,7 @@
                                     <div class="product-info">
                                         <div class="product-name">{{ p.pName }}</div>
                                         <div>수량 : {{p.quantity}}개</div>
-                                        <div class="product-price">{{ Number(p.price).toLocaleString() }}원</div>
+                                        <div class="product-price">{{ Number(p.unitPrice).toLocaleString() }}원</div>
                                     </div>
                                 </div>
                                 <div class="total-box">
@@ -237,14 +242,14 @@
                             <div class="box">
                                 <h3>배송 정보</h3>
                                 <div class="input-row">
-                                    <input type="text" v-model="shipping.recipient" placeholder="수령인">
-                                    <input type="text" v-model="shipping.phone" placeholder="연락처">
+                                    <input type="text" v-model="buyer.name" placeholder="수령인">
+                                    <input type="text" v-model="buyer.phone" placeholder="연락처">
                                 </div>
                                 <div class="input-row">
                                     <input type="text" v-model="shipping.zip" placeholder="우편번호">
                                     <button class="btn" @click="searchAddress">주소찾기</button>
                                 </div>
-                                <input type="text" v-model="shipping.address" placeholder="주소"
+                                <input type="text" v-model="buyer.address" placeholder="주소"
                                     style="width:100%; margin-bottom:8px;">
                                 <input type="text" v-model="shipping.detail" placeholder="상세주소"
                                     style="width:100%; margin-bottom: 8px;">
@@ -293,12 +298,24 @@
 
         </html>
         <script>
+            const root = document.getElementById('app');
+
+            const CTX = root?.dataset?.ctx || '';
+            const USER = root?.dataset?.userId || '';
+
+            const CART_CSV = (root?.dataset?.cartNos || '').trim();
+            const SINGLE = {
+                productNo: parseInt(root?.dataset?.productNo, 10) || null,
+                qty: parseInt(root?.dataset?.qty, 10) || null,
+                optionNo: (root?.dataset?.optionNo || null),
+                fulfillment: (root?.dataset?.fulfillment || 'delivery').toLowerCase()
+            };
+            const IS_CART_MODE = !!CART_CSV;  // true면 장바구니, false면 단건
+
             const app = Vue.createApp({
                 data() {
                     return {
-                        userId: "${userId}",
-                        productNo: "${productNo}",
-                        quantity: "${qty}",
+                        userId: USER,
                         products: [],
                         buyer: {},
                         shipping: { recipient: "", phone: "", zip: "", address: "", detail: "" },
@@ -316,17 +333,25 @@
                         requestLabel: '',
                         requestDirect: '',
 
+                        // 상세 진입 시에만 의미 있음
+                        fulfillment: SINGLE.fulfillment,
+                        shippingFeeFromDetail: 0
                     };
                 },
                 computed: {
                     totalPrice() {
-                        return this.products.reduce((sum, p) => sum + (Number(p.price) || 0) * (Number(p.quantity) || 0), 0);
+                        return this.products.reduce((sum, p) => {
+                            const unit = Number(p.unitPrice || p.price || 0);
+                            const q = Number(p.quantity || 0);
+                            return sum + unit * q;
+                        }, 0);
                     },
                     // A안: 단건 결제 - 상세에서 수령방법이 '택배'면 3,000, '방문'이면 0.
                     // 지금은 param으로 fulfillment를 안 받으니, 임시로 3,000 고정 또는
                     // products[0].fulfillment === 'delivery' ? 3000 : 0 로도 가능
                     shippingFeeC() {
                         // 단건이면 첫 상품 기준 / 다건이면 some(delivery)
+                        if (this.shippingFeeFromDetail > 0) return this.shippingFeeFromDetail;
                         const hasDelivery = this.products.some(p => (p.fulfillment || 'delivery') === 'delivery');
                         return hasDelivery ? 3000 : 0;
                     },
@@ -335,28 +360,60 @@
                     }
                 },
                 methods: {
-                    fnProduct: function () {
-                        let self = this;
-                        let param = {
-                            userId: self.userId,
-                            productNo: self.productNo,
-                            quantity: self.quantity
-                        };
-                        $.ajax({
-                            url: "/payment/list.dox",
-                            type: "POST",
-                            dataType: "json",
-                            data: param,
-                            success: function (data) {
-                                console.log(data.list);
-                                if (data.result == 'success') {
-                                    self.products = data.list || [];
-                                } else {
-                                    alert('불러오기 실패');
+                    fnProduct() {
+                        if (IS_CART_MODE) {
+                            // 장바구니 다건
+                            $.ajax({
+                                url: CTX + "/payment/list.dox",
+                                type: "POST",
+                                dataType: "json",
+                                data: { userId: USER, cartNos: CART_CSV },
+                                success: (res) => {
+                                    if (res.result === 'success') {
+                                        this.products = (res.list || []).map(p => ({
+                                            ...p,
+                                            unitPrice: Number(p.unitPrice ?? p.price ?? 0),
+                                            quantity: Number(p.quantity ?? 1),
+                                            shippingFee: Number(p.shippingFee ?? 0),
+                                            fulfillment: (p.fulfillment || 'delivery').toLowerCase()
+                                        }));
+                                    } else {
+                                        alert(res.message || '결제 대상 불러오기 실패');
+                                    }
                                 }
-                            },
-                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
-                        });
+                            });
+                        } else {
+                            // 상세 단건
+                            if (!SINGLE.productNo || !SINGLE.qty) {
+                                alert('결제 대상이 없습니다.'); location.href = CTX + '/'; return;
+                            }
+                            $.ajax({
+                                url: CTX + "/payment/list.dox",
+                                type: "POST",
+                                dataType: "json",
+                                data: {
+                                    userId: USER,
+                                    productNo: SINGLE.productNo,
+                                    quantity: SINGLE.qty,
+                                    optionNo: SINGLE.optionNo,
+                                    fulfillment: SINGLE.fulfillment
+                                },
+                                success: (res) => {
+                                    console.log(res);
+                                    if (res.result === 'success') {
+                                        this.products = (res.list || []).map(p => ({
+                                            ...p,
+                                            unitPrice: Number(p.unitPrice ?? p.price ?? 0),
+                                            quantity: Number(p.quantity ?? SINGLE.qty ?? 1),
+                                            shippingFee: Number(p.shippingFee ?? 0),
+                                            fulfillment: (p.fulfillment || SINGLE.fulfillment || 'delivery').toLowerCase()
+                                        }));
+                                    } else {
+                                        alert(res.message || '결제 대상 불러오기 실패');
+                                    }
+                                }
+                            });
+                        }
                     },
 
                     fnUser: function () {
@@ -412,7 +469,7 @@
 
                         // PortOne 객체 생성
                         const IMP = window.IMP;
-                        IMP.init("impxxxxxx"); // ⚠️ 여기에 본인 가맹점 식별코드 넣기 (예: imp12345678)
+                        IMP.init("imp16634661"); // ⚠️ 여기에 본인 가맹점 식별코드 넣기 (예: imp12345678)
 
                         const paymentData = {
                             pg: "html5_inicis", // 결제 PG사: inicis, kakaopay, toss 등
@@ -430,6 +487,8 @@
                         IMP.request_pay(paymentData, (rsp) => {
                             let self = this;
                             if (rsp.success) {
+                                const line = this.products[0] || {};
+
                                 $.ajax({
                                     url: "${path}/payment/verify.dox",
                                     type: "POST",
@@ -441,12 +500,18 @@
                                         receivName: this.buyer.name,
                                         receivPhone: this.buyer.phone,
                                         deliverAddr: this.buyer.address,
-                                        memo: memo
+                                        memo: memo,
+
+                                        productNo: line.productNo,
+                                        optionNo: line.optionNo,          // 옵션 없으면 null
+                                        quantity: line.quantity,
+                                        unitPrice: line.unitPrice || line.price,    // (기본가+옵션추가금) 단가
+                                        fulfillment: line.fulfillment || this.fulfillment
                                     },
                                     success: function (data) {
                                         if (data.result == "success") {
                                             alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
-                                            location.href = "${path}/product/payment.do";
+                                            location.href = "${path}/buyerMyPage.do?activeTab=orders";
                                         } else {
                                             alert("결제 저장 실패:" + data.message);
                                         }

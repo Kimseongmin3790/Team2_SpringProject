@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.ProductCategoryMapper">
+	<!-- 전체 목록: 부모 → 자식 순 -->
+  <select id="selectCategoryList" parameterType="hashmap" resultType="hashmap">
+	  SELECT
+	      c.CATEGORY_NO         AS CATEGORYNO,
+	      c.CATEGORY_NAME       AS CATEGORYNAME,
+	      c.PARENT_CATEGORY_NO  AS PARENTCATEGORYNO,
+	      p.CATEGORY_NO         AS PARENTNO,
+	      p.CATEGORY_NAME       AS PARENTNAME
+	  FROM PRODUCT_CATEGORY c
+	  LEFT JOIN PRODUCT_CATEGORY p
+	    ON p.CATEGORY_NO = c.PARENT_CATEGORY_NO
+	  ORDER BY
+	      NVL(c.PARENT_CATEGORY_NO, c.CATEGORY_NO),
+	      c.CATEGORY_NO
+	</select>
+
+  <!-- 시퀀스 제거: 직접 번호 입력 -->
+	<insert id="insertCategory" parameterType="hashmap">
+	  INSERT INTO PRODUCT_CATEGORY (CATEGORY_NO, CATEGORY_NAME, PARENT_CATEGORY_NO)
+	  VALUES (#{categoryNo}, #{categoryName}, #{parentCategoryNo, jdbcType=NUMERIC})
+	</insert>
+	
+	<!-- 그대로 사용 -->
+	<update id="updateCategory" parameterType="hashmap">
+	  UPDATE PRODUCT_CATEGORY
+	     SET CATEGORY_NAME = #{categoryName},
+	         PARENT_CATEGORY_NO = #{parentCategoryNo, jdbcType=NUMERIC}
+	   WHERE CATEGORY_NO = #{categoryNo}
+	</update>
+	
+	<delete id="deleteCategory" parameterType="hashmap">
+	  DELETE FROM PRODUCT_CATEGORY WHERE CATEGORY_NO = #{categoryNo}
+	</delete>
+	
+	<select id="countChildren" parameterType="hashmap" resultType="int">
+	  SELECT COUNT(*) FROM PRODUCT_CATEGORY WHERE PARENT_CATEGORY_NO = #{categoryNo}
+	</select>
+	
+	<!-- 중복 번호 존재 여부 -->
+	<select id="existsByNo" parameterType="hashmap" resultType="int">
+	  SELECT COUNT(*) FROM PRODUCT_CATEGORY WHERE CATEGORY_NO = #{categoryNo}
+	</select>
+	
+	<!-- (선택) 동일 부모 내 중복명 체크 -->
+	<select id="existsNameUnderParent" parameterType="hashmap" resultType="int">
+	  SELECT COUNT(*)
+	    FROM PRODUCT_CATEGORY
+	   WHERE UPPER(CATEGORY_NAME) = UPPER(#{categoryName})
+	     AND NVL(PARENT_CATEGORY_NO, -1) = NVL(#{parentCategoryNo}, -1)
+	     <if test="exceptCategoryNo != null">
+	       AND CATEGORY_NO != #{exceptCategoryNo}
+	     </if>
+	</select>
+	
+	<!-- 부모 존재 확인 -->
+	<select id="parentExists" parameterType="hashmap" resultType="int">
+	  SELECT COUNT(*) FROM PRODUCT_CATEGORY WHERE CATEGORY_NO = #{parentCategoryNo}
+	</select>
+  
+</mapper>

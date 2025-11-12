@@ -2,11 +2,13 @@ package com.example.TeamProject.mapper;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.example.TeamProject.model.Cart;
+import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.User;
 
 @Mapper
@@ -51,4 +53,34 @@ public interface UserMapper {
 	int deleteCartItem(HashMap<String, Object> map);
 	// 장바구니 전체 삭제
 	int allDelete(HashMap<String, Object> map);
+	
+	// cartNo 조회
+	Long selectCartNoByKey(Map<String,Object> key);
+	// 장바구니 수량 업데이트
+	int updateCartQtyByKey(Map<String, Object> map);
+	// 장바구니 추가
+	int insertCarts(Map<String, Object> map);
+	
+	// 판매자 내 상품 목록
+	List<Product> getSellerProductList(HashMap<String, Object> map);
+	// 판매자 내 상품 삭제(hidden처리)
+	int hiddenSellerProduct(HashMap<String, Object> map);
+	
+	// 판매자 상품 상세 정보
+	Product getsellerProductDetail(HashMap<String, Object> map);
+	// 판매자 상품 옵션 정보
+	List<Product> getsellerProductOption(HashMap<String, Object> map);
+	// 판매자 상품 이미지 정보
+	List<Product> getsellerProductImage(HashMap<String, Object> map);
+	// 판매자 상품 카테고리 정보
+	Product getsellerProductCategory(int categoryNo);
+	
+	// 상품 정보 업데이트
+	void updateProduct(Map<String,Object> base);
+	void deleteOptions(Map<String,Object> delParam);
+	void updateOption(Map<String,Object> op);
+	void insertOption(Map<String,Object> op);
+	void clearThumbnail(int productNo);
+	void insertImage(Map<String,Object> img);
+	void deleteImages(Map<String,Object> delParam);
 }

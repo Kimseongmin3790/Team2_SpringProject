@@ -624,7 +624,7 @@
                                     Swal.fire({
                                         icon: 'success',
                                         title: '판매자 회원가입 완료!',
-                                        text: 'AGRICOLA와 함께 성장하세요 🌾',
+                                        text: '※ 관리자 승인 완료 시 판매자 기능 사용 가능합니다',
                                         confirmButtonColor: '#5dbb63'
                                     }).then(() => location.href = self.path + "/login.do");
                                 },

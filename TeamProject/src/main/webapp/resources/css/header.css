@@ -21,7 +21,7 @@ body {
 	box-sizing: border-box;
 }
 
-/* ✅ PC에서는 모바일 버튼 안보이게 */
+/* PC에서는 모바일 버튼 안보이게 */
 .mobile-buttons {
 	display: none;
 }
@@ -261,7 +261,7 @@ body {
 	padding-bottom: 4px;
 }
 
-/* 🌿 카테고리 버튼 */
+/* 카테고리 버튼 */
 .btn-category {
 	background: linear-gradient(135deg, #5dbb63, #4caf50);
 	color: white;
@@ -283,7 +283,7 @@ body {
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* 🌿 메뉴 박스 */
+/* 메뉴 박스 */
 .category-menu {
 	list-style: none;
 	margin: 0;
@@ -306,7 +306,7 @@ body {
 	display: block;
 }
 
-/* 🌿 1단 대분류 */
+/* 1단 대분류 */
 .category-menu>li {
 	position: relative;
 }
@@ -329,14 +329,14 @@ body {
 	transform: translateX(3px);
 }
 
-/* 🌿 아이콘 (대분류 앞 이미지) */
+/* 아이콘 (대분류 앞 이미지) */
 .category-menu>li>a img {
 	width: 20px;
 	height: 20px;
 	object-fit: contain;
 }
 
-/* 🌿 2단 중분류 */
+/* 2단 중분류 */
 .category-menu li ul {
 	display: none;
 	position: absolute;
@@ -354,7 +354,7 @@ body {
 	display: block;
 }
 
-/* 🌿 3단 소분류 */
+/* 3단 소분류 */
 .category-menu li ul li ul {
 	left: 100%;
 	top: 0;
@@ -374,14 +374,33 @@ body {
 	color: #1a5d1a;
 }
 
-/* 🌿 불필요한 표시 제거 */
+/* 불필요한 표시 제거 */
 .category-menu li>ul::before,
 .category-menu li::marker {
 	content: none !important;
 	display: none !important;
 }
 
-/* 🌿 등장 애니메이션 */
+/* 부모-자식 사이 갭 제거 및 기준점 */
+.category-menu li { position: relative; }
+.category-menu li > ul {
+  position: absolute;
+  top: 0;
+  left: calc(100% - 1px);
+  z-index: 10000;         
+}
+
+/* 자식 ul이 있는 li의 a 오른쪽에 투명 브리지 생성 */
+.category-menu li:has(> ul) > a::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -12px;   
+  width: 12px;
+  height: 100%;
+}
+
+/* 등장 애니메이션 */
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -394,8 +413,6 @@ body {
 	}
 }
 
-/* ========================================= */
-/* 📱 반응형 Header 영역 */
 @media (max-width: 1200px) {
 	.header-top {
 		flex-wrap: wrap;
@@ -422,7 +439,6 @@ body {
 		width: 90%;
 		max-width: none;
 		order: 3;
-		/* 검색창 아래로 이동 */
 	}
 
 	.header-right {
@@ -451,7 +467,6 @@ body {
 		width: 120px;
 	}
 
-	/* 하단 메뉴 줄이기 */
 	.header-bottom {
 		flex-direction: column;
 		gap: 15px;
@@ -464,7 +479,6 @@ body {
 	}
 }
 
-/* ✅ 모바일 (≤767px) */
 @media (max-width: 767px) {
 	.header {
 		padding: 10px 15px;
@@ -476,17 +490,14 @@ body {
 		align-items: center;
 	}
 
-	/* 로고 중앙 */
 	.logo {
 		justify-content: center;
 	}
 
-	/* 검색창 숨기기 (토글로 열기 가능하게 대비) */
 	.search-section {
 		display: none;
 	}
 
-	/* 햄버거 버튼 추가 스타일 (btn-category 활용) */
 	.btn-category {
 		background: transparent;
 		border: none;
@@ -495,7 +506,6 @@ body {
 		padding: 4px;
 	}
 
-	/* nav 메뉴 숨기기 */
 	.nav-menu {
 		display: none;
 		flex-direction: column;
@@ -506,7 +516,6 @@ body {
 		border-top: 1px solid #ddd;
 	}
 
-	/* ✅ 햄버거 클릭 시 표시되게 JS에서 toggle() 처리 */
 	.nav-menu.active {
 		display: flex;
 	}
@@ -520,10 +529,8 @@ body {
 	}
 }
 
-/* 📱 320~425px 초소형 모바일 대응 */
 @media (max-width: 425px) {
 
-	/* 전체 여백 최소화 */
 	.header {
 		padding: 6px 10px;
 	}
@@ -534,12 +541,10 @@ body {
 		align-items: center;
 	}
 
-	/* 로고 */
 	.logo-img {
 		width: 100px;
 	}
 
-	/* ✅ 모바일 버튼 그룹 (햄버거 + 돋보기) */
 	.mobile-buttons {
 		display: flex;
 		gap: 10px;
@@ -553,7 +558,6 @@ body {
 		cursor: pointer;
 	}
 
-	/* 로그인 / 회원가입 버튼 */
 	.btn-login,
 	.btn-join,
 	.btn-logout,
@@ -567,7 +571,6 @@ body {
 		gap: 6px;
 	}
 
-	/* 아이콘 크기 조정 */
 	.icon-group {
 		gap: 10px;
 	}
@@ -576,14 +579,12 @@ body {
 		font-size: 20px;
 	}
 
-	/* 검색창 완전 숨기기 (나중에 토글 버튼으로 열 수 있도록 대비) */
 	.search-section {
 		display: none;
 		width: 100%;
 		padding: 10px 0;
 	}
 
-	/* 검색창 활성화 시 표시 */
 	.search-section.active {
 		display: flex;
 		flex-direction: column;
@@ -595,7 +596,6 @@ body {
 		width: 90%;
 	}
 
-	/* 하단 메뉴 최소화 */
 	.header-bottom {
 		flex-direction: column;
 		padding: 8px 0;
@@ -625,30 +625,84 @@ body {
 		font-size: 20px;
 	}
 
-	/* 카테고리 버튼 */
 	.btn-category {
 		font-size: 14px;
 		padding: 4px 8px;
 	}
 
-	/* hover 효과 줄이기 (터치 최적화) */
 	.nav-menu a:hover::after {
 		width: 0;
 	}
 }
 
-/* 확정 표시 */
 .category-menu.active {
 	display: block !important;
 }
 
-/* 레이어 겹침 방지 */
 .header {
 	position: relative;
-	z-index: 5;
+	z-index: 100000;
+}
+
+.category-container { 
+	position: relative; 
 }
 
 #dropdownMenu {
-	position: absolute;
-	z-index: 9999;
+  position: absolute;
+  z-index: 100001; 
 }
+
+.nav-menu a.active {
+  color: #1a5d1a;
+  font-weight: 700;
+}
+.nav-menu a.active::after {
+  width: 100%;
+}
+
+.mypage-dropdown {
+	position: relative;
+	display: inline-block;
+}
+
+.mypage-menu {
+	display: none;
+	position: absolute;
+	top: 110%;
+	right: 0;
+	background: #ffffff;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	padding: 5px 0;
+	min-width: 180px;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+	opacity: 0;
+	transform: translateY(-5px);
+	transition: opacity 0.25s ease, transform 0.25s ease;
+	z-index: 1000;
+	list-style: none;
+}
+
+.mypage-menu.show {
+	display: block;
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.mypage-menu li a {
+	display: block;
+	padding: 10px 20px;
+	color: #1a5d1a;
+	font-weight: 500;
+	text-decoration: none;
+	border-radius: 6px;
+	transition: all 0.2s;
+}
+
+.mypage-menu li a:hover {
+	background: #4caf50;
+	color: #fff;
+	transform: translateX(2px);
+}
+

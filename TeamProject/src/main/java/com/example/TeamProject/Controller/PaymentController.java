@@ -25,12 +25,17 @@ public class PaymentController {
 	@RequestMapping("/product/payment.do")
 	public String payment(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
 			throws Exception {
-		System.out.println(map.get("productNo"));
 		request.setAttribute("productNo", map.get("productNo"));
-		System.out.println(map.get("userId"));
 		request.setAttribute("userId", map.get("userId"));
-		System.out.println(map.get("qty"));
 		request.setAttribute("qty", map.get("qty"));
+		
+		request.setAttribute("optionNo", map.get("optionNo"));
+	    request.setAttribute("optionUnit", map.get("optionUnit"));
+	    request.setAttribute("optionAddPrice", map.get("optionAddPrice"));
+	    request.setAttribute("unitPrice", map.get("unitPrice"));
+	    request.setAttribute("fulfillment", map.get("fulfillment"));
+	    request.setAttribute("shippingFee", map.get("shippingFee"));
+		
 		return "product/payment";
 	}
 	
@@ -60,10 +65,10 @@ public class PaymentController {
 	        String impUid = (String) map.get("impUid");
 	        String merchantUid = (String) map.get("merchantUid");
 
-	        // 1️⃣ PortOne Access Token 발급
+	        // PortOne Access Token 발급
 	        String accessToken = paymentService.getPortOneAccessToken();
 
-	        // 2️⃣ imp_uid로 결제 정보 조회
+	        // imp_uid로 결제 정보 조회
 	        HashMap<String, Object> paymentData = paymentService.getPaymentData(impUid, accessToken);
 
 	        // PortOne 결제 정보 파싱
@@ -75,7 +80,7 @@ public class PaymentController {
 	        int amount = ((Double) paymentData.get("amount")).intValue();
 	        String transactionNo = impUid; // PortOne 고유 결제번호
 	        
-	        // ✅ 3. 주문 정보 생성 (ORDER 테이블에 insert)
+	        // 주문 정보 생성 (ORDER 테이블에 insert)
 	        HashMap<String, Object> orderMap = new HashMap<>();
 	        orderMap.put("totalPrice", amount);
 	        orderMap.put("status", "결제완료");
@@ -97,9 +102,20 @@ public class PaymentController {
 	        payMap.put("transactionNo", transactionNo);
 	        payMap.put("amount", amount);
 
-	        // 4️⃣ DB Insert 실행
+	        // DB Insert 실행
 	        paymentService.insertPayment(payMap);
-
+	        
+	        // 주문 정보 생성(ORDER_ITEM 테이블에 INSERT) 
+	        HashMap<String, Object> orderItemMap = new HashMap<>();
+	        orderItemMap.put("orderNo", orderNo);  // FK (주문번호)
+	        orderItemMap.put("quantity", toInt(map.get("quantity"), null));
+	        orderItemMap.put("price", toInt(map.get("unitPrice"), null));
+	        orderItemMap.put("productNo", toInt(map.get("productNo"), null));
+	        orderItemMap.put("optionNo", toInt(map.get("optionNo"), null));
+	        
+	        // DB Insert 실행
+	        paymentService.insertOrderItem(orderItemMap);
+	        
 	        resultMap.put("result", "success");
 	        resultMap.put("orderNo", orderNo);
 	        resultMap.put("message", "결제정보 저장 완료");
@@ -112,6 +128,18 @@ public class PaymentController {
 	    return new Gson().toJson(resultMap);
 	}
 	
-	
+	private Integer toInt(Object v, Integer def) {
+		if (v == null) return def;
+	    if (v instanceof Number) return ((Number) v).intValue();
+	    try {
+	        String s = v.toString().trim();
+	        if (s.isEmpty() || "null".equalsIgnoreCase(s)) return def;
+	        // 1,000 같은 포맷 혹시 대비
+	        s = s.replaceAll(",", "");
+	        return new java.math.BigDecimal(s).intValue();
+	    } catch (Exception e) {
+	        return def;
+	    }
+	}
 
 }

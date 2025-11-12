@@ -8,9 +8,11 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,6 +24,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.TeamProject.dao.OrderService;
 import com.example.TeamProject.dao.SellerService;
 import com.example.TeamProject.dao.UserService;
+import com.example.TeamProject.mapper.UserMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -40,7 +43,7 @@ public class UserController {
 
 	@Autowired
 	private SellerService sellerService;
-
+	
 	@RequestMapping("/login.do")
 	public String login(Model model) throws Exception {
 
@@ -90,22 +93,34 @@ public class UserController {
 		return "user/buyerMypage";
 	}
 
-	@RequestMapping("/sellerMyPage.do")
-	public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes)
-			throws Exception {
-		String userId = (String) session.getAttribute("sessionId");
+    @RequestMapping("/sellerMyPage.do")
+    public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes)
+    throws Exception {
+        String userId = (String) session.getAttribute("sessionId");
 
-		HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
-		String resultStatus = (String) serviceResult.get("result");
-		String message = (String) serviceResult.get("message");
+        // userId가 null인지 먼저 확인
+        if (userId == null || userId.isEmpty()) {
+            redirectAttributes.addFlashAttribute("redirectMessage", "로그인이 필요합니다.");
+            return "redirect:/login.do"; // 로그인 페이지로 리다이렉트
+        }
 
-		if ("success".equals(resultStatus)) {
-			return "user/sellerMyPage";
-		} else {
-			redirectAttributes.addFlashAttribute("redirectMessage", message);
-			return "redirect:/main.do";
-		}
-	}
+        HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
+        String resultStatus = (String) serviceResult.get("result");
+        String message = (String) serviceResult.get("message");
+
+        if ("success".equals(resultStatus)) {
+            String loginType = (String) session.getAttribute("loginType");
+            if (loginType == null) { // 혹시 세션에 없는 경우를 대비한 기본값
+                loginType = "NORMAL"; // 또는 "UNKNOWN" 등 적절한 기본값
+            }
+            model.addAttribute("loginType", loginType); // 모델에 loginType 추가
+
+            return "user/sellerMyPage";
+        } else {
+            redirectAttributes.addFlashAttribute("redirectMessage", message);
+            return "redirect:/main.do";
+        }
+    }
 
 	@RequestMapping("/cart.do")
 	public String cart(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
@@ -114,6 +129,19 @@ public class UserController {
 		request.setAttribute("productNo", map.get("productNo"));
 
 		return "user/cart";
+	}
+	
+	@RequestMapping("/sellerProductList.do")
+	public String sellerProductList(Model model) throws Exception {
+
+		return "user/sellerProductList";
+	}
+	
+	@RequestMapping("/sellerProductEdit.do")
+	public String sellerProductEdit(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		request.setAttribute("productNo", map.get("productNo"));
+		
+		return "user/sellerProductEdit";
 	}
 
 	@RequestMapping(value = "/join.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
@@ -138,39 +166,76 @@ public class UserController {
 	// 장바구니 추가
 	@RequestMapping(value = "/cart/add.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public String addCart(Model model, @RequestParam HashMap<String, Object> map, HttpSession session)
-			throws Exception {
+	public String addCart(Model model, @RequestParam HashMap<String, Object> map, HttpSession session) throws Exception {
 
-		// 프론트에서 넘어온 수령방법 (기본값: delivery)
-		String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
+	    HashMap<String, Object> res = new HashMap<>();
 
-		// ★ 장바구니 저장 -> 서비스 결과 사용(여기서 cartNo를 받아옴)
-		HashMap<String, Object> resultMap = userService.addCart(map);
+	    try {
+	        // 세션 사용자 우선 사용 (보안)
+	        String sessionUser = (String) session.getAttribute("sessionId");
+	        String userId = (sessionUser != null && !sessionUser.isBlank())
+	                ? sessionUser
+	                : String.valueOf(map.get("userId"));
 
-		// cartNo 뽑기
-		Long cartNo = null;
-		Object cno = resultMap.get("cartNo");
-		if (cno instanceof Number) {
-			cartNo = ((Number) cno).longValue();
-		} else if (cno != null) {
-			try {
-				cartNo = Long.parseLong(String.valueOf(cno));
-			} catch (Exception ignore) {
-			}
-		}
+	        if (userId == null || userId.isBlank()) {
+	            res.put("result", "fail");
+	            res.put("message", "로그인이 필요합니다.");
+	            return new com.google.gson.Gson().toJson(res);
+	        }
 
-		// cartNo가 있으면 세션 맵(cartFulfillment)에 cartNo→fulfillment 저장
-		if (cartNo != null) {
-			@SuppressWarnings("unchecked")
-			Map<Long, String> fMap = (Map<Long, String>) session.getAttribute("cartFulfillment");
-			if (fMap == null) {
-				fMap = new HashMap<>();
-				session.setAttribute("cartFulfillment", fMap);
-			}
-			fMap.put(cartNo, "pickup".equalsIgnoreCase(fulfillment) ? "pickup" : "delivery");
-		}
+	        // 숫자/문자 정규화
+	        Integer productNo  = toInt(map.get("productNo"), null);
+	        Integer optionNo   = toInt(map.get("optionNo"), null);   // CART.OPTION_NO 존재 가정 (nullable)
+	        Integer quantity   = Math.max(1, toInt(map.get("quantity"), 1));
 
-		return new Gson().toJson(resultMap);
+	        // 수령 방법 & 배송비는 서버에서 결정 (클라 shippingFee 무시)
+	        String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
+	        fulfillment = "pickup".equalsIgnoreCase(fulfillment) ? "pickup" : "delivery";
+	        int shippingFee = "delivery".equals(fulfillment) ? 3000 : 0;
+
+	        // 필수값 검증
+	        if (productNo == null) {
+	            res.put("result", "fail");
+	            res.put("message", "productNo가 없습니다.");
+	            return new com.google.gson.Gson().toJson(res);
+	        }
+
+	        // 서비스에 넘길 '클린 파라미터' 구성 (불신 필드 제거: unitPrice/totalPrice/optionUnit 등)
+	        HashMap<String, Object> clean = new HashMap<>();
+	        clean.put("userId", userId);
+	        clean.put("productNo", productNo);
+	        clean.put("optionNo", optionNo);
+	        clean.put("quantity", quantity);
+	        clean.put("fulfillment", fulfillment);
+	        clean.put("shippingFee", shippingFee);
+
+	        // 장바구니 저장 (MERGE or INSERT) -> cartNo 반환 기대
+	        HashMap<String, Object> resultMap = userService.addCart(clean);
+
+	        // cartNo 세션 보조 저장 (선택)
+	        Long cartNo = toLong(resultMap.get("cartNo"));
+	        if (cartNo != null) {
+	            @SuppressWarnings("unchecked")
+	            Map<Long, String> fMap = (Map<Long, String>) session.getAttribute("cartFulfillment");
+	            if (fMap == null) {
+	                fMap = new HashMap<>();
+	                session.setAttribute("cartFulfillment", fMap);
+	            }
+	            fMap.put(cartNo, fulfillment);
+	        }
+
+	        // 응답
+	        if (!resultMap.containsKey("result")) {
+	            resultMap.put("result", "success");
+	        }
+	        return new com.google.gson.Gson().toJson(resultMap);
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        res.put("result", "fail");
+	        res.put("message", e.getMessage());
+	        return new com.google.gson.Gson().toJson(res);
+	    }
 	}
 
 	// 장바구니 목록
@@ -230,7 +295,7 @@ public class UserController {
 
 	    Map<String, Object> response = new HashMap<>();
 
-	    // ✅ 파일 업로드 처리
+	    // 파일 업로드 처리
 	    String fileWebPath = null;
 	    if (bizLicense != null && !bizLicense.isEmpty()) {
 	        try {
@@ -258,7 +323,7 @@ public class UserController {
 	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	    }
 	    
-	    // ✅ 프로필사진 업로드 처리 (선택사항)
+	    // 프로필사진 업로드 처리 (선택사항)
 	    String profileWebPath = null;
 	    if (profileImage != null && !profileImage.isEmpty()) {
 	        try {
@@ -281,12 +346,12 @@ public class UserController {
 	    }
 
 	    try {
-	        // ✅ 주소 → 좌표 변환
+	        // 주소 -> 좌표 변환
 	        double[] coords = userService.getCoordinatesFromAddress(userAddr);
 	        double lat = coords[0];
 	        double lng = coords[1];
 
-	        // ✅ DB 저장용 데이터 구성
+	        // DB 저장용 데이터 구성
 	        HashMap<String, Object> sellerData = new HashMap<>();
 	        sellerData.put("userId", userId);
 	        sellerData.put("businessName", farmName);
@@ -300,7 +365,7 @@ public class UserController {
 	        sellerData.put("profileImg", profileWebPath);
 	        sellerData.put("verified", "N");
 
-	        // ✅ DB insert 실행
+	        // DB insert 실행
 	        userService.addSeller(sellerData);
 
 	        response.put("status", "success");
@@ -441,6 +506,111 @@ public class UserController {
 		HashMap<String, Object> resultMap = orderService.getOrderHistory(userId);
 
 		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/myPage/list.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String getSellerProductList(@RequestBody HashMap<String, Object> map) throws Exception {
+		
+		HashMap<String, Object> resultMap = userService.getSellerProductList(map);
+
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/myPage/delete.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String hiddenSellerProduct(@RequestBody HashMap<String, Object> map) throws Exception {
+		
+		HashMap<String, Object> resultMap = userService.hiddenSellerProduct(map);
+
+		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/seller/product/detail.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String sellerProductDetail(@RequestBody HashMap<String, Object> map) throws Exception {
+		
+		HashMap<String, Object> resultMap = userService.getSellerProductDetail(map);
+
+		return new Gson().toJson(resultMap);
+	}
+	
+	@PostMapping(
+	  value = "/seller/product/update.dox",
+	  consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+	  produces = MediaType.APPLICATION_JSON_VALUE
+	)
+	@ResponseBody
+	public ResponseEntity<Map<String,Object>> updateProduct(
+	    @RequestParam Integer productNo,
+	    @RequestParam Integer categoryNo,
+	    @RequestParam String pname,
+	    @RequestParam String pinfo,
+	    @RequestParam Integer price,
+	    @RequestParam String origin,
+	    @RequestParam(defaultValue = "SELLING") String productStatus,
+
+	    @RequestParam(required = false) String optionsJson,
+	    @RequestParam(required = false) String deletedOptionNosJson,
+	    @RequestParam(required = false) String deletedImageNosJson,
+
+	    @RequestParam(required = false) MultipartFile thumbnail,
+	    @RequestParam(required = false) List<MultipartFile> galleryImages,
+	    @RequestParam(required = false) List<MultipartFile> detailImages,
+
+	    HttpServletRequest request
+	) throws Exception {
+
+	    String uploadDir = request.getServletContext()
+	                    .getRealPath("/resources/uploads/productImage");
+
+	    Map<String,Object> res = userService.updateProductAll(
+	        productNo, categoryNo, pname, pinfo, price, origin, productStatus,
+	        optionsJson, deletedOptionNosJson, deletedImageNosJson,
+	        thumbnail, galleryImages, detailImages,
+	        uploadDir
+	    );
+	    return ResponseEntity.ok(res);
+	}
+
+
+	// ---- 유틸 ----
+	private String saveFile(MultipartFile mf, String dir) throws Exception {
+	  String ext = "";
+	  String name = mf.getOriginalFilename();
+	  if (name != null && name.lastIndexOf(".") > -1) ext = name.substring(name.lastIndexOf("."));
+	  String saved = java.util.UUID.randomUUID().toString() + ext;
+	  mf.transferTo(new File(dir, saved));
+	  return "/resources/uploads/productImage/" + saved;
+	}
+
+	private Map<String,Object> mapImg(int productNo, String url, String type){
+	  Map<String,Object> m = new HashMap<>();
+	  m.put("productNo", productNo);
+	  m.put("imageUrl", url);
+	  m.put("imageType", type); // 'Y','A','N'
+	  return m;
+	}
+	
+	/* ===== 유틸 ===== */
+	private Integer toInt(Object v, Integer def) {
+	    if (v == null) return def;
+	    if (v instanceof Number) return ((Number) v).intValue();
+	    try {
+	        String s = v.toString().trim();
+	        if (s.isEmpty() || "null".equalsIgnoreCase(s) || "undefined".equalsIgnoreCase(s)) return def;
+	        s = s.replaceAll(",", "");
+	        return new java.math.BigDecimal(s).intValue();
+	    } catch (Exception e) {
+	        return def;
+	    }
+	}
+
+	private Long toLong(Object v) {
+	    if (v == null) return null;
+	    if (v instanceof Number) return ((Number) v).longValue();
+	    try { return new java.math.BigDecimal(v.toString().trim()).longValue(); }
+	    catch (Exception e) { return null; }
 	}
 
 }

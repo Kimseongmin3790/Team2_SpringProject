@@ -14,6 +14,10 @@
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
             <style>
+                [v-cloak] {
+                    display: none !important;
+                }
+
                 body {
                     font-family: "Noto Sans KR", sans-serif;
                     background: #f9f9f9;
@@ -53,20 +57,25 @@
                     margin-bottom: 20px;
                 }
 
+                /* ===== 상품등록 버튼 (크기 고정 포함) ===== */
                 .btn-register {
                     background-color: #4CAF50;
                     color: white;
                     border: none;
                     border-radius: 8px;
+                    min-width: 90px;
+                    max-width: 110px;
+                    height: 50px;
                     padding: 12px 20px;
                     font-size: 18px;
-                    font-weight: bold;
+
                     cursor: pointer;
                     transition: background-color 0.2s, transform 0.1s;
+                    flex-shrink: 0;
                 }
 
                 .btn-register:hover {
-                    background-color: #3d8c40;
+                    background-color: #ddd;
                     transform: scale(1.05);
                 }
 
@@ -75,6 +84,7 @@
                     font-size: 24px;
                     margin-bottom: 15px;
                     font-weight: bold;
+                    margin: 35px 0;
                 }
 
                 .sidebar ul {
@@ -102,7 +112,7 @@
                 /* ===== 좌우 구분선 ===== */
                 .division-bar {
                     width: 1px;
-                    background: linear-gradient(to bottom, #d0d0d0, #e8e8e8);
+                    background: #ddd;
                     border-radius: 1px;
                     align-self: stretch;
                     height: auto;
@@ -182,7 +192,7 @@
                     font-size: 25px;
                     font-weight: 600;
                     margin-top: -10px;
-                    color: #333;
+                    color: #1a5d1a;
                 }
 
                 /* ===== 상품 카드 ===== */
@@ -201,15 +211,55 @@
                 .grid-item.product .info h4 {
                     font-size: 22px;
                     font-weight: bold;
-                    color: blue;
-                    margin-bottom: 3px;
+                    color: #2e7d32;
+                    margin-bottom: 1px;
                     text-align: left;
+                }
+
+                /* animation */
+                .wave-text,
+                .wave-price {
+                    display: inline-block;
+                    animation: wave 2s ease-in-out infinite;
+                    transform-origin: center;
+                }
+
+                /* 물결 애니메이션 정의 */
+                @keyframes wave {
+
+                    0%,
+                    100% {
+                        transform: translateY(0);
+                    }
+
+                    25% {
+                        transform: translateY(-4px) rotate(1deg);
+                    }
+
+                    50% {
+                        transform: translateY(3px) rotate(-1deg);
+                    }
+
+                    75% {
+                        transform: translateY(-2px) rotate(0.5deg);
+                    }
+                }
+
+                /* 가격은 좀 더 강하게 출렁이게 */
+                .wave-price {
+                    animation: wave 1.6s ease-in-out infinite;
+                    font-weight: bold;
+                    color: #d35400;
+                }
+
+                .wave-text {
+                    animation-delay: 0.2s;
                 }
 
                 .grid-item.product .info .desc {
                     font-size: 18px;
-                    color: black;
-                    margin-bottom: 3px;
+                    color: blue;
+                    margin-bottom: 1px;
                     line-height: 1.4;
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -220,7 +270,7 @@
                 }
 
                 .grid-item.product .info .price {
-                    color: #2e7d32;
+                    color: orange;
                     font-weight: bold;
                     font-size: 22px;
                     text-align: left;
@@ -234,10 +284,7 @@
                 }
 
                 /* 별 평점 */
-                .full-star {
-                    color: #FFD700;
-                }
-
+                .full-star,
                 .half-star {
                     color: #FFD700;
                 }
@@ -306,9 +353,128 @@
                     border-left: 5px solid #388e3c;
                 }
 
+                .custom-price-range {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 35px;
+                }
+
+                .custom-price-range button {
+                    border-radius: 5px;
+                    border-color: #388e3c;
+                    background-color: #388e3c;
+                    color: white;
+                    margin-left: 2px;
+                    height: 40px;
+                    font-size: 18px;
+                    margin-bottom: 5px;
+                }
+
+                .custom-price-range button:hover {
+                    background-color: #ddd;
+                }
+
+                .custom-price-range input {
+                    width: 80px;
+                    height: 30px;
+                    padding: 4px;
+                    font-size: 18px;
+                    color: black;
+                    border: solid 1px #ebe3e3;
+                    margin-bottom: 5px;
+                }
+
+                .custom-price-range-left {
+                    margin-left: 20px;
+                    margin-right: 10px;
+                }
+
+                .custom-price-range-right {
+                    margin-left: 10px;
+                }
+
+                /* ===== 생산지역필터 ==== */
+                .region-filter {
+                    margin-top: -30px;
+                    padding-top: 10px;
+                    /* border-top: 1px solid #ddd; */
+                }
+
+                .region-filter h3 {
+                    color: #1a5d1a;
+                    font-size: 22px;
+                    margin-bottom: 15px;
+                    font-weight: bold;
+                }
+
+                .region-filter ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .region-filter li {
+                    padding: 6px 8px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: background-color 0.2s ease;
+                }
+
+                .region-filter li:hover {
+                    background: #f3f3f3;
+                }
+
+                .region-filter li.active {
+                    background: #007bff;
+                    color: white;
+                    font-weight: bold;
+                }
+
+                .region-filter .count {
+                    font-size: 0.9em;
+                    color: #777;
+                }
+
+                .pagination {
+                    display: flex;
+                    justify-content: flex-start;
+                    align-items: center;
+                    margin-top: 3px;
+                    margin-left: 30px;
+                }
+
+                .pagination button {
+                    border: none;
+                    background: #eee;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                }
+
+                .pagination button:disabled {
+                    opacity: 1.4;
+                    cursor: not-allowed;
+                }
+
+                .clear-region {
+                    font-size: 18px;
+                    margin: 10px 0;
+                    background-color: #388e3c;
+                    border: 1px solid #388e3c;
+                    color: white;
+                    border-radius: 6px;
+                    padding: 4px 8px;
+                    cursor: pointer;
+                    margin-left: 10px;
+                }
+
+                .clear-region:hover {
+                    background-color: #ddd;
+                }
+
                 /* ===== 구분선 ===== */
                 .sidebar-divider {
-                    width: 80%;
+                    width: 100%;
                     height: 1px;
                     background-color: #ddd;
                     margin: 25px 0;
@@ -326,6 +492,13 @@
                     font-size: 18px;
                     margin-bottom: 25px;
                     color: #555;
+                }
+
+                .home {
+                    color: #2e7d32;
+                    font-weight: bold;
+                    cursor: pointer;
+                    text-decoration: none;
                 }
 
                 .breadcrumb span {
@@ -357,54 +530,63 @@
                 /* ===== 반응형 ===== */
                 @media (max-width: 1400px) {
                     .product-category-page {
+                        display: flex;
                         flex-direction: column;
-                        align-items: center;
-                        gap: 40px;
-                        padding: 0 30px;
+                        align-items: stretch;
+                        padding: 0 20px;
+                        gap: 30px;
                     }
 
                     .sidebar {
-                        width: 100%;
-                        max-width: 700px;
-                        position: relative;
-                        top: 0;
-                        text-align: center;
+                        position: relative !important;
+                        top: auto !important;
+                        width: 100% !important;
+                        max-width: 100%;
+                        order: 1;
+                        z-index: 1;
+                        background: #fff;
+                        border-radius: 12px;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                        padding: 15px;
                     }
 
                     .division-bar {
-                        display: none;
+                        display: none !important;
                     }
 
                     .content {
-                        width: 100%;
+                        width: 100% !important;
+                        order: 2;
+                        position: relative;
+                        z-index: 0;
                     }
 
                     .content .grid {
-                        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-                        gap: 40px;
                         width: 100%;
                         margin: 0 auto;
+                        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                        gap: 30px;
                     }
 
-                    .grid-item.product .info h4 {
-                        font-size: 21px;
+                    /* 반응형에서도 버튼 크기 유지 */
+                    .btn-register {
+                        width: 110px !important;
+                        font-size: 18px !important;
+                        padding: 12px 20px !important;
                     }
                 }
 
                 @media (max-width: 900px) {
-                    .content .grid {
-                        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                        gap: 35px;
-                        width: 95%;
-                    }
 
-                    .grid-item.product .info h4 {
-                        font-size: 20px;
+                    .sidebar,
+                    .content {
+                        padding: 0 10px;
                     }
 
                     .btn-register {
-                        width: 100%;
-                        font-size: 17px;
+                        width: 110px !important;
+                        font-size: 18px !important;
+                        padding: 12px 20px !important;
                     }
                 }
 
@@ -415,47 +597,105 @@
                     }
 
                     .product-category-page {
-                        padding: 0 15px;
-                        gap: 30px;
+                        padding: 0 10px;
+                        gap: 20px;
                     }
 
-                    .sidebar h3 {
-                        font-size: 20px;
+                    .sidebar {
+                        padding: 10px;
                     }
 
-                    .grid-item.product {
-                        aspect-ratio: 3 / 4.5;
+                    .content .grid {
+                        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
                     }
 
-                    .grid-item.product .info {
-                        padding: 4px;
+                    .btn-register {
+                        width: 110px !important;
+                        font-size: 18px !important;
+                        padding: 12px 20px !important;
                     }
 
-                    .grid-item.product .info h4 {
+                    /* 카테고리 그리드일 때: 카드 폭/간격 축소, 너비 100% */
+                    .content .grid:has(.grid-item:not(.product)) {
+                        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                        gap: 24px;
+                        width: 100%;
+                    }
+
+                    /* 카테고리 카드 비율을 낮게(가로가 더 넓게) */
+                    .grid-item:not(.product) {
+                        aspect-ratio: 4 / 3;
+                        /* 기존 3/5.5 → 4/3 로 변경 */
+                        max-width: 260px;
+                        /* 필요 시 최대폭 제한 */
+                        margin: 10px auto;
+                        /* 가운데 정렬 느낌 */
+                    }
+
+                    /* 카테고리 카드 이미지 래퍼 높이 안정화 */
+                    .grid-item:not(.product) .image-wrapper {
+                        border-radius: 8px;
+                    }
+
+                    /* 카테고리 텍스트도 살짝 축소 */
+                    .grid-item:not(.product) .info h4 {
                         font-size: 18px;
+                        margin-top: 2px;
                     }
+                }
 
-                    .grid-item.product .info .price {
-                        font-size: 20px;
-                    }
+                .status-badge {
+                    position: absolute;
+                    top: 10px;
+                    left: 10px;
+                    padding: 6px 10px;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    font-size: 14px;
+                    background: rgba(0, 0, 0, .7);
+                    color: #fff;
+                    z-index: 2;
+                }
 
-                    .grid-item.product .info .region,
-                    .grid-item.product .info .seller,
-                    .grid-item.product .info .date {
-                        font-size: 17px;
-                    }
+                .product--soldout .status-badge {
+                    background: #757575;
+                }
+
+                /* 회색 */
+                .product--hidden .status-badge {
+                    background: #b71c1c;
+                }
+
+                /* 레드 */
+
+                .product--soldout .image-wrapper img,
+                .product--hidden .image-wrapper img {
+                    filter: grayscale(40%) brightness(0.85);
+                }
+
+                /* 상태일 때 가격/텍스트 톤다운 */
+                .product--soldout .info .price,
+                .product--hidden .info .price {
+                    color: #8d8d8d;
+                }
+
+                /* 상태 카드에선 hover 줌 약화 */
+                .product--soldout:hover .image-wrapper img,
+                .product--hidden:hover .image-wrapper img {
+                    transform: scale(1.01);
                 }
             </style>
 
         <body>
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-                <div id="app" class="product-category-page">
+                <div id="app" class="product-category-page" data-session-status="<c:out value='${sessionStatus}'/>">
                     <!-- 좌측 트리 -->
                     <div class="sidebar">
                         <div class="sidebar-header">
                             <h3>카테고리</h3>
-                            <button class="btn-register" @click="goToProductRegister">상품등록</button>
+                            <button class="btn-register" @click="goToProductRegister" v-cloak
+                                v-if="isSeller">상품등록</button>
                         </div>
 
                         <ul>
@@ -485,7 +725,7 @@
                         <span v-if="viewLevel === 'product'">
                             <div class="sidebar-divider"></div>
 
-                            <div class="price-filer">
+                            <div class="price-filter">
                                 <h3>가격</h3>
                                 <ul>
                                     <li v-for="(range, index) in priceRanges" :key="index"
@@ -494,8 +734,47 @@
                                         {{ range.label }}
                                     </li>
                                 </ul>
+                                <div class="custom-price-range">
+                                    <input class="custom-price-range-left" type="number" v-model.number="customMinPrice"
+                                        placeholder="최소가격" />
+                                    ~
+                                    <input class="custom-price-range-right" type="number"
+                                        v-model.number="customMaxPrice" placeholder="최대가격" />
+                                    <span>(원)</span>
+                                    <button @click="applyCustomPrice">검색</button>
+                                    <button v-if="selectedPriceRange === 'custom'"
+                                        @click="resetCustomPrice">초기화</button>
+                                </div>
                             </div>
                         </span>
+
+
+                        <div class="sidebar-divider"></div>
+
+                        <div class="region-filter">
+                            <h3>전국 아그리콜라들의 상품</h3>
+
+                            <button @click="clearRegion" class="clear-region">
+                                모든 상품 보기
+                            </button>
+
+                            <ul>
+                                <li v-for="region in pagedRegions" :key="region.region"
+                                    :class="{ active: selectedRegion === region.region }"
+                                    @click="selectRegion(region.region)">
+                                    {{ region.region }}
+                                    <span class="count">({{region.productCount}})</span>
+                                </li>
+                            </ul>
+
+                            <div class="pagination">
+                                <button @click="prevRegionPage" :disabled="currentRegionPage === 1">이전</button>
+                                <span>{{currentRegionPage}} / {{totalRegionPages}}</span>
+                                <button @click="nextRegionPage"
+                                    :disabled="currentRegionPage === totalRegionPages">다음</button>
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -504,7 +783,11 @@
                     <!-- 우측 콘텐츠 -->
                     <div class="content">
                         <!-- Breadcrumb -->
-                        <div class="breadcrumb" v-if="breadcrumb.length > 0">
+                        <div class="breadcrumb">
+                            <a href="main.do" class="home">홈<span class="breadcrumb-sep">></span></a>
+                            <a href="productCategory.do#v=parent" class="home">상품목록
+                                <span class="breadcrumb-sep" v-if="breadcrumb.length > 0">></span>
+                            </a>
                             <span v-for="(b, i) in breadcrumb" :key="i" @click="goToLevel(i)">
                                 {{ b }}
                                 <span v-if="i < breadcrumb.length - 1" class="breadcrumb-sep">></span>
@@ -562,14 +845,16 @@
                         <div v-else-if="viewLevel === 'product'">
                             <div class="grid">
                                 <div class="grid-item product" v-for="p in filteredProducts" :key="p.productNo"
-                                    @click="fnView(p.productNo)">
+                                    :class="statusClass(p)" @click="onProductClick(p)">
                                     <div class="image-wrapper">
-                                        <img :src="p.filePath || '/resources/img/category/noimage.jpg'" alt="상품 이미지">
+                                        <span v-if="statusLabel(p)" class="status-badge">{{ statusLabel(p) }}</span>
+                                        <img :src="p.filePath || '/resources/img/category/noimage.jpg'"
+                                            :alt="altText(p)">
                                     </div>
                                     <div class="info">
                                         <h4>{{ p.pName }}</h4>
-                                        <div class="desc">{{p.pInfo}}</div>
-                                        <div class="price">{{ p.price.toLocaleString() }}원</div>
+                                        <div class="desc">{{ p.pInfo }}</div>
+                                        <div class="price">{{ Number(p.price).toLocaleString() }}원</div>
                                         <div class="review">
                                             <span v-for="i in 5" :key="i">
                                                 <i v-if="Number(p.rating) >= i" class="fas fa-star full-star"></i>
@@ -581,14 +866,14 @@
                                                 ({{ p.rating ? Number(p.rating).toFixed(1) : '0.0' }})
                                             </span>
                                         </div>
-                                        <div class="date">📅생산일: {{p.cdate}}</div>
-                                        <div class="region">🌾원산지: {{p.origin}}</div>
-                                        <div class="seller">👨‍🌾Agricola: {{p.userName}}</div>
+                                        <div class="date">📅생산일: {{ p.cdate }}</div>
+                                        <div class="region">🌾원산지: {{ p.origin }}</div>
+                                        <div class="seller">👨‍🌾Agricola: {{p.businessName}}({{ p.userName }})</div>
                                     </div>
                                 </div>
                             </div>
                             <div v-if="filteredProducts.length === 0"
-                                style="font-size: 50px; text-align: center; color: #2e7d32; padding-top: 30px;">
+                                style="font-size: 50px; text-align: left; color: #2e7d32; padding-top: 30px;">
                                 등록된 상품이 없습니다. 곧 다시 뵙겠습니다.
                             </div>
                         </div>
@@ -608,26 +893,44 @@
                     return {
                         categoryList: [],
                         productList: [],
-                        selectedParent: '',
-                        selectedChild: '',
-                        selectedSub: '',
+                        selectedParent: null,
+                        selectedChild: null,
+                        selectedSub: null,
                         viewLevel: 'parent',
-                        // 서버가 넘겨주는 초기 진입 카테고리(없으면 빈 문자열)
                         initialCategoryNo: '${categoryNo}',
 
                         priceRanges: [
+                            { label: '가격전체', min: 0, max: Infinity },
                             { label: '5,000원 미만', min: 0, max: 5000 },
                             { label: '5,000원 ~ 10,000원', min: 5000, max: 10000 },
                             { label: '10,000원 ~ 20,000원', min: 10000, max: 20000 },
                             { label: '20,000원 ~ 30,000원', min: 20000, max: 30000 },
                             { label: '30,000원 이상', min: 30000, max: Infinity }
                         ],
-                        selectedPriceRange: null
+                        selectedPriceRange: null,
+                        customMinPrice: null,
+                        customMaxPrice: null,
+
+                        regionList: [],
+                        selectedRegion: null,
+                        currentRegionPage: 1,
+                        regionsPerPage: 10,
+                        sessionStatus: ''
                     };
                 },
+
                 computed: {
                     parentCategories() {
                         return this.categoryList.filter(c => c.parentCategoryNo === '');
+                    },
+
+                    pagedRegions() {
+                        const start = (this.currentRegionPage - 1) * this.regionsPerPage;
+                        return this.regionList.slice(start, start + this.regionsPerPage);
+                    },
+
+                    totalRegionPages() {
+                        return Math.ceil(this.regionList.length / this.regionsPerPage);
                     },
 
                     filteredProducts() {
@@ -636,23 +939,40 @@
                         console.log('현재 선택된 가격범위 index:', this.selectedPriceRange);
                         console.log('현재 선택된 가격범위 값:', this.priceRanges[this.selectedPriceRange]);
 
-                        //기존 카테고리
+                        // 카테고리 필터
                         if (this.selectedSub) {
                             result = result.filter(
-                                (p) => Number(p.categoryNo) === Number(this.selectedSub));
+                                (p) => Number(p.categoryNo) === Number(this.selectedSub)
+                            );
                         }
 
-                        //가격 필터 추가
-                        if (this.selectedPriceRange !== null && this.selectedPriceRange !== undefined) {
+                        // 가격 필터
+                        if (this.selectedPriceRange === 'custom') {
+                            const min = this.customMinPrice || 0;
+                            const max = this.customMaxPrice || Infinity;
+                            result = result.filter(p => {
+                                const price = Number(p.price);
+                                if (isNaN(price)) return false;
+                                return price >= min && price <= max;
+                            });
+                        } else if (this.selectedPriceRange !== null && this.selectedPriceRange !== undefined) {
                             const range = this.priceRanges[this.selectedPriceRange];
                             result = result.filter((p) => {
                                 const price = Number(p.price);
-                                if (isNaN(price)) return false; //가격정보 없으면 제외
+                                if (isNaN(price)) return false;
                                 return price >= range.min && price < range.max;
                             });
                         }
 
+                        // 지역 필터
+                        if (this.selectedRegion && typeof this.selectedRegion === 'string' && this.selectedRegion.trim() !== '') {
+                            console.log('현재 선택된 지역:', this.selectedRegion);
+                            console.log('상품의 지역 샘플:', result.slice(0, 5).map(p => p.region));
+                            result = result.filter((p) => (p.region || '').includes(this.selectedRegion));
+                        }
+
                         console.log('필터 적용 후 상품 수:', result.length);
+                        console.log('필터 적용 후 지역 수:', this.selectedRegion);
                         return result;
                     },
 
@@ -662,17 +982,70 @@
                         if (this.selectedChild) r.push(this.getCategoryName(this.selectedChild));
                         if (this.selectedSub) r.push(this.getCategoryName(this.selectedSub));
                         return r;
+                    },
+
+                    isSeller() {
+                        return (this.sessionStatus || '').toUpperCase() === 'SELLER';
                     }
                 },
+
+                watch: {
+                    selectedRegion(newVal, oldVal) {
+                        if (!newVal || newVal === oldVal) return;
+                        console.log(`watcher 감지됨 → 지역 변경: '${oldVal}' → '${newVal}'`);
+                    }
+                },
+
                 methods: {
                     normalize(c) {
                         return {
                             categoryNo: String(c.categoryNo),
-                            parentCategoryNo: (c.parentCategoryNo == null || String(c.parentCategoryNo).trim() === '' || String(c.parentCategoryNo) === '0')
-                                ? '' : String(c.parentCategoryNo),
+                            parentCategoryNo:
+                                (c.parentCategoryNo == null ||
+                                    String(c.parentCategoryNo).trim() === '' ||
+                                    String(c.parentCategoryNo) === '0')
+                                    ? ''
+                                    : String(c.parentCategoryNo),
                             categoryName: c.categoryName || '',
                             imageUrl: c.imageUrl || ''
                         };
+                    },
+
+                    clearRegion() {
+                        console.log('지역 선택 해제: ', this.selectedRegion);
+                        this.selectedRegion = null;
+                        this.viewLevel = 'product';
+                    },
+
+                    // ✅ 지역 클릭 → 상품 목록 화면으로 이동
+                    selectRegion(regionName) {
+                        const reg = regionName ? String(regionName).trim() : '';
+                        this.selectedRegion = reg;
+                        console.log('지역 클릭됨:', this.selectedRegion);
+
+                        // ✅ 상품 목록 뷰로 전환
+                        if (this.viewLevel !== 'product') {
+                            this.viewLevel = 'product';
+                        }
+
+                        // ✅ 해시 갱신 (즉시 반영)
+                        this.writeHash(true);
+
+                        // ✅ DOM 업데이트 후 로그 확인
+                        this.$nextTick(() => {
+                            console.log("DOM 반영 후 selectedRegion:", this.selectedRegion);
+                            console.log("현재 viewLevel:", this.viewLevel);
+                        });
+
+                        // v=product & r=지역 포함된 해시로 이동
+                        const q = new URLSearchParams();
+                        if (this.selectedParent) q.set('p', this.selectedParent);
+                        if (this.selectedChild) q.set('c', this.selectedChild);
+                        if (this.selectedSub) q.set('s', this.selectedSub);
+                        q.set('v', 'product');
+                        if (reg) q.set('r', reg);
+
+                        location.href = location.pathname + '#' + q.toString();
                     },
 
                     fnList() {
@@ -682,25 +1055,77 @@
                             type: "POST",
                             success: (data) => {
                                 this.categoryList = (data.categories || []).map(this.normalize);
-                                this.productList = (data.list || []).map(p => ({ ...p, categoryNo: String(p.categoryNo) }));
 
-                                // 1) 해시가 있으면 해시로 복원 (쿼리 무시)
+                                this.productList = (data.list || []).map(p => {
+                                    const status = String(
+                                        p.productStatus ?? p.PRODUCT_STATUS ?? p.product_status ?? ""
+                                    ).trim().toUpperCase();
+
+                                    return {
+                                        ...p,
+                                        // 안전한 키 정규화
+                                        categoryNo: String(p.categoryNo ?? p.CATEGORY_NO ?? p.category_no ?? ""),
+                                        productStatus: status,
+                                        filePath: p.filePath ?? p.FILE_PATH ?? p.thumbnailPath ?? p.THUMBNAIL_PATH ?? ""
+                                    };
+                                });
+
+                                // 해시 우선 복원
                                 if (this.applyFromHash()) return;
 
-                                // 2) 해시 없으면 쿼리(initialCategoryNo)로 시작
+                                // 초기 카테고리 진입
                                 this.applyInitialCategory();
-                                this.writeHash(false); // 현재 상태를 URL에 기록 (해시만)
+                                this.writeHash(false);
+                                this.fnSellerRegionList();
                             }
                         });
                     },
 
-                    writeHash(push = ture) {
+                    fnSellerRegionList() {
+                        console.log('판매자 지역 목록 호출 시작');
+                        $.ajax({
+                            url: "/sellerRegions.dox",
+                            dataType: "json",
+                            type: "POST",
+                            data: { page: this.page, pageSize: this.pageSize },
+                            success: (data) => {
+                                console.log('========= data', data);
+                                this.regionList = data.list || [];
+                                this.totalRegions = data.totalCount || 0;
+                                this.currentRegionPage = data.page || 1;
+                                console.log("지역목록: ", this.regionList);
+                            },
+                            error: (xhr, status, error) => {
+                                console.error("지역목록 불러오기 실패: ", error);
+                            }
+                        });
+                    },
+
+                    nextRegionPage() {
+                        if (this.currentRegionPage < this.totalRegionPages) {
+                            this.currentRegionPage++;
+                        }
+                    },
+                    prevRegionPage() {
+                        if (this.currentRegionPage > 1) {
+                            this.currentRegionPage--;
+                        }
+                    },
+
+                    // ✅ region(r) 포함되도록 수정
+                    writeHash(push = true) {
                         const q = new URLSearchParams();
 
                         if (this.selectedParent) q.set('p', this.selectedParent);
                         if (this.selectedChild) q.set('c', this.selectedChild);
                         if (this.selectedSub) q.set('s', this.selectedSub);
                         q.set('v', this.viewLevel);
+
+                        // ✅ 지역도 해시에 반영
+                        if (this.selectedRegion && this.selectedRegion.trim() !== '') {
+                            q.set('r', encodeURIComponent(this.selectedRegion.trim()));
+                        }
+
                         const newHash = '#' + q.toString();
 
                         if (location.hash !== newHash) {
@@ -712,6 +1137,7 @@
                         }
                     },
 
+                    // ✅ region 복원 추가
                     applyFromHash() {
                         const raw = (location.hash || '').replace(/^#/, '');
                         if (!raw) return false;
@@ -721,6 +1147,7 @@
                         const c = qs.get('c') || '';
                         const s = qs.get('s') || '';
                         const v = qs.get('v') || 'parent';
+                        const r = qs.get('r') ? decodeURIComponent(qs.get('r')) : ''; // ✅ 지역 복원
 
                         const has = (no) => this.categoryList.some(x => x.categoryNo === String(no));
                         const okP = p && has(p);
@@ -731,10 +1158,26 @@
                         this.selectedChild = okP && okC ? String(c) : '';
                         this.selectedSub = okP && okC && okS ? String(s) : '';
 
-                        if (okP && okC && okS && (v === 'product' || v === 'sub')) this.viewLevel = 'product';
-                        else if (okP && okC && v !== 'parent') this.viewLevel = 'sub';
-                        else if (okP) this.viewLevel = 'child';
-                        else this.viewLevel = 'parent';
+                        // ✅ 지역 필터 복원
+                        if (r && typeof r === 'string') {
+                            this.selectedRegion = r;
+                        }
+
+                        // ✅ viewLevel 설정 로직 개선
+                        if (okP && okC && okS && (v === 'product' || v === 'sub')) {
+                            this.viewLevel = 'product';
+                        } else if (okP && okC && v !== 'parent') {
+                            this.viewLevel = 'sub';
+                        } else if (okP) {
+                            this.viewLevel = 'child';
+                        } else {
+                            this.viewLevel = 'parent';
+                        }
+
+                        // ✅ 지역만 설정되어 있고 카테고리 선택 안 되어 있으면 상품목록으로 강제 전환
+                        if (r && !okS) {
+                            this.viewLevel = 'product';
+                        }
 
                         return true;
                     },
@@ -790,18 +1233,15 @@
                         if (!target) { this.selectedParent = ''; this.viewLevel = 'parent'; return; }
 
                         if (target.parentCategoryNo === '') {
-                            // 대분류
                             this.selectedParent = target.categoryNo;
                             this.viewLevel = 'child';
                         } else {
                             const parent = this.categoryList.find(c => c.categoryNo === target.parentCategoryNo);
                             if (parent && parent.parentCategoryNo === '') {
-                                // 중분류
                                 this.selectedParent = parent.categoryNo;
                                 this.selectedChild = target.categoryNo;
                                 this.viewLevel = 'sub';
                             } else if (parent && parent.parentCategoryNo !== '') {
-                                // 소분류
                                 const top = this.categoryList.find(c => c.categoryNo === parent.parentCategoryNo);
                                 this.selectedParent = top ? top.categoryNo : '';
                                 this.selectedChild = parent.categoryNo;
@@ -812,7 +1252,6 @@
                     },
 
                     readCategoryNoFromURL() {
-                        // 해시 우선 사용하므로 여기서는 보조 수단
                         const qs = new URLSearchParams(location.search);
                         const v = qs.get('categoryNo');
                         if (v) return String(v);
@@ -821,15 +1260,80 @@
                         if (last && /^\d+$/.test(last)) return String(last);
                         return '';
                     },
-                    goToProductRegister() { window.location.href = '/product/add.do'; }
+
+                    goToProductRegister() {
+                        window.location.href = '/product/add.do';
+                    },
+
+                    // 가격범위 입력
+                    selectPriceRange(index) {
+                        this.selectedPriceRange = index;
+                        this.customMinPrice = null;
+                        this.customMaxPrice = null;
+                    },
+
+                    applyCustomPrice() {
+                        if (this.customMinPrice == null && this.customMaxPrice == null) return;
+                        this.selectedPriceRange = 'custom';
+                    },
+
+                    resetCustomPrice() {
+                        this.customMinPrice = null;
+                        this.customMaxPrice = null;
+                        this.selectedPriceRange = null;
+                    },
+
+                    getStatus(p) {
+                        return String(p.productStatus || "").trim().toUpperCase();
+                    },
+                    statusLabel(p) {
+                        const s = this.getStatus(p);
+                        if (s === 'SOLDOUT') return '품절';
+                        if (s === 'HIDDEN') return '판매 중지';
+                        return '';
+                    },
+                    statusClass(p) {
+                        const s = this.getStatus(p);
+                        return {
+                            'product--soldout': s === 'SOLDOUT',
+                            'product--hidden': s === 'HIDDEN'
+                        };
+                    },
+                    onProductClick(p) {
+                        const s = this.getStatus(p);
+                        if (s === 'HIDDEN') {
+                            alert('판매 중지된 상품입니다.');
+                            return;
+                        }
+                        pageChange("/productInfo.do", { productNo: p.productNo });
+                    },
+                    altText(p) {
+                        const s = this.getStatus(p);
+                        if (s === 'SOLDOUT') return '품절된 상품 이미지';
+                        if (s === 'HIDDEN') return '판매 중지된 상품 이미지';
+                        return '상품 이미지';
+                    }
+
                 },
 
                 mounted() {
                     if (!this.initialCategoryNo) {
                         this.initialCategoryNo = this.readCategoryNoFromURL();
                     }
+
+                    const root = document.getElementById('app');
+                    // 1차: 현재 페이지의 data-session-status
+                    let role = root?.dataset?.sessionStatus || '';
+                    // 2차 보조: 헤더의 마이페이지 버튼에 data-status가 박혀있다면 활용
+                    if (!role) {
+                        role = document.querySelector('#btnMyPage')?.dataset?.status || '';
+                    }
+                    this.sessionStatus = role;
+
+
                     window.addEventListener('hashchange', () => this.applyFromHash());
                     this.fnList();
+                    this.fnSellerRegionList();
                 }
             });
             app.mount("#app");
