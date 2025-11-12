@@ -8,13 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>상품문의 작성 | AGRICOLA</title>
 
-    <!-- 외부 라이브러리 -->
     <script src="https://code.jquery.com/jquery-3.7.1.js"
         integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="/resources/js/page-change.js"></script>
 
-    <!-- 공통 헤더/푸터 CSS -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
@@ -143,13 +141,11 @@
             <textarea v-model="content" placeholder="문의 내용을 입력하세요"></textarea>
         </div>
 
-        <!-- 비밀글 체크 -->
         <div class="form-group secret-check">
             <input type="checkbox" id="isSecret" v-model="isSecret">
             <label for="isSecret">비밀글로 등록하기</label>
         </div>
 
-        <!-- 비밀번호 입력칸 (비밀글일 때만 표시) -->
         <div class="form-group password-box" v-if="isSecret">
             <label>비밀번호</label>
             <input type="password" v-model="secretPw" placeholder="비밀글 확인용 비밀번호를 입력하세요">

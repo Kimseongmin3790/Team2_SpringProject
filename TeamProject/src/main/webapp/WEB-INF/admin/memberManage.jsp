@@ -9,12 +9,10 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>회원관리</title>
 
-            <!-- Vue & jQuery -->
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3"></script>
 
-            <!-- 공통 스타일 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css" />
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css" />
 
@@ -25,7 +23,6 @@
                     background-color: #f9f9f9;
                 }
 
-                /* 페이지 컨테이너 */
                 .admin-container {
                     max-width: 1200px;
                     margin: 60px auto;
@@ -33,7 +30,6 @@
                     box-sizing: border-box;
                 }
 
-                /* 제목 */
                 .admin-title {
                     font-size: 1.8rem;
                     color: #2e5d2e;
@@ -42,7 +38,6 @@
                     text-align: center;
                 }
 
-                /* 검색 필터 */
                 .member-filter {
                     display: flex;
                     justify-content: flex-end;
@@ -72,19 +67,15 @@
                     background: #4aa954;
                 }
 
-                /* ===== 테이블 스타일 ===== */
                 .table-wrap {
                     width: 100%;
                     overflow-x: auto;
-                    /* 가로 스크롤 허용 */
                     margin: 0 auto;
                 }
 
-                /* 테이블 */
                 .member-table {
                     width: 100%;
                     min-width: 1000px;
-                    /* 내용이 많을 때도 중앙 유지 */
                     border-collapse: collapse;
                     background: white;
                     border-radius: 10px;
@@ -93,7 +84,6 @@
                     margin: 0 auto;
                 }
 
-                /* 제목 행 */
                 .member-table th {
                     background: #4caf50;
                     color: white;
@@ -103,7 +93,6 @@
                     white-space: nowrap;
                 }
 
-                /* 셀 기본 */
                 .member-table td {
                     padding: 10px;
                     text-align: center;
@@ -111,7 +100,6 @@
                     vertical-align: middle;
                 }
 
-                /* 🔹 기본 줄바꿈 금지 + 말줄임 처리 */
                 .member-table th,
                 .member-table td {
                     white-space: nowrap;
@@ -119,23 +107,18 @@
                     text-overflow: ellipsis;
                 }
 
-                /* 🔹 이름, 유형 칸 너비 제한 */
                 .member-table td:nth-child(2) {
-                    /* 이름 */
                     max-width: 120px;
                 }
 
                 .member-table td:nth-child(7) {
-                    /* 유형 */
                     max-width: 100px;
                 }
 
-                /* hover 효과 */
                 .member-table tr:hover {
                     background-color: #f9f9f9;
                 }
 
-                /* 버튼 */
                 .btn-action {
                     background: #5dbb63;
                     color: white;
@@ -156,7 +139,6 @@
                     opacity: 0.9;
                 }
 
-                /* 데이터 없을 때 */
                 .no-data {
                     text-align: center;
                     padding: 20px;
@@ -190,7 +172,6 @@
                             <h2 class="admin-title">회원관리</h2>
                         </div>
 
-                        <!-- 검색 -->
                         <div class="member-filter">
                             <input type="text" v-model="keyword" placeholder="회원 ID 또는 이름 검색" />
                             <button @click="fnSearch">검색</button>
@@ -227,7 +208,6 @@
                                         <td>{{ item.userRole }}</td>
                                         <td>{{ item.verified }}</td>
                                         <td>
-                                            <!-- 🔹 판매자만 승인/거절 버튼 표시 -->
                                             <template v-if="item.userRole === 'SELLER' && item.verified === 'N'">
                                                 <button class="btn-action" @click="fnApprove(item.userId)">승인</button>
                                             </template>
@@ -256,7 +236,6 @@
                             },
                             computed: {
                                 filteredList() {
-                                    // keyword나 userList 중 하나라도 변경되면 자동으로 다시 계산
                                     if (this.keyword.trim() === "") return this.userList;
 
                                     const k = this.keyword.toLowerCase();
@@ -270,10 +249,8 @@
                             methods: {
                                 fnGoBack() {
                                     if (document.referrer && document.referrer !== location.href) {
-                                        // ✅ 이전 페이지로 이동
                                         history.back();
                                     } else {
-                                        // ✅ 이전 페이지 정보가 없으면 관리자 메인으로
                                         location.href = this.path + "/admin/dashboard.do";
                                     }
                                 },
@@ -300,7 +277,6 @@
                                     // computed로 자동 반영
                                 },
 
-                                // 🔹 판매자 승인
                                 fnApprove(userId) {
                                     if (!confirm(userId + " 판매자 승인하시겠습니까?")) return;
                                     let self = this;
@@ -322,7 +298,6 @@
                                     });
                                 },
 
-                                // 🔹 판매자 거절
                                 fnReject(userId) {
                                     if (!confirm(userId + " 판매자 승인을 취소하시겠습니까?")) return;
                                     const self = this;
@@ -344,7 +319,6 @@
                                     });
                                 },
 
-                                // 신고 해제
                             },
                             mounted() {
                                 let self = this;

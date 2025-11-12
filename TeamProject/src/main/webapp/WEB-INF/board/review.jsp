@@ -2,7 +2,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     <div>
         <main class="content">
-            <!-- Page Header -->
             <div class="page-header">
                 <div class="container">
                     <h1>상품 리뷰</h1>
@@ -10,17 +9,14 @@
             </div>
 
             <div class="container">
-                <!-- Review Summary -->
                 <div class="summary-card">
                     <div class="summary-content">
                         <div class="rating-overview">
                             <div class="rating-number">{{ averageRating.toFixed(2) }}</div>
                             <div class="stars">
-                                <!-- 꽉 찬 별 -->
                                 <svg v-for="n in Math.floor(averageRating)" :key="'full-' + n" class="star filled" viewBox="0 0 24 24">
                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73-1.64 7.03z"/>
                                 </svg>
-                                <!-- 반쪽 별 -->
                                 <svg v-if="averageRating - Math.floor(averageRating) >= 0.5" class="star filled" viewBox="0 0 24 24">
                                     <defs>
                                         <clipPath id="halfStarClip">
@@ -49,7 +45,6 @@
                     </div>
                 </div>
 
-                <!-- Filters -->
                 <div class="filters">
                     <button
                         class="filter-btn"
@@ -83,10 +78,8 @@
                     </button>
                 </div>
 
-                <!-- Review List -->
                 <div class="review-list">
                     <div v-for="review in filteredReviews" :key="review.reviewNo" class="review-card">
-                        <!-- Review Header -->
                         <div class="review-header">
                             <div class="user-info">
                                 <div class="user-name-row">
@@ -107,10 +100,8 @@
                             </div>
                         </div>
 
-                        <!-- Review Content -->
                         <p class="review-content">{{ review.content }}</p>
 
-                        <!-- Review Images -->
                         <div v-if="review.images && review.images.length > 0" class="review-images">
                             <img
                                 v-for="(image, index) in review.images"
@@ -121,19 +112,16 @@
                                 @click="openImageModal(image)">
                         </div>
                         
-                         <!-- 판매자 답글 -->
                         <div v-if="review.comments && review.comments.length > 0" class="seller-reply-container">
                             <div v-for="comment in review.comments" :key="comment.commentNo" class="seller-reply-item">
                                 <div class="seller-reply-header">
                                     <p class="seller-reply-author">{{ comment.userId }} (판매자)님의 답글:</p>
 
                                     <div v-if="userId === comment.userId" class="seller-reply-actions">
-                                        <!-- 편집 모드가 아닐 때 -->
                                         <template v-if="editingCommentNo !== comment.commentNo">
                                             <button class="btn btn-info btn-sm" @click="editComment(comment)">수정</button>
                                             <button class="btn btn-danger btn-sm" @click="deleteComment(comment.commentNo)">삭제</button>
                                         </template>
-                                        <!-- 편집 모드일 때 -->
                                         <template v-else>
                                             <button class="btn btn-primary btn-sm" @click="saveEditedComment(comment)">저장</button>
                                             <button class="btn btn-secondary btn-sm" @click="cancelEdit()">취소</button>
@@ -142,12 +130,10 @@
                                 </div>
 
                                 <div class="seller-reply-body">
-                                    <!-- 편집 모드가 아닐 때 -->
                                     <template v-if="editingCommentNo !== comment.commentNo">
                                         <p class="seller-reply-content">{{ comment.contents }}</p>
                                         <p class="seller-reply-date">작성일: {{ comment.cDatetime }}</p>
                                     </template>
-                                    <!-- 편집 모드일 때 -->
                                     <template v-else>
                                         <textarea v-model="comment.contents" class="form-textarea seller-reply-edit-input"></textarea>
                                     </template>
@@ -155,7 +141,6 @@
                             </div>
                         </div>
 
-                        <!-- Review Actions -->
                                                 <div class="review-actions">
                             <button class="action-btn"
                                     :class="{ active: review.isRecommended }"
@@ -169,14 +154,12 @@
                     </div>
                 </div>
 
-                <!-- Load More -->
                  <div class="load-more" v-if="reviews.length < totalReviewCount">
                     <button class="load-more-btn" @click="loadMore">리뷰 더보기</button>
                 </div>
             </div>
         </main>
 
-        <!-- Image Modal -->
         <div class="modal" :class="{active: modalImage}" @click="closeImageModal">
             <button class="modal-close" @click="closeImageModal">×</button>
             <div class="modal-content">

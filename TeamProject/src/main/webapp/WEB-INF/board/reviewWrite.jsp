@@ -10,7 +10,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"
         integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
     <style>
@@ -335,7 +334,6 @@
 </head>
 
 <body>
-    <!-- 공통 헤더 -->
     <%@ include file="/WEB-INF/views/common/header.jsp" %>
     
     <div id="app">                     
@@ -452,7 +450,6 @@
         </main>                
     </div>
     
-    <!-- 공통 푸터 -->
     <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 </body>
 
@@ -493,14 +490,12 @@
                     
                     for (let i = 0; i < filesToAdd; i++) {
                         let self = this;
-                        // 실제 구현에서는 파일을 서버에 업로드하고 URL을 받아와야 합니다
                         self.images.push({
                             file: files[i],
                             preview: URL.createObjectURL(files[i])
                         });
                     }
                 }
-                // 파일 입력 초기화
                 event.target.value = '';
             },
             removeImage(index) {
@@ -509,7 +504,6 @@
             },
             cancel() {
                 if (confirm('작성 중인 리뷰가 삭제됩니다. 취소하시겠습니까?')) {
-                    // 리뷰 목록 페이지로 이동
                     window.location.href = '${pageContext.request.contextPath}/buyerMyPage.do?tab=orders';
                 }
             },

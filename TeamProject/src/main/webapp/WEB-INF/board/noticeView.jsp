@@ -11,7 +11,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-    <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
@@ -24,7 +23,6 @@
             background: #faf8f0;
         }
 
-        /* ✅ 페이지 전체 컨테이너 */
         #app {
             min-height: 100vh;
             display: flex;
@@ -34,7 +32,6 @@
             padding: 0 120px;
         }
 
-        /* 내부 컨텐츠 */
         .page-container {
             flex: 1;
             background: #fff;
@@ -44,7 +41,6 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
-        /* 제목 */
         h1.title {
             text-align: center;
             color: #1a5d1a;
@@ -52,12 +48,11 @@
             font-weight: 700;
             margin-bottom: 40px;
         }
-        /* 📋 공지사항 상세 내용 컨테이너 */
+
         .notice-detail-container {
             width: 100%;
         }
 
-        /* 헤더 (제목, 작성자, 작성일) */
         .notice-header {
             border-bottom: 2px solid #eee;
             padding-bottom: 20px;
@@ -83,10 +78,9 @@
             font-weight: 500;
         }
 
-        /* 본문 */
         .notice-content {
             padding: 20px 10px;
-            min-height: 250px; /* 최소 높이 지정 */
+            min-height: 250px;
             font-size: 16px;
             line-height: 1.8;
             color: #444;
@@ -94,7 +88,6 @@
             margin-bottom: 30px;
         }
 
-        /* 버튼 영역 */
         .notice-actions {
             text-align: center;
         }
@@ -115,7 +108,6 @@
             background: #4ba954;
         }
 
-        /* 📱 반응형 */
         @media (max-width: 1024px) {
             #app {
                 padding: 0 60px;
@@ -165,7 +157,6 @@
             background: #4ba954;
         }
 
-        /* 삭제 버튼 스타일 추가 */
         .btn-delete {
             background: #e74c3c; 
         }
@@ -180,7 +171,7 @@
         .btn-edit:hover {
             background: #2980b9; 
         }
-        /* [추가] 댓글 관련 스타일 */
+
         .comment-section {
             margin-top: 50px;
             padding-top: 30px;
@@ -316,7 +307,7 @@
         .comment-edit-actions button:hover {
             background: #2980b9;
         }
-        .comment-edit-actions button:nth-child(2) 
+        .comment-edit-actions button:nth-child(2) {
             background: #7f8c8d;
         }
         .comment-edit-actions button:nth-child(2):hover {
@@ -326,7 +317,6 @@
 </head>
 
 <body>
-    <!-- 공통 헤더 -->
     <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
     <div id="app">
@@ -335,7 +325,6 @@
         <div class="page-container">
             <div class="notice-detail-container">
 
-                <!-- 공지사항 헤더 -->
                 <div class="notice-header">
                     <h2>{{ notice.title }}</h2>
                     <div class="notice-meta">
@@ -344,12 +333,10 @@
                     </div>
                 </div>
 
-                <!-- 공지사항 본문 -->
                  <div class="notice-content"  v-html="notice.contents">
                     {{ notice.contents }}
                 </div>
 
-                <!-- 버튼 영역 -->
                 <div class="notice-actions">
                     <button class="btn-list" onclick="location.href='/board.do?tab=notice'">목록</button>
                         <button v-if="sessionId === notice.userId || userRole === 'ADMIN'" class="btn-edit" @click= "fnEditNotice(notice.noticeNo)">수정</button>
@@ -359,13 +346,11 @@
                 <div class="comment-section">
                     <h4>댓글 <span class="comment-count">({{ comments.length }})</span></h4>
 
-                    <!-- 댓글 작성 폼 -->
                     <div class="comment-form" v-if="sessionId">
                         <textarea v-model="newCommentContent" placeholder="따뜻한 댓글을 남겨주세요..."></textarea>
                         <button @click="fnSaveComment(null)">등록</button> 
                     </div>
 
-                    <!-- 댓글 목록 -->
                     <div class="comment-list">
                         <div v-if="comments.length === 0" class="no-comments">
                             등록된 댓글이 없습니다. 첫 댓글을 남겨보세요!
@@ -403,8 +388,6 @@
         </div>
     </div>
 
-
-    <!-- 공통 푸터 -->
     <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 </body>
 
@@ -544,14 +527,12 @@
                 }
             },
 
-            // 댓글 수정 취소
             fnCancelEdit: function() {
                 let self = this;
                 self.editingCommentNo = null;
                 self.editedCommentContent = '';
             },
 
-            // 댓글 수정 저장
             fnUpdateComment: function(commentNo) {
                 let self = this;
                 if (!self.editedCommentContent.trim()) {
@@ -588,7 +569,6 @@
                 });
             },
 
-            // 댓글 삭제
             fnDeleteComment: function(commentNo) {
                 let self = this;
                 if (!confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
@@ -615,7 +595,7 @@
             },
 
 
-        }, // methods
+        },
         mounted() {
             let self = this;
             self.fnGetNoticeInfo();
