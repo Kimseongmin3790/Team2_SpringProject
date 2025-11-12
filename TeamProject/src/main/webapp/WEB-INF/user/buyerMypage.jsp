@@ -74,7 +74,6 @@
                     margin: 0 auto;
                 }
 
-                /* 사용자 정보 배너 */
                 .user-banner {
                     background: linear-gradient(to right, #f0fdf4, #d1fae5);
                     border-radius: 8px;
@@ -110,7 +109,6 @@
                     color: #6b7280;
                 }
 
-                /* 탭 */
                 .tabs-list {
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
@@ -151,7 +149,6 @@
                     display: block;
                 }
 
-                /* 카드 */
                 .card {
                     background-color: white;
                     border-radius: 8px;
@@ -160,7 +157,6 @@
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
                 }
 
-                /* 카드 정보 */
                 .cart-item {
                     display: flex;
                     align-items: center;
@@ -226,7 +222,6 @@
                     text-align: center;
                 }
 
-                /* 버튼 */
                 .btn {
                     padding: 0.5rem 1rem;
                     border: none;
@@ -275,7 +270,6 @@
                     font-size: 1rem;
                 }
 
-                /* 주문 요약 */
                 .order-summary {
                     max-width: 320px;
                     margin-left: auto;
@@ -302,7 +296,6 @@
                     color: #22c55e;
                 }
 
-                /* 배지 */
                 .badge {
                     display: inline-block;
                     padding: 0.25rem 0.75rem;
@@ -313,7 +306,6 @@
                     font-weight: 500;
                 }
 
-                /* 주문 정보 */
                 .order-header {
                     display: flex;
                     justify-content: space-between;
@@ -330,7 +322,6 @@
                     font-weight: 600;
                 }
 
-                /* 리뷰 */
                 .review-item {
                     display: flex;
                     gap: 1rem;
@@ -365,7 +356,6 @@
                     font-size: 0.875rem;
                 }
 
-                /* 양식 */
                 .form-group {
                     margin-bottom: 1.5rem;
                 }
@@ -405,13 +395,11 @@
                     cursor: not-allowed;
                 }
 
-                /* 프로필 양식 */
                 .profile-form {
                     max-width: 672px;
                     margin: 0 auto;
                 }
 
-                /* 탈퇴 영역 */
                 .danger-zone {
                     margin-top: 3rem;
                     padding-top: 2rem;
@@ -443,7 +431,6 @@
                     margin-bottom: 1rem;
                 }
 
-                /* 반응형 */
                 @media (max-width: 768px) {
                     .tabs-list {
                         grid-template-columns: repeat(2, 1fr);
@@ -458,7 +445,6 @@
                     }
                 }
 
-                /* 에러 메시지 */
                 .error-message {
                     color: #dc2626;
                     font-size: 0.8rem;
@@ -771,6 +757,18 @@
                     background-color: #d1fae5;
                     color: #065f46;
                 }
+                
+                .form-input:disabled {
+                    background-color: #f3f4f6; 
+                    cursor: not-allowed;
+                    color: #6b7280;
+                }
+
+                .non-editable-text {
+                    font-size: 0.8rem;
+                    color: #6b7280; 
+                    margin-top: 0.5rem;
+                }
             </style>
         </head>
 
@@ -1030,12 +1028,14 @@
                                 <div class="card profile-form">
                                     <div class="form-group">
                                         <label class="form-label">이름</label>
-                                        <input type="text" class="form-input readonly-input" v-model="profile.name"
-                                            disabled>
+                                        <input type="text" class="form-input readonly-input" v-model="profile.name" disabled>
                                     </div>
-                                    <div class="form-group" v-if="loginType === 'NORMAL'">
+                                    <div class="form-group">
                                         <label class="form-label">이메일</label>
-                                        <input type="email" class="form-input" v-model="profile.email">
+                                        <input type="email" class="form-input" v-model="profile.email" :disabled="userRole === 'SELLER'">
+                                        <p v-if="userRole === 'SELLER'" class="non-editable-text">
+                                            판매자 계정은 이메일을 변경할 수 없습니다.
+                                        </p>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">전화번호 ('-' 없이 숫자만 입력)</label>
@@ -1150,8 +1150,9 @@
                         reviews: [],
                         profile: {},
                         loginType: '',
+                        userRole: '',
                         errors: {},
-                        selectedIds: [],   // ✅ 체크된 cartNo들이 들어가는 배열
+                        selectedIds: [],   
                         isRefundModalVisible: false,
                         refundRequest: {
                             orderItemNo: null,
@@ -1345,7 +1346,7 @@
                             this.cartItems.splice(index, 1);
                         }
                     },
-                    // 로그인한 사용자 정보 불러오는 로직
+
                     fnUserInfo() {
                         let self = this;
                         $.ajax({
@@ -1360,15 +1361,15 @@
 
                                 self.profile = data;
                                 self.loginType = data.loginType;
-                                self.profile.newPassword = ''; // 비밀번호 필드는 비워둠
-                                self.profile.confirmPassword = ''; // 비밀번호 필드는 비워둠
+                                self.userRole = data.userRole;
+                                self.profile.newPassword = ''; 
+                                self.profile.confirmPassword = ''; 
 
                                 self.userName = data.name;
                                 self.userEmail = data.email;
                             },
                             error: function (xhr, status, error) {
                                 alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
-                                console.error("Error:", error);
                             }
                         });
                     },
@@ -1429,8 +1430,11 @@
                         const profileData = {
                             phone: self.profile.phone.replaceAll('-', ''),
                             address: self.profile.address,
-                            email: self.profile.email
                         };
+
+                        if (self.userRole !== 'SELLER') {
+                            profileData.email = self.profile.email;
+                        }
 
                         if (self.profile.newPassword) {
                             profileData.password = self.profile.newPassword;
@@ -1534,7 +1538,6 @@
                             dataType: "json",
                             data: param,
                             success: function (data) {
-                                console.log(data);
                                 if (data.result == 'success') {
                                     self.cartItems = data.list || [];
                                 } else {
@@ -1609,12 +1612,11 @@
                                     }));
                                 } else {
                                     alert("주문 내역을 불러오는 데 실패했습니다: " + data.message);
-                                    console.error("Error:", data.message);
                                 }
                             },
                             error: function (xhr, status, error) {
                                 alert("서버와의 통신 중 오류가 발생했습니다. 주문 내역을 불러올 수 없습니다.");
-                                console.error("Ajax Error:", error);
+                                
                             }
                         });
                     },
@@ -1622,12 +1624,8 @@
                         order.isDetailsVisible = !order.isDetailsVisible;
                     },
                     fnWriteReview(productNo, orderItemNo) {
-                        console.log("productNo:", productNo, "orderItemNo:", orderItemNo);
-
                         const url = CTX + "/reviewWrite.do?productNo=" + encodeURIComponent(productNo)
                             + "&orderItemNo=" + encodeURIComponent(orderItemNo);
-
-                        console.log("생성된 URL:", url);
                         location.href = url;
                     },
                     fnLoadReviews() {
@@ -1639,7 +1637,6 @@
                             success: function (response) {
                                 if (response.result === "success") {
                                     self.reviews = response.list;
-                                    console.log("Loaded Reviews:", self.reviews);
                                 } else {
                                     alert("리뷰 목록을 불러오는 데 실패했습니다.");
                                 }

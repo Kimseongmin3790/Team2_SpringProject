@@ -268,24 +268,22 @@
                                     alert("계정 복구를 취소했습니다.");
                                 }
                             }
-                            else { // 'fail' 메시지
+                            else { 
                                 alert(data.msg);
                                 return;
                             }
                         },
-                        error: function() { // AJAX 통신 자체의 에러
+                        error: function() { 
                             alert("로그인 서버와 통신 중 오류가 발생했습니다.");
                         }
                     });
                 },
             }, // methods
             mounted() {
-                // 처음 시작할 때 실행되는 부분
                 let self = this;
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.has('error') && urlParams.get('error') === 'true') {
                     const errorMessage = urlParams.get('message');
-                    console.log('Error message from URL:', errorMessage);
                     if (errorMessage) {
                         alert(decodeURIComponent(errorMessage));
                     } else {

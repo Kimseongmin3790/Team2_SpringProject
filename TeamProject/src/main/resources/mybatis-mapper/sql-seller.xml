@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.TeamProject.mapper.SellerMapper"> <!-- SellerMapper 인터페이스와 연결됩니다. -->
+<mapper namespace="com.example.TeamProject.mapper.SellerMapper">
 
     <!-- SellerVO와 User 객체를 매핑하기 위한 resultMap -->
     <resultMap id="sellerWithUserResultMap" type="com.example.TeamProject.model.SellerVO">
@@ -20,6 +20,8 @@
         <association property="user" javaType="com.example.TeamProject.model.User">
             <result property="name" column="USER_NAME"/>
             <result property="address" column="USER_ADDRESS"/>
+            <result property="email" column="USER_EMAIL"/>
+			<result property="phone" column="USER_PHONE"/>
         </association>
     </resultMap>
 
@@ -36,7 +38,9 @@
             s.LAT,
             s.LNG,
             u.NAME AS USER_NAME,
-            u.ADDRESS AS USER_ADDRESS
+            u.ADDRESS AS USER_ADDRESS,
+            u.EMAIL AS USER_EMAIL,
+			u.PHONE AS USER_PHONE 
         FROM
             SELLER_INFO s
         JOIN
@@ -63,7 +67,7 @@
 	     WHERE USER_ID = #{userId}
 	 </update>
 	 
-	<!-- 사용자 전화번호(USERS.PHONE) 업데이트 쿼리 -->
+	<!-- 사용자 전화번호 업데이트 쿼리 -->
 	<update id="updateUserPhone" parameterType="com.example.TeamProject.model.User">
 	    UPDATE USERS
 	    SET
@@ -72,7 +76,7 @@
 	    WHERE USER_ID = #{userId}
 	</update>
 	
-	<!-- 판매자 계좌 정보(SELLER_INFO.ACCOUNT, BANKNAME) 업데이트 쿼리 -->
+	<!-- 판매자 계좌 정보 업데이트 쿼리 -->
 	<update id="updateSellerAccountInfo" parameterType="com.example.TeamProject.model.SellerVO">
 	    UPDATE SELLER_INFO
 	    SET
@@ -81,7 +85,7 @@
 	    WHERE USER_ID = #{userId}
 	</update>
 	
-	    <!-- 대시보드 - 오늘 주문 건수 -->
+	<!-- 대시보드 - 오늘 주문 건수 -->
     <select id="getTodayOrdersCount" parameterType="String" resultType="int">
         SELECT COUNT(DISTINCT O.ORDER_NO)
         FROM ORDERS O
