@@ -30,9 +30,9 @@
 | 이름    | 역할     | 깃허브 | 이메일 
 | ----- | ------ | -------------------------- | ------ |
 | 김성민 | 팀장/프론트엔드/백엔드 | https://github.com/Kimseongmin3790 | sungmin3790@gmail.com 
-| 권혁준 | 프론트엔드/백엔드    | [@id](https://github.com/) |  sinso5281532@gmail.com
-| 이민형 | 프론트엔드/백엔드  | [@id](https://github.com/) | 
-| 문병서 | 인프라    | [@id](https://github.com/) |
+| 권혁준 | 프론트엔드/백엔드    | https://github.com/hyeokjun96 |  hyeokjun96@gmail.com
+| 이민형 | 프론트엔드/백엔드  | https://github.com/sinso5281532 | sinso5281532@gmail.com
+| 문병서 | 인프라    | https://github.com/bsmoonbs |  bsmoonbs@gmail.com
 
 ---
 
