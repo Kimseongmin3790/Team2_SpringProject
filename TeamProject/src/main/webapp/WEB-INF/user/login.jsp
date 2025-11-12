@@ -285,7 +285,7 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.has('error') && urlParams.get('error') === 'true') {
                     const errorMessage = urlParams.get('message');
-                    console.log('Error message from URL:', errorMessage);
+                    //console.log('Error message from URL:', errorMessage);
                     if (errorMessage) {
                         alert(decodeURIComponent(errorMessage));
                     } else {

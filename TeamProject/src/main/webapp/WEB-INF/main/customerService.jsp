@@ -390,7 +390,7 @@
                     type: "POST",
                     data: param,
                     success: function (data) {
-                        console.log(data);
+                        //console.log(data);
                         self.orderList = data.list;
                     }
                 });    

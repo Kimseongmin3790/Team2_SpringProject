@@ -604,7 +604,7 @@
                 if (!isValid) {
                     return;
                 }
-                console.log("유효성 검사 통과 서버로 데이터를 전송합니다.");
+                // console.log("유효성 검사 통과 서버로 데이터를 전송합니다.");
 
                 let formData = new FormData();
 
@@ -623,7 +623,7 @@
                     contentType: false,
                     data: formData,
                      success: function (response) {
-                        console.log(response);
+                        // console.log(response);
                         alert("입점 신청이 정상적으로 완료되었습니다.");
                         // location.href = "";  다되면 어디로 보내지?
                     },

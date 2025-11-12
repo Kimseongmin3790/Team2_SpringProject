@@ -399,7 +399,7 @@
                                     fulfillment: SINGLE.fulfillment
                                 },
                                 success: (res) => {
-                                    console.log(res);
+                                    //console.log(res);
                                     if (res.result === 'success') {
                                         this.products = (res.list || []).map(p => ({
                                             ...p,
@@ -429,7 +429,7 @@
                             dataType: "json",
                             data: param,
                             success: function (data) {
-                                console.log(data.info);
+                                //console.log(data.info);
                                 if (data.result == 'success') {
                                     self.buyer = data.info || [];
                                 } else {

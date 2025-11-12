@@ -787,7 +787,7 @@
                                         dataType: "json",
                                         success(res) {
                                             // 서버로부터 받은 데이터로 갱신
-                                            console.log(res);
+                                            //console.log(res);
                                             self.noticeList = res.list;
                                             self.page = res.page;
                                             self.totalPage = res.totalPage;

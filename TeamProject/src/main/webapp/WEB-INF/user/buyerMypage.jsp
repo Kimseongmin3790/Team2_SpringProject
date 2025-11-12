@@ -1534,7 +1534,7 @@
                             dataType: "json",
                             data: param,
                             success: function (data) {
-                                console.log(data);
+                                //console.log(data);
                                 if (data.result == 'success') {
                                     self.cartItems = data.list || [];
                                 } else {
@@ -1622,12 +1622,12 @@
                         order.isDetailsVisible = !order.isDetailsVisible;
                     },
                     fnWriteReview(productNo, orderItemNo) {
-                        console.log("productNo:", productNo, "orderItemNo:", orderItemNo);
+                        //console.log("productNo:", productNo, "orderItemNo:", orderItemNo);
 
                         const url = CTX + "/reviewWrite.do?productNo=" + encodeURIComponent(productNo)
                             + "&orderItemNo=" + encodeURIComponent(orderItemNo);
 
-                        console.log("생성된 URL:", url);
+                        //console.log("생성된 URL:", url);
                         location.href = url;
                     },
                     fnLoadReviews() {
@@ -1639,7 +1639,7 @@
                             success: function (response) {
                                 if (response.result === "success") {
                                     self.reviews = response.list;
-                                    console.log("Loaded Reviews:", self.reviews);
+                                    //console.log("Loaded Reviews:", self.reviews);
                                 } else {
                                     alert("리뷰 목록을 불러오는 데 실패했습니다.");
                                 }

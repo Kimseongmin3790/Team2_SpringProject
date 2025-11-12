@@ -487,7 +487,7 @@
                                         dataType: "json",
                                         data: { phone: self.userPhone },
                                         success: function (data) {
-                                            console.log("문자 발송 결과:", data);
+                                            //console.log("문자 발송 결과:", data);
                                             if (data.result === "success" || data.res) {
                                                 Swal.fire('✅', '인증번호가 발송되었습니다.', 'success');
                                                 self.smsFlg = true; // 인증번호 입력창 표시
