@@ -256,7 +256,7 @@
                                         },
                                         error: (xhr) => {
                                             alert('오류가 발생했습니다.');
-                                            console.log(xhr.responseText);
+                                            //console.log(xhr.responseText);
                                         }
                                     });
                                 },
