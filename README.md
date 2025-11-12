@@ -205,9 +205,9 @@ ERD 이미지(https://www.erdcloud.com/d/rkCfSHd6zyzgTdy8t)
 
 ## 🗃 기타 산출물
 
-* 회의록: [https://drive.google.com/drive/folders/1cmpl7d8eTH9VdNGQBTZcpIzHwe6FEHuG?usp=drive_link]()
-* 화면 설계서: [https://drive.google.com/drive/folders/1GgcUbCifE9YsqkxuhOjju2O_SPUpnjdr?usp=drive_link]()
-* 피그마: [https://www.figma.com/files/team/1560527124714191383/project/472940087/%ED%8C%80-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8?fuid=1560527122324907792]()
+* 회의록: [회의록 보기](https://drive.google.com/drive/folders/1cmpl7d8eTH9VdNGQBTZcpIzHwe6FEHuG?usp=drive_link)
+* 화면 설계서: [화면 설계서 보기](https://drive.google.com/drive/folders/1GgcUbCifE9YsqkxuhOjju2O_SPUpnjdr?usp=drive_link)
+* 피그마: [피그마 링크](https://www.figma.com/files/team/1560527124714191383/project/472940087/%ED%8C%80-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8?fuid=1560527122324907792)
 </details>
 
 
