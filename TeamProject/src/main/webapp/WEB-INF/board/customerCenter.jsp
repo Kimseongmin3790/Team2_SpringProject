@@ -746,7 +746,6 @@
                                         data: params,
                                         dataType: "json",
                                         success(res) {
-                                            console.log(res);
                                             self.noticeList = res.list;
                                             self.page = res.page;
                                             self.totalPage = res.totalPage;

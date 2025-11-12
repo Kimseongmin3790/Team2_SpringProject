@@ -130,7 +130,7 @@
                                         dataType: "json",
                                         success(res) {
                                             self.stats = res;
-                                            console.log(self.stats);
+                                            // console.log(self.stats);
                                             self.renderCharts();
                                         },
                                         error() {

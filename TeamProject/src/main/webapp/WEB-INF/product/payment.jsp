@@ -10,12 +10,10 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>결제하기 | AGRICOLA</title>
 
-            <!-- ✅ jQuery + Vue -->
             <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
             <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
 
-            <!-- ✅ 공통 CSS -->
             <link rel="stylesheet" href="${path}/resources/css/header.css">
             <link rel="stylesheet" href="${path}/resources/css/footer.css">
 
@@ -399,7 +397,6 @@
                                     fulfillment: SINGLE.fulfillment
                                 },
                                 success: (res) => {
-                                    console.log(res);
                                     if (res.result === 'success') {
                                         this.products = (res.list || []).map(p => ({
                                             ...p,
@@ -429,7 +426,6 @@
                             dataType: "json",
                             data: param,
                             success: function (data) {
-                                console.log(data.info);
                                 if (data.result == 'success') {
                                     self.buyer = data.info || [];
                                 } else {

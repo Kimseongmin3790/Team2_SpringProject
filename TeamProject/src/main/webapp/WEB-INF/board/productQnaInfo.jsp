@@ -200,7 +200,6 @@
                                         },
                                         success: (res) => {
                                             if (res.result === "success")
-                                                console.log(res);
                                             this.qna = res.info;
                                         }
                                     });
