@@ -24,7 +24,6 @@
                     background: #faf8f0;
                 }
 
-                /* ✅ 페이지 전체 컨테이너 */
                 #app {
                     min-height: 100vh;
                     display: flex;
@@ -32,21 +31,17 @@
                     width: 100%;
                     box-sizing: border-box;
                     padding: 0 120px;
-                    /* ✅ 좌우에 120px 마진처럼 여백 부여 */
                 }
 
-                /* 내부 컨텐츠 */
                 .page-container {
                     flex: 1;
                     background: #fff;
                     padding: 60px 0;
-                    /* 상하 여백만 유지 */
                     box-sizing: border-box;
                     border-radius: 10px;
                     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
                 }
 
-                /* 제목 */
                 h1.title {
                     text-align: center;
                     color: #1a5d1a;
@@ -55,8 +50,6 @@
                     margin-bottom: 40px;
                 }
 
-                /* ============================= */
-                /* 📋 탭 메뉴 */
                 .tab-menu {
                     display: flex;
                     justify-content: center;
@@ -94,31 +87,24 @@
                     background: #f9f9f9;
                 }
 
-                /* ============================= */
-                /* 📋 공지사항 헤더 */
                 .notice-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: flex-end;
-                    /* ✅ 제목/검색창 라인 하단 정렬 */
                     margin-bottom: 25px;
                     flex-wrap: wrap;
                     gap: 20px;
                 }
 
-                /* ✅ 고객문의 헤더 (공지사항과 동일하게 정렬) */
                 .inquiry-header {
                     display: flex;
                     justify-content: space-between;
-                    /* 검색창을 오른쪽으로 정렬 */
                     align-items: flex-end;
-                    /* 제목과 검색창 아래쪽 맞춤 */
                     margin-bottom: 25px;
                     flex-wrap: wrap;
                     gap: 20px;
                 }
 
-                /* 공지사항 왼쪽 영역 */
                 .notice-left {
                     display: flex;
                     flex-direction: column;
@@ -142,7 +128,6 @@
                     font-weight: 700;
                 }
 
-                /* ✅ 고객문의 왼쪽 영역 (공지사항 동일 스타일) */
                 .inquiry-left {
                     display: flex;
                     flex-direction: column;
@@ -166,7 +151,6 @@
                     font-weight: 700;
                 }
 
-                /* 오른쪽 검색창 */
                 .notice-header .search-bar,
                 .inquiry-header .search-bar {
                     display: flex;
@@ -177,7 +161,6 @@
                     border-radius: 25px;
                     padding: 6px 12px;
                     width: 260px;
-                    /* ✅ 줄인 검색창 */
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
                 }
 
@@ -220,8 +203,6 @@
                     background: #4ba954;
                 }
 
-                /* ============================= */
-                /* 📋 테이블 */
                 table {
                     width: 100%;
                     border-collapse: collapse;
@@ -235,7 +216,6 @@
                     text-align: center;
                     font-size: 15px;
                     table-layout: fixed;
-                    /* ✅ 열 너비 고정 */
                 }
 
                 .notice-table th,
@@ -243,7 +223,6 @@
                     padding: 12px 10px;
                     border-bottom: 1px solid #eee;
                     word-wrap: break-word;
-                    /* ✅ 긴 글도 줄바꿈 */
                 }
 
                 .notice-table a,
@@ -293,8 +272,6 @@
                     color: #888;
                 }
 
-                /* ============================= */
-                /* 📑 페이지네이션 */
                 .pagination {
                     display: flex;
                     justify-content: center;
@@ -323,8 +300,6 @@
                     font-weight: 600;
                 }
 
-                /* ============================= */
-                /* 📘 FAQ / QNA */
                 h3 {
                     font-size: 20px;
                     margin-bottom: 20px;
@@ -346,8 +321,6 @@
                     background: #f3ebd3;
                 }
 
-                /* ============================= */
-                /* 🔐 비밀번호 모달 */
                 .modal {
                     position: fixed;
                     top: 0;
@@ -399,12 +372,9 @@
                     background: #4ba954;
                 }
 
-                /* ============================= */
-                /* 📱 반응형 */
                 @media (max-width: 1024px) {
                     #app {
                         padding: 0 60px;
-                        /* ✅ 태블릿은 여백 줄이기 */
                     }
 
                     .page-container {
@@ -429,7 +399,6 @@
                 @media (max-width: 768px) {
                     #app {
                         padding: 0 20px;
-                        /* ✅ 모바일은 좌우 여백 최소화 */
                     }
 
                     .tab-menu {
@@ -528,7 +497,6 @@
                 <div id="app">
                     <h1 class="title">고객센터</h1>
 
-                    <!-- ✅ 탭 메뉴 -->
                     <ul class="tab-menu">
                         <li class="${param.tab eq 'notice' || empty param.tab ? 'active' : ''}">
                             <a href="?tab=notice">공지사항</a>
@@ -541,7 +509,6 @@
                         </li>
                     </ul>
 
-                    <!-- ✅ 공지사항 탭 -->
                     <c:if test="${param.tab eq 'notice' || empty param.tab}">
                         <div class="notice-header">
                             <div class="notice-left">
@@ -587,7 +554,6 @@
                                 작성</button>
                         </div>
 
-                        <!-- ✅ 페이지네이션 -->
                         <div class="pagination" v-if="totalPage > 1">
                             <button :disabled="page === 1" @click="fnChangePage(page - 1)">이전</button>
                             <button v-for="p in totalPage" :key="p" :class="{active: p === page}"
@@ -598,7 +564,6 @@
                         </div>
                     </c:if>
 
-                    <!-- ✅ 상품문의 (검색창 + 페이지네이션 완전 동일 구조) -->
                     <c:if test="${param.tab eq 'qna'}">
                         <div class="inquiry-header">
                             <div class="inquiry-left">
@@ -655,7 +620,6 @@
                             </tbody>
                         </table>
 
-                        <!-- ✅ 페이지네이션 -->
                         <div class="pagination" v-if="qnaTotalPage > 1">
                             <button :disabled="qnaPage === 1" @click="fnChangeQnaPage(qnaPage - 1)">이전</button>
                             <button v-for="p in qnaTotalPage" :key="p" :class="{active: p === qnaPage}"
@@ -667,7 +631,6 @@
                         </div>
                     </c:if>
 
-                    <!-- ✅ 고객문의 (비밀번호 모달 적용) -->
                     <c:if test="${param.tab eq 'inquiry'}">
                         <div class="inquiry-header">
                             <div class="inquiry-left">
@@ -717,7 +680,6 @@
                             </tbody>
                         </table>
 
-                        <!-- ✅ 페이지네이션 -->
                         <div class="pagination" v-if="inquiryTotalPage > 1">
                             <button :disabled="inquiryPage === 1"
                                 @click="fnChangeInquiryPage(inquiryPage - 1)">이전</button>
@@ -742,6 +704,7 @@
                             data() {
                                 return {
                                     sessionId: "${sessionId}",
+
                                     // 공지사항
                                     noticeList: [],
                                     searchType: "title",
@@ -769,15 +732,12 @@
                                 };
                             },
                             methods: {
-                                /* =========================
-                                   ✅ 공지사항 불러오기
-                                ========================== */
                                 fnLoadNotice() {
                                     const self = this;
                                     const params = {
                                         searchType: self.searchType,
                                         keyword: self.keyword,
-                                        page: self.page // 페이지 번호 파라미터 추가
+                                        page: self.page
                                     };
 
                                     $.ajax({
@@ -792,7 +752,6 @@
                                             self.page = res.page;
                                             self.totalPage = res.totalPage;
 
-                                            // 총 게시물 개수 표시 업데이트
                                             const totalCountEl = document.querySelector('.total-count strong');
                                             if (totalCountEl) totalCountEl.textContent = res.totalCount;
                                         },
@@ -801,16 +760,14 @@
                                         }
                                     });
                                 },
-                                // ✅ 공지사항 검색
+
                                 fnSearchNotice() {
                                     let self = this;
                                     self.page = 1;
                                     self.fnLoadNotice();
                                 },
 
-                                // ✅ 페이지 변경
                                 fnChangePage(p) {
-                                    // 유효하지 않은 페이지는 무시
                                     if (p < 1 || p > this.totalPage) {
                                         return;
                                     }
@@ -818,9 +775,6 @@
                                     this.fnLoadNotice();
                                 },
 
-                                /* =========================
-                                    ✅ 상품문의 목록 불러오기
-                                ========================== */
                                 fnLoadQna(keyword = "", searchType = "", page = 1) {
                                     const self = this;
                                     $.ajax({
@@ -859,13 +813,11 @@
                                 },
 
                                 fnOpenQnaDetail(id, isSecret) {
-                                    // 공개글
                                     if (isSecret !== "Y") {
                                         location.href = "/productQna/detail.do?qnaNo=" + id;
                                         return;
                                     }
 
-                                    // 비공개글 → 비밀번호 입력창
                                     Swal.fire({
                                         title: "비밀번호 확인",
                                         input: "password",
@@ -920,7 +872,6 @@
 
                                 fnGoToQnaWrite() {
                                     const self = this;
-                                    // 로그인 체크
                                     if (!self.sessionId || self.sessionId.trim() === "") {
                                         Swal.fire({
                                             icon: "warning",
@@ -933,13 +884,9 @@
                                         return;
                                     }
 
-                                    // 상품문의 작성 페이지로 이동
                                     location.href = "/productQna/write.do";
                                 },
 
-                                /* =========================
-                                   ✅ 고객문의 목록 불러오기
-                                ========================== */
                                 fnLoadInquiry(keyword = "", searchType = "", page = 1) {
                                     const self = this;
                                     $.ajax({
@@ -969,7 +916,6 @@
                                     this.fnLoadInquiry(this.inquiryKeyword, this.inquirySearchType, 1);
                                 },
 
-                                // ===== 페이지 전환 =====
                                 fnChangeInquiryPage(p) {
                                     this.inquiryPage = p;
                                     this.fnLoadInquiry(this.inquiryKeyword, this.inquirySearchType, p);
@@ -982,18 +928,13 @@
                                     location.href = "/notice/write.do";
                                 },
 
-                                /* =========================
-                                ✅ 고객문의 제목 클릭 시 동작
-                                ========================== */
                                 fnOpenInquiryDetail(id, isSecret) {
                                     const self = this;
-                                    // 공개글이면 바로 이동
                                     if (isSecret !== 'Y') {
                                         location.href = "/inquiry/detail.do?inquiryNo=" + id;
                                         return;
                                     }
 
-                                    // ✅ 로그인하지 않은 사용자는 접근 제한
                                     if (!self.sessionId || self.sessionId.trim() === "") {
                                         Swal.fire({
                                             icon: "warning",
@@ -1006,16 +947,13 @@
                                         return;
                                     }
 
-                                    // ✅ 로그인한 사용자별 인증 여부 체크
                                     const authKey = `auth_inquiry_${self.sessionId}_${id}`;
 
                                     if (sessionStorage.getItem(authKey) === "true") {
-                                        // 이미 인증된 글이면 바로 이동
                                         location.href = "/inquiry/detail.do?inquiryNo=" + id;
                                         return;
                                     }
 
-                                    // ✅ SweetAlert2 비밀번호 입력창
                                     Swal.fire({
                                         title: "비밀번호 확인",
                                         input: "password",
@@ -1052,7 +990,6 @@
                                                 },
                                                 success: (res) => {
                                                     if (res.result === "success") {
-                                                        // 인증 성공 → 세션 저장 + 이동
                                                         sessionStorage.setItem(`auth_inquiry_${id}`, "true");
                                                         Swal.fire({
                                                             icon: "success",
@@ -1089,7 +1026,6 @@
                                 fnGoToInquiryWrite() {
                                     const self = this;
 
-                                    // 로그인 여부 확인
                                     if (!self.sessionId || self.sessionId.trim() === "") {
                                         Swal.fire({
                                             icon: "warning",
@@ -1102,7 +1038,6 @@
                                         return;
                                     }
 
-                                    // 문의글 작성 페이지로 이동
                                     location.href = "/inquiry/write.do";
                                 }
 
@@ -1120,7 +1055,7 @@
                                         this.fnLoadInquiry();
                                         break;
                                     case "qna":
-                                        this.fnLoadQna && this.fnLoadQna(); // 필요 시
+                                        this.fnLoadQna && this.fnLoadQna();
                                         break;
                                     default:
                                         break;

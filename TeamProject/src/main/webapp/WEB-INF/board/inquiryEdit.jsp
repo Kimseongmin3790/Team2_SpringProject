@@ -8,13 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문의글 수정 | AGRICOLA</title>
 
-    <!-- ✅ 외부 라이브러리 -->
     <script src="https://code.jquery.com/jquery-3.7.1.js"
         integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- ✅ 공통 헤더 / 푸터 CSS -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
@@ -182,7 +180,6 @@
                 };
             },
             methods: {
-                // ✅ 기존 데이터 불러오기
                 fnLoadDetail() {
                     $.ajax({
                         url: "/inquiryInfo.dox",
@@ -203,7 +200,6 @@
                     this.inquiry.isSecret = this.isSecret ? "Y" : "N";
                 },
 
-                // ✅ 수정 요청
                 fnUpdateInquiry() {
                     if (!this.inquiry.title.trim()) {
                         alert("제목을 입력하세요.");

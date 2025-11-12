@@ -30,9 +30,7 @@ $(document).ready(function() {
 	/* 처음 안내를 띄웠는지 여부 */
 	let chatbotWelcomed = false;
 
-	/* ============================== */
-	/* 💬 챗봇 열기 / 닫기 토글 */
-	/* ============================== */
+	/* 챗봇 열기 / 닫기 토글 */
 	$('#chatbot-toggle').on('click', function () {
 	  $('#chatbot-box').toggleClass('hidden');
 	  $(this).toggleClass('active');
@@ -54,9 +52,7 @@ $(document).ready(function() {
 	});
 
 
-	/* ============================== */
-	/* 💬 AGRICOLA 챗봇 기능 */
-	/* ============================== */
+	/* 챗봇 기능 */
 	$("#chat-send").on("click", function () {
 	  const msg = $("#chat-input").val().trim();
 	  if (!msg) return;

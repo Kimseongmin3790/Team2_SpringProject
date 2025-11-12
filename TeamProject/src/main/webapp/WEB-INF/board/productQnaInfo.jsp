@@ -6,7 +6,7 @@
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>상품문의 상세보기 | AGRICOLA</title> <!-- ✅ 제목 변경 -->
+            <title>상품문의 상세보기 | AGRICOLA</title>
 
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -138,20 +138,17 @@
                 <div id="app">
                     <main class="content">
                         <div class="detail-container" v-if="qna">
-                            <!-- ✅ 상품 정보 영역 -->
                             <div class="product-box">
                                 <img :src="qna.thumbUrl" v-if="qna.thumbUrl" alt="상품 이미지">
                                 <div class="product-name">{{ qna.pname }}</div>
                             </div>
 
-                            <!-- ✅ 제목 / 내용 -->
                             <div class="detail-title">{{ qna.title }}</div>
                             <div class="detail-info">
                                 작성자: {{ qna.userId }} ｜ 작성일시: {{ qna.regDate }} ｜ 조회수: {{ qna.cnt }}
                             </div>
                             <div class="detail-content">{{ qna.content }}</div>
 
-                            <!-- ✅ 판매자 답변 영역 -->
                             <div class="answer-container" v-if="answer">
                                 <div class="answer-title">판매자 답변</div>
                                 <div class="answer-content">{{ answer.content }}</div>
@@ -160,7 +157,6 @@
                                 </div>
                             </div>
 
-                            <!-- ✅ 답변 없고 판매자일 경우 -->
                             <div class="answer-container"
                                 v-else-if="sessionStatus === 'SELLER' && qna && qna.sellerId === sessionId">
                                 <div class="answer-title">답변 작성</div>
@@ -194,7 +190,6 @@
                                 };
                             },
                             methods: {
-                                // ✅ 상품문의 상세조회
                                 fnLoadDetail() {
                                     $.ajax({
                                         url: "/productQnaInfo.dox",
@@ -211,7 +206,6 @@
                                     });
                                 },
 
-                                // ✅ 답변 조회
                                 fnLoadAnswer() {
                                     $.ajax({
                                         url: "/productQnaAnswerInfo.dox",
@@ -226,7 +220,6 @@
                                     });
                                 },
 
-                                // ✅ 판매자 답변 등록
                                 fnSubmitAnswer() {
                                     if (!this.newAnswer.trim()) {
                                         Swal.fire("입력 오류", "답변 내용을 입력하세요.", "warning");
@@ -234,7 +227,7 @@
                                     }
 
                                     $.ajax({
-                                        url: "/productQnaAnswerInsert.dox", // ✅ 수정
+                                        url: "/productQnaAnswerInsert.dox", 
                                         type: "POST",
                                         dataType: "json",
                                         data: {
@@ -258,7 +251,7 @@
                             },
                             mounted() {
                                 const urlParams = new URLSearchParams(window.location.search);
-                                this.qnaNo = urlParams.get("qnaNo"); // ✅ 수정
+                                this.qnaNo = urlParams.get("qnaNo");
                                 this.fnLoadDetail();
                                 this.fnLoadAnswer();
                             }

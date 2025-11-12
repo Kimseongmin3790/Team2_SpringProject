@@ -8,13 +8,11 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>카테고리 관리 | ADMIN</title>
 
-            <!-- libs -->
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3"></script>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-            <!-- 공통 CSS -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
@@ -171,12 +169,10 @@
                     <div class="page-wrap">
                         <h2 class="title"><i class="fa-solid fa-tags"></i> 카테고리 관리</h2>
 
-                        <!-- 상단 툴바: 필터 -->
                         <div class="toolbar">
                             <select v-model="filterParent" @change="applyFilter">
                                 <option value="">상위 전체</option>
                                 <option value="__ROOT__">최상위(대분류)</option>
-                                <!-- 상단 필터는 최상위만 유지 -->
                                 <option v-for="p in parentCandidates" :key="'p-'+p.CATEGORYNO" :value="p.CATEGORYNO">
                                     {{ p.CATEGORYNO }} - {{ p.CATEGORYNAME }}
                                 </option>
@@ -190,7 +186,6 @@
                             <span class="muted" style="margin-left:auto">총 {{ filtered.length }}건</span>
                         </div>
 
-                        <!-- 목록 -->
                         <div class="grid">
                             <table>
                                 <thead>
@@ -216,7 +211,6 @@
                                             </span>
                                             <select v-else v-model="c._parent" style="width:100%; height:34px;">
                                                 <option :value="null">없음(대분류)</option>
-                                                <!-- ✅ 편집용 부모 후보: 대상 자릿수-1 에 해당하는 전체 카테고리 -->
                                                 <option v-for="p in parentOptionsForEdit(c)" :key="'sp-'+p.CATEGORYNO"
                                                     :value="p.CATEGORYNO">
                                                     {{ p.CATEGORYNO }} - {{ p.CATEGORYNAME }}
@@ -242,7 +236,6 @@
                             </table>
                         </div>
 
-                        <!-- 추가 섹션 -->
                         <h3 class="section-title">카테고리 추가</h3>
                         <div class="toolbar">
                             <input v-model.number="form.no" type="number" placeholder="카테고리 번호(예: 4000)"
@@ -250,7 +243,6 @@
                             <input v-model="form.name" type="text" placeholder="카테고리명" style="min-width:220px;" />
                             <select v-model="form.parent">
                                 <option :value="null">없음(대분류)</option>
-                                <!-- ✅ 추가 폼용 부모 후보: 입력 번호 자릿수-1 에 해당하는 전체 카테고리 -->
                                 <option v-for="p in parentOptions" :key="'ap-'+p.CATEGORYNO" :value="p.CATEGORYNO">
                                     {{ p.CATEGORYNO }} - {{ p.CATEGORYNAME }}
                                 </option>
@@ -269,21 +261,20 @@
                         const app = Vue.createApp({
                             data() {
                                 return {
-                                    list: [],            // (대문자 키 그대로 유지)
+                                    list: [],       
                                     filtered: [],
-                                    parentCandidates: [],// 상단 필터용(최상위만)
+                                    parentCandidates: [],
                                     filterParent: "",
                                     searchText: "",
                                     form: { no: null, name: "", parent: null }
                                 }
                             },
                             computed: {
-                                // ✅ 추가 폼용 부모 후보: 입력 번호 자릿수에 따라 부모 자릿수 = (자식-1)
                                 parentOptions() {
                                     const no = this.form.no;
-                                    if (no == null || no === '') return this.list; // 번호 미입력 시 전체
+                                    if (no == null || no === '') return this.list; 
                                     const needDigits = String(no).length - 1;
-                                    if (needDigits <= 0) return [];               // 대분류는 부모 없음
+                                    if (needDigits <= 0) return [];             
                                     return this.list.filter(v => String(v.CATEGORYNO).length === needDigits);
                                 },
                                 allowedRangeText() {
@@ -310,7 +301,6 @@
                                                 PARENTNO: x.PARENTNO != null ? Number(x.PARENTNO) : null,
                                                 _edit: false
                                             }));
-                                            // 상단 필터용 최상위 후보
                                             self.parentCandidates = self.list.filter(v => v.PARENTCATEGORYNO == null);
                                             self.applyFilter();
                                         }
@@ -336,7 +326,6 @@
 
                                 resetFilter() { this.filterParent = ""; this.searchText = ""; this.applyFilter(); },
 
-                                // 편집 모드에서 부모 후보(자릿수-1, 자기 자신 제외)
                                 parentOptionsForEdit(c) {
                                     const needDigits = String(c.CATEGORYNO).length - 1;
                                     return this.list.filter(v =>
@@ -385,7 +374,6 @@
                                     });
                                 },
 
-                                // 로컬 유효성(번호 규칙)
                                 validateLocal(no, parent) {
                                     if (no == null) { alert("카테고리 번호를 입력하세요."); return false; }
                                     if (!Number.isInteger(no)) { alert("카테고리 번호는 정수여야 합니다."); return false; }
@@ -419,7 +407,6 @@
 
                                     if (!this.form.name.trim()) { alert("카테고리명을 입력하세요."); return; }
 
-                                    // ✅ 부모 자동 추론: 번호만 넣고 부모 미선택 시, 마지막 한 자리 제거한 값을 부모로 시도 (예: 4500 → 450)
                                     if (parent == null && no != null && String(no).length > 2) {
                                         const guess = Number(String(no).slice(0, -1));
                                         const exists = this.list.some(v => Number(v.CATEGORYNO) === guess);

@@ -151,13 +151,13 @@
 	    NVL(P.PRICE, 0)                                     AS basePrice,
 	    NVL(PO.ADD_PRICE, 0)                                AS addPrice,
 	
-	    -- ✅ 단가: 기본가 + 옵션추가금
+	    -- 단가: 기본가 + 옵션추가금
 	    (NVL(P.PRICE, 0) + NVL(PO.ADD_PRICE, 0))            AS unitPrice,
 	
-	    -- ✅ 라인합계: 단가 × 수량
+	    -- 라인합계: 단가 × 수량
 	    ((NVL(P.PRICE, 0) + NVL(PO.ADD_PRICE, 0)) * NVL(C.QUANTITY, 0)) AS lineTotal,
 	
-	    -- ✅ 배송비: 픽업/방문은 0, 그 외 CART의 SHIPPING_FEE(없으면 3000)
+	    -- 배송비: 픽업/방문은 0, 그 외 CART의 SHIPPING_FEE(없으면 3000)
 	    CASE
 	      WHEN UPPER(NVL(C.FULFILLMENT, 'DELIVERY')) IN ('VISIT', 'PICKUP') THEN 0
 	      ELSE NVL(C.SHIPPING_FEE, 3000)
@@ -357,7 +357,6 @@
 	</update>
 	
 	<delete id="deleteOptions" parameterType="map">
-	  <!-- 비어 있으면 실행 안 되게 가드 (서비스에서 비어있으면 호출 생략하는게 더 깔끔) -->
 	  <if test="optionNos != null and optionNos.size() &gt; 0">
 	    DELETE FROM PRODUCT_OPTION
 	     WHERE PRODUCT_NO = #{productNo}

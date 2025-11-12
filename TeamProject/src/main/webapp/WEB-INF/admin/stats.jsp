@@ -8,7 +8,6 @@
             <meta charset="UTF-8">
             <title>AGRICOLA 관리자 통계</title>
 
-            <!-- ✅ 외부 라이브러리 -->
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3"></script>
             <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -77,37 +76,31 @@
                         <button class="btn-back" @click="goBack">이전</button>
                         <h2>AGRICOLA 통계</h2>
 
-                        <!-- 1️⃣ 회원 비율 -->
                         <div class="chart-section">
                             <h3>회원 비율</h3>
                             <div id="userChart"></div>
                         </div>
 
-                        <!-- 2️⃣ 나이대 분포 -->
                         <div class="chart-section">
                             <h3>회원 나이대 분포</h3>
                             <div id="ageChart"></div>
                         </div>
 
-                        <!-- 3️⃣ 성별 비율 -->
                         <div class="chart-section">
                             <h3>성별 비율</h3>
                             <div id="genderChart"></div>
                         </div>
 
-                        <!-- 4️⃣ 지역 비율 -->
                         <div class="chart-section">
                             <h3>지역별 회원 비율</h3>
                             <div id="regionChart"></div>
                         </div>
 
-                        <!-- 5️⃣ 매출 금액 -->
                         <div class="chart-section">
                             <h3>월별 매출 금액 (₩)</h3>
                             <div id="salesChart"></div>
                         </div>
 
-                        <!-- 6️⃣ 신규 회원 증가 추이 -->
                         <div class="chart-section">
                             <h3>신규 회원 증가 추이</h3>
                             <div id="joinChart"></div>
@@ -146,7 +139,6 @@
                                     });
                                 },
                                 renderCharts() {
-                                    // ✅ 1️⃣ 회원 비율 (BUYER / SELLER)
                                     let buyerCnt = 0;
                                     let sellerCnt = 0;
 
@@ -165,14 +157,11 @@
                                         legend: { position: 'bottom' },
                                     }).render();
 
-                                    // ✅ 2️⃣ 나이대 + 성별 분포
                                     if (Array.isArray(this.stats.ageGenderDistribution)) {
                                         const raw = this.stats.ageGenderDistribution;
 
-                                        // 1. 고정된 나이대 순서 정의
                                         const ageGroups = ['10대 이하', '20대', '30대', '40대', '50대', '60대 이상'];
 
-                                        // 2. 남성/여성 데이터를 그룹화
                                         const maleData = new Array(ageGroups.length).fill(0);
                                         const femaleData = new Array(ageGroups.length).fill(0);
 
@@ -184,7 +173,6 @@
                                             }
                                         });
 
-                                        // 3. 차트 렌더링 (Grouped Bar Chart)
                                         new ApexCharts(document.querySelector("#ageChart"), {
                                             chart: { type: 'bar', height: 350, stacked: true },
                                             series: [
@@ -202,16 +190,15 @@
                                         }).render();
                                     }
 
-                                    // ✅ 3️⃣ 성별 비율
                                     if (Array.isArray(this.stats.genderCount)) {
                                         const labels = this.stats.genderCount.map(g => g.userGender);
                                         const series = this.stats.genderCount.map(g => g.cnt);
 
                                         new ApexCharts(document.querySelector("#genderChart"), {
                                             chart: { type: 'pie', height: 320 },
-                                            labels: labels, // ['남자', '여자']
-                                            series: series, // [8, 7]
-                                            colors: ['#43A047', '#A5D6A7'], // 남: 진녹색, 여: 연녹색
+                                            labels: labels,
+                                            series: series,
+                                            colors: ['#43A047', '#A5D6A7'],
                                             legend: { position: 'bottom' },
                                             dataLabels: {
                                                 enabled: true,
@@ -230,7 +217,6 @@
                                         }).render();
                                     }
 
-                                    // ✅ 4️⃣ 지역 비율
                                     if (Array.isArray(this.stats.regionRatio)) {
                                         const regions = this.stats.regionRatio.map(r => r.region);
                                         const counts = this.stats.regionRatio.map(r => r.cnt);
@@ -249,7 +235,6 @@
                                         }).render();
                                     }
 
-                                    // ✅ 5️⃣ 월별 매출 금액
                                     if (Array.isArray(this.stats.salesByMonth)) {
                                         const months = this.stats.salesByMonth.map(item => item.orderMonth);
                                         const sales = this.stats.salesByMonth.map(item => item.totalSales);
@@ -279,14 +264,11 @@
                                         }).render();
                                     }
 
-                                    // ✅ 6️⃣ 신규 회원 증가 추이
                                     if (Array.isArray(this.stats.newUserTrend)) {
                                         const data = this.stats.newUserTrend;
 
-                                        // 1. 월별 목록 추출 (정렬 포함)
                                         const months = [...new Set(data.map(d => d.joinMonth))].sort();
 
-                                        // 2. 역할 분류 (BUYER, SELLER)
                                         const buyerData = [];
                                         const sellerData = [];
 
@@ -297,7 +279,6 @@
                                             sellerData.push(seller ? seller.cnt : 0);
                                         });
 
-                                        // 3. 라인 차트 생성
                                         new ApexCharts(document.querySelector("#joinChart"), {
                                             chart: { type: 'area', height: 350 },
                                             series: [

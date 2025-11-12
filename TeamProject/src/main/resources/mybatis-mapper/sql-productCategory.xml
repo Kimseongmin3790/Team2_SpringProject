@@ -19,7 +19,7 @@
 	      c.CATEGORY_NO
 	</select>
 
-  <!-- ✅ 시퀀스 제거: 직접 번호 입력 -->
+  <!-- 시퀀스 제거: 직접 번호 입력 -->
 	<insert id="insertCategory" parameterType="hashmap">
 	  INSERT INTO PRODUCT_CATEGORY (CATEGORY_NO, CATEGORY_NAME, PARENT_CATEGORY_NO)
 	  VALUES (#{categoryNo}, #{categoryName}, #{parentCategoryNo, jdbcType=NUMERIC})
@@ -41,7 +41,7 @@
 	  SELECT COUNT(*) FROM PRODUCT_CATEGORY WHERE PARENT_CATEGORY_NO = #{categoryNo}
 	</select>
 	
-	<!-- ✅ 중복 번호 존재 여부 -->
+	<!-- 중복 번호 존재 여부 -->
 	<select id="existsByNo" parameterType="hashmap" resultType="int">
 	  SELECT COUNT(*) FROM PRODUCT_CATEGORY WHERE CATEGORY_NO = #{categoryNo}
 	</select>
@@ -57,7 +57,7 @@
 	     </if>
 	</select>
 	
-	<!-- ✅ 부모 존재 확인 -->
+	<!-- 부모 존재 확인 -->
 	<select id="parentExists" parameterType="hashmap" resultType="int">
 	  SELECT COUNT(*) FROM PRODUCT_CATEGORY WHERE CATEGORY_NO = #{parentCategoryNo}
 	</select>

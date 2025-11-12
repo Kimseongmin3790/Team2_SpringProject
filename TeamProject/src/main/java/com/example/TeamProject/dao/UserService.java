@@ -293,6 +293,7 @@ public class UserService {
 			resultMap.put("phone", userProfile.getPhone());
 			resultMap.put("address", userProfile.getAddress());
 			resultMap.put("loginType", loginType);
+			resultMap.put("userRole", userProfile.getUserRole());
 
 		} catch (Exception e) {
 			resultMap.put("status", "error");

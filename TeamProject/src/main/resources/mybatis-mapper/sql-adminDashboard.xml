@@ -12,7 +12,7 @@
 		GROUP BY USER_ROLE
     </select>
     
-    <!-- ✅ 나이대 + 성별 통합 통계 -->
+    <!-- 나이대 + 성별 통합 통계 -->
     <select id="selectAgeGenderDistribution" resultType="com.example.TeamProject.model.AdminDashboard">
 	    SELECT 
 		    CASE 

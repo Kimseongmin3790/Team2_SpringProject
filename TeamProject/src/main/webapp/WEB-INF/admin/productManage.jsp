@@ -9,12 +9,10 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>상품관리</title>
 
-            <!-- Vue & jQuery -->
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3"></script>
 
-            <!-- 공통 스타일 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css" />
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css" />
 
@@ -40,7 +38,6 @@
                     text-align: center;
                 }
 
-                /* 검색 및 필터 */
                 .product-filter {
                     display: flex;
                     justify-content: flex-start;
@@ -67,7 +64,6 @@
                 }
 
                 .filter-left .btn-action {
-                    /* 🔧 검색 버튼 스타일 적용 */
                     background: #5dbb63;
                     border: none;
                     color: white;
@@ -81,7 +77,6 @@
                     background: #4aa954;
                 }
 
-                /* 테이블 */
                 .table-wrap {
                     width: 100%;
                     overflow-x: auto;
@@ -191,7 +186,6 @@
                     background: #a83e3e;
                 }
 
-                /* 🔥 상태 뱃지 & 컨트롤 */
                 .status-badge {
                     display: inline-block;
                     padding: 4px 10px;
@@ -245,7 +239,6 @@
                             <h2 class="admin-title">상품관리</h2>
                         </div>
 
-                        <!-- 검색 & 필터 -->
                         <div class="product-filter">
                             <div class="filter-left">
                                 <select v-model="selectedParentCategory">
@@ -272,11 +265,10 @@
                                 </select>
 
                                 <input type="text" v-model="keyword" placeholder="상품명 검색" />
-                                <button class="btn-action" @click="fnSearch">검색</button> <!-- 🔧 스타일 적용 -->
+                                <button class="btn-action" @click="fnSearch">검색</button>
                             </div>
                         </div>
 
-                        <!-- 상품 목록 테이블 -->
                         <div class="table-wrap">
                             <table class="product-table">
                                 <thead>
@@ -291,7 +283,7 @@
                                         <th>등록일</th>
                                         <th>추천</th>
                                         <th>상태</th>
-                                        <th>상태 설정</th> <!-- 🔧 컬럼명 변경 -->
+                                        <th>상태 설정</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -311,14 +303,12 @@
                                             </button>
                                         </td>
 
-                                        <!-- 🔥 상태 뱃지 -->
                                         <td>
                                             <span :class="['status-badge', statusClass(item.productStatus)]">
                                                 {{ statusLabel(item.productStatus) }}
                                             </span>
                                         </td>
 
-                                        <!-- 🔥 상태 변경 셀렉트 + 적용 버튼 -->
                                         <td>
                                             <div class="status-control">
                                                 <select class="status-select" v-model="item.newStatus">
@@ -335,7 +325,6 @@
                                     </tr>
 
                                     <tr v-if="filteredList.length === 0">
-                                        <!-- 🔧 컬럼수 맞춤 -->
                                         <td colspan="11" class="no-data">등록된 상품이 없습니다.</td>
                                     </tr>
                                 </tbody>
@@ -443,12 +432,11 @@
                                         dataType: "json",
                                         success(data) {
                                             if (data.result === "success") {
-                                                // 원본 리스트 주입 + 상태 변경용 newStatus 초기화
                                                 self.categoryList = data.categories || [];
                                                 self.productList = (data.list || []).map(it => ({
                                                     ...it,
-                                                    newStatus: it.productStatus, // 🔥 기본값은 현재 상태
-                                                    _saving: false                // 🔥 저장중 UI 제어용
+                                                    newStatus: it.productStatus,
+                                                    _saving: false 
                                                 }));
                                             } else {
                                                 alert("데이터 로딩 실패");
@@ -459,7 +447,6 @@
                                 },
 
                                 fnSearch() {
-                                    // 단순 반응 갱신
                                     this.$forceUpdate();
                                 },
 
@@ -486,7 +473,6 @@
                                     });
                                 },
 
-                                // 🔥 상태 뱃지용 라벨/클래스
                                 statusLabel(st) {
                                     switch ((st || '').toUpperCase()) {
                                         case "SELLING": return "판매중";
@@ -504,7 +490,6 @@
                                     }
                                 },
 
-                                // 🔥 상태 변경 적용
                                 fnChangeStatus(item) {
                                     if (!item || !item.productNo) return;
 
@@ -529,11 +514,10 @@
                                         dataType: "json",
                                         success: (res) => {
                                             if (res.result === "success") {
-                                                item.productStatus = next; // 화면 즉시 반영
+                                                item.productStatus = next;
                                                 alert("상품 상태가 변경되었습니다.");
                                             } else {
                                                 alert(res.message || "상태 변경에 실패했습니다.");
-                                                // 실패 시 선택값을 되돌릴지 여부는 정책에 따라 결정
                                                 item.newStatus = item.productStatus;
                                             }
                                         },
