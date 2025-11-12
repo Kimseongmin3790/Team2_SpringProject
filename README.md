@@ -200,7 +200,7 @@ ERD 이미지(https://www.erdcloud.com/d/rkCfSHd6zyzgTdy8t)
 
 ## 🖥 발표 자료 & 시연 영상
 
-* 발표 PPT: [https://drive.google.com/file/d/1uDGNjkepO-dKUQeIpOhPxPQ-29l4lkpr/view?usp=drive_link](ppt보기)
+* 발표 PPT: [ppt보기](https://drive.google.com/file/d/1uDGNjkepO-dKUQeIpOhPxPQ-29l4lkpr/view?usp=drive_link)
 * 시연 영상: [링크]()
 
 ## 🗃 기타 산출물
