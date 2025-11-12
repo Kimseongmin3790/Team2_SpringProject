@@ -183,7 +183,6 @@
                         type: "POST",
                         data: param,
                         success: function (data) {
-                            console.log(data);
                             if(data.result == "success"){
                                 self.title = data.info.title;
                                 self.contents = data.info.contents;
