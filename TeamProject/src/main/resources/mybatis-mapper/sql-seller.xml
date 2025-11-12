@@ -125,8 +125,7 @@
 		        (SELECT p_inner.PNAME FROM PRODUCT p_inner JOIN ORDER_ITEM oi_inner ON p_inner.PRODUCT_NO =
 		        oi_inner.PRODUCT_NO WHERE oi_inner.ORDER_NO = o.ORDER_NO AND ROWNUM = 1) as PRODUCT_NAME,
 		        (SELECT COUNT(*) FROM ORDER_ITEM oi_inner WHERE oi_inner.ORDER_NO = o.ORDER_NO) as PRODUCT_COUNT,
-		
-		        -- 환불 상태를 확인하는 서브쿼리 추가 --
+				       
 		        (SELECT r.STATUS FROM (
 		            SELECT
 		                oi_inner.ORDER_NO,

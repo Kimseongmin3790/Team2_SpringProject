@@ -61,7 +61,7 @@
 	<select id="selectPaymentLines" parameterType="map" resultType="com.example.TeamProject.model.Cart">
 	  <choose>
 	
-	    <!-- ✅ 장바구니 모드: cartNoList가 있으면 이 분기 -->
+	    <!-- 장바구니 모드: cartNoList가 있으면 이 분기 -->
 	    <when test="cartNoList != null and cartNoList.size > 0">
 	      SELECT
 	          C.CART_NO                                        AS cartNo
@@ -115,7 +115,7 @@
 	      ORDER BY C.CART_NO DESC
 	    </when>
 	
-	    <!-- ✅ 단건(상세) 모드: cartNoList가 없으면 이 분기 -->
+	    <!-- 단건(상세) 모드: cartNoList가 없으면 이 분기 -->
 	    <otherwise>
 	      SELECT *
 	      FROM (

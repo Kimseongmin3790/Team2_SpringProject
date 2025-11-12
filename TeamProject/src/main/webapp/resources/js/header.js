@@ -6,7 +6,6 @@ $(document).ready(function() {
 		type: "POST",
 		dataType: "json",
 		success: function(res) {
-			// 해시 링크 빌더
 			const linkTop = (pNo) =>
 				path + "/productCategory.do#p=" + encodeURIComponent(String(pNo)) + "&v=child";
 			const linkMid = (pNo, cNo) =>
@@ -20,7 +19,6 @@ $(document).ready(function() {
 			const menu = $("#dropdownMenu");
 			menu.empty();
 
-			// categories 기준으로만 사용 (없으면 방어적 대체)
 			const raw = Array.isArray(res.categories)
 				? res.categories
 				: Array.isArray(res.list) ? res.list : [];
@@ -42,7 +40,6 @@ $(document).ready(function() {
 			const topLevel = list.filter(isRoot);
 			const children = list.filter(c => !isRoot(c));
 
-			// 그리기
 			topLevel.forEach(top => {
 				const liTop = $("<li>");
 				const aTop = $("<a>").text(top.categoryName).attr("href", linkTop(top.categoryNo));
@@ -87,7 +84,6 @@ $(document).ready(function() {
 		}
 	});
 
-	// 이하 기존 클릭 핸들러들 그대로…
 	$("#logoClick").on("click", function() { location.href = path + "/main.do"; });
 	$("#btnSearch").on("click", function() {
 		const keyword = $("#searchInput").val().trim();
@@ -163,9 +159,8 @@ $(document).ready(function() {
 	});
 	
 	function markActiveNav() {
-	  // 컨텍스트 경로 얻기 (header.js 방식/inline 둘 다 커버)
 	  const ctx = $("body").data("context") || "${pageContext.request.contextPath}" || "";
-	  const p = location.pathname.replace(ctx, "") || location.pathname; // ex) /productCategory.do
+	  const p = location.pathname.replace(ctx, "") || location.pathname;
 	  const h = location.hash || "";
 
 	  $(".nav-menu a").removeClass("active").removeAttr("aria-current");
@@ -185,7 +180,6 @@ $(document).ready(function() {
 	markActiveNav();
 	$(window).on("hashchange", markActiveNav);
 
-	// (추가) 네비 클릭 직후에도 즉시 강조(페이지 전환 전)
 	$(".nav-menu a").on("click", function () {
 	  $(".nav-menu a").removeClass("active");
 	  $(this).addClass("active");
