@@ -40,7 +40,6 @@
                     gap: 25px;
                 }
 
-                /* 좌측 */
                 .left-section {
                     flex: 2;
                     display: flex;
@@ -48,7 +47,6 @@
                     gap: 20px;
                 }
 
-                /* 우측 */
                 .right-section {
                     flex: 1;
                     display: flex;
@@ -271,7 +269,7 @@
                                 <h3>주문 요약</h3>
                                 <div class="price-summary">
                                     상품금액 <span>{{ totalPrice.toLocaleString() }}원</span><br>
-                                    배송비 <span>{{ shippingFeeC.toLocaleString() }}원</span><br> <!-- ✅ 동적 -->
+                                    배송비 <span>{{ shippingFeeC.toLocaleString() }}원</span><br>
                                     포인트 사용 <span>-{{ usedPoint.toLocaleString() }}원</span><br>
                                     <hr>
                                     총 결제금액 <span>{{ finalPrice.toLocaleString() }}원</span>
@@ -344,9 +342,7 @@
                             return sum + unit * q;
                         }, 0);
                     },
-                    // A안: 단건 결제 - 상세에서 수령방법이 '택배'면 3,000, '방문'이면 0.
-                    // 지금은 param으로 fulfillment를 안 받으니, 임시로 3,000 고정 또는
-                    // products[0].fulfillment === 'delivery' ? 3000 : 0 로도 가능
+                    // 단건 결제 - 상세에서 수령방법이 '택배'면 3,000, '방문'이면 0.
                     shippingFeeC() {
                         // 단건이면 첫 상품 기준 / 다건이면 some(delivery)
                         if (this.shippingFeeFromDetail > 0) return this.shippingFeeFromDetail;
@@ -463,16 +459,30 @@
                             ? (this.requestDirect || '').trim()
                             : (this.requestLabel || '').trim();
 
+                        // 주문명(다건일 때 "첫상품 외 n건")
+                        const orderName = this.products.length > 1
+                            ? `\${this.products[0].pName} 외 \${this.products.length - 1}건`
+                            : (this.products[0]?.pName || '주문');
+
+                        // 총 결제 금액 = finalPrice (정수/0원 이상으로 보정)
+                        const amount = Math.max(0, Math.floor(Number(this.finalPrice) || 0));
+
+                        // 0원 결제는 PG에서 막힐 수 있으니 처리 분기
+                        if (amount === 0) {
+                            alert("결제 금액이 0원입니다. 포인트 전액 결제 처리 로직으로 분기하세요.");
+                            return;
+                        }
+
                         // PortOne 객체 생성
                         const IMP = window.IMP;
-                        IMP.init("imp16634661"); // ⚠️ 여기에 본인 가맹점 식별코드 넣기 (예: imp12345678)
+                        IMP.init("imp16634661");
 
                         const paymentData = {
                             pg: "html5_inicis", // 결제 PG사: inicis, kakaopay, toss 등
                             pay_method: "card", // 결제수단
                             merchant_uid: "ORD" + new Date().getTime(), // 고유 주문번호
                             name: this.products[0].pName, // 결제명
-                            amount: 1, // ⚠️ 일단 테스트로 100원 하드코딩
+                            amount: amount,
                             buyer_email: this.buyer.email,
                             buyer_name: this.buyer.name,
                             buyer_tel: this.buyer.phone,
