@@ -160,6 +160,15 @@ public class PaymentService {
 		return resultMap;
 	}
 	
+	public int decreaseOptionStock(Integer optionNo, Integer qty) throws Exception {
+        int updated = paymentMapper.decreaseOptionStock(optionNo, qty);
+        return updated;
+    }
+	
+	public void refreshProductStatusByProductNo(Integer productNo) throws Exception {
+        paymentMapper.refreshProductStatusByProductNo(productNo);
+    }
+	
 	// ===== helper =====
     private static String safeStr(Object o) { return (o == null) ? null : String.valueOf(o); }
     private static Long toLong(Object o) {
