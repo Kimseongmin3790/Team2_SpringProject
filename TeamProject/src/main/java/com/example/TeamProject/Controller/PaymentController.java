@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -55,6 +56,7 @@ public class PaymentController {
 		return new Gson().toJson(resultMap);
 	}
 	
+	@Transactional(rollbackFor = Exception.class)
 	@RequestMapping(value = "/payment/verify.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String verifyPayment(@RequestParam HashMap<String, Object> map) throws Exception {
@@ -104,6 +106,18 @@ public class PaymentController {
 
 	        // DB Insert 실행
 	        paymentService.insertPayment(payMap);
+	        
+	        Integer optionNo  = toInt(map.get("optionNo"), null);
+	        Integer productNo = toInt(map.get("productNo"), null);
+	        Integer quantity  = toInt(map.get("quantity"), 1);
+	        if (optionNo == null) throw new IllegalStateException("옵션 번호가 없습니다.");
+	        
+	        // 옵션 재고 차감 (음수 방지)
+	        int updated = paymentService.decreaseOptionStock(optionNo, quantity);
+	        if (updated == 0) throw new IllegalStateException("옵션 재고 부족 또는 옵션 없음");
+	        
+	        // 해당 상품의 상태 재계산 → SELLING / SOLDOUT (HIDDEN은 그대로 유지)
+	        paymentService.refreshProductStatusByProductNo(productNo);
 	        
 	        // 주문 정보 생성(ORDER_ITEM 테이블에 INSERT) 
 	        HashMap<String, Object> orderItemMap = new HashMap<>();

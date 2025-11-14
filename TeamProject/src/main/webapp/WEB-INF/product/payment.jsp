@@ -482,7 +482,7 @@
                             pay_method: "card", // 결제수단
                             merchant_uid: "ORD" + new Date().getTime(), // 고유 주문번호
                             name: this.products[0].pName, // 결제명
-                            amount: amount,
+                            amount: 1,
                             buyer_email: this.buyer.email,
                             buyer_name: this.buyer.name,
                             buyer_tel: this.buyer.phone,

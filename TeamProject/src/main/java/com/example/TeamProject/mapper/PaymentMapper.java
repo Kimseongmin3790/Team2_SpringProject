@@ -25,4 +25,10 @@ public interface PaymentMapper {
 	
 	// 주문 및 결제 정보 저장
 	void insertOrderItem(HashMap<String, Object> map);
+	
+	// 옵션 재고 차감
+	int decreaseOptionStock(Integer optionNo, Integer qty);
+	
+	// 상품 상태 변경 (재고가 0이면 soldout)
+	int refreshProductStatusByProductNo(Integer productNo);
 }
