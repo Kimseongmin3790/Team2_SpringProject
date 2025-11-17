@@ -22,7 +22,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     @Autowired
     private UserMapper userMapper;
 
-    // ❌ HttpSession 관련 코드는 모두 제거합니다.
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -30,20 +29,17 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        String userNameAttributeName =
-userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
+        String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
 
-        OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName,
-oAuth2User.getAttributes());
+        OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
         User user = saveOrUpdate(attributes);
 
-        // ✨ 핸들러에서 User 객체를 사용할 수 있도록, 기존 속성에 User 객체를 추가합니다.
         Map<String, Object> newAttributes = new HashMap<>(attributes.getAttributes());
-        newAttributes.put("userEntity", user); // "userEntity" 라는 키로 User 객체를 맵에 추가
+        newAttributes.put("userEntity", user);
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority(user.getUserRole())),
-                newAttributes, // ✨ User 객체가 포함된 새로운 속성 맵을 사용
+                newAttributes, 
                 attributes.getNameAttributeKey());
     }
 
