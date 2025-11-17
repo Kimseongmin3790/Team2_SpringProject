@@ -513,7 +513,7 @@
                         <div class="notice-header">
                             <div class="notice-left">
                                 <h3>공지사항</h3>
-                                <p class="total-count">총 <strong>{{ noticeList.length }}</strong>개의 게시물</p>
+                                <p class="total-count">총 <strong>{{ noticeTotalCount }}</strong>개의 게시물</p>
                             </div>
 
                             <div class="search-bar">
@@ -707,6 +707,7 @@
 
                                     // 공지사항
                                     noticeList: [],
+                                    noticeTotalCount : 0,
                                     searchType: "title",
                                     keyword: "",
                                     page: 1,
@@ -749,9 +750,8 @@
                                             self.noticeList = res.list;
                                             self.page = res.page;
                                             self.totalPage = res.totalPage;
-
-                                            const totalCountEl = document.querySelector('.total-count strong');
-                                            if (totalCountEl) totalCountEl.textContent = res.totalCount;
+                                            self.noticeTotalCount = res.totalCount;
+                                            
                                         },
                                         error() {
                                             console.error("공지사항 불러오기 실패");
