@@ -42,4 +42,6 @@ public interface AdminMapper {
 	int updateRecommend(int productNo, String recommend);
 	// 상품 상태 변경
 	int updateProductStatus(int productNo, String productStatus);
+	// 유저 상태 변경
+	int updateUserStatus(HashMap<String, Object> map);
 }

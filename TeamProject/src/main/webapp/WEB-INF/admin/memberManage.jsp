@@ -160,6 +160,20 @@
                 .btn-back:hover {
                     background: #4ba954;
                 }
+
+                .status-box {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                .status-box select {
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                    border: 1px solid #ccc;
+                    font-size: 13px;
+                }
             </style>
         </head>
 
@@ -212,10 +226,23 @@
                                                 <button class="btn-action" @click="fnApprove(item.userId)">승인</button>
                                             </template>
                                             <template v-else-if="item.userRole === 'SELLER' && item.verified === 'Y'">
-                                                <button class="btn-action reject" @click="fnReject(item.userId)">승인취소</button>
+                                                <button class="btn-action reject"
+                                                    @click="fnReject(item.userId)">승인취소</button>
                                             </template>
-                                        </td>                                        
-                                        <td>{{ item.status }}</td>
+                                        </td>
+                                        <td>
+                                            <div class="status-box">
+                                                <select v-model="item.status">
+                                                    <option v-for="opt in statusOptions" :key="opt.value"
+                                                        :value="opt.value">
+                                                        {{ opt.label }}
+                                                    </option>
+                                                </select>
+                                                <button class="btn-action" @click="fnSaveStatus(item)">
+                                                    저장
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                     <tr v-if="userList.length === 0">
                                         <td colspan="6" class="no-data">회원 정보가 없습니다.</td>
@@ -232,6 +259,11 @@
                                 return {
                                     keyword: "",
                                     userList: [],
+                                    statusOptions: [
+                                        { value: "ACTIVE", label: "정상" },
+                                        { value: "WITHDRAWN", label: "탈퇴" },
+                                        { value: "LOCKED", label: "잠김" },
+                                    ]
                                 };
                             },
                             computed: {
@@ -254,7 +286,7 @@
                                         location.href = this.path + "/admin/dashboard.do";
                                     }
                                 },
-                                
+
                                 fnUserList: function () {
                                     let self = this;
                                     let param = {};
@@ -315,6 +347,34 @@
                                         },
                                         error: function () {
                                             alert("취소 처리 중 오류가 발생했습니다.");
+                                        },
+                                    });
+                                },
+
+                                fnSaveStatus(item) {
+                                    if (!confirm(item.userId + " 회원 상태를 '" + item.status + "'로 변경하시겠습니까?")) {
+                                        return;
+                                    }
+                                    let self = this;
+                                    let param = {
+                                        userId: item.userId,
+                                        userStatus: item.status
+                                    };
+                                    $.ajax({
+                                        url: "/updateUserStatus.dox",
+                                        dataType: "json",
+                                        type: "POST",
+                                        data: param,
+                                        success: function (data) {
+                                            if (data.result === "success") {
+                                                alert("회원 상태가 변경되었습니다.");
+                                                self.fnUserList();
+                                            } else {
+                                                alert("상태 변경에 실패했습니다.");
+                                            }
+                                        },
+                                        error: function () {
+                                            alert("처리 중 오류가 발생했습니다.");
                                         },
                                     });
                                 },
