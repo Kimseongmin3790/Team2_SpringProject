@@ -1392,7 +1392,7 @@
                     },
 
                     fnBack: function (productNo) {
-                        pageChange(CTX + '/productInfo.do', { productNo });
+                        location.href="/productInfo.do?productNo=" + productNo;
                     },
 
                     // 프로필 저장 로직
