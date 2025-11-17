@@ -623,7 +623,6 @@
                     contentType: false,
                     data: formData,
                      success: function (response) {
-                        // console.log(response);
                         alert("입점 신청이 정상적으로 완료되었습니다.");
                         // location.href = "";  다되면 어디로 보내지?
                     },

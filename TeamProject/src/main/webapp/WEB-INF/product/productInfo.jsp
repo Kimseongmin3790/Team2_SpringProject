@@ -1606,7 +1606,6 @@
                             type: "POST",
                             data: param,
                             success: function (data) {
-                                //console.log(data);
                                 self.info = {
                                     ...data.info,
                                     productStatus: String(
@@ -1703,9 +1702,6 @@
                                 // 상세 = N만 + 메인도 제거
                                 self.detailImages = nListOnly.filter(u => u !== self.mainImageUrl);
 
-                                // 디버그
-                                //console.log('[A/thumb]', self.thumbImages);
-                                //console.log('[N/detailOnly]', self.detailImages);
 
                                 // 가격/수량 초기화
                                 self.price = Number(self.info?.price || 0);
@@ -2117,7 +2113,6 @@
                             data: param,
                             success: function (data) {
                                 if (data.result === "success") {
-                                    //console.log("추천 상태 변경 성공:", data.message);
                                 } else {
                                     const targetReview = self.reviews.find(r => r.reviewNo === reviewNo);
                                     if (targetReview) {

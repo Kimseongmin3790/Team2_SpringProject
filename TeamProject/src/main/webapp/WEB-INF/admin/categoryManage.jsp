@@ -159,6 +159,22 @@
                 .bottom-space {
                     height: 40px;
                 }
+
+                .btn-back {
+                    background: #5dbb63;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 10px 20px;
+                    font-size: 15px;
+                    cursor: pointer;
+                    transition: 0.3s;
+                    margin-bottom: 25px;
+                }
+
+                .btn-back:hover {
+                    background: #4ba954;
+                }
             </style>
         </head>
 
@@ -167,6 +183,7 @@
 
                 <div id="app">
                     <div class="page-wrap">
+                        <button class="btn-back" @click="goBack">이전</button>
                         <h2 class="title"><i class="fa-solid fa-tags"></i> 카테고리 관리</h2>
 
                         <div class="toolbar">
@@ -285,6 +302,10 @@
                                 }
                             },
                             methods: {
+                                goBack() {
+                                    location.href = "${pageContext.request.contextPath}" + "/dashboard.do";
+                                },
+
                                 path() { return "${pageContext.request.contextPath}"; },
 
                                 load() {

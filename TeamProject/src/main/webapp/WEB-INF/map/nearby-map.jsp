@@ -365,6 +365,7 @@
                                     prevCenter: null,   // 검색/이동 전 중심 저장
                                     geoWatchId: null,   // watchPosition id
                                     followMe: false,    // 내 위치 추적 모드
+                                    isAddressSearch: false
                                 };
                             },
                             computed: {
@@ -384,7 +385,7 @@
 
                                     return filtered.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
                                 },
-                                hasActiveFilter() { return !!(this.searchText || this.onlyInRange); }
+                                hasActiveFilter() { return !!(this.onlyInRange || (this.searchText && !this.isAddressSearch)); }
                             },
                             methods: {
                                 goHome() { location.href = this.path + "/main.do"; },
@@ -470,7 +471,12 @@
                                     $.ajax({
                                         url: this.path + "/main/data/sellerList.dox",
                                         type: "POST",
-                                        data: { lat: this.center.lat, lng: this.center.lng },
+                                        data: {
+                                            lat: this.center.lat,
+                                            lng: this.center.lng,
+                                            onlyInRange: this.onlyInRange ? 'Y' : 'N',
+                                            rangeKm: this.onlyInRange ? this.rangeKm : null
+                                        },
                                         dataType: "json",
                                         success: (res) => {
                                             this.producers = res.list || [];
@@ -581,6 +587,7 @@
                                     this.drawRangeCircles();
                                     this.updateMarkerVisibility();
                                     this._syncUrl();
+                                    this.loadProducers();
                                 },
 
                                 recenterToMyPos() {
@@ -697,8 +704,11 @@
                                 },
 
                                 matchSeller(p) {
+                                    if (this.isAddressSearch) return true;
+
                                     const q = (this.searchText || "").trim();
                                     if (!q) return true; // 검색어 없으면 모두 허용
+
                                     const hay = [
                                         p.businessName, p.addrDo, p.addrCity, p.addrGu, p.addrDong, p.addrDetail
                                     ].filter(Boolean).join(" ").toLowerCase();
@@ -718,6 +728,8 @@
                                             const lat = parseFloat(r.y), lng = parseFloat(r.x);
                                             // 지역 단위(도/시/군/구/동)에 따라 레벨 힌트
                                             const level = this.inferZoomFromQuery(q);
+
+                                            this.isAddressSearch = true;
                                             this._setCenter(lat, lng, { level, rememberPrev: true });
                                             this.loadProducers();
                                             // loadProducers() 끝나면 renderMarkers()가 호출되고, watcher/updateMarkerVisibility가 반영됨
@@ -731,8 +743,7 @@
                                                 }
                                             });
                                         } else {
-                                            // 주소가 아니면: 현재 데이터에 대해 텍스트 필터만 적용
-                                            // (renderMarkers가 이미 돌았다면, updateMarkerVisibility만 다시 적용)
+                                            this.isAddressSearch = false;
                                             this.updateMarkerVisibility();
                                         }
                                     });
@@ -740,6 +751,7 @@
 
                                 resetSearch() {
                                     this.searchText = "";
+                                    this.isAddressSearch = false;
                                     const restore = this._lastSearchCenter || this.center;
                                     // 중심/원/마커 가시성/URL까지 한 번에 동기화
                                     this._setCenter(restore.lat, restore.lng, { rememberPrev: false });
@@ -846,21 +858,30 @@
 
                                 clearKeyword() {
                                     this.searchText = "";
+                                    this.isAddressSearch = false;
                                     this.updateMarkerVisibility();
                                 },
 
                                 clearAllFilters() {
                                     this.onlyInRange = false;
                                     this.searchText = "";
-                                    // 원하는 중심으로 리셋(검색 전 중심이 있으면 복귀)
+                                    this.isAddressSearch = false;
                                     const restore = this._lastSearchCenter || this.center;
                                     this._setCenter(restore.lat, restore.lng, { rememberPrev: false });
                                 }
 
                             },
                             watch: {
-                                rangeKm() { this.drawRangeCircles(); this.updateMarkerVisibility(); this._syncUrl(); },
-                                onlyInRange() { this.updateMarkerVisibility(); this._syncUrl(); }
+                                rangeKm() {
+                                    this.drawRangeCircles();
+                                    this._syncUrl();
+                                    if (this.onlyInRange) this.loadProducers();
+                                    else this.updateMarkerVisibility();
+                                },
+                                onlyInRange() {
+                                    this._syncUrl();
+                                    this.loadProducers();
+                                }
                             },
                             mounted() {
                                 this._restoreMapState({ preferQuery: true });

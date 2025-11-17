@@ -184,4 +184,28 @@
 		VALUES (ORDER_ITEM_SEQ.NEXTVAL, #{quantity}, #{price}, #{productNo}, #{orderNo}, #{optionNo})
 	</insert>
 	
+	<update id="decreaseOptionStock" parameterType="map">
+	  UPDATE PRODUCT_OPTION
+	     SET STOCK_QTY = STOCK_QTY - #{qty},
+	         UDATETIME = SYSDATE
+	   WHERE OPTION_NO = #{optionNo}
+	     AND STOCK_QTY >= #{qty}
+	</update>
+	
+	<update id="refreshProductStatusByProductNo" parameterType="int">
+	  UPDATE PRODUCT P
+	     SET P.PRODUCT_STATUS = CASE
+	           WHEN P.PRODUCT_STATUS = 'HIDDEN' THEN 'HIDDEN'
+	           WHEN EXISTS (
+	                SELECT 1
+	                  FROM PRODUCT_OPTION O
+	                 WHERE O.PRODUCT_NO = P.PRODUCT_NO
+	                   AND NVL(O.IS_ACTIVE,'Y') = 'Y'
+	                   AND O.STOCK_QTY > 0
+	           )
+	           THEN 'SELLING' ELSE 'SOLDOUT' END,
+	         UDATETIME = SYSDATE
+	   WHERE P.PRODUCT_NO = #{productNo}
+	</update>
+	
 </mapper>

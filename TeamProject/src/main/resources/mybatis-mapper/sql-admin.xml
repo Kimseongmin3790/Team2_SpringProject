@@ -120,6 +120,12 @@
 		UPDATE PRODUCT
 			SET PRODUCT_STATUS = #{productStatus}
 		WHERE PRODUCT_NO = #{productNo}
+	</update>
+	
+	<update id="updateUserStatus" parameterType="hashmap">
+		UPDATE USERS
+			SET STATUS = #{userStatus}
+		WHERE USER_ID = #{userId}
 	</update>	
 	
 </mapper>

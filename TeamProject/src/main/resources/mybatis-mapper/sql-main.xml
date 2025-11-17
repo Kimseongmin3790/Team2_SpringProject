@@ -170,7 +170,7 @@
 	       AND I.IS_THUMBNAIL = 'Y'
 	    INNER JOIN SELLER_INFO S ON P.SELLER_ID = S.USER_ID
 	    WHERE LOWER(P.PNAME) LIKE '%' || LOWER(#{keyword}) || '%'
-	       OR LOWER(P.PINFO) LIKE '%' || LOWER(#{keyword}) || '%'
+	    AND P.PRODUCT_STATUS = 'SELLING'
 	</select>
 	
 	<select id="selectUserLocation" parameterType="string" resultType="hashmap">

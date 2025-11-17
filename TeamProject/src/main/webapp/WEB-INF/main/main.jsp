@@ -590,10 +590,8 @@
                     dataType: "json",
                     success(res) {
                       if (res.login && res.lat && res.lng) {
-                        //console.log("✅ 로그인 사용자 위치 사용:", res.lat, res.lng);
                         self.fnLoadProducerList(res.lat, res.lng);
                       } else {
-                        //console.log("⚠️ 비로그인 또는 위치 정보 없음 → 브라우저 위치 사용");
                         self.loadLocationFromBrowser();
                       }
                     },
@@ -631,7 +629,6 @@
                     data: { lat, lng },
                     dataType: "json",
                     success(res) {
-                      // console.log("✅ 생산자 목록:", res);
                       self.producers = res.list || [];
                       self.$nextTick(() => {
                         self.showMap(lat, lng, self.producers);

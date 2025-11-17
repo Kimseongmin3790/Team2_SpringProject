@@ -935,9 +935,6 @@
 
                     filteredProducts() {
                         let result = this.productList || [];
-                        //console.log('------ ', this.productList && this.productList[0]);
-                        //console.log('현재 선택된 가격범위 index:', this.selectedPriceRange);
-                        //console.log('현재 선택된 가격범위 값:', this.priceRanges[this.selectedPriceRange]);
 
                         // 카테고리 필터
                         if (this.selectedSub) {
@@ -965,14 +962,9 @@
                         }
 
                         // 지역 필터
-                        if (this.selectedRegion && typeof this.selectedRegion === 'string' && this.selectedRegion.trim() !== '') {
-                            //console.log('현재 선택된 지역:', this.selectedRegion);
-                            //console.log('상품의 지역 샘플:', result.slice(0, 5).map(p => p.region));
+                        if (this.selectedRegion && typeof this.selectedRegion === 'string' && this.selectedRegion.trim() !== '') {                            
                             result = result.filter((p) => (p.region || '').includes(this.selectedRegion));
                         }
-
-                        //console.log('필터 적용 후 상품 수:', result.length);
-                        //console.log('필터 적용 후 지역 수:', this.selectedRegion);
                         return result;
                     },
 
@@ -992,7 +984,6 @@
                 watch: {
                     selectedRegion(newVal, oldVal) {
                         if (!newVal || newVal === oldVal) return;
-                        //console.log(`watcher 감지됨 → 지역 변경: '${oldVal}' → '${newVal}'`);
                     }
                 },
 
@@ -1012,32 +1003,23 @@
                     },
 
                     clearRegion() {
-                        //console.log('지역 선택 해제: ', this.selectedRegion);
                         this.selectedRegion = null;
                         this.viewLevel = 'product';
                     },
 
-                    // ✅ 지역 클릭 → 상품 목록 화면으로 이동
                     selectRegion(regionName) {
                         const reg = regionName ? String(regionName).trim() : '';
                         this.selectedRegion = reg;
-                        //console.log('지역 클릭됨:', this.selectedRegion);
 
-                        // ✅ 상품 목록 뷰로 전환
                         if (this.viewLevel !== 'product') {
                             this.viewLevel = 'product';
                         }
 
-                        // ✅ 해시 갱신 (즉시 반영)
                         this.writeHash(true);
 
-                        // ✅ DOM 업데이트 후 로그 확인
                         this.$nextTick(() => {
-                            //console.log("DOM 반영 후 selectedRegion:", this.selectedRegion);
-                            //console.log("현재 viewLevel:", this.viewLevel);
                         });
 
-                        // v=product & r=지역 포함된 해시로 이동
                         const q = new URLSearchParams();
                         if (this.selectedParent) q.set('p', this.selectedParent);
                         if (this.selectedChild) q.set('c', this.selectedChild);
@@ -1082,18 +1064,15 @@
                     },
 
                     fnSellerRegionList() {
-                        //console.log('판매자 지역 목록 호출 시작');
                         $.ajax({
                             url: "/sellerRegions.dox",
                             dataType: "json",
                             type: "POST",
                             data: { page: this.page, pageSize: this.pageSize },
                             success: (data) => {
-                                //console.log('========= data', data);
                                 this.regionList = data.list || [];
                                 this.totalRegions = data.totalCount || 0;
                                 this.currentRegionPage = data.page || 1;
-                                //console.log("지역목록: ", this.regionList);
                             },
                             error: (xhr, status, error) => {
                                 console.error("지역목록 불러오기 실패: ", error);
@@ -1218,6 +1197,10 @@
                         if (index === 0) { this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child'; }
                         else if (index === 1) { this.selectedSub = ''; this.viewLevel = 'sub'; }
                         this.writeHash(true);
+                    },
+
+                    fnView(productNo) {
+                        pageChange("/productInfo.do", { productNo });
                     },
 
                     applyInitialCategory() {

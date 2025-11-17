@@ -26,7 +26,7 @@
                 <div class="search-section">
                     <div class="search-bar">
                         <i class="fa fa-search"></i>
-                        <input type="text" placeholder="상품 이름이나 상품 설명으로 검색 가능합니다" id="searchInput">
+                        <input type="text" placeholder="상품 이름으로 검색해주세요" id="searchInput">
                     </div>
                     <button class="btn-search" id="btnSearch">검색</button>
                 </div>
