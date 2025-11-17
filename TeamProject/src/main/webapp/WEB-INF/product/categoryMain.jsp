@@ -1283,7 +1283,7 @@
                             alert('판매 중지된 상품입니다.');
                             return;
                         }
-                        pageChange("/productInfo.do", { productNo: p.productNo });
+                        location.href="/productInfo.do?productNo=" + p.productNo;
                     },
                     altText(p) {
                         const s = this.getStatus(p);

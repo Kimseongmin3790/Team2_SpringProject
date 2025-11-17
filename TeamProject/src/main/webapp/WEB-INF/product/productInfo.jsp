@@ -1167,7 +1167,8 @@
 
                             <!-- 오른쪽: 정보 -->
                             <div class="prod-info" id="container">
-                                <div><a href="javascript:;" style="text-decoration:none; color:inherit;" @click="fnMovement(info.sellerId)">{{info.businessName}}</a></div>
+                                <div><a href="javascript:;" style="text-decoration:none; color:inherit;"
+                                        @click="fnMovement(info.sellerId)">{{info.businessName}}</a></div>
                                 <div id="title">{{ info.pName }}</div>
 
                                 <div class="badge-row">
@@ -1309,7 +1310,7 @@
 
                                             <button @click="fnBasket(info.productNo, qty)" class="btn btn-outline"
                                                 :disabled="!canBuy || !selected || qty <= 0"
-                                                :title="!canBuy ? (isSoldOut ? '품절된 상품입니다' : '판매 중지된 상품입니다') : ''">장바구니</button>                                            
+                                                :title="!canBuy ? (isSoldOut ? '품절된 상품입니다' : '판매 중지된 상품입니다') : ''">장바구니</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1562,7 +1563,7 @@
                         });
                     },
 
-                    
+
 
                     //====== 리뷰 ======
                     filteredReviews() {
@@ -1717,7 +1718,7 @@
                         });
                     },
 
-                    fnMovement : function(sellerId){
+                    fnMovement: function (sellerId) {
                         location.href = "/seller/detail.do?sellerId=" + sellerId;
                     },
 
@@ -1759,35 +1760,62 @@
 
                     pickFulfillment(opt) { this.fulfillment = opt.value; this.ddOpen1 = false; },
 
+                    normalizedShareUrl() {
+                        const u = new URL(this.shareUrl || location.href, location.origin);
+                        return u.origin + u.pathname + u.search; // 해시 제거
+                    },
+
                     shareNaver() {
-                        if (!this.shareUrl || !this.shareTitle) { alert('공유할 URL/제목이 비었습니다.'); return; }
-                        const encUrl = encodeURI(encodeURIComponent(this.shareUrl));
-                        const encTitle = encodeURI(this.shareTitle);
-                        window.open("https://share.naver.com/web/shareView?url=" + encUrl + "&title=" + encTitle, "_blank");
+                        const url = this.normalizedShareUrl();
+                        const title = (this.shareTitle || document.title || '').trim();
+
+                        if (!url || !title) { alert('공유할 URL/제목이 비었습니다.'); return; }
+
+                        // ✅ 단일 인코딩만 적용
+                        const encUrl = encodeURIComponent(url);
+                        const encTitle = encodeURIComponent(title);
+
+                        window.open(
+                            `https://share.naver.com/web/shareView?url=${encUrl}&title=${encTitle}`,
+                            '_blank',
+                            'noopener'
+                        );
                         this.shareOpen = false;
                     },
                     shareKakao() {
                         if (!(window.Kakao && window.Kakao.isInitialized && window.Kakao.isInitialized())) {
-                            alert('카카오 SDK가 초기화되지 않았습니다.'); return;
+                            alert('카카오 SDK가 초기화되지 않았습니다.');
+                            return;
                         }
+                        const url = this.normalizedShareUrl();
+                        const title = (this.shareTitle || document.title || '').trim();
+
+                        // ✅ 실제 존재하는 절대 경로 이미지로 교체
+                        const thumb = location.origin + `<c:url value="/resources/img/snowCrab.png"/>`;
+
                         window.Kakao.Share.sendDefault({
                             objectType: 'feed',
                             content: {
-                                title: this.shareTitle || document.title,
+                                title: title || '상품을 공유합니다',
                                 description: '상품을 공유합니다',
-                                imageUrl: location.origin + '<c:url value="/img/snowCrab.png"/>', // 또는 '/resources/img/snowCrab.png'
-                                link: { webUrl: this.shareUrl || location.href, mobileWebUrl: this.shareUrl || location.href }
+                                imageUrl: thumb,
+                                link: { webUrl: url, mobileWebUrl: url }
                             },
-                            buttons: [{ title: '바로 보기', link: { webUrl: this.shareUrl || location.href, mobileWebUrl: this.shareUrl || location.href } }]
+                            buttons: [
+                                { title: '바로 보기', link: { webUrl: url, mobileWebUrl: url } }
+                            ]
                         });
                         this.shareOpen = false;
                     },
                     shareCopy() {
-                        const link = this.shareUrl || location.href;
-                        (navigator.clipboard ? navigator.clipboard.writeText(link)
+                        const link = this.normalizedShareUrl();
+                        (navigator.clipboard
+                            ? navigator.clipboard.writeText(link)
                             : new Promise(res => {
-                                const ta = document.createElement('textarea'); ta.value = link; document.body.appendChild(ta);
-                                ta.select(); document.execCommand('copy'); document.body.removeChild(ta); res();
+                                const ta = document.createElement('textarea');
+                                ta.value = link; document.body.appendChild(ta);
+                                ta.select(); document.execCommand('copy');
+                                document.body.removeChild(ta); res();
                             })
                         ).then(() => alert('링크가 복사되었습니다.'));
                         this.shareOpen = false;

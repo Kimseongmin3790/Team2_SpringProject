@@ -10,7 +10,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"
         integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- 공통 헤더와 푸터 외부 css파일 링크 -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
     <style>
@@ -19,7 +18,7 @@
         height: 100%;
         margin: 0;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        background-color: #f9fafb; /* Body 배경색 추가 */
+        background-color: #f9fafb; 
     }
 
     #app {
@@ -32,7 +31,6 @@
         flex: 1;
     }
 
-    /* 판매자 헤더 스타일 */
     .seller-header {
         background-color: white;
         border-bottom: 1px solid #e5e7eb;
@@ -51,20 +49,19 @@
     .seller-logo {
         font-size: 1.5rem;
         font-weight: bold;
-        color: #16a34a; /* 색상 통일 */
+        color: #16a34a; 
     }
 
     .seller-badge {
         display: inline-block;
         background-color: #dcfce7;
-        color: #166534; /* 좀 더 진한 녹색으로 가독성 향상 */
+        color: #166534; 
         padding: 0.25rem 0.75rem;
         border-radius: 9999px;
         font-size: 0.875rem;
         font-weight: 600;
     }
 
-    /* 퀵 액션 */
     .quick-actions {
         max-width: 1200px;
         margin: 2rem auto;
@@ -74,22 +71,22 @@
     .quick-actions-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem; /* 간격 조정 */
+        gap: 1.5rem; 
     }
 
     .action-card {
         background-color: white;
         border: 1px solid #e5e7eb;
-        border-radius: 0.75rem; /* 통일성 있는 값으로 변경 */
+        border-radius: 0.75rem; 
         padding: 1.5rem;
         text-align: center;
         cursor: pointer;
         transition: all 0.2s ease-in-out;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); /* 기본 그림자 추가 */
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); 
     }
 
     .action-card:hover {
-        transform: translateY(-4px); /* 좀 더 부드러운 효과 */
+        transform: translateY(-4px); 
         box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
     }
 
@@ -109,7 +106,6 @@
         color: #6b7280;
     }
 
-    /* 탭 네비 */
     .tab-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -128,10 +124,10 @@
         padding: 1rem 1.5rem;
         background: none;
         border: none;
-        border-bottom: 3px solid transparent; /* 두께 조정 */
+        border-bottom: 3px solid transparent; 
         color: #6b7280;
         font-weight: 500;
-        font-size: 1rem; /* 폰트 크기 조정 */
+        font-size: 1rem; 
         cursor: pointer;
         white-space: nowrap;
         transition: all 0.2s;
@@ -144,21 +140,19 @@
 
     .tab-button.active {
         color: #16a34a;
-        font-weight: 600; /* 활성 탭 강조 */
+        font-weight: 600; 
         border-bottom-color: #16a34a;
     }
 
-    /* 탭 내용 */
     .tab-content {
         background-color: white;
-        border: 1px solid #e5e7eb; /* 테두리 추가 */
+        border: 1px solid #e5e7eb;
         border-radius: 0.75rem;
         padding: 2rem;
         margin-bottom: 2rem;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
     }
 
-    /* 통계창 */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -191,7 +185,6 @@
         margin-left: 0.25rem;
     }
 
-    /* 주문 테이블 */
     .orders-table {
         width: 100%;
         border-collapse: collapse;
@@ -199,22 +192,22 @@
 
     .orders-table th {
         background-color: #f9fafb;
-        padding: 0.75rem 1rem; /* 패딩 조정 */
+        padding: 0.75rem 1rem; 
         text-align: left;
-        font-size: 0.875rem; /* 폰트 크기 조정 */
+        font-size: 0.875rem; 
         font-weight: 600;
         color: #374151;
         border-bottom: 2px solid #e5e7eb;
     }
 
     .orders-table td {
-        padding: 1rem; /* 패딩 조정 */
+        padding: 1rem; 
         border-bottom: 1px solid #e5e7eb;
         color: #374151;
     }
 
     .orders-table tbody tr:last-child td {
-        border-bottom: none; /* 마지막 행 테두리 제거 */
+        border-bottom: none; 
     }
 
     .status-badge {
@@ -240,7 +233,6 @@
         color: #166534;
     }
 
-    /* 농가 정보 */
     .info-grid {
         display: grid;
         gap: 1.5rem;
@@ -281,10 +273,9 @@
         font-weight: 500;
     }
 
-    /* 리뷰 */
     .review-card {
         border: 1px solid #e5e7eb;
-        border-radius: 0.75rem; /* 통일성 */
+        border-radius: 0.75rem;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
     }
@@ -308,7 +299,7 @@
     .review-content {
         color: #6b7280;
         margin-bottom: 1rem;
-        line-height: 1.6; /* 줄 간격 추가 */
+        line-height: 1.6; 
     }
 
     .review-meta {
@@ -320,7 +311,6 @@
         margin-top: 1rem;
     }
 
-    /* 폼 양식 */
     .form-group {
         margin-bottom: 1.5rem;
     }
@@ -336,9 +326,9 @@
         width: 100%;
         padding: 0.75rem;
         border: 1px solid #d1d5db;
-        border-radius: 0.5rem; /* 통일성 */
+        border-radius: 0.5rem; 
         font-size: 1rem;
-        box-sizing: border-box; /* 너비 계산 오류 방지 */
+        box-sizing: border-box; 
     }
 
     .form-input:focus, .form-select:focus, .form-textarea:focus {
@@ -352,12 +342,11 @@
         resize: vertical;
     }
 
-    /* 버튼 */
     .btn {
         padding: 0.75rem 1.5rem;
         border: none;
-        border-radius: 0.5rem; /* 통일성 */
-        font-weight: 600; /* 폰트 굵기 조정 */
+        border-radius: 0.5rem; 
+        font-weight: 600; 
         cursor: pointer;
         transition: all 0.2s;
     }
@@ -374,7 +363,7 @@
     .btn-secondary {
         background-color: #f3f4f6;
         color: #374151;
-        border: 1px solid #e5e7eb; /* 테두리 추가 */
+        border: 1px solid #e5e7eb; 
     }
 
     .btn-secondary:hover {
@@ -390,7 +379,6 @@
         background-color: #b91c1c;
     }
 
-    /* 탈퇴 영역 */
     .danger-zone {
         margin-top: 3rem;
         padding-top: 2rem;
@@ -413,7 +401,7 @@
     .danger-zone-content {
         background-color: #fef2f2;
         border: 1px solid #fecaca;
-        border-radius: 0.75rem; /* 통일성 */
+        border-radius: 0.75rem; 
         padding: 1.5rem;
     }
 
@@ -422,12 +410,11 @@
         margin-bottom: 1rem;
     }
 
-    /* 비활성화된 필드 스타일 */
     .non-editable-field {
         padding: 0.75rem;
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
-        background-color: #f3f4f6; /* 색상 변경 */
+        background-color: #f3f4f6; 
         color: #6b7280;
     }
 
@@ -437,7 +424,6 @@
         margin-top: 0.5rem;
     }
 
-    /* 리뷰 이미지 */
     .review-images-container {
         margin-top: 1rem;
         display: flex;
@@ -449,20 +435,19 @@
         width: 100px;
         height: 100px;
         object-fit: cover;
-        border-radius: 0.5rem; /* 통일성 */
+        border-radius: 0.5rem; 
         border: 1px solid #e5e7eb;
     }
 
     .review-section-title {
         margin-bottom: 1.5rem;
         color: #111827;
-        font-size: 1.5rem; /* 크기 조정 */
+        font-size: 1.5rem; 
         font-weight: 600;
     }
 
-    /* 판매자 답글 */
     .seller-reply-container {
-        margin-top: 1.5rem; /* 여백 조정 */
+        margin-top: 1.5rem; 
         background-color: #f9fafb;
         border-radius: 0.75rem;
         padding: 1.5rem;
@@ -501,7 +486,7 @@
     }
 
     .btn-sm {
-        padding: 0.25rem 0.75rem; /* 패딩 조정 */
+        padding: 0.25rem 0.75rem; 
         font-size: 0.875rem;
     }
 
@@ -509,7 +494,7 @@
         display: flex;
         gap: 0.5rem;
         margin-left: 1rem;
-        flex-shrink: 0; /* 버튼이 줄어들지 않도록 */
+        flex-shrink: 0; 
     }
 
     .seller-reply-edit-input {
@@ -518,7 +503,6 @@
         margin: 0.5rem 0;
     }
 
-    /* 매출 관리 필터 & 요약 */
     .sales-filter-container {
         display: flex;
         align-items: flex-end;
@@ -586,7 +570,6 @@
         color: #9ca3af;
     }
 
-    /* 반응형 */
     @media (max-width: 768px) {
         .seller-header-container {
             flex-direction: column;
@@ -598,7 +581,7 @@
         }
 
         .tab-content {
-            padding: 1.5rem; /* 패딩 조정 */
+            padding: 1.5rem; 
         }
 
         .info-item {
@@ -615,7 +598,7 @@
         }
 
         .stats-grid, .quick-actions-grid {
-            grid-template-columns: 1fr; /* 모바일에서 1열로 */
+            grid-template-columns: 1fr;
         }
 
         .sales-filter-container {
@@ -624,7 +607,7 @@
         }
 
         .sales-summary-card {
-            grid-template-columns: 1fr; /* 모바일에서 1열로 */
+            grid-template-columns: 1fr;
         }
         
     }
@@ -1084,11 +1067,11 @@
                 },
                 reviews: [],
                 profile: {
-                    email: 'farmer@example.com',
-                    phone: '010-1234-5678',
-                    businessNumber: '123-45-67890',
-                    accountNumber: '123-456-789012',
-                    bankName: '농협은행'
+                    email: '',
+                    phone: '',
+                    businessNumber: '',
+                    accountNumber: '',
+                    bankName: ''
                 },
                 
                 editingCommentNo: null
@@ -1163,7 +1146,6 @@
                 if (path) {
                     window.location.href = path;
                 } else {
-                    // 정의되지 않은 페이지에 대한 처리 (선택 사항)
                     alert(page + ' 페이지는 아직 경로가 정의되지 않았습니다.');
                 }
             },
@@ -1314,6 +1296,7 @@
                     type: "GET",
                     success: function(response) {
                         if (response.result === 'success') {
+                            console.log(response);
                             let sellerData = response.sellerInfo;
                             self.farmInfo.name = sellerData.businessName;
                             
@@ -1321,7 +1304,7 @@
                                 self.farmInfo.owner = sellerData.user.name;
                                 self.farmInfo.location = sellerData.user.address;
                             }
-                            // description과 certifications는 DB에 없으므로 기존 값을 유지하거나 다른 방식으로 처리해야 합니다.
+                            
                         } else {
                             alert('판매자 정보를 불러오는데 실패했습니다: ' + response.message);
                         }
@@ -1329,6 +1312,32 @@
                     error: function(xhr, status, error) {
                         alert('판매자 정보를 불러오는 중 오류가 발생했습니다.');
                         console.error("AJAX Error: ", status, error);
+                    }
+                });
+            },
+            loadProfileData: function() {
+                let self = this;
+                $.ajax({
+                    url: "${pageContext.request.contextPath}/seller/info.dox",
+                    dataType: "json",
+                    type: "GET",
+                    success: function(response) {
+                        if (response.result === 'success') {
+                            let sellerData = response.sellerInfo;
+                            self.profile.businessNumber = sellerData.businessNumber;
+                            self.profile.accountNumber = sellerData.account;
+                            self.profile.bankName = sellerData.bankName;
+
+                            if (sellerData.user) {
+                                self.profile.email = sellerData.user.email;
+                                self.profile.phone = sellerData.user.phone;
+                            }
+                        } else {
+                            console.error('회원정보를 불러오는데 실패했습니다: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('회원정보를 불러오는 중 오류가 발생했습니다.');
                     }
                 });
             },
@@ -1500,6 +1509,7 @@
             self.loadFarmInfo();
             self.loadReviews();
             self.loadSalesHistory();
+            self.loadProfileData();
         }
     });
 
