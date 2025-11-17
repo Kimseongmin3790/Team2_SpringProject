@@ -368,7 +368,6 @@
                                 filteredList() {
                                     const kw = (this.keyword || "").trim().toLowerCase();
 
-                                    // 1) 카테고리 필터링
                                     let filtered = this.productList.filter(item => {
                                         const itemCat = String(item.categoryNo);
 
@@ -399,20 +398,13 @@
                                         return true;
                                     });
 
-                                    // 2) 키워드 필터링
                                     if (kw) {
                                         filtered = filtered.filter(item =>
                                             item.pName && item.pName.toLowerCase().includes(kw)
                                         );
                                     }
 
-                                    // 3) productNo 기준 중복 제거
-                                    const seen = new Set();
-                                    return filtered.filter(it => {
-                                        if (seen.has(it.productNo)) return false;
-                                        seen.add(it.productNo);
-                                        return true;
-                                    });
+                                    return filtered;
                                 },
                             },
                             methods: {
@@ -436,7 +428,7 @@
                                                 self.productList = (data.list || []).map(it => ({
                                                     ...it,
                                                     newStatus: it.productStatus,
-                                                    _saving: false 
+                                                    _saving: false
                                                 }));
                                             } else {
                                                 alert("데이터 로딩 실패");
