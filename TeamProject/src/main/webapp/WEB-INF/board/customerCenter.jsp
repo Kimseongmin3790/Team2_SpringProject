@@ -568,7 +568,7 @@
                         <div class="inquiry-header">
                             <div class="inquiry-left">
                                 <h3>상품문의</h3>
-                                <p class="total-count">총 <strong>{{ qnaList.length }}</strong>개의 게시물</p>
+                                <p class="total-count">총 <strong>{{ qnaTotalCount }}</strong>개의 게시물</p>
                             </div>
 
                             <div class="search-bar">
@@ -635,7 +635,7 @@
                         <div class="inquiry-header">
                             <div class="inquiry-left">
                                 <h3>고객문의</h3>
-                                <p class="total-count">총 <strong>{{ inquiryList.length }}</strong>개의 게시물</p>
+                                <p class="total-count">총 <strong>{{ totalInquiryCount }}</strong>개의 게시물</p>
                             </div>
 
                             <div class="search-bar">
@@ -721,6 +721,7 @@
                                     qnaPage: 1,
                                     qnaTotalPage: 1,
                                     qnaPageSize: 10,
+                                    qnaTotalCount :0,
 
 
                                     // 고객문의
@@ -729,7 +730,8 @@
                                     inquiryKeyword: "",
                                     inquiryPage: 1,
                                     inquiryTotalPage: 1,
-                                    inquiryPageSize: 10
+                                    inquiryPageSize: 10,
+                                    totalInquiryCount: 0
                                 };
                             },
                             methods: {
@@ -791,6 +793,7 @@
                                             self.qnaList = res.list || [];
                                             self.qnaPage = res.page;
                                             self.qnaTotalPage = res.totalPage;
+                                            self.qnaTotalCount = res.totalCount;
                                         },
                                         error() {
                                             console.error("상품문의 불러오기 실패");
@@ -903,6 +906,7 @@
                                             self.inquiryList = res.list || [];
                                             self.inquiryPage = res.page;
                                             self.inquiryTotalPage = res.totalPage;
+                                            self.totalInquiryCount = res.totalCount;
                                         },
                                         error() {
                                             console.error("고객문의 불러오기 실패");
