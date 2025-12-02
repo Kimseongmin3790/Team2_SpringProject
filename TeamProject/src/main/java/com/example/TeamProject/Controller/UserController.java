@@ -280,105 +280,189 @@ public class UserController {
 		return new Gson().toJson(resultMap);
 	}
 
-	@RequestMapping(value = "/sellerJoin.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-	@ResponseBody
-	public ResponseEntity<Map<String, Object>> sellerJoin(
-	    @RequestParam("farmName") String farmName,
-	    @RequestParam("bizNo") String bizNo,
-	    @RequestParam("bankName") String bankName,
-	    @RequestParam("account") String account,
-	    @RequestParam("userAddr") String userAddr,
-	    @RequestParam("bizLicense") MultipartFile bizLicense,
-	    @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
-	    @RequestParam("userId") String userId,
-	    HttpServletRequest request) {
+	@RequestMapping(
+		    value = "/sellerJoin.dox",
+		    method = RequestMethod.POST,
+		    produces = "application/json;charset=UTF-8"
+		)
+		@ResponseBody
+		public ResponseEntity<Map<String, Object>> sellerJoin(
+		        @RequestParam("farmName") String farmName,
+		        @RequestParam("bizNo") String bizNo,
+		        @RequestParam("bankName") String bankName,
+		        @RequestParam("account") String account,
+		        @RequestParam("userAddr") String userAddr,
+		        @RequestParam("bizLicense") MultipartFile bizLicense,          // 사업자등록증 (필수)
+		        @RequestParam(value = "profileImage", required = false) MultipartFile profileImage, // 프로필 (선택)
+		        @RequestParam("userId") String userId,
 
-	    Map<String, Object> response = new HashMap<>();
+		        // 🔹 새로 추가되는 파라미터들
+		        @RequestParam(value = "sellerType", required = false) String sellerType,     // INDIVIDUAL / CORP / FARMER 등
+		        @RequestParam(value = "teleSaleNo", required = false) String teleSaleNo,     // 통신판매업 신고번호
+		        @RequestParam(value = "teleSaleCert", required = false) MultipartFile teleSaleCert, // 통신판매업 신고증 파일
 
-	    // 파일 업로드 처리
-	    String fileWebPath = null;
-	    if (bizLicense != null && !bizLicense.isEmpty()) {
-	        try {
-	            String uploadDir = request.getServletContext().getRealPath("/resources/uploads/licenses");
-	            File dir = new File(uploadDir);
-	            if (!dir.exists()) dir.mkdirs();
+		        @RequestParam(value = "saleRawAgri", defaultValue = "N") String saleRawAgri,
+		        @RequestParam(value = "saleProcessed", defaultValue = "N") String saleProcessed,
+		        @RequestParam(value = "saleLivestock", defaultValue = "N") String saleLivestock,
+		        @RequestParam(value = "saleSeafood", defaultValue = "N") String saleSeafood,
+		        @RequestParam(value = "saleOther", defaultValue = "N") String saleOther,
 
-	            String originalFilename = bizLicense.getOriginalFilename();
-	            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
-	            String savedFileName = genSaveFileName(extName);
+		        @RequestParam(value = "foodBizType", required = false) String foodBizType,
+		        @RequestParam(value = "foodBizNo", required = false) String foodBizNo,
+		        @RequestParam(value = "livestockBizType", required = false) String livestockBizType,
+		        @RequestParam(value = "livestockBizNo", required = false) String livestockBizNo,
+		        @RequestParam(value = "seafoodBizType", required = false) String seafoodBizType,
+		        @RequestParam(value = "seafoodBizNo", required = false) String seafoodBizNo,
 
-	            File serverFile = new File(uploadDir, savedFileName);
-	            bizLicense.transferTo(serverFile);
+		        HttpServletRequest request
+		) {
 
-	            fileWebPath = "/resources/uploads/licenses/" + savedFileName;
-	        } catch (Exception e) {
-	            System.out.println("파일 업로드 중 오류 발생: " + e.getMessage());
-	            response.put("status", "error");
-	            response.put("message", "파일 업로드 중 오류가 발생했습니다.");
-	            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-	        }
-	    } else {
-	        response.put("status", "fail");
-	        response.put("message", "사업자 등록증 파일이 필요합니다.");
-	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-	    }
-	    
-	    // 프로필사진 업로드 처리 (선택사항)
-	    String profileWebPath = null;
-	    if (profileImage != null && !profileImage.isEmpty()) {
-	        try {
-	            String uploadDir = request.getServletContext().getRealPath("/resources/uploads/profile");
-	            File dir = new File(uploadDir);
-	            if (!dir.exists()) dir.mkdirs();
+		    Map<String, Object> response = new HashMap<>();
 
-	            String originalFilename = profileImage.getOriginalFilename();
-	            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
-	            String savedFileName = "profile_" + userId + "_" + genSaveFileName(extName);
+		    // ======================
+		    // 1) 사업자등록증 업로드
+		    // ======================
+		    String fileWebPath = null;
+		    if (bizLicense != null && !bizLicense.isEmpty()) {
+		        try {
+		            String uploadDir = request.getServletContext()
+		                    .getRealPath("/resources/uploads/licenses");
+		            File dir = new File(uploadDir);
+		            if (!dir.exists()) dir.mkdirs();
 
-	            File serverFile = new File(uploadDir, savedFileName);
-	            profileImage.transferTo(serverFile);
+		            String originalFilename = bizLicense.getOriginalFilename();
+		            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+		            String savedFileName = genSaveFileName(extName);
 
-	            profileWebPath = "/resources/uploads/profile/" + savedFileName;
-	        } catch (Exception e) {
-	            System.out.println("프로필사진 업로드 오류: " + e.getMessage());
-	            // 프로필 업로드 실패해도 회원가입은 진행되게끔 처리
-	        }
-	    }
+		            File serverFile = new File(uploadDir, savedFileName);
+		            bizLicense.transferTo(serverFile);
 
-	    try {
-	        // 주소 -> 좌표 변환
-	        double[] coords = userService.getCoordinatesFromAddress(userAddr);
-	        double lat = coords[0];
-	        double lng = coords[1];
+		            fileWebPath = "/resources/uploads/licenses/" + savedFileName;
+		        } catch (Exception e) {
+		            System.out.println("파일 업로드 중 오류 발생: " + e.getMessage());
+		            response.put("status", "error");
+		            response.put("message", "파일 업로드 중 오류가 발생했습니다.");
+		            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		        }
+		    } else {
+		        response.put("status", "fail");
+		        response.put("message", "사업자 등록증 파일이 필요합니다.");
+		        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		    }
 
-	        // DB 저장용 데이터 구성
-	        HashMap<String, Object> sellerData = new HashMap<>();
-	        sellerData.put("userId", userId);
-	        sellerData.put("businessName", farmName);
-	        sellerData.put("businessNumber", bizNo);
-	        sellerData.put("bankName", bankName);
-	        sellerData.put("account", account);
-	        sellerData.put("userAddr", userAddr);
-	        sellerData.put("lat", lat);
-	        sellerData.put("lng", lng);
-	        sellerData.put("businessLi", fileWebPath);
-	        sellerData.put("profileImg", profileWebPath);
-	        sellerData.put("verified", "N");
+		    // =========================
+		    // 2) 통신판매업 신고증 업로드
+		    // =========================
+		    String teleSaleWebPath = null;
+		    if (teleSaleCert != null && !teleSaleCert.isEmpty()) {
+		        try {
+		            String uploadDir = request.getServletContext()
+		                    .getRealPath("/resources/uploads/teleSale");
+		            File dir = new File(uploadDir);
+		            if (!dir.exists()) dir.mkdirs();
 
-	        // DB insert 실행
-	        userService.addSeller(sellerData);
+		            String originalFilename = teleSaleCert.getOriginalFilename();
+		            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+		            String savedFileName = "tele_" + userId + "_" + genSaveFileName(extName);
 
-	        response.put("status", "success");
-	        response.put("message", "판매자 회원가입이 완료되었습니다!");
-	        return new ResponseEntity<>(response, HttpStatus.OK);
+		            File serverFile = new File(uploadDir, savedFileName);
+		            teleSaleCert.transferTo(serverFile);
 
-	    } catch (Exception e) {
-	        System.out.println("DB 저장 중 오류 발생: " + e.getMessage());
-	        response.put("status", "error");
-	        response.put("message", "데이터 저장 중 오류가 발생했습니다.");
-	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
-	}
+		            teleSaleWebPath = "/resources/uploads/teleSale/" + savedFileName;
+		        } catch (Exception e) {
+		            System.out.println("통신판매업 신고증 업로드 오류: " + e.getMessage());
+		            response.put("status", "error");
+		            response.put("message", "통신판매업 신고증 업로드 중 오류가 발생했습니다.");
+		            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		        }
+		    }
+		    // 필요하다면 "통신판매업 신고증 필수" 검사 추가 가능:
+		    // if (teleSaleNo != null && (teleSaleCert == null || teleSaleCert.isEmpty())) { ... }
+
+		    // =====================
+		    // 3) 프로필사진 업로드
+		    // =====================
+		    String profileWebPath = null;
+		    if (profileImage != null && !profileImage.isEmpty()) {
+		        try {
+		            String uploadDir = request.getServletContext()
+		                    .getRealPath("/resources/uploads/profile");
+		            File dir = new File(uploadDir);
+		            if (!dir.exists()) dir.mkdirs();
+
+		            String originalFilename = profileImage.getOriginalFilename();
+		            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+		            String savedFileName = "profile_" + userId + "_" + genSaveFileName(extName);
+
+		            File serverFile = new File(uploadDir, savedFileName);
+		            profileImage.transferTo(serverFile);
+
+		            profileWebPath = "/resources/uploads/profile/" + savedFileName;
+		        } catch (Exception e) {
+		            System.out.println("프로필사진 업로드 오류: " + e.getMessage());
+		            // 프로필 업로드 실패해도 회원가입은 진행되게끔 처리
+		        }
+		    }
+
+		    try {
+		        // ==========================
+		        // 4) 주소 -> 좌표 변환 (기존)
+		        // ==========================
+		        double[] coords = userService.getCoordinatesFromAddress(userAddr);
+		        double lat = coords[0];
+		        double lng = coords[1];
+
+		        // ==========================
+		        // 5) DB 저장용 데이터 구성
+		        // ==========================
+		        HashMap<String, Object> sellerData = new HashMap<>();
+		        sellerData.put("userId", userId);
+		        sellerData.put("businessName", farmName);
+		        sellerData.put("businessNumber", bizNo);
+		        sellerData.put("bankName", bankName);
+		        sellerData.put("account", account);
+		        sellerData.put("userAddr", userAddr);
+		        sellerData.put("lat", lat);
+		        sellerData.put("lng", lng);
+		        sellerData.put("businessLi", fileWebPath);
+		        sellerData.put("profileImg", profileWebPath);
+		        sellerData.put("verified", "N");
+
+		        // 🔹 새 정보들
+		        sellerData.put("sellerType", sellerType);
+		        sellerData.put("teleSaleNo", teleSaleNo);
+		        sellerData.put("teleSaleFile", teleSaleWebPath);
+
+		        sellerData.put("saleRawAgri",   saleRawAgri);     // 'Y' / 'N'
+		        sellerData.put("saleProcessed", saleProcessed);
+		        sellerData.put("saleLivestock", saleLivestock);
+		        sellerData.put("saleSeafood",   saleSeafood);
+		        sellerData.put("saleOther",     saleOther);
+
+		        sellerData.put("foodBizType",      foodBizType);
+		        sellerData.put("foodBizNo",        foodBizNo);
+		        sellerData.put("livestockBizType", livestockBizType);
+		        sellerData.put("livestockBizNo",   livestockBizNo);
+		        sellerData.put("seafoodBizType",   seafoodBizType);
+		        sellerData.put("seafoodBizNo",     seafoodBizNo);
+
+		        // ==========================
+		        // 6) DB insert 실행
+		        // ==========================
+		        userService.addSeller(sellerData);
+
+		        response.put("status", "success");
+		        response.put("message", "판매자 회원가입이 완료되었습니다!");
+		        return new ResponseEntity<>(response, HttpStatus.OK);
+
+		    } catch (Exception e) {
+		        System.out.println("DB 저장 중 오류 발생: " + e.getMessage());
+		        response.put("status", "error");
+		        response.put("message", "데이터 저장 중 오류가 발생했습니다.");
+		        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		    }
+		}
+
 
 	// 파일명 생성 메서드
 	private String genSaveFileName(String extName) {

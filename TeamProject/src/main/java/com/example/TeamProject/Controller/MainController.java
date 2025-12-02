@@ -149,5 +149,23 @@ public class MainController {
 
 	    return result;
 	}
+	
+	@RequestMapping(value = "/data/regionalSpecials.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String regionalSpecials(@RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<>();
+		
+        resultMap = mainService.getRegionalSpecialList(map);
+        return new Gson().toJson(resultMap);
+    }
+	
+	@RequestMapping(value = "/data/subscriptionPlans.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String subscriptionPlans(@RequestParam HashMap<String, Object> map) throws Exception {
+		HashMap<String, Object> resultMap = new HashMap<>();
+		
+        resultMap = mainService.getSubscriptionPlanList(map);
+        return new Gson().toJson(resultMap);
+    }
 
 }

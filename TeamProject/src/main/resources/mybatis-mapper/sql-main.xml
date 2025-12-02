@@ -178,5 +178,37 @@
 		FROM USERS
 		WHERE USER_ID = #{userId}
 	</select>
+	
+	<!-- 지역별 특산물 리스트 -->
+    <select id="selectRegionalSpecialList" resultType="hashmap">
+        SELECT
+            REGION_ID      AS regionId,
+            REGION_NAME    AS regionName,
+            TITLE          AS title,
+            DESCRIPTION    AS description,
+            THUMBNAIL_URL  AS imageUrl,
+            BASE_PRICE     AS price
+        FROM REGION_SPECIAL
+        WHERE IS_ACTIVE = 'Y'
+        ORDER BY
+            DISPLAY_ORDER NULLS LAST,
+            REGION_ID DESC
+    </select>
+
+    <!-- 정기배송 플랜 리스트 -->
+    <select id="selectSubscriptionPlanList" resultType="hashmap">
+        SELECT
+            PLAN_ID      AS planId,
+            PLAN_NAME    AS planName,
+            SHORT_DESC   AS shortDesc,
+            PERIOD_TYPE  AS periodType,
+            BASE_PRICE   AS price,
+            IMAGE_URL    AS imageUrl
+        FROM SUBSCRIPTION_PLAN
+        WHERE IS_ACTIVE = 'Y'
+        ORDER BY
+            DISPLAY_ORDER NULLS LAST,
+            PLAN_ID DESC
+    </select>
 
 </mapper>

@@ -204,6 +204,7 @@
                                         <th>가입일</th>
                                         <th>전화번호</th>
                                         <th>유형</th>
+                                        <th>판매자 정보</th>
                                         <th>판매자승인상태</th>
                                         <th>판매자승인관리</th>
                                         <th>유저상태</th>
@@ -220,15 +221,54 @@
                                         <td>{{ item.cdatetime }}</td>
                                         <td>{{ item.phone }}</td>
                                         <td>{{ item.userRole }}</td>
-                                        <td>{{ item.verified }}</td>
                                         <td>
-                                            <template v-if="item.userRole === 'SELLER' && item.verified === 'N'">
-                                                <button class="btn-action" @click="fnApprove(item.userId)">승인</button>
+                                            <div v-if="item.userRole === 'SELLER'">
+                                                <div>유형: {{ formatSellerType(item.sellerType) }}</div>
+                                                <div>통신판매업: {{ item.teleSaleNo || '-' }}</div>
+                                                <div>
+                                                    판매 품목:
+                                                    <span v-if="item.saleRawAgri === 'Y'">농산물 </span>
+                                                    <span v-if="item.saleProcessed === 'Y'">가공식품 </span>
+                                                    <span v-if="item.saleLivestock === 'Y'">축산물 </span>
+                                                    <span v-if="item.saleSeafood === 'Y'">수산물 </span>
+                                                    <span v-if="item.saleOther === 'Y'">기타</span>
+                                                    <span v-if="!hasAnySaleCategory(item)">-</span>
+                                                </div>
+                                                <div v-if="item.saleProcessed === 'Y'">
+                                                    가공식품업: {{ item.foodBizType || '-' }} / {{ item.foodBizNo || '-' }}
+                                                </div>
+                                                <div v-if="item.saleLivestock === 'Y'">
+                                                    축산물업: {{ item.livestockBizType || '-' }} / {{ item.livestockBizNo ||
+                                                    '-' }}
+                                                </div>
+                                                <div v-if="item.saleSeafood === 'Y'">
+                                                    수산물업: {{ item.seafoodBizType || '-' }} / {{ item.seafoodBizNo || '-'
+                                                    }}
+                                                </div>
+                                            </div>
+                                            <div v-else>-</div>
+                                        </td>
+
+                                        <!-- 판매자 승인 상태 -->
+                                        <td>
+                                            <span v-if="item.userRole === 'SELLER'">
+                                                {{ item.verified === 'Y' ? '승인완료' : '미승인' }}
+                                            </span>
+                                            <span v-else>-</span>
+                                        </td>
+
+                                        <!-- 판매자 승인 관리 버튼 (여기서 로직 강화) -->
+                                        <td>
+                                            <template v-if="item.userRole === 'SELLER'">
+                                                <button v-if="item.verified === 'N'" class="btn-action"
+                                                    @click="fnApprove(item)">
+                                                    승인
+                                                </button>
+                                                <button v-else class="btn-action reject" @click="fnReject(item)">
+                                                    승인취소
+                                                </button>
                                             </template>
-                                            <template v-else-if="item.userRole === 'SELLER' && item.verified === 'Y'">
-                                                <button class="btn-action reject"
-                                                    @click="fnReject(item.userId)">승인취소</button>
-                                            </template>
+                                            <span v-else>-</span>
                                         </td>
                                         <td>
                                             <div class="status-box">
@@ -245,7 +285,7 @@
                                         </td>
                                     </tr>
                                     <tr v-if="userList.length === 0">
-                                        <td colspan="6" class="no-data">회원 정보가 없습니다.</td>
+                                        <td colspan="13" class="no-data">회원 정보가 없습니다.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -257,6 +297,7 @@
                         const app = Vue.createApp({
                             data() {
                                 return {
+                                    path: "${pageContext.request.contextPath}",
                                     keyword: "",
                                     userList: [],
                                     statusOptions: [
@@ -309,20 +350,102 @@
                                     // computed로 자동 반영
                                 },
 
-                                fnApprove(userId) {
-                                    if (!confirm(userId + " 판매자 승인하시겠습니까?")) return;
-                                    let self = this;
-                                    let param = {
-                                        userId: userId
+                                formatSellerType(type) {
+                                    if (!type) return "-";
+                                    switch (type) {
+                                        case "INDIVIDUAL": return "개인사업자";
+                                        case "CORP": return "법인사업자";
+                                        case "FARMER": return "농업인(자가생산)";
+                                        default: return type;
+                                    }
+                                },
+
+                                hasAnySaleCategory(item) {
+                                    return (
+                                        item.saleRawAgri === "Y" ||
+                                        item.saleProcessed === "Y" ||
+                                        item.saleLivestock === "Y" ||
+                                        item.saleSeafood === "Y" ||
+                                        item.saleOther === "Y"
+                                    );
+                                },
+
+                                isSellerLegalReady(item) {
+                                    // SELLER가 아닌 경우는 애초에 승인 대상이 아님
+                                    if (item.userRole !== "SELLER") return false;
+
+                                    // 판매자 유형 필수
+                                    if (!item.sellerType) {
+                                        alert("판매자 유형이 설정되지 않았습니다.");
+                                        return false;
+                                    }
+
+                                    // 통신판매업 신고번호 필수
+                                    if (!item.teleSaleNo) {
+                                        alert("통신판매업 신고번호가 없습니다.");
+                                        return false;
+                                    }
+
+                                    // 판매 품목 최소 1개 이상
+                                    if (!this.hasAnySaleCategory(item)) {
+                                        alert("판매 품목이 설정되지 않았습니다.");
+                                        return false;
+                                    }
+
+                                    // 가공식품 선택 시 영업유형/번호 필수
+                                    if (item.saleProcessed === "Y") {
+                                        if (!item.foodBizType || !item.foodBizNo) {
+                                            alert("가공식품 판매 시 식품 영업유형/신고번호가 필요합니다.");
+                                            return false;
+                                        }
+                                    }
+
+                                    // 축산물 선택 시 영업유형/번호 필수
+                                    if (item.saleLivestock === "Y") {
+                                        if (!item.livestockBizType || !item.livestockBizNo) {
+                                            alert("축산물 판매 시 축산물 영업유형/신고번호가 필요합니다.");
+                                            return false;
+                                        }
+                                    }
+
+                                    // 수산물 선택 시 영업유형/번호 필수
+                                    if (item.saleSeafood === "Y") {
+                                        if (!item.seafoodBizType || !item.seafoodBizNo) {
+                                            alert("수산물 판매 시 수산물 영업유형/신고번호가 필요합니다.");
+                                            return false;
+                                        }
+                                    }
+
+                                    // 여기까지 통과하면 OK
+                                    return true;
+                                },
+
+                                fnApprove(item) {
+                                    // 1) 법적 요건 체크
+                                    if (!this.isSellerLegalReady(item)) {
+                                        // 조건 미충족이면 여기서 막고 return
+                                        return;
+                                    }
+
+                                    if (!confirm(item.userId + " 판매자를 승인하시겠습니까?")) return;
+
+                                    const self = this;
+                                    const param = {
+                                        userId: item.userId
                                     };
+
                                     $.ajax({
                                         url: "/approveSeller.dox",
                                         dataType: "json",
                                         type: "POST",
                                         data: param,
                                         success: function (data) {
-                                            alert("승인 완료");
-                                            self.fnUserList();
+                                            if (data.result === "success") {
+                                                alert("승인 완료");
+                                                self.fnUserList();
+                                            } else {
+                                                alert(data.msg || "승인 처리에 실패했습니다.");
+                                            }
                                         },
                                         error: function () {
                                             alert("승인 처리 중 오류가 발생했습니다.");
@@ -330,20 +453,26 @@
                                     });
                                 },
 
-                                fnReject(userId) {
-                                    if (!confirm(userId + " 판매자 승인을 취소하시겠습니까?")) return;
+                                fnReject(item) {
+                                    if (!confirm(item.userId + " 판매자 승인을 취소하시겠습니까?")) return;
+
                                     const self = this;
-                                    let param = {
-                                        userId: userId
+                                    const param = {
+                                        userId: item.userId
                                     };
+
                                     $.ajax({
                                         url: "/rejectSeller.dox",
                                         dataType: "json",
                                         type: "POST",
                                         data: param,
                                         success: function (data) {
-                                            alert("취소 완료");
-                                            self.fnUserList();
+                                            if (data.result === "success") {
+                                                alert("승인 취소 완료");
+                                                self.fnUserList();
+                                            } else {
+                                                alert(data.msg || "취소 처리에 실패했습니다.");
+                                            }
                                         },
                                         error: function () {
                                             alert("취소 처리 중 오류가 발생했습니다.");

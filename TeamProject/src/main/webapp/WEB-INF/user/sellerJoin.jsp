@@ -353,6 +353,65 @@
                                 </div>
 
                                 <div class="input-group">
+                                    <label><i class="fa-solid fa-user-tie"></i> 판매자 유형</label>
+                                    <div class="input-wrapper gender-options">
+                                        <label><input type="radio" value="INDIVIDUAL" v-model="sellerType">개인사업자</label>
+                                        <label><input type="radio" value="CORP" v-model="sellerType"> 법인사업자</label>
+                                        <label><input type="radio" value="FARMER" v-model="sellerType">
+                                            농업인(자가생산)</label>
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label><i class="fa-solid fa-carrot"></i> 판매 품목 (복수 선택 가능)</label>
+                                    <div class="input-wrapper gender-options">
+                                        <label><input type="checkbox" v-model="saleRawAgri"> 미가공 농산물</label>
+                                        <label><input type="checkbox" v-model="saleProcessed"> 가공식품</label>
+                                        <label><input type="checkbox" v-model="saleLivestock"> 축산물</label>
+                                        <label><input type="checkbox" v-model="saleSeafood"> 수산물</label>
+                                        <label><input type="checkbox" v-model="saleOther"> 기타</label>
+                                    </div>
+                                </div>
+
+                                <div class="input-group" v-if="saleProcessed">
+                                    <label><i class="fa-solid fa-jar"></i> 가공식품 영업 유형 / 신고번호</label>
+                                    <div class="input-wrapper">
+                                        <select v-model="foodBizType">
+                                            <option value="">영업 유형 선택</option>
+                                            <option>식품제조·가공업</option>
+                                            <option>식품유통전문판매업</option>
+                                            <option>식품소분·판매업</option>
+                                        </select>
+                                        <input type="text" v-model="foodBizNo" placeholder="영업 신고번호">
+                                    </div>
+                                </div>
+
+                                <div class="input-group" v-if="saleLivestock">
+                                    <label><i class="fa-solid fa-drumstick-bite"></i> 축산물 영업 유형 / 신고번호</label>
+                                    <div class="input-wrapper">
+                                        <select v-model="livestockBizType">
+                                            <option value="">영업 유형 선택</option>
+                                            <option>식육판매업</option>
+                                            <option>축산물유통전문판매업</option>
+                                            <option>식육즉석판매가공업</option>
+                                        </select>
+                                        <input type="text" v-model="livestockBizNo" placeholder="영업 신고번호">
+                                    </div>
+                                </div>
+
+                                <div class="input-group" v-if="saleSeafood">
+                                    <label><i class="fa-solid fa-fish"></i> 수산물 영업 유형 / 신고번호</label>
+                                    <div class="input-wrapper">
+                                        <select v-model="seafoodBizType">
+                                            <option value="">영업 유형 선택</option>
+                                            <option>수산물 판매업</option>
+                                            <option>냉동·냉장 수산물 유통/소분</option>
+                                        </select>
+                                        <input type="text" v-model="seafoodBizNo" placeholder="영업 신고번호">
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
                                     <label><i class="fa-solid fa-image"></i> 프로필 사진</label>
                                     <div class="input-wrapper file-upload">
                                         <input type="file" id="profileUpload" @change="fnProfileChange"
@@ -376,6 +435,23 @@
                                             accept=".jpg,.jpeg,.png,.pdf">
                                         <label for="fileUpload" class="file-label">파일 선택</label>
                                         <span class="file-name" v-if="fileName">{{ fileName }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label><i class="fa-solid fa-bullhorn"></i> 통신판매업 신고번호</label>
+                                    <div class="input-wrapper">
+                                        <input type="text" v-model="teleSaleNo" placeholder="예: 2025-서울강남-1234">
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label><i class="fa-solid fa-file-arrow-up"></i> 통신판매업 신고증 업로드</label>
+                                    <div class="input-wrapper file-upload">
+                                        <input type="file" id="teleUpload" @change="fnTeleFileChange"
+                                            accept=".jpg,.jpeg,.png,.pdf">
+                                        <label for="teleUpload" class="file-label">파일 선택</label>
+                                        <span class="file-name" v-if="teleFileName">{{ teleFileName }}</span>
                                     </div>
                                 </div>
 
@@ -461,6 +537,21 @@
                             fileName: "",
                             profile: null,
                             profileName: "",
+                            sellerType: "",
+                            teleSaleNo: "",
+                            teleFile: null,
+                            teleFileName: "",
+                            saleRawAgri: false,
+                            saleProcessed: false,
+                            saleLivestock: false,
+                            saleSeafood: false,
+                            saleOther: false,
+                            foodBizType: "",
+                            foodBizNo: "",
+                            livestockBizType: "",
+                            livestockBizNo: "",
+                            seafoodBizType: "",
+                            seafoodBizNo: "",
                         };
                     },
                     methods: {
@@ -566,6 +657,11 @@
                                 return;
                             }
 
+                            if (!self.sellerType) {
+                                Swal.fire('⚠️', '판매자 유형을 선택해주세요.', 'warning');
+                                return;
+                            }
+
                             if (!self.bizNo) {
                                 Swal.fire('⚠️', '사업자등록번호를 입력해주세요.', 'warning');
                                 return;
@@ -579,6 +675,36 @@
 
                             if (!self.file) {
                                 Swal.fire('⚠️', '사업자 등록증을 첨부해주세요.', 'warning');
+                                return;
+                            }
+
+                            if (!self.teleSaleNo) {
+                                Swal.fire('⚠️', '통신판매업 신고번호를 입력해주세요.', 'warning');
+                                return;
+                            }
+
+                            if (!self.teleFile) {
+                                Swal.fire('⚠️', '통신판매업 신고증을 첨부해주세요.', 'warning');
+                                return;
+                            }
+
+                            if (!self.saleRawAgri && !self.saleProcessed && !self.saleLivestock && !self.saleSeafood && !self.saleOther) {
+                                Swal.fire('⚠️', '판매 품목을 최소 1개 이상 선택해주세요.', 'warning');
+                                return;
+                            }
+
+                            if (self.saleProcessed && (!self.foodBizType || !self.foodBizNo)) {
+                                Swal.fire('⚠️', '가공식품을 판매하려면 가공식품 영업유형과 신고번호를 입력해주세요.', 'warning');
+                                return;
+                            }
+
+                            if (self.saleLivestock && (!self.livestockBizType || !self.livestockBizNo)) {
+                                Swal.fire('⚠️', '축산물을 판매하려면 축산물 영업유형과 신고번호를 입력해주세요.', 'warning');
+                                return;
+                            }
+
+                            if (self.saleSeafood && (!self.seafoodBizType || !self.seafoodBizNo)) {
+                                Swal.fire('⚠️', '수산물을 판매하려면 수산물 영업유형과 신고번호를 입력해주세요.', 'warning');
                                 return;
                             }
 
@@ -609,9 +735,27 @@
                             formData.append("bizNo", self.bizNo);
                             formData.append("bankName", self.bankName);
                             formData.append("account", self.account);
+                            formData.append("userAddr", self.userAddr);
+
                             if (self.file) formData.append("bizLicense", self.file);
                             if (self.profile) formData.append("profileImage", self.profile);
-                            formData.append("userAddr", self.userAddr);
+
+                            formData.append("sellerType", self.sellerType);
+                            formData.append("teleSaleNo", self.teleSaleNo);
+                            if (self.teleFile) formData.append("teleSaleCert", self.teleFile);
+
+                            formData.append("saleRawAgri", self.saleRawAgri ? "Y" : "N");
+                            formData.append("saleProcessed", self.saleProcessed ? "Y" : "N");
+                            formData.append("saleLivestock", self.saleLivestock ? "Y" : "N");
+                            formData.append("saleSeafood", self.saleSeafood ? "Y" : "N");
+                            formData.append("saleOther", self.saleOther ? "Y" : "N");
+
+                            formData.append("foodBizType", self.foodBizType);
+                            formData.append("foodBizNo", self.foodBizNo);
+                            formData.append("livestockBizType", self.livestockBizType);
+                            formData.append("livestockBizNo", self.livestockBizNo);
+                            formData.append("seafoodBizType", self.seafoodBizType);
+                            formData.append("seafoodBizNo", self.seafoodBizNo);
 
                             $.ajax({
                                 url: "sellerJoin.dox",
@@ -652,6 +796,13 @@
                             if (file) {
                                 this.profile = file;
                                 this.profileName = file.name;
+                            }
+                        },
+                        fnTeleFileChange(event) {
+                            const file = event.target.files[0];
+                            if (file) {
+                                this.teleFile = file;
+                                this.teleFileName = file.name;
                             }
                         },
                         fnSendCode() {

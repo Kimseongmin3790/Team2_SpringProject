@@ -11,7 +11,6 @@
       <script src="https://code.jquery.com/jquery-3.7.1.js"
         integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
       <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-      <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=78c3fbd5be4327cf3319a04cf0a379c4&libraries=services"></script>
 
       <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
       <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
@@ -368,6 +367,41 @@
           background: #c8e6c9;
           margin: 0 4px;
         }
+
+        .service-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 20px;
+          justify-content: center;
+          margin-top: 20px;
+        }
+
+        .service-card {
+          flex: 1 1 260px;
+          max-width: 360px;
+          background: #fff;
+          border-radius: 12px;
+          padding: 20px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+          text-align: left;
+        }
+
+        .service-card h3 {
+          margin: 0 0 10px;
+          font-size: 1.2rem;
+          color: #1a5d1a;
+        }
+
+        .service-card p {
+          margin: 0 0 12px;
+          font-size: 0.95rem;
+          color: #555;
+          line-height: 1.5;
+        }
+
+        .service-card .btn-more {
+          margin-top: 4px;
+        }
       </style>
     </head>
 
@@ -398,44 +432,85 @@
             </section>
 
             <section class="main-section">
-              <h2>내 주변 생산자</h2>
-              <p class="section-desc">가장 가까운 생산자를 찾아보세요. ※ 위치 권한 없으면 기본으로 서울시청으로 지정됩니다</p>
-              <div id="map" style="width:100%;height:400px;border-radius:12px;margin-bottom:12px;"></div>
+              <h2>AGRICOLA 서비스</h2>
+              <p class="section-desc">지역의 신선한 농산물을 다양한 방식으로 만나보세요.</p>
 
-              <div class="map-controls">
-                <span class="map-controls__title">반경 선택</span>
-                <label><input type="radio" name="range" :value="1" v-model.number="rangeKm">1km</label>
-                <label><input type="radio" name="range" :value="3" v-model.number="rangeKm">3km</label>
-                <label><input type="radio" name="range" :value="5" v-model.number="rangeKm">5km</label>
-                <span class="sep"></span>
-                <label><input type="checkbox" v-model="onlyInRange">범위 내만 보기</label>
-                <button class="btn-map-detail" @click="goFullMap" style="margin-left:8px;">지도를 크게 보기</button>
-              </div>
+              <div class="service-grid">
+                <!-- 지역별 특산물 배송 -->
+                <div class="service-card">
+                  <h3>지역별 특산물 배송</h3>
+                  <p>
+                    강원 감자, 제주 감귤, 광천 김 등
+                    전국 산지의 특산품을 한 번에 받아보는 지역 박스입니다.
+                  </p>
+                  <button class="btn-more" @click="fnGoRegionalList">바로가기</button>
+                </div>
 
-              <div class="producer-list">
-                <div class="producer-card" v-for="p in visibleProducers" :key="p.userId" @click="goSeller(p.userId)">
-                  <div class="producer-logo" :style="{ backgroundImage: 'url(' + p.profileImg + ')' }"></div>
-                  <strong>{{ p.businessName }}</strong>
-                  <p>{{ p.addrDo }} {{ p.addrCity }}</p>
-                  <p v-if="p.distance">📍 {{ Number(p.distance).toFixed(1) }}km</p>
+                <!-- 농산물 정기배송 -->
+                <div class="service-card">
+                  <h3>농산물 정기배송</h3>
+                  <p>
+                    제철 채소·과일을 주기적으로 받아보는 구독 서비스입니다.
+                    원하는 주기와 구성을 선택해 보세요.
+                  </p>
+                  <button class="btn-more" @click="fnGoSubscriptionList">바로가기</button>
+                </div>
+
+                <!-- 내 주변 판매자 -->
+                <div class="service-card">
+                  <h3>내 주변 판매자 찾기</h3>
+                  <p>
+                    내 주변 생산자들을 지도에서 확인하고
+                    가까운 농가와 직접 거래해 보세요.
+                  </p>
+                  <button class="btn-more" @click="fnGoNearby">내 주변 보기</button>
                 </div>
               </div>
             </section>
 
             <section class="main-section">
               <div class="section-header">
-                <h2>AGRICOLA 추천 상품</h2>
-                <button class="btn-more" @click="fnGoRecommendList">＋</button>
+                <h2>지역별 특산물 배송</h2>
+                <button class="btn-more" @click="fnGoRegionalList">＋</button>
               </div>
-              <p class="section-desc">아그리콜라가 엄선한 인기 상품을 만나보세요.</p>
+              <p class="section-desc">
+                전국 산지의 특산품을 한 박스로 받아보는 서비스입니다.
+              </p>
 
               <div class="product-grid">
-                <div class="product-card" v-for="p in recommend" :key="p.productNo" @click="goInfo(p.productNo)">
-                  <img :src="p.imageUrl" alt="">
+                <div class="product-card" v-for="box in regionalSpecials" :key="box.regionId"
+                  @click="goRegionalDetail(box.regionId)">
+                  <img :src="fullUrl(box.imageUrl)" alt="">
                   <div class="product-info">
-                    <h4>{{ p.pname }}</h4>
-                    <p>{{ p.pinfo }}</p>
-                    <span class="product-price">{{ p.price.toLocaleString() }}원</span>
+                    <h4>{{ box.regionName }} {{ box.title }}</h4>
+                    <p>{{ box.description }}</p>
+                    <span class="product-price">
+                      {{ box.price.toLocaleString() }}원
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="main-section">
+              <div class="section-header">
+                <h2>농산물 정기배송</h2>
+                <button class="btn-more" @click="fnGoSubscriptionList">＋</button>
+              </div>
+              <p class="section-desc">
+                제철 농산물을 주기적으로 받는 구독 서비스입니다.
+              </p>
+
+              <div class="product-grid">
+                <div class="product-card" v-for="plan in subscriptionPlans" :key="plan.planId"
+                  @click="goSubscriptionDetail(plan.planId)">
+                  <img :src="fullUrl(plan.imageUrl)" alt="">
+                  <div class="product-info">
+                    <h4>{{ plan.planName }}</h4>
+                    <p>{{ plan.shortDesc }}</p>
+                    <span class="product-price">
+                      {{ plan.price.toLocaleString() }}원 / {{ formatPeriod(plan.periodType) }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -476,11 +551,13 @@
                   sessionId: "${sessionId}",
                   userRole: "${sessionScope.sessionStatus}",
                   path: "${pageContext.request.contextPath}",
+
                   banners: [],
-                  best: [],
-                  recommend: [],
                   newProducts: [],
-                  producers: [],
+
+                  regionalSpecials: [],
+                  subscriptionPlans: [],
+
                   loading: true,
                   error: null,
                   index: 0,
@@ -489,16 +566,6 @@
                   startX: 0,
                   deltaX: 0,
                   width: 0,
-                  topFarmers: [],
-
-                  rangeKm: 3,             // 기본 반경 3km
-                  onlyInRange: true,      // 체크 시 범위 내만 표시
-                  mapRef: null,           // kakao.maps.Map 인스턴스
-                  mapCenter: null,        // {lat,lng}
-                  _markers: [],           // [{ marker, info, p }]
-                  _circles: [],           // kakao.maps.Circle[]
-                  _infoWindow: null,   // 모든 마커가 공유하는 단 하나의 InfoWindow
-                  _openMarker: null,   // 현재 InfoWindow가 붙어있는 마커 참조
                 };
               },
               methods: {
@@ -532,9 +599,39 @@
 
                 loadAll() {
                   this.loadBanners();
-                  this.loadRecommend();
+                  this.loadRegionalSpecials();
+                  this.loadSubscriptions();
                   this.loadNew();
-                  this.loadProducers();
+                },
+
+                loadRegionalSpecials() {
+                  const self = this;
+                  $.ajax({
+                    url: self.path + "/main/data/regionalSpecials.dox",  // 🔹 백엔드에서 이 주소로 구현
+                    type: "POST",
+                    dataType: "json",
+                    success(res) {
+                      self.regionalSpecials = res.list || [];
+                    },
+                    error(xhr, status, err) {
+                      console.error("지역 특산물 로드 실패:", err);
+                    }
+                  });
+                },
+
+                loadSubscriptions() {
+                  const self = this;
+                  $.ajax({
+                    url: self.path + "/main/data/subscriptionPlans.dox", // 🔹 백엔드에서 이 주소로 구현
+                    type: "POST",
+                    dataType: "json",
+                    success(res) {
+                      self.subscriptionPlans = res.list || [];
+                    },
+                    error(xhr, status, err) {
+                      console.error("정기배송 플랜 로드 실패:", err);
+                    }
+                  });
                 },
 
                 loadBanners() {
@@ -551,216 +648,19 @@
                   });
                 },
 
-                loadRecommend() {
-                  const self = this;
-                  $.ajax({
-                    url: "/main/data/recommend.dox",  
-                    type: "POST",                               
-                    dataType: "json",
-                    success(res) {
-                      self.recommend = res.list;                 
-                    },
-                    error(xhr, status, err) {
-                      console.error("추천 상품 로드 실패:", err);
-                    }
-                  });
-                },
-
                 loadNew() {
                   const self = this;
                   $.ajax({
-                    url: "/main/data/newList.dox",  
+                    url: "/main/data/newList.dox",
                     type: "POST",
                     dataType: "json",
                     success(res) {
-                      self.newProducts = res.list || [];       
+                      self.newProducts = res.list || [];
                     },
                     error(xhr, status, err) {
                       console.error("신상품 로드 실패:", err);
                     }
                   });
-                },
-
-                loadProducers() {
-                  const self = this;
-
-                  $.ajax({
-                    url: "/main/data/userLocation.dox",
-                    type: "POST",
-                    dataType: "json",
-                    success(res) {
-                      if (res.login && res.lat && res.lng) {
-                        self.fnLoadProducerList(res.lat, res.lng);
-                      } else {
-                        self.loadLocationFromBrowser();
-                      }
-                    },
-                    error() {
-                      console.warn("❌ 사용자 위치 불러오기 실패, 브라우저 위치로 대체");
-                      self.loadLocationFromBrowser();
-                    }
-                  });
-                },
-
-                loadLocationFromBrowser() {
-                  const self = this;
-                  if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                      (pos) => {
-                        self.fnLoadProducerList(pos.coords.latitude, pos.coords.longitude);
-                      },
-                      (err) => {
-                        console.warn("⚠️ 위치 접근 실패:", err.message);
-                        // 기본 서울 좌표
-                        self.fnLoadProducerList(37.5665, 126.9780);
-                      }
-                    );
-                  } else {
-                    console.warn("❌ 위치정보 지원 안 함");
-                    self.fnLoadProducerList(37.5665, 126.9780);
-                  }
-                },
-
-                fnLoadProducerList(lat, lng) {
-                  const self = this;
-                  $.ajax({
-                    url: "/main/data/sellerList.dox",
-                    type: "POST",
-                    data: { lat, lng },
-                    dataType: "json",
-                    success(res) {
-                      self.producers = res.list || [];
-                      self.$nextTick(() => {
-                        self.showMap(lat, lng, self.producers);
-                      });
-                    },
-                    error(xhr, status, err) {
-                      console.error("❌ 생산자 목록 로드 실패:", err);
-                    }
-                  });
-                },
-
-                showMap(lat, lng, list) {
-                  const container = document.getElementById("map");
-                  const map = new kakao.maps.Map(container, {
-                    center: new kakao.maps.LatLng(lat, lng),
-                    level: 6
-                  });
-                  this.mapRef = map;
-
-                  // InfoWindow 단일 인스턴스 생성(없을 때만)
-                  if (!this._infoWindow) {
-                    this._infoWindow = new kakao.maps.InfoWindow({ removable: false });
-                  }
-
-                  // 지도 빈 곳 클릭 시 열려있으면 닫기
-                  kakao.maps.event.addListener(this.mapRef, "click", () => {
-                    if (this._infoWindow && this._infoWindow.getMap()) {
-                      this._infoWindow.close();
-                      this._openMarker = null;
-                    }
-                  });
-
-                  this.mapCenter = { lat, lng };
-
-                  const userMarker = new kakao.maps.Marker({
-                    position: new kakao.maps.LatLng(lat, lng),
-                    map: map
-                  });
-                  new kakao.maps.InfoWindow({ content: "<div style='padding:5px;'>내 위치</div>" }).open(map, userMarker);
-
-                  (list || []).forEach(p => {
-                    if (typeof p.distance !== 'number' && p.lat && p.lng) {
-                      p.distance = this.calcDistanceKm(lat, lng, p.lat, p.lng);
-                    }
-                  });
-
-                  this.drawRangeCircles();
-
-                  this.renderMarkers(list || []);
-                },
-
-                renderMarkers(list) {
-                  if (!this.mapRef) return;
-
-                  // 기존 마커 제거
-                  if (this._markers && this._markers.length) {
-                    this._markers.forEach(m => { m.marker.setMap(null); });
-                  }
-                  this._markers = [];
-
-                  // 열려있던 공유 창 정리
-                  this._openMarker = null;
-                  if (this._infoWindow && this._infoWindow.getMap()) {
-                    this._infoWindow.close();
-                  }
-
-                  (list || []).forEach((p) => {
-                    if (!p.lat || !p.lng) return;
-
-                    const pos = new kakao.maps.LatLng(p.lat, p.lng);
-                    const marker = new kakao.maps.Marker({ position: pos, map: this.mapRef });
-
-                    kakao.maps.event.addListener(marker, "click", () => {
-                      const distanceText =
-                        (typeof p.distance === "number" && !isNaN(p.distance)) ? p.distance.toFixed(1) + "km" : "거리 정보 없음";
-                      const inRange = (typeof p.distance === 'number') ? (p.distance <= this.rangeKm + 1e-9) : false;
-
-                      const html =
-                        "<div style='padding:10px;width:200px;line-height:1.5;font-size:13px;'>" +
-                        "<strong style='font-size:14px;color:#1a5d1a;'>" + (p.businessName || "이름 없음") + "</strong>" +
-                        (inRange ? " <span style=\"display:inline-block;margin-left:4px;padding:2px 6px;border-radius:10px;background:#e8f5e9;color:#2e7d32;font-size:11px;\">범위내</span>" : "") +
-                        "<br>" + (p.addrDo || "") + " " + (p.addrCity || "") +
-                        "<br>📍 " + distanceText +
-                        "<br><button class='btn-map-detail' onclick=\"location.href='" + (this.path || '') + "/seller/detail.do?sellerId=" + p.userId + "'\">상세보기</button>" +
-                        "</div>";
-
-                      // 같은 마커를 다시 클릭하면 닫기(토글)
-                      const isOpenOnThis = (this._openMarker === marker) && this._infoWindow.getMap();
-                      if (isOpenOnThis) {
-                        this._infoWindow.close();
-                        this._openMarker = null;
-                        return;
-                      }
-
-                      // 공유창 열기
-                      this._infoWindow.setContent(html);
-                      this._infoWindow.open(this.mapRef, marker);
-                      this._openMarker = marker;
-                    });
-
-                    this._markers.push({ marker, p });
-                  });
-
-                  // 가시성(범위 필터) 반영
-                  this.updateMarkerVisibility();
-                },
-
-                updateMarkerVisibility() {
-                  if (!this._markers) return;
-
-                  this._markers.forEach(({ marker, p }) => {
-                    const d = (typeof p.distance === 'number') ? p.distance : Infinity;
-                    const show = !this.onlyInRange || d <= this.rangeKm + 1e-9;
-
-                    if (show) {
-                      marker.setMap(this.mapRef);
-                    } else {
-                      marker.setMap(null);
-                      // 숨기려는 마커가 현재 열린 창이라면 닫기
-                      if (this._openMarker === marker && this._infoWindow && this._infoWindow.getMap()) {
-                        this._infoWindow.close();
-                        this._openMarker = null;
-                      }
-                    }
-                  });
-                },
-
-                _saveMapState() {
-                  const c = this.mapCenter || this.center;
-                  sessionStorage.setItem('agri_only', this.onlyInRange ? '1' : '0');
-                  sessionStorage.setItem('agri_range', String(this.rangeKm || 3));
-                  if (c) sessionStorage.setItem('agri_center', JSON.stringify(c));
                 },
 
                 goSeller(userId) {
@@ -876,10 +776,6 @@
                   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
                 },
 
-                fnGoRecommendList() {
-                  location.href = this.path + "/product/recommendList.do";
-                },
-
                 fnGoNewList() {
                   location.href = this.path + "/product/newList.do";
                 },
@@ -892,110 +788,43 @@
                   location.href = this.path + "/productInfo.do?productNo=" + productNo;
                 },
 
-                calcDistanceKm(lat1, lon1, lat2, lon2) {
-                  if ([lat1, lon1, lat2, lon2].some(v => typeof v !== 'number')) return Infinity;
-                  const R = 6371;
-                  const toRad = d => d * Math.PI / 180;
-                  const dLat = toRad(lat2 - lat1);
-                  const dLon = toRad(lon2 - lon1);
-                  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-                  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                fnGoRegionalList() {
+                  location.href = this.path + "/region/specialList.do";
                 },
 
-                drawRangeCircles() {
-                  if (!this.mapRef || !this.mapCenter) return;
-                  // 기존 원 제거
-                  if (this._circles && this._circles.length) this._circles.forEach(c => c.setMap(null));
-                  this._circles = [];
-
-                  const center = new kakao.maps.LatLng(this.mapCenter.lat, this.mapCenter.lng);
-                  [1, 3, 5].forEach(km => {
-                    const circle = new kakao.maps.Circle({
-                      center,
-                      radius: km * 1000,
-                      strokeWeight: 2,
-                      strokeColor: (km === this.rangeKm) ? '#5dbb63' : '#1a5d1a',
-                      strokeOpacity: (km === this.rangeKm) ? 0.9 : 0.5,
-                      strokeStyle: 'shortdash',
-                      fillColor: '#5dbb63',
-                      fillOpacity: (km === this.rangeKm) ? 0.12 : 0.0
-                    });
-                    circle.setMap(this.mapRef);
-                    this._circles.push(circle);
-                  });
+                fnGoSubscriptionList() {
+                  location.href = this.path + "/subscription/list.do";
                 },
 
-                goFullMap() {
-                  this._saveMapState();
-                  const lat = (this.mapCenter && this.mapCenter.lat) || 37.5665;   // 서울시청 기본값
-                  const lng = (this.mapCenter && this.mapCenter.lng) || 126.9780;
-                  const range = this.rangeKm || 3;
-                  const only = this.onlyInRange ? 'Y' : 'N';
-                  location.href = this.path + `/map/nearby.do?lat=\${lat}&lng=\${lng}&rangeKm=\${range}&onlyInRange=\${only}`;
+                fnGoNearby() {
+                  location.href = this.path + "/map/nearby.do";
                 },
 
-                _onPageShow() {
-                  this.drawRangeCircles && this.drawRangeCircles();
-                  this.updateMarkerVisibility && this.updateMarkerVisibility();
+                goRegionalDetail(regionId) {
+                  location.href = this.path + "/region/specialDetail.do?regionId=" + regionId;
                 },
 
-                _restoreMapState({ preferQuery = false } = {}) {
-                  // preferQuery=true 이면 URL 파라미터 우선
-                  if (preferQuery) {
-                    const sp = new URLSearchParams(location.search);
-                    const o = sp.get('onlyInRange');
-                    const r = parseInt(sp.get('rangeKm'), 10);
-                    const lat = parseFloat(sp.get('lat')), lng = parseFloat(sp.get('lng'));
-                    if (o !== null) this.onlyInRange = (o === 'Y');
-                    if (!isNaN(r)) this.rangeKm = r;
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                      if ('mapCenter' in this) this.mapCenter = { lat, lng }; else this.center = { lat, lng };
-                    }
+                goSubscriptionDetail(planId) {
+                  location.href = this.path + "/subscription/detail.do?planId=" + planId;
+                },
+
+                formatPeriod(type) {
+                  switch (type) {
+                    case "WEEKLY": return "주 1회";
+                    case "BIWEEKLY": return "격주";
+                    case "MONTHLY": return "월 1회";
+                    default: return type;
                   }
-                  // 세션값 (URL이 없을 때 사용)
-                  if (!preferQuery || location.search === '') {
-                    const only = sessionStorage.getItem('agri_only');
-                    if (only !== null) this.onlyInRange = (only === '1');
-                    const rk = parseInt(sessionStorage.getItem('agri_range'), 10);
-                    if (!isNaN(rk)) this.rangeKm = rk;
-                    const c = sessionStorage.getItem('agri_center');
-                    if (c) { const v = JSON.parse(c); ('mapCenter' in this) ? (this.mapCenter = v) : (this.center = v); }
-                  }
-                }
+                },
               },
-
-              computed: {
-                visibleProducers() {
-                  if (!this.onlyInRange || !this.mapCenter) {
-                    return (this.producers || []).slice().sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
-                  }
-                  return (this.producers || [])
-                    .filter(p => {
-                      const d = (typeof p.distance === 'number')
-                        ? p.distance
-                        : (p.lat && p.lng ? this.calcDistanceKm(this.mapCenter.lat, this.mapCenter.lng, p.lat, p.lng) : Infinity);
-                      return d <= this.rangeKm + 1e-9;
-                    })
-                    .sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
-                }
-              },
-
               mounted() {
-                this._restoreMapState();
                 this.loadAll();
-                window.addEventListener('pageshow', this._onPageShow);
                 window.addEventListener("resize", this.measure);
               },
               unmounted() {
                 this.stopAuto();
-                window.removeEventListener('pageshow', this._onPageShow);
                 window.removeEventListener("resize", this.measure);
-              },
-
-              watch: {
-                rangeKm() { this.drawRangeCircles(); this.updateMarkerVisibility(); },
-                onlyInRange() { this.updateMarkerVisibility(); }
-              },
+              }
             });
             app.mount("#app");
           </script>
