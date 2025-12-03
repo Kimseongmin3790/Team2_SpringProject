@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.SubscriptionMapper">
+	<!-- 메인용: 최대 4개 -->
+    <select id="selectSubscriptionPlanMainList"
+            parameterType="hashmap"
+            resultType="hashmap">
+        SELECT *
+        FROM (
+            SELECT
+                PLAN_ID      AS "planId",
+                PLAN_NAME    AS "planName",
+                SHORT_DESC   AS "shortDesc",
+                PERIOD_TYPE  AS "periodType",
+                BASE_PRICE   AS "price",
+                IMAGE_URL    AS "imageUrl"
+            FROM SUBSCRIPTION_PLAN
+            WHERE IS_ACTIVE = 'Y'
+            ORDER BY
+                DISPLAY_ORDER NULLS LAST,
+                PLAN_ID DESC
+        )
+        WHERE ROWNUM &lt;= 4
+    </select>
+
+    <!-- 리스트 페이지용: 전체 -->
+    <select id="selectSubscriptionPlanList"
+            parameterType="hashmap"
+            resultType="hashmap">
+        SELECT
+            PLAN_ID      AS "planId",
+            PLAN_NAME    AS "planName",
+            SHORT_DESC   AS "shortDesc",
+            PERIOD_TYPE  AS "periodType",
+            BASE_PRICE   AS "price",
+            IMAGE_URL    AS "imageUrl"
+        FROM SUBSCRIPTION_PLAN
+        WHERE IS_ACTIVE = 'Y'
+        ORDER BY
+            DISPLAY_ORDER NULLS LAST,
+            PLAN_ID DESC
+    </select>
+
+    <!-- 상세용: 1건 -->
+    <select id="selectSubscriptionPlanDetail"
+            parameterType="hashmap"
+            resultType="hashmap">
+        SELECT
+            PLAN_ID      AS "planId",
+            PLAN_NAME    AS "planName",
+            SHORT_DESC   AS "shortDesc",
+            DESCRIPTION  AS "description",
+            PERIOD_TYPE  AS "periodType",
+            BASE_PRICE   AS "price",
+            IMAGE_URL    AS "imageUrl"
+        FROM SUBSCRIPTION_PLAN
+        WHERE PLAN_ID = #{planId}
+    </select>
+    
+    <insert id="insertSubscription" parameterType="hashmap">
+	    <selectKey keyProperty="subscriptionId" resultType="int" order="BEFORE">
+	        SELECT SUBSCRIPTION_SEQ.NEXTVAL FROM DUAL
+	    </selectKey>
+	    INSERT INTO SUBSCRIPTION (
+	        SUBSCRIPTION_ID, USER_ID, PLAN_ID, ORDER_NO,
+	        STATUS, START_DATE, PERIOD_TYPE, MEMO
+	    ) VALUES (
+	        #{subscriptionId},
+	        #{userId},
+	        #{planId},
+	        #{orderNo},
+	        #{status},
+	        SYSDATE,
+	        #{periodType},
+	        #{memo}
+	    )
+	</insert>
+</mapper>

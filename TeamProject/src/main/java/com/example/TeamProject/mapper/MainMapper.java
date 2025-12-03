@@ -38,9 +38,4 @@ public interface MainMapper {
     // 유저 좌표 조회
     HashMap<String, Object> selectUserLocation(@Param("userId") String userId);
     
-    // 지역별 특산물 리스트
-    List<HashMap<String, Object>> selectRegionalSpecialList();
-
-    // 정기배송 플랜 리스트
-    List<HashMap<String, Object>> selectSubscriptionPlanList();
 }

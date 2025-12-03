@@ -118,34 +118,6 @@ public class MainService {
 		return resultMap;
 	}
 	
-	public HashMap<String, Object> getRegionalSpecialList(HashMap<String, Object> map) {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		try {
-			List<HashMap<String, Object>> list = mainMapper.selectRegionalSpecialList();
-			resultMap.put("list", list);
-			resultMap.put("result", "success");
-		} catch (Exception e) {
-			resultMap.put("result", "fail");
-			System.out.println("MainService.selectMainBanners 오류: " + e.getMessage());
-		}
-		
-		return resultMap;
-	}
-	
-	public HashMap<String, Object> getSubscriptionPlanList(HashMap<String, Object> map) {
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
-		try {
-			List<HashMap<String, Object>> list = mainMapper.selectSubscriptionPlanList();
-			resultMap.put("list", list);
-			resultMap.put("result", "success");
-		} catch (Exception e) {
-			resultMap.put("result", "fail");
-			System.out.println("MainService.selectMainBanners 오류: " + e.getMessage());
-		}
-		
-		return resultMap;
-	}
-	
 	// 유저 좌표 조회
 	public HashMap<String, Object> selectUserLocation(String userId) throws Exception {
 	    return new HashMap<>(mainMapper.selectUserLocation(userId));

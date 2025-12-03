@@ -607,10 +607,11 @@
                 loadRegionalSpecials() {
                   const self = this;
                   $.ajax({
-                    url: self.path + "/main/data/regionalSpecials.dox",  // 🔹 백엔드에서 이 주소로 구현
+                    url: "/main/data/regionalSpecials.dox",
                     type: "POST",
                     dataType: "json",
                     success(res) {
+                      console.log(res);
                       self.regionalSpecials = res.list || [];
                     },
                     error(xhr, status, err) {
@@ -622,7 +623,7 @@
                 loadSubscriptions() {
                   const self = this;
                   $.ajax({
-                    url: self.path + "/main/data/subscriptionPlans.dox", // 🔹 백엔드에서 이 주소로 구현
+                    url: "/main/data/subscriptionPlans.dox",
                     type: "POST",
                     dataType: "json",
                     success(res) {

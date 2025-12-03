@@ -204,7 +204,9 @@
                     data-user-id="<c:out value='${sessionId}'/>" data-cart-nos="<c:out value='${param.cartNos}'/>"
                     data-product-no="<c:out value='${param.productNo}'/>" data-qty="<c:out value='${param.qty}'/>"
                     data-option-no="<c:out value='${param.optionNo}'/>"
-                    data-fulfillment="<c:out value='${param.fulfillment}'/>">
+                    data-fulfillment="<c:out value='${param.fulfillment}'/>"
+                    data-mode="<c:out value='${param.mode}'/>"
+                    data-plan-id="<c:out value='${param.planId}'/>">
 
                     <main class="content">
                         <!-- 좌측 -->
@@ -307,11 +309,17 @@
                 fulfillment: (root?.dataset?.fulfillment || 'delivery').toLowerCase()
             };
             const IS_CART_MODE = !!CART_CSV;  // true면 장바구니, false면 단건
+            const MODE = (root?.dataset?.mode || 'normal').toLowerCase();
+            const SUB_PLAN_ID = parseInt(root?.dataset?.planId, 10) || null;
+            const IS_SUBSCRIPTION_MODE = MODE === 'subscription';
 
             const app = Vue.createApp({
                 data() {
                     return {
                         userId: USER,
+                        mode: MODE,
+                        subscriptionPlanId: SUB_PLAN_ID,
+
                         products: [],
                         buyer: {},
                         shipping: { recipient: "", phone: "", zip: "", address: "", detail: "" },
@@ -355,8 +363,39 @@
                 },
                 methods: {
                     fnProduct() {
-                        if (IS_CART_MODE) {
-                            // 장바구니 다건
+                        if (IS_SUBSCRIPTION_MODE && this.subscriptionPlanId) {
+                            // ✅ 정기배송 전용 플로우
+                            $.ajax({
+                                url: CTX + "/payment/subscriptionPrepare.dox",
+                                type: "POST",
+                                dataType: "json",
+                                data: {
+                                    planId: this.subscriptionPlanId,
+                                    userId: this.userId
+                                },
+                                success: (res) => {
+                                    if (res.result === 'success' && res.plan) {
+                                        const plan = res.plan;
+                                        this.products = [{
+                                            productNo: plan.planId,      // 그냥 식별용으로만 사용
+                                            pName: plan.planName,
+                                            quantity: 1,
+                                            unitPrice: Number(plan.price || 0),
+                                            thumbPath: plan.imageUrl,
+                                            fulfillment: 'subscription',
+                                            periodType: plan.periodType
+                                        }];
+                                    } else {
+                                        alert(res.message || "정기배송 플랜 정보를 불러오지 못했습니다.");
+                                    }
+                                },
+                                error: () => {
+                                    alert("정기배송 플랜 조회 중 오류가 발생했습니다.");
+                                }
+                            });
+
+                        } else if (IS_CART_MODE) {
+                            // ✅ 기존 장바구니 로직 그대로
                             $.ajax({
                                 url: CTX + "/payment/list.dox",
                                 type: "POST",
@@ -377,7 +416,7 @@
                                 }
                             });
                         } else {
-                            // 상세 단건
+                            // ✅ 기존 단건(상품 상세) 로직 그대로
                             if (!SINGLE.productNo || !SINGLE.qty) {
                                 alert('결제 대상이 없습니다.'); location.href = CTX + '/'; return;
                             }
@@ -460,9 +499,15 @@
                             : (this.requestLabel || '').trim();
 
                         // 주문명(다건일 때 "첫상품 외 n건")
-                        const orderName = this.products.length > 1
-                            ? `\${this.products[0].pName} 외 \${this.products.length - 1}건`
-                            : (this.products[0]?.pName || '주문');
+                        const line = this.products[0] || {};
+
+                        // 주문명(다건일 때 "첫상품 외 n건")
+                        let orderName = '주문';
+                        if (this.products.length > 1) {
+                            orderName = (line.pName || '상품') + ' 외 ' + (this.products.length - 1) + '건';
+                        } else if (line.pName) {
+                            orderName = line.pName;
+                        }
 
                         // 총 결제 금액 = finalPrice (정수/0원 이상으로 보정)
                         const amount = Math.max(0, Math.floor(Number(this.finalPrice) || 0));
@@ -481,7 +526,7 @@
                             pg: "html5_inicis", // 결제 PG사: inicis, kakaopay, toss 등
                             pay_method: "card", // 결제수단
                             merchant_uid: "ORD" + new Date().getTime(), // 고유 주문번호
-                            name: this.products[0].pName, // 결제명
+                            name: orderName, // 결제명
                             amount: 1,
                             buyer_email: this.buyer.email,
                             buyer_name: this.buyer.name,
@@ -491,41 +536,75 @@
                         };
 
                         IMP.request_pay(paymentData, (rsp) => {
-                            let self = this;
                             if (rsp.success) {
                                 const line = this.products[0] || {};
 
-                                $.ajax({
-                                    url: "${path}/payment/verify.dox",
-                                    type: "POST",
-                                    dataType: "json",
-                                    data: {
-                                        impUid: rsp.imp_uid,
-                                        merchantUid: rsp.merchant_uid,
-                                        buyerId: this.buyer.userId,
-                                        receivName: this.buyer.name,
-                                        receivPhone: this.buyer.phone,
-                                        deliverAddr: this.buyer.address,
-                                        memo: memo,
+                                if (IS_SUBSCRIPTION_MODE) {
+                                    // ✅ 정기배송 전용 검증 dox
+                                    $.ajax({
+                                        url: "${path}/payment/subscriptionVerify.dox",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: {
+                                            impUid: rsp.imp_uid,
+                                            merchantUid: rsp.merchant_uid,
 
-                                        productNo: line.productNo,
-                                        optionNo: line.optionNo,          // 옵션 없으면 null
-                                        quantity: line.quantity,
-                                        unitPrice: line.unitPrice || line.price,    // (기본가+옵션추가금) 단가
-                                        fulfillment: line.fulfillment || this.fulfillment
-                                    },
-                                    success: function (data) {
-                                        if (data.result == "success") {
-                                            alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
-                                            location.href = "${path}/buyerMyPage.do?activeTab=orders";
-                                        } else {
-                                            alert("결제 저장 실패:" + data.message);
+                                            buyerId: this.buyer.userId,
+                                            receivName: this.buyer.name,
+                                            receivPhone: this.buyer.phone,
+                                            deliverAddr: this.buyer.address,
+                                            memo: memo,
+
+                                            planId: this.subscriptionPlanId,
+                                            periodType: line.periodType  // WEEKLY / BIWEEKLY / MONTHLY
+                                        },
+                                        success: function (data) {
+                                            if (data.result == "success") {
+                                                alert("정기배송 신청이 완료되었습니다. 구독번호 " + data.subscriptionId);
+                                                location.href = "${path}/buyerMyPage.do?activeTab=subscriptions";
+                                            } else {
+                                                alert("정기배송 저장 실패: " + (data.message || ''));
+                                            }
+                                        },
+                                        error: function () {
+                                            alert("서버 통신 오류");
                                         }
-                                    },
-                                    error: function () {
-                                        alert("서버 통신 오류");
-                                    }
-                                });
+                                    });
+
+                                } else {
+                                    // ✅ 기존 일반 주문 verify.dox 로직 그대로
+                                    $.ajax({
+                                        url: "${path}/payment/verify.dox",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: {
+                                            impUid: rsp.imp_uid,
+                                            merchantUid: rsp.merchant_uid,
+                                            buyerId: this.buyer.userId,
+                                            receivName: this.buyer.name,
+                                            receivPhone: this.buyer.phone,
+                                            deliverAddr: this.buyer.address,
+                                            memo: memo,
+
+                                            productNo: line.productNo,
+                                            optionNo: line.optionNo,
+                                            quantity: line.quantity,
+                                            unitPrice: line.unitPrice || line.price,
+                                            fulfillment: line.fulfillment || this.fulfillment
+                                        },
+                                        success: function (data) {
+                                            if (data.result == "success") {
+                                                alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
+                                                location.href = "${path}/buyerMyPage.do?activeTab=orders";
+                                            } else {
+                                                alert("결제 저장 실패:" + data.message);
+                                            }
+                                        },
+                                        error: function () {
+                                            alert("서버 통신 오류");
+                                        }
+                                    });
+                                }
                             } else {
                                 alert("결제 실패: " + rsp.error_msg);
                             }

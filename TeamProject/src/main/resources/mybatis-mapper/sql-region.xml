@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.RegionMapper">
+	<!-- 리스트 페이지 / 메인에서 재사용 가능 -->
+    <select id="selectRegionSpecialList" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+        FROM (
+        SELECT
+            REGION_ID      AS "regionId",
+            REGION_NAME    AS "regionName",
+            TITLE          AS "title",
+            DESCRIPTION    AS "description",
+            THUMBNAIL_URL  AS "imageUrl",
+            BASE_PRICE     AS "price"
+        FROM REGION_SPECIAL
+        WHERE IS_ACTIVE = 'Y'
+        ORDER BY
+            DISPLAY_ORDER NULLS LAST,
+            REGION_ID DESC
+        )
+        WHERE ROWNUM &lt;= 4
+    </select>
+
+    <!-- 상세 헤더 -->
+    <select id="selectRegionSpecialById" parameterType="hashmap" resultType="hashmap">
+        SELECT
+            REGION_ID      AS "regionId",
+            REGION_NAME    AS "regionName",
+            TITLE          AS "title",
+            DESCRIPTION    AS "description",
+            THUMBNAIL_URL  AS "imageUrl",
+            BASE_PRICE     AS "price"
+        FROM REGION_SPECIAL
+        WHERE REGION_ID = #{regionId}
+    </select>
+
+    <!-- 상세에 포함된 상품 목록 -->
+    <select id="selectRegionSpecialProducts" parameterType="hashmap" resultType="hashmap">
+        SELECT
+            rsp.RSP_ID         AS "rspId",
+            p.PRODUCT_NO       AS "productNo",
+            p.PNAME            AS "pname",
+            p.PINFO            AS "pinfo",
+            p.PRICE            AS "price",
+            p.ORIGIN           AS "origin",
+            img.IMAGE_URL      AS "imageUrl"
+        FROM REGION_SPECIAL_PRODUCT rsp
+        JOIN PRODUCT p
+          ON rsp.PRODUCT_NO = p.PRODUCT_NO
+        LEFT JOIN PRODUCT_IMAGE img
+          ON img.PRODUCT_NO = p.PRODUCT_NO
+         AND img.IS_THUMBNAIL = 'Y'
+        WHERE rsp.REGION_ID = #{regionId}
+        ORDER BY
+            rsp.SORT_ORDER NULLS LAST,
+            rsp.RSP_ID
+    </select>
+</mapper>

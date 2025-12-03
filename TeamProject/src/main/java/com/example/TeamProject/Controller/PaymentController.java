@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.TeamProject.dao.PaymentService;
+import com.example.TeamProject.dao.SubscriptionService;
 import com.google.gson.Gson;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +23,9 @@ public class PaymentController {
 	
 	@Autowired
 	PaymentService paymentService;
+	
+	@Autowired
+	SubscriptionService subscriptionService;
 	
 	@RequestMapping("/product/payment.do")
 	public String payment(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
@@ -133,6 +137,82 @@ public class PaymentController {
 	        resultMap.put("result", "success");
 	        resultMap.put("orderNo", orderNo);
 	        resultMap.put("message", "결제정보 저장 완료");
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        resultMap.put("result", "fail");
+	        resultMap.put("message", e.getMessage());
+	    }
+
+	    return new Gson().toJson(resultMap);
+	}
+	
+	@Transactional(rollbackFor = Exception.class)
+	@RequestMapping(
+	    value = "/payment/subscriptionVerify.dox",
+	    method = RequestMethod.POST,
+	    produces = "application/json;charset=UTF-8"
+	)
+	@ResponseBody
+	public String verifySubscriptionPayment(@RequestParam HashMap<String, Object> map) throws Exception {
+	    HashMap<String, Object> resultMap = new HashMap<>();
+
+	    try {
+	        String impUid = (String) map.get("impUid");
+	        String merchantUid = (String) map.get("merchantUid");
+
+	        // 1) PortOne Access Token
+	        String accessToken = paymentService.getPortOneAccessToken();
+
+	        // 2) 결제 정보 조회
+	        HashMap<String, Object> paymentData = paymentService.getPaymentData(impUid, accessToken);
+
+	        String paymentMethod = (String) paymentData.get("pay_method");
+	        if (paymentMethod == null || paymentMethod.isEmpty()) {
+	            paymentMethod = "UNKNOWN";
+	        }
+	        String status = (String) paymentData.get("status"); // paid, failed
+	        int amount = ((Double) paymentData.get("amount")).intValue();
+	        String transactionNo = impUid;
+
+	        // 3) ORDER INSERT (구독 타입 표시용 컬럼이 있다면 orderType='SUBSCRIPTION')
+	        HashMap<String, Object> orderMap = new HashMap<>();
+	        orderMap.put("totalPrice", amount);
+	        orderMap.put("status", "결제완료");
+	        orderMap.put("receivName", map.get("receivName"));
+	        orderMap.put("receivPhone", map.get("receivPhone"));
+	        orderMap.put("deliverAddr", map.get("deliverAddr"));
+	        orderMap.put("memo", map.get("memo"));
+	        orderMap.put("buyerId", map.get("buyerId"));
+	        // orderMap.put("orderType", "SUBSCRIPTION");  // ORDER 테이블에 컬럼 있다면
+
+	        paymentService.insertOrder(orderMap);
+	        int orderNo = (int) orderMap.get("orderNo");
+
+	        // 4) PAYMENT INSERT
+	        HashMap<String, Object> payMap = new HashMap<>();
+	        payMap.put("orderNo", orderNo);
+	        payMap.put("paymentMethod", paymentMethod.toUpperCase());
+	        payMap.put("paymentStatus", status.equals("paid") ? "SUCCESS" : "FAILED");
+	        payMap.put("transactionNo", transactionNo);
+	        payMap.put("amount", amount);
+	        paymentService.insertPayment(payMap);
+
+	        // 5) SUBSCRIPTION INSERT
+	        HashMap<String, Object> subMap = new HashMap<>();
+	        subMap.put("userId", map.get("buyerId"));
+	        subMap.put("planId", Integer.parseInt(String.valueOf(map.get("planId"))));
+	        subMap.put("orderNo", orderNo);
+	        subMap.put("status", "ACTIVE");
+	        subMap.put("periodType", String.valueOf(map.get("periodType")));
+	        subMap.put("memo", map.get("memo"));
+
+	        subscriptionService.insertSubscription(subMap);
+
+	        resultMap.put("result", "success");
+	        resultMap.put("orderNo", orderNo);
+	        resultMap.put("subscriptionId", subMap.get("subscriptionId"));
+	        resultMap.put("message", "정기배송 신청 및 결제 완료");
+
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        resultMap.put("result", "fail");
