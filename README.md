@@ -1,4 +1,4 @@
-# AGRICOLA
+## AGRICOLA
 
 <!-- 간단한 한 줄 소개 -->
 
