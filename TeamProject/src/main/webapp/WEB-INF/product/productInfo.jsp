@@ -10,7 +10,6 @@
             <meta name="_csrf" content="${_csrf.token}">
             <title>상품 상세</title>
 
-            <!--  -->
             <!-- 라이브러리 -->
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
@@ -67,7 +66,6 @@
                 .prod-media .main-box {
                     width: 100%;
                     aspect-ratio: 1 / 1;
-                    /* 정사각형 */
                     background: #f8f8f8;
                     border: 1px solid #eee;
                     border-radius: 8px;
@@ -78,9 +76,7 @@
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
-                    /* 이미지 비율 유지해서 맞춤 ; contain */
                     background: #fff;
-                    /* 투명/폴백일 때도 하얀 배경 */
                 }
 
                 .prod-media {
@@ -416,15 +412,18 @@
                 }
 
                 .btn-like {
+                    flex: 0 0 50px; /* 가로 50px 고정 */
+                    min-width: 50px !important;
                     background: #fff;
                     color: var(--text-900);
-                    border-color: var(--line);
+                    border: 1px solid var(--line);
+                    padding: 0;
+                    font-size: 20px;
                 }
 
-                .btn-like:hover {
-                    background: var(--beige-100);
-                    border-color: var(--green-700);
-                    color: var(--green-700);
+                .btn-like.active {
+                    border-color: #ff4100;
+                    color: #ff4100;
                 }
 
                 #container>div button.btn {
@@ -522,10 +521,14 @@
                 }
 
                 .actions {
-                    display: grid;
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    display: flex;
                     gap: 10px 12px;
                     max-width: 500px;
+                }
+
+                .actions .btn-primary,
+                .actions .btn-outline {
+                    flex: 1; 
                 }
 
                 .actions .btn {
@@ -538,14 +541,12 @@
                     overflow: hidden;
                     border-radius: 8px;
                     background: #fff;
-                    /* 여백 색상 */
                 }
 
                 .detail-img {
                     width: 100%;
                     height: 100%;
                     object-fit: contain;
-                    /* 잘림 없음 */
                     display: block;
                 }
 
@@ -1312,6 +1313,9 @@
                                             <button @click="fnBasket(info.productNo, qty)" class="btn btn-outline"
                                                 :disabled="!canBuy || !selected || qty <= 0"
                                                 :title="!canBuy ? (isSoldOut ? '품절된 상품입니다' : '판매 중지된 상품입니다') : ''">장바구니</button>
+                                            <button @click="fnToggleWish" class="btn btn-like" :class="{active: liked}">
+                                                {{ liked ? '❤️' : '♡' }}
+                                            </button>    
                                         </div>
                                     </div>
                                 </div>
@@ -2259,6 +2263,43 @@
                         // 3. 그 외 사용자 → 비밀글 차단
                         return false;
                     },
+                    // 찜 기능 
+                    fnCheckWish() {
+                        let self = this;
+                        if (!self.userId) return;
+                        $.ajax({
+                            url: "/wishlist/check.dox",
+                            type: "POST",
+                            dataType: "json",
+                            data: { productNo: self.productNo },
+                            success: function (data) {
+                                if (data.result === "success") {
+                                    self.liked = data.isWish;
+                                }
+                            }
+                        });
+                    },
+                    // 찜 토글
+                    fnToggleWish() {
+                        let self = this;
+                        if (!self.userId) {
+                            if (confirm("로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?")) {
+                                location.href = "/login.do";
+                            }
+                            return;
+                        }
+                        $.ajax({
+                            url: "/wishlist/toggle.dox",
+                            type: "POST",
+                            dataType: "json",
+                            data: { productNo: self.productNo },
+                            success: function (data) {
+                                if (data.result === "success") {
+                                    self.liked = (data.status === 'added');
+                                }
+                            }
+                        });
+                    }
                 },
                 mounted() {
                     const hid = document.getElementById('sessionId');
@@ -2266,6 +2307,7 @@
                     const hnm = document.getElementById('sessionName');
                     if (hnm && hnm.value) this.userName = hnm.value;
                     this.userId = (hid && hid.value) || this.userId || '';
+                    this.fnCheckWish();
                     this.fnInfo();
                     this.fnLoadReviews(); // 리뷰 
                     this.fnLoadQA(); // 상품문의
