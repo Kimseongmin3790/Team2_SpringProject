@@ -1172,7 +1172,6 @@
                         },
                         error: function(xhr, status, error) {
                             alert('농가 정보 수정 중 오류가 발생했습니다.');
-                            console.error("AJAX Error: ", status, error);
                         }
                     });
                 }
@@ -1296,7 +1295,7 @@
                     type: "GET",
                     success: function(response) {
                         if (response.result === 'success') {
-                            console.log(response);
+                           
                             let sellerData = response.sellerInfo;
                             self.farmInfo.name = sellerData.businessName;
                             
@@ -1311,7 +1310,6 @@
                     },
                     error: function(xhr, status, error) {
                         alert('판매자 정보를 불러오는 중 오류가 발생했습니다.');
-                        console.error("AJAX Error: ", status, error);
                     }
                 });
             },
@@ -1333,11 +1331,11 @@
                                 self.profile.phone = sellerData.user.phone;
                             }
                         } else {
-                            console.error('회원정보를 불러오는데 실패했습니다: ' + response.message);
+                            alert("회원정보를 불러오는데 실패했습니다");
                         }
                     },
-                    error: function(xhr, status, error) {
-                        console.error('회원정보를 불러오는 중 오류가 발생했습니다.');
+                    error: function(xhr, status, error) {      
+                        alert("회원정보를 불러오는 중 오류가 발생했습니다.")
                     }
                 });
             },
@@ -1352,7 +1350,6 @@
                     },
                     error: function(xhr, status, error) {
                         alert('리뷰를 불러오는 중 오류가 발생했습니다.');
-                        console.error("AJAX Error: ", status, error);
                     }
                 });
             },
@@ -1440,7 +1437,6 @@
                     },
                     error: function(xhr, status, error) {
                         alert('대시보드 데이터를 불러오는 중 오류가 발생했습니다.');
-                        console.error("AJAX Error: ", status, error);
                     }
                 });
             },

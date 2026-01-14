@@ -39,7 +39,9 @@ ServletException {
         }
 
         // 에러 메시지를 URL 파라미터로 인코딩하여 로그인 페이지로 리다이렉트
-        String encodedErrorMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8.toString());
+        String safeErrorMessage = (errorMessage != null) ? errorMessage : ""; 
+
+        String encodedErrorMessage = URLEncoder.encode(safeErrorMessage, StandardCharsets.UTF_8.toString()); 
         response.sendRedirect("/login.do?error=true&message=" + encodedErrorMessage);
     }
 }

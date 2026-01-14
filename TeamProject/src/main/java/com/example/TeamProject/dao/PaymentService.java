@@ -199,4 +199,11 @@ public class PaymentService {
     public String getSellerIdByProductNo(int productNo) {
         return productMapper.selectSellerIdByProductNo(productNo);
     }
+    public List<Cart> selectPaymentLines(HashMap<String, Object> map) {
+        return paymentMapper.selectPaymentLines(map);
+    }
+
+    public int deleteCartByNos(HashMap<String, Object> map) {
+        return paymentMapper.deleteCartByNos(map);
+    }
 }
