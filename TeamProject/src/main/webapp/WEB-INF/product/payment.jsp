@@ -204,8 +204,7 @@
                     data-user-id="<c:out value='${sessionId}'/>" data-cart-nos="<c:out value='${param.cartNos}'/>"
                     data-product-no="<c:out value='${param.productNo}'/>" data-qty="<c:out value='${param.qty}'/>"
                     data-option-no="<c:out value='${param.optionNo}'/>"
-                    data-fulfillment="<c:out value='${param.fulfillment}'/>"
-                    data-mode="<c:out value='${param.mode}'/>"
+                    data-fulfillment="<c:out value='${param.fulfillment}'/>" data-mode="<c:out value='${param.mode}'/>"
                     data-plan-id="<c:out value='${param.planId}'/>">
 
                     <main class="content">
@@ -527,7 +526,7 @@
                             pay_method: "card", // 결제수단
                             merchant_uid: "ORD" + new Date().getTime(), // 고유 주문번호
                             name: orderName, // 결제명
-                            amount: 1,
+                            amount: amount,
                             buyer_email: this.buyer.email,
                             buyer_name: this.buyer.name,
                             buyer_tel: this.buyer.phone,
@@ -537,7 +536,6 @@
 
                         IMP.request_pay(paymentData, (rsp) => {
                             if (rsp.success) {
-                                const line = this.products[0] || {};
 
                                 if (IS_SUBSCRIPTION_MODE) {
                                     // ✅ 정기배송 전용 검증 dox
@@ -571,8 +569,10 @@
                                         }
                                     });
 
-                                } else {
-                                    // ✅ 기존 일반 주문 verify.dox 로직 그대로
+                                }
+
+                                // ✅ 2) 장바구니/번들(특산물 박스) 결제면 cartNos로 verify
+                                if (IS_CART_MODE) {
                                     $.ajax({
                                         url: "${path}/payment/verify.dox",
                                         type: "POST",
@@ -580,31 +580,70 @@
                                         data: {
                                             impUid: rsp.imp_uid,
                                             merchantUid: rsp.merchant_uid,
-                                            buyerId: this.buyer.userId,
+
+                                            // 배송/수령 정보
+                                            buyerId: this.buyer.userId,          // (보안상 서버에서 세션으로 다시 검증할 것)
                                             receivName: this.buyer.name,
                                             receivPhone: this.buyer.phone,
                                             deliverAddr: this.buyer.address,
                                             memo: memo,
 
-                                            productNo: line.productNo,
-                                            optionNo: line.optionNo,
-                                            quantity: line.quantity,
-                                            unitPrice: line.unitPrice || line.price,
-                                            fulfillment: line.fulfillment || this.fulfillment
+                                            // ✅ 핵심: 다건결제 표시
+                                            cartNos: CART_CSV,
+
+                                            // (선택) 포인트 검증용
+                                            usedPoint: this.usedPoint
                                         },
                                         success: function (data) {
                                             if (data.result == "success") {
                                                 alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
                                                 location.href = "${path}/buyerMyPage.do?activeTab=orders";
                                             } else {
-                                                alert("결제 저장 실패:" + data.message);
+                                                alert("결제 저장 실패: " + (data.message || ""));
                                             }
                                         },
                                         error: function () {
                                             alert("서버 통신 오류");
                                         }
                                     });
+                                    return;
                                 }
+
+                                const line = this.products[0] || {};
+                                $.ajax({
+                                    url: "${path}/payment/verify.dox",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: {
+                                        impUid: rsp.imp_uid,
+                                        merchantUid: rsp.merchant_uid,
+
+                                        buyerId: this.buyer.userId,
+                                        receivName: this.buyer.name,
+                                        receivPhone: this.buyer.phone,
+                                        deliverAddr: this.buyer.address,
+                                        memo: memo,
+
+                                        productNo: line.productNo,
+                                        optionNo: line.optionNo,
+                                        quantity: line.quantity,
+                                        unitPrice: line.unitPrice || line.price,
+                                        fulfillment: line.fulfillment || this.fulfillment,
+
+                                        usedPoint: this.usedPoint
+                                    },
+                                    success: function (data) {
+                                        if (data.result == "success") {
+                                            alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
+                                            location.href = "${path}/buyerMyPage.do?activeTab=orders";
+                                        } else {
+                                            alert("결제 저장 실패:" + (data.message || ""));
+                                        }
+                                    },
+                                    error: function () {
+                                        alert("서버 통신 오류");
+                                    }
+                                });
                             } else {
                                 alert("결제 실패: " + rsp.error_msg);
                             }

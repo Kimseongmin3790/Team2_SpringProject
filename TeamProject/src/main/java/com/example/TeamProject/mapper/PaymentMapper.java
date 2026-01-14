@@ -31,4 +31,8 @@ public interface PaymentMapper {
 	
 	// 상품 상태 변경 (재고가 0이면 soldout)
 	int refreshProductStatusByProductNo(Integer productNo);
+	
+	int deleteCartByNos(HashMap<String, Object> map);
+	
+	List<Cart> selectPaymentLines(HashMap<String, Object> map);
 }

@@ -208,4 +208,13 @@
 	   WHERE P.PRODUCT_NO = #{productNo}
 	</update>
 	
+	<delete id="deleteCartByNos" parameterType="map">
+	  DELETE FROM CART
+	  WHERE USER_ID = #{userId}
+	    AND CART_NO IN
+	    <foreach item="no" collection="cartNoList" open="(" separator="," close=")">
+	      #{no}
+	    </foreach>
+	</delete>
+	
 </mapper>
