@@ -178,5 +178,5 @@
 		FROM USERS
 		WHERE USER_ID = #{userId}
 	</select>
-
+	
 </mapper>

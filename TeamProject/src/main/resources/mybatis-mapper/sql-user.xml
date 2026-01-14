@@ -9,9 +9,62 @@
 	</insert>
 	
 	<insert id="insertSeller" parameterType="hashmap">
-		INSERT INTO SELLER_INFO
-		VALUES(#{userId}, #{businessName}, #{businessLi}, 'N', #{businessNumber}, #{account}, #{bankName}, #{lat}, #{lng}, #{profileImg})
+	    INSERT INTO SELLER_INFO (
+	        USER_ID,
+	        BUSINESS_NAME,
+	        BUSINESS_LI,
+	        VERIFIED,
+	        BUSINESS_NUMBER,
+	        ACCOUNT,
+	        BANKNAME,
+	        LAT,
+	        LNG,
+	        PROFILE_IMG,
+	
+	        SELLER_TYPE,
+	        TELE_SALE_NO,
+	        TELE_SALE_FILE,
+	        SALE_RAW_AGRI,
+	        SALE_PROCESSED,
+	        SALE_LIVESTOCK,
+	        SALE_SEAFOOD,
+	        SALE_OTHER,
+	        FOOD_BIZ_TYPE,
+	        FOOD_BIZ_NO,
+	        LIVESTOCK_BIZ_TYPE,
+	        LIVESTOCK_BIZ_NO,
+	        SEAFOOD_BIZ_TYPE,
+	        SEAFOOD_BIZ_NO
+	    )
+	    VALUES (
+	        #{userId},
+	        #{businessName},
+	        #{businessLi},
+	        #{verified},
+	        #{businessNumber},
+	        #{account},
+	        #{bankName},
+	        #{lat},
+	        #{lng},
+	        #{profileImg},
+	
+	        #{sellerType},
+	        #{teleSaleNo},
+	        #{teleSaleFile},
+	        #{saleRawAgri},
+	        #{saleProcessed},
+	        #{saleLivestock},
+	        #{saleSeafood},
+	        #{saleOther},
+	        #{foodBizType},
+	        #{foodBizNo},
+	        #{livestockBizType},
+	        #{livestockBizNo},
+	        #{seafoodBizType},
+	        #{seafoodBizNo}
+	    )
 	</insert>
+
 	
 	<select id="idCheck" parameterType="hashmap" resultType="com.example.TeamProject.model.User">
 		SELECT *

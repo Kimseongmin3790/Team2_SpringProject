@@ -176,7 +176,30 @@ $(document).ready(function() {
 	    $(`.nav-menu a[href$="${pick}"]`).addClass("active").attr("aria-current", "page");
 	  }
 	}
-
+	// 알림 개수 조회 함수
+	function fnGetNotiCount() {
+	    $.ajax({
+	        url: path + "/notification/unreadCount.dox",
+	        type: "POST",
+	        dataType: "json",
+	        success: function(res) {
+	            if (res.result === "success" && res.count > 0) {
+	                $("#notiBadge").text(res.count).show();
+	            } else {
+	                $("#notiBadge").hide();
+	            }
+	        }
+	    });
+	}
+	// 로그인 상태일 때만 호출
+	if ($("#btnLogout").length > 0) {
+	    fnGetNotiCount();
+	}
+	// 알림 종 클릭 이벤트
+	$("#btnNoti").on("click", function() {
+	    location.href = path + "/notification/list.do";
+	});
+	
 	markActiveNav();
 	$(window).on("hashchange", markActiveNav);
 
@@ -184,4 +207,5 @@ $(document).ready(function() {
 	  $(".nav-menu a").removeClass("active");
 	  $(this).addClass("active");
 	});
+	
 });
