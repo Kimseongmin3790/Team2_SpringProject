@@ -42,4 +42,6 @@ public interface ProductMapper {
     void hideAllProductsBySeller(String userId);
     // 상품 옵션 등록
     int insertProductOptions(HashMap<String, Object> map);
+    // 상품 번호로 판매자 ID 조회
+    String selectSellerIdByProductNo(int productNo);
 }

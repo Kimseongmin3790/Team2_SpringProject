@@ -287,6 +287,9 @@
 
                             <!-- 결제 버튼 -->
                             <button class="btn-pay" @click="fnPay">결제하기</button>
+                            
+                            <!-- 테스트용 버튼 (나중에 숨김 처리 가능) -->
+                            <button class="btn" @click="fnTestPay" style="width: 100%; margin-top: 10px; background: #666;">테스트 결제 (알림 확인용)</button>
                         </section>
                     </main>
                 </div>
@@ -607,6 +610,43 @@
                                 }
                             } else {
                                 alert("결제 실패: " + rsp.error_msg);
+                            }
+                        });
+                    },
+
+                    fnTestPay() {
+                        if (!confirm("실제 결제 없이 주문 및 알림 테스트를 진행하시겠습니까?")) return;
+
+                        const memo = this.requestValue === 'direct'
+                            ? (this.requestDirect || '').trim()
+                            : (this.requestLabel || '').trim();
+                        const line = this.products[0] || {};
+
+                        $.ajax({
+                            url: "${path}/payment/verify.dox",
+                            type: "POST",
+                            dataType: "json",
+                            data: {
+                                isTest: 'Y',
+                                buyerId: this.buyer.userId,
+                                receivName: this.buyer.name,
+                                receivPhone: this.buyer.phone,
+                                deliverAddr: this.buyer.address,
+                                memo: memo,
+                                amount: this.finalPrice,
+                                productNo: line.productNo,
+                                optionNo: line.optionNo,
+                                quantity: line.quantity,
+                                unitPrice: line.unitPrice || line.price,
+                                fulfillment: line.fulfillment || this.fulfillment
+                            },
+                            success: (data) => {
+                                if (data.result == "success") {
+                                    alert("[테스트] 주문번호 " + data.orderNo + " 결제 및 알림 발송 완료!");
+                                    location.href = "${path}/buyerMyPage.do?activeTab=orders";
+                                } else {
+                                    alert("테스트 결제 실패: " + data.message);
+                                }
                             }
                         });
                     }

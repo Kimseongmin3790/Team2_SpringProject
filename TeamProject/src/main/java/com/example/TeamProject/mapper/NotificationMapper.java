@@ -16,4 +16,10 @@ public interface NotificationMapper {
     int selectUnreadCount(String userId);
     // 전체 알림 개수 조회 (페이징용)
     int countNotification(HashMap<String, Object> map);
+    // 알림 삭제 (개별)
+    int deleteNotification(HashMap<String, Object> map);
+    // 읽은 알림 전체 삭제
+    int deleteReadNotifications(String userId);
+    // 30일 지난 알람 삭제
+    int deleteOldNotifications();
 }

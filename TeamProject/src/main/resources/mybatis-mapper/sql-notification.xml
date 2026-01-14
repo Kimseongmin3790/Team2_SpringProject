@@ -47,5 +47,28 @@
 	    FROM NOTIFICATION
 	    WHERE USER_ID = #{userId}
 	</select>
+	
+	<!-- 알림 삭제 (개별) -->
+	<delete id="deleteNotification" parameterType="hashmap">
+	    DELETE FROM NOTIFICATION
+	    WHERE NOTI_NO = #{notiNo}
+	    AND USER_ID = #{userId}
+	</delete>
+	
+	<!-- 읽은 알림 전체 삭제 -->
+	<delete id="deleteReadNotifications" parameterType="string">
+	    DELETE FROM NOTIFICATION
+	    WHERE USER_ID = #{userId}
+	    AND IS_READ = 'Y'
+	</delete>
+	
+	<!-- 오래된 알람 삭제 기능(30일) -->
+	<delete id="deleteOldNotifications">
+	    DELETE FROM NOTIFICATION
+	    WHERE CDATETIME &lt; SYSDATE - 30
+	</delete>
+	
+	
+	
 
 </mapper>

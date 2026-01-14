@@ -1043,6 +1043,12 @@
                             mounted() {
                                 const currentTab = new URLSearchParams(window.location.search).get("tab");
 
+                                const urlParams = new URLSearchParams(window.location.search);
+                                const tabParam = urlParams.get('tab');
+                                if (tabParam) {
+                                    this.activeTab = tabParam; 
+                                }
+
                                 switch (currentTab) {
                                     case "notice":
                                     case null:

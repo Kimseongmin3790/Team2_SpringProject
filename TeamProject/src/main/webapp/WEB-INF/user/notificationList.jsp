@@ -6,7 +6,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>알림 타임라인 - FRESH FARM</title>
-    <!-- 라이브러리 (default.jsp 방식 준수) -->
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
@@ -167,6 +166,59 @@
         .pagination button:hover:not(:disabled):not(.active) {
             background: #f3f4f6;
         }
+
+        /* 삭제 버튼 스타일 (방법 1: 호버 시 원형 버튼 출현) */
+        .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f3f4f6;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #9ca3af;
+            cursor: pointer;
+            opacity: 0; /* 기본 상태 숨김 */
+            transition: all 0.2s ease;
+            z-index: 2;
+            line-height: 1;
+            padding: 0;
+        }
+
+        /* 항목에 마우스를 올리면 삭제 버튼 나타남 */
+        .timeline-item:hover .delete-btn {
+            opacity: 1;
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 전체 삭제 버튼 영역 */
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+            padding-right: 5px;
+        }
+        .clear-all-btn {
+            font-size: 13px;
+            color: #9ca3af;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .clear-all-btn:hover { color: #4b5563; }
     </style>
 </head>
 <body>
@@ -179,6 +231,9 @@
                     <h2>알림 타임라인</h2>
                     <p style="color:#6b7280; font-size:15px;">소중한 농산물의 소식을 실시간으로 확인하세요</p>
                 </div>
+                <div class="action-bar" v-if="list.length > 0">
+                    <button class="clear-all-btn" @click="fnRemoveRead">읽은 알림 모두 삭제</button>
+                </div>
 
                 <div v-if="list.length > 0">
                     <div v-for="(items, date) in groupedNotis" :key="date">
@@ -187,6 +242,7 @@
                             <div v-for="item in items" :key="item.NOTI_NO" 
                                  :class="['timeline-item', { unread: item.IS_READ === 'N' }]"
                                  @click="fnRead(item)">
+                                 <button class="delete-btn" @click.stop="fnRemove(item.NOTI_NO)">×</button>
                                 <div class="timeline-dot"></div>
                                 <div class="timeline-header">
                                     <div :class="['timeline-icon', item.TYPE]">
@@ -235,7 +291,6 @@
                 }
             },
             computed: {
-                // 날짜별 그룹화
                 groupedNotis() {
                     const groups = {};
                     this.list.forEach(item => {
@@ -293,6 +348,35 @@
                 getTitle(type) {
                     const titles = { 'ORDER': '주문 소식', 'CHAT': '채팅 메시지', 'NOTICE': '시스템 알림', 'MARKETING': '이벤트 소식' };
                     return titles[type] || '알림';
+                },
+                fnRemove(notiNo) {
+                    if(!confirm("이 알림을 삭제하시겠습니까?")) return;
+                    let self = this;
+                    $.ajax({
+                        url: "/notification/remove.dox",
+                        type: "POST",
+                        dataType: "json",
+                        data: { notiNo: notiNo },
+                        success: function(data) {
+                            if(data.result === "success") {
+                                self.fnList(); // 목록 새로고침
+                            }
+                        }
+                    });
+                },
+                fnRemoveRead() {
+                    if(!confirm("읽은 알림을 모두 삭제하시겠습니까?")) return;
+                    let self = this;
+                    $.ajax({
+                        url: "/notification/removeRead.dox",
+                        type: "POST",
+                        dataType: "json",
+                        success: function(data) {
+                            if(data.result === "success") {
+                                self.fnList(); // 목록 새로고침
+                            }
+                        }
+                    });
                 }
             },
             mounted() {

@@ -1773,6 +1773,11 @@
                 },
                 mounted() {
                     let self = this;
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const tabParam = urlParams.get('tab');
+                    if (tabParam) {
+                        self.activeTab = tabParam;
+                    }
                     self.fnUserInfo();
                     self.fnLoadOrders();
                     self.fnLoadCart();

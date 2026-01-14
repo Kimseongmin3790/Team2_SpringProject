@@ -34,6 +34,8 @@ public interface OrderMapper {
     int deleteRefundRequest(HashMap<String, Object> paramMap);
     // 환불 요청 상태 변경 (승인/거절)
     int updateRefundStatus(HashMap<String, Object> paramMap);
+    // 알림용 구매자 조회
+    String selectBuyerIdByOrderNo(int orderNo);
 
  
 

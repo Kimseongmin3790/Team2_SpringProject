@@ -208,22 +208,22 @@
 	</select>
 	
 	<select id="selectProductQnaDetail" parameterType="int" resultType="com.example.TeamProject.model.Board">
-	    SELECT 
-		    Q.QNA_NO,
-		    Q.TITLE,
-		    Q.USER_ID,
-		    Q.CONTENT,
-		    Q.IS_SECRET,
-		    Q.CNT,
-		    Q.STATUS,
-		    TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS REG_DATE,
-		    P.SELLER_ID,
-		    P.PNAME,
-		    I.IMAGE_URL AS THUMB_URL
-		FROM PRODUCT_QNA Q
-		INNER JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
-		INNER JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO
-		WHERE I.IS_THUMBNAIL = 'Y' AND Q.QNA_NO = #{qnaNo}
+	    SELECT
+	        Q.QNA_NO,
+	        Q.TITLE,
+	        Q.USER_ID,
+	        Q.CONTENT,
+	        Q.IS_SECRET,
+	        Q.CNT,
+	        Q.STATUS,
+	        TO_CHAR(Q.CDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS REG_DATE,
+	        P.SELLER_ID,
+	        P.PNAME,
+	        I.IMAGE_URL AS THUMB_URL
+	    FROM PRODUCT_QNA Q
+	    INNER JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO
+	    LEFT JOIN PRODUCT_IMAGE I ON P.PRODUCT_NO = I.PRODUCT_NO AND I.IS_THUMBNAIL = 'Y'
+	    WHERE Q.QNA_NO = #{qnaNo}
 	</select>
 	
 	<select id="selectQnaPwd" parameterType="int" resultType="String">
@@ -255,7 +255,7 @@
 	</insert>
 	
 	<select id="qnaIdCheck" parameterType="hashmap" resultType="com.example.TeamProject.model.Board">
-		SELECT Q.*, P.SELLER_ID
+		SELECT Q.*, P.SELLER_ID, P.PNAME
 		FROM PRODUCT_QNA Q
 		INNER JOIN PRODUCT P ON Q.PRODUCT_NO = P.PRODUCT_NO AND P.SELLER_ID = #{sellerId}
 		WHERE QNA_NO = #{qnaNo}

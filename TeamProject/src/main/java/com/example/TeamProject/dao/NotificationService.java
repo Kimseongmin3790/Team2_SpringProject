@@ -69,4 +69,31 @@ public class NotificationService {
             return 0;
         }
     }
+    
+    // 알림 삭제 (개별)
+    public HashMap<String, Object> removeNotification(HashMap<String, Object> map) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+        try {
+            notificationMapper.deleteNotification(map);
+            resultMap.put("result", "success");
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+        }
+        return resultMap;
+    }
+
+    // 읽은 알림 전체 삭제
+    public HashMap<String, Object> removeReadNotifications(String userId) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+        try {
+            notificationMapper.deleteReadNotifications(userId);
+            resultMap.put("result", "success");
+        } catch (Exception e) {
+            resultMap.put("result", "fail");
+        }
+        return resultMap;
+    }
+    
+    
+    
 }
