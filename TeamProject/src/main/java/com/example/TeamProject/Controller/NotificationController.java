@@ -64,6 +64,20 @@ public class NotificationController {
         return new Gson().toJson(resultMap);
     }
     
-    
+    // 알림 삭제 (개별)
+    @RequestMapping(value = "/notification/remove.dox", method = RequestMethod.POST,produces="application/json;charset=UTF-8")
+    @ResponseBody
+    public String removeNotification(@RequestParam HashMap<String, Object> map, HttpSession session) throws Exception {
+        map.put("userId", session.getAttribute("sessionId"));
+        return new Gson().toJson(notificationService.removeNotification(map));
+    }
+
+    // 읽은 알림 전체 삭제
+    @RequestMapping(value = "/notification/removeRead.dox", method = RequestMethod.POST,produces="application/json;charset=UTF-8")
+    @ResponseBody
+    public String removeReadNotifications(HttpSession session) throws Exception {
+        String userId = (String) session.getAttribute("sessionId");
+        return new Gson().toJson(notificationService.removeReadNotifications(userId));
+    }
     
 }

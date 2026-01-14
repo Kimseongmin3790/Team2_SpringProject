@@ -1540,7 +1540,7 @@
                                     success: function (response) {
                                         if (response.result === 'success') {
                                             alert('회원 계정이 성공적으로 탈퇴되었습니다.');
-                                            location.href = '${pageContext.request.contextPath}/main.do';
+                                            location.href = '${pageContext.request.contextPath}/';
                                         } else {
                                             alert(response.message || '계정 탈퇴 중 오류가 발생했습니다.');
                                         }
@@ -1773,6 +1773,11 @@
                 },
                 mounted() {
                     let self = this;
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const tabParam = urlParams.get('tab');
+                    if (tabParam) {
+                        self.activeTab = tabParam;
+                    }
                     self.fnUserInfo();
                     self.fnLoadOrders();
                     self.fnLoadCart();

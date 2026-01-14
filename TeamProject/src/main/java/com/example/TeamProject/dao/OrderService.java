@@ -15,7 +15,10 @@ public class OrderService {
 
     @Autowired
     private OrderMapper orderMapper;
-
+    
+    @Autowired
+    NotificationService notificationService;
+     
     public HashMap<String, Object> getOrderHistory(String userId) {
         HashMap<String, Object> resultMap = new HashMap<>();
         try {
@@ -158,6 +161,7 @@ public class OrderService {
 
             if (updatedRows > 0) {
                 resultMap.put("result", "success");
+                sendStatusNotification(Integer.parseInt(orderNoStr), newStatus);
             } else {
                 resultMap.put("result", "fail");
                 resultMap.put("message", "주문 상태 업데이트에 실패했습니다. 데이터베이스 오류일 수 있습니다.");
@@ -212,6 +216,7 @@ public class OrderService {
 
                 if (statusUpdated > 0) {
                     resultMap.put("result", "success");
+                    sendStatusNotification(Integer.parseInt(orderNoStr), "배송중");
                 } else {
                     throw new Exception("주문 상태를 '배송중'으로 변경하는데 실패했습니다.");
                 }
@@ -291,6 +296,9 @@ public class OrderService {
             if (updatedRows > 0) {
                 resultMap.put("result", "success");
                 resultMap.put("message", updatedRows + "건의 주문 상태가 변경되었습니다.");
+                for (String orderNo : orderNoList) {
+                    sendStatusNotification(Integer.parseInt(orderNo), newStatus);
+                }
             } else {
                 throw new Exception("주문 상태 변경에 실패했습니다.");
             }
@@ -384,6 +392,19 @@ public class OrderService {
  	        resultMap.put("message", "환불 처리 중 오류가 발생했습니다.");
  	    }
  	    return resultMap;
+ 	}
+ 	
+ 	// 알림 기능
+ 	private void sendStatusNotification(int orderNo, String status) {
+ 	    try {
+ 	        String buyerId = orderMapper.selectBuyerIdByOrderNo(orderNo);
+ 	        if (buyerId != null) {
+ 	        	String msg = "[주문소식] 주문번호(" + orderNo + ")의 상태가 '" + status + "'(으)로 변경되었습니다.";
+ 	        	notificationService.sendNotification(buyerId, "ORDER", msg, "/buyerMyPage.do?tab=orders");
+ 	        }
+ 	    } catch (Exception e) {
+ 	        System.err.println("주문 상태 알림 전송 실패: " + e.getMessage());
+ 	    }
  	}
     
 }

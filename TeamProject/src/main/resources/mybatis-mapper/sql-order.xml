@@ -357,4 +357,11 @@
 	      AND STATUS = '대기'
 	</update>
 	
+	<!-- 주문 번호로 구매자 ID 조회 (알림용) -->
+	<select id="selectBuyerIdByOrderNo" parameterType="int" resultType="string">
+	    SELECT BUYER_ID
+	    FROM ORDERS
+	    WHERE ORDER_NO = #{orderNo}
+	</select>
+	
 </mapper>

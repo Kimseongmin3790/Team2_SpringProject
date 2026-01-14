@@ -28,6 +28,14 @@
 		WHERE PRODUCT_NO = #{productNo}
     </select>
     
+    <!-- 상품 번호로 판매자 ID 조회 (알림용) -->
+	<select id="selectSellerIdByProductNo" parameterType="int" resultType="string">
+	    SELECT SELLER_ID
+	    FROM PRODUCT
+	    WHERE PRODUCT_NO = #{productNo}
+	</select>
+    
+    
     <select id="selectProductOptions" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
     	SELECT O.*
 		FROM PRODUCT P
