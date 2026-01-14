@@ -157,6 +157,12 @@
                             </div>
                         </div>
 
+                        <div style="display:flex; gap:10px; margin-top:12px;">
+                            <button class="btn-map-detail" style="padding:10px 14px;" @click="buyBox">
+                                이 박스 한 번에 구매하기
+                            </button>
+                        </div>
+
                         <h3 class="sub-title">구성 상품</h3>
                         <div class="product-list">
                             <div class="product-card" v-for="p in products" :key="p.productNo"
@@ -166,7 +172,27 @@
                                     <h4>{{ p.pname }}</h4>
                                     <p>{{ p.pinfo }}</p>
                                     <div class="origin">원산지: {{ p.origin }}</div>
-                                    <div class="price">{{ formatPrice(p.price) }}원</div>
+                                    <!-- ✅ 옵션 선택 -->
+                                    <div style="margin-top:8px;">
+                                        <select v-model.number="p.selectedOptionNo"
+                                            style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                                            <option v-for="op in (p.options||[])" :key="op.optionNo"
+                                                :value="op.optionNo" :disabled="Number(op.stockQty) <= 0">
+                                                {{ op.unit }} ({{ calcUnitPrice(p, op).toLocaleString() }}원)
+                                                <span v-if="Number(op.stockQty) <= 0"> - 품절</span>
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <!-- ✅ 수량(기본 1, 박스 구성이라면 보통 고정 1로 둬도 됨) -->
+                                    <div style="margin-top:8px;">
+                                        <input type="number" min="1" v-model.number="p.qty"
+                                            style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                                    </div>
+
+                                    <div class="price" style="margin-top:8px;">
+                                        {{ calcSelectedPrice(p).toLocaleString() }}원
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -196,6 +222,17 @@
                                     const num = Number(val);
                                     return isNaN(num) ? val : num.toLocaleString();
                                 },
+                                calcUnitPrice(p, op) {
+                                    const base = Number(p.price || 0);
+                                    const add = Number(op?.addPrice || 0);
+                                    return base + add;
+                                },
+
+                                calcSelectedPrice(p) {
+                                    const ops = p.options || [];
+                                    const op = ops.find(o => Number(o.optionNo) === Number(p.selectedOptionNo));
+                                    return this.calcUnitPrice(p, op);
+                                },
                                 loadDetail() {
                                     const self = this;
                                     $.ajax({
@@ -206,7 +243,15 @@
                                         success: function (data) {
                                             if (data.result === "success") {
                                                 self.header = data.header;
-                                                self.products = data.products || [];
+                                                self.products = (data.products || []).map(p => {
+                                                    const ops = p.options || [];
+                                                    const first = ops.length ? Number(ops[0].optionNo) : null;
+                                                    return {
+                                                        ...p,
+                                                        qty: 1,
+                                                        selectedOptionNo: first
+                                                    };
+                                                });
                                             } else {
                                                 alert(data.message || "상세 조회에 실패했습니다.");
                                             }
@@ -214,6 +259,40 @@
                                         error: function () {
                                             alert("서버 오류가 발생했습니다.");
                                         }
+                                    });
+                                },
+                                buyBox() {
+                                    // ✅ 비로그인 방어(세션 기반이면 JSP에서 sessionId 내려받아도 OK)
+                                    // 여기선 간단히 서버에서 막고 메시지 받는 구조로 갈 거라 바로 호출
+
+                                    // 옵션 선택 검증
+                                    const items = (this.products || []).map(p => ({
+                                        productNo: Number(p.productNo),
+                                        optionNo: Number(p.selectedOptionNo || 0) || null,
+                                        quantity: Math.max(1, Number(p.qty || 1))
+                                    }));
+
+                                    if (!items.length) { alert("구성 상품이 없습니다."); return; }
+                                    if (items.some(i => !i.productNo || !i.optionNo)) {
+                                        alert("옵션을 선택해야 합니다.");
+                                        return;
+                                    }
+
+                                    $.ajax({
+                                        url: this.path + "/region/cart/addBundle.dox",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: { itemsJson: JSON.stringify(items) },
+                                        success: (res) => {
+                                            if (res.result === "success") {
+                                                // ✅ payment.jsp는 cartNos 파라미터 있으면 “장바구니 모드”로 동작함
+                                                location.href = this.path + "/payment.do?cartNos=" + encodeURIComponent(res.cartNos);
+                                            } else {
+                                                alert(res.message || "박스 담기에 실패했습니다.");
+                                                if (res.code === "LOGIN_REQUIRED") location.href = this.path + "/login.do";
+                                            }
+                                        },
+                                        error: () => alert("서버 통신 오류")
                                     });
                                 },
                                 goProduct(productNo) {

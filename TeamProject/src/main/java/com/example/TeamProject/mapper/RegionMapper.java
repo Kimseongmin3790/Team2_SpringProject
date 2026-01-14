@@ -15,4 +15,10 @@ public interface RegionMapper {
 
     // 해당 지역 특산 박스에 포함된 상품 목록
     List<HashMap<String, Object>> selectRegionSpecialProducts(HashMap<String, Object> map);
+    
+    // 지역별 특산물 전체 리스트(특산물 페이지용)
+    List<HashMap<String, Object>> selectAllRegionSpecialList();
+
+    // (다음 단계에서 옵션 붙일 때 사용)
+    List<HashMap<String, Object>> selectProductOptionList(int productNo);
 }

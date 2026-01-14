@@ -57,4 +57,34 @@
             rsp.SORT_ORDER NULLS LAST,
             rsp.RSP_ID
     </select>
+    
+    <select id="selectAllRegionSpecialList" resultType="hashmap">
+	  <![CDATA[
+	    SELECT
+	      REGION_ID    AS "regionId",
+	      REGION_NAME  AS "regionName",
+	      TITLE       AS "title",
+	      DESCRIPTION AS "description",
+	      THUMBNAIL_URL    AS "imageUrl",
+	      BASE_PRICE       AS "price"
+	    FROM REGION_SPECIAL
+	    ORDER BY REGION_ID ASC
+	  ]]>
+	</select>
+	
+	<select id="selectProductOptionList" parameterType="int" resultType="hashmap">
+	  <![CDATA[
+	    SELECT
+	      OPTION_NO   AS "optionNo",
+	      PRODUCT_NO  AS "productNo",
+	      UNIT        AS "unit",
+	      STOCK_QTY   AS "stockQty",
+	      ADD_PRICE   AS "addPrice"
+	    FROM PRODUCT_OPTION
+	    WHERE PRODUCT_NO = #{productNo}
+	      AND IS_ACTIVE = 'Y'
+	    ORDER BY ADD_PRICE ASC, OPTION_NO ASC
+	  ]]>
+	</select>
+
 </mapper>

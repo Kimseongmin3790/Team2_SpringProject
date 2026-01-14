@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.TeamProject.dao.RegionService;
 import com.google.gson.Gson;
 
+import jakarta.servlet.http.HttpSession;
+
 @Controller
 public class RegionController {
 	@Autowired
@@ -45,4 +47,19 @@ public class RegionController {
 		HashMap<String, Object> resultMap = regionService.getRegionSpecialById(map);
 		return new Gson().toJson(resultMap);
 	}
+	
+	@RequestMapping(value = "/data/regionList.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String regionList() throws Exception {
+	    HashMap<String, Object> resultMap = regionService.getAllRegionSpecialList();
+	    return new Gson().toJson(resultMap);
+	}
+	
+//	@RequestMapping(value="/region/cart/addBundle.dox", method=RequestMethod.POST, produces="application/json;charset=UTF-8")
+//	@ResponseBody
+//	public String addBundleToCart(@RequestParam HashMap<String,Object> map, HttpSession session) throws Exception {
+//	    HashMap<String,Object> res = regionService.addBundleToCart(map, session);
+//	    return new Gson().toJson(res);
+//	}
+
 }

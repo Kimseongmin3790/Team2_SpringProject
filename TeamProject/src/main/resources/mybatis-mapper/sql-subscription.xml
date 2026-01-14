@@ -15,7 +15,7 @@
                 SHORT_DESC   AS "shortDesc",
                 PERIOD_TYPE  AS "periodType",
                 BASE_PRICE   AS "price",
-                IMAGE_URL    AS "imageUrl"
+                THUMBNAIL_URL    AS "imageUrl"
             FROM SUBSCRIPTION_PLAN
             WHERE IS_ACTIVE = 'Y'
             ORDER BY
@@ -35,7 +35,7 @@
             SHORT_DESC   AS "shortDesc",
             PERIOD_TYPE  AS "periodType",
             BASE_PRICE   AS "price",
-            IMAGE_URL    AS "imageUrl"
+            THUMBNAIL_URL    AS "imageUrl"
         FROM SUBSCRIPTION_PLAN
         WHERE IS_ACTIVE = 'Y'
         ORDER BY
@@ -54,27 +54,46 @@
             DESCRIPTION  AS "description",
             PERIOD_TYPE  AS "periodType",
             BASE_PRICE   AS "price",
-            IMAGE_URL    AS "imageUrl"
+            THUMBNAIL_URL    AS "imageUrl"
         FROM SUBSCRIPTION_PLAN
         WHERE PLAN_ID = #{planId}
     </select>
     
     <insert id="insertSubscription" parameterType="hashmap">
-	    <selectKey keyProperty="subscriptionId" resultType="int" order="BEFORE">
-	        SELECT SUBSCRIPTION_SEQ.NEXTVAL FROM DUAL
-	    </selectKey>
-	    INSERT INTO SUBSCRIPTION (
-	        SUBSCRIPTION_ID, USER_ID, PLAN_ID, ORDER_NO,
-	        STATUS, START_DATE, PERIOD_TYPE, MEMO
-	    ) VALUES (
-	        #{subscriptionId},
-	        #{userId},
-	        #{planId},
-	        #{orderNo},
-	        #{status},
-	        SYSDATE,
-	        #{periodType},
-	        #{memo}
-	    )
+	  <selectKey keyProperty="subscriptionId" resultType="int" order="BEFORE">
+	    SELECT SUBSCRIPTION_SEQ.NEXTVAL FROM DUAL
+	  </selectKey>
+	
+	  INSERT INTO SUBSCRIPTION (
+	      SUBSCRIPTION_ID,
+	      PLAN_ID,
+	      USER_ID,
+	      STATUS,
+	      START_DATE,
+	      NEXT_BILLING_DATE,
+	      LAST_ORDER_NO,
+	      CDATETIME,
+	      UDATETIME
+	  ) VALUES (
+	      #{subscriptionId},
+	      #{planId},
+	      #{userId},
+	      NVL(#{status}, 'ACTIVE'),
+	      SYSDATE,
+	      (
+	        SELECT CASE PERIOD_TYPE
+	                 WHEN 'WEEKLY'   THEN SYSDATE + 7
+	                 WHEN 'BIWEEKLY' THEN SYSDATE + 14
+	                 WHEN 'MONTHLY'  THEN ADD_MONTHS(SYSDATE, 1)
+	                 ELSE NULL
+	               END
+	        FROM SUBSCRIPTION_PLAN
+	        WHERE PLAN_ID = #{planId}
+	      ),
+	      #{orderNo},
+	      SYSDATE,
+	      SYSDATE
+	  )
 	</insert>
+
 </mapper>
