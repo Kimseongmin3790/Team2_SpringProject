@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+ <mapper namespace="com.example.TeamProject.mapper.WishListMapper">
+
+     <!-- 찜 여부 확인 -->
+     <select id="checkWishList" parameterType="hashmap" resultType="int">
+         SELECT COUNT(*)
+         FROM WISHLIST
+         WHERE USER_ID = #{userId}
+           AND PRODUCT_NO = #{productNo}
+     </select>
+
+     <!-- 찜 등록 -->
+     <insert id="insertWishList" parameterType="hashmap">
+         INSERT INTO WISHLIST (
+             WISH_NO,
+             USER_ID,
+             PRODUCT_NO,
+             CDATETIME
+         ) VALUES (
+             SEQ_WISH_NO.NEXTVAL,
+             #{userId},
+             #{productNo},
+             SYSDATE
+         )
+     </insert>
+
+     <!-- 찜 해제 -->
+     <delete id="deleteWishList" parameterType="hashmap">
+         DELETE FROM WISHLIST
+         WHERE USER_ID = #{userId}
+           AND PRODUCT_NO = #{productNo}
+     </delete>
+     
+     <!-- 찜 선택 해제 -->
+     <delete id="deleteWishListMulti" parameterType="hashmap">
+	    DELETE FROM WISHLIST
+	    WHERE USER_ID = #{userId}
+	      AND PRODUCT_NO IN
+	      <foreach collection="list" item="item" open="(" separator="," close=")">
+	          #{item}
+	      </foreach>
+	</delete>
+
+     <!-- 내가 찜한 상품 리스트 조회  -->
+     <select id="selectWishList" parameterType="hashmap" resultType="com.example.TeamProject.model.Product">
+         SELECT 
+             P.*,
+             NVL(IMG.IMAGE_URL, '/resources/img/no-image.png') AS imagePath,
+             SI.BUSINESS_NAME AS sellerName
+         FROM PRODUCT P
+         JOIN WISHLIST w ON P.PRODUCT_NO = w.PRODUCT_NO
+         
+         LEFT JOIN (
+             SELECT PRODUCT_NO, IMAGE_URL
+             FROM (
+                 SELECT 
+                     PRODUCT_NO, 
+                     IMAGE_URL, 
+                     ROW_NUMBER() OVER (
+                         PARTITION BY PRODUCT_NO 
+                         ORDER BY NVL(SORT_ORDER, 9999), IMAGE_ID
+                     ) AS RN
+                 FROM PRODUCT_IMAGE
+                 WHERE UPPER(TRIM(IS_THUMBNAIL)) = 'Y'
+             ) 
+             WHERE RN = 1
+         ) IMG ON P.PRODUCT_NO = IMG.PRODUCT_NO
+         
+         LEFT JOIN USERS U ON P.SELLER_ID = U.USER_ID
+         LEFT JOIN SELLER_INFO SI ON U.USER_ID = SI.USER_ID
+         
+         WHERE w.USER_ID = #{userId}
+         ORDER BY w.CDATETIME DESC
+     </select>
+     
+     
+
+ </mapper>
