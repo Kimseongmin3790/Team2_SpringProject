@@ -3,7 +3,9 @@ package com.example.TeamProject.Controller;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -179,6 +181,8 @@ public class PaymentController {
 	        payMap.put("transactionNo", impUid);
 	        payMap.put("amount", paidAmount);
 	        paymentService.insertPayment(payMap);
+	        
+	        Set<String> sellerIds = new HashSet<>();
 
 	        // 6) ORDER_ITEM 여러 건 INSERT + 재고 차감
 	        for (com.example.TeamProject.model.Cart l : lines) {
@@ -188,6 +192,7 @@ public class PaymentController {
 	            Integer unitPrice = toInt(l.getUnitPrice(), 0);
 
 	            if (productNo == null) throw new IllegalStateException("상품 번호 누락");
+	            if (l.getSellerId() != null) sellerIds.add(l.getSellerId());
 
 	            // 옵션이 있는 상품만 재고 차감
 	            if (optionNo != null) {
@@ -221,11 +226,10 @@ public class PaymentController {
 	            notificationService.sendNotification(buyerId, "ORDER", msg, "/buyerMyPage.do?tab=orders");
 	            
 	         // 2. 판매자 알림 추가
-	            String sId = paymentService.getSellerIdByProductNo(productNo);
-	            if (sId != null && !sId.isEmpty()) {
-	                String sellerMsg = "[신규주문] 등록하신 상품에 새로운 주문이 접수되었습니다.";
+	            for (String sId : sellerIds) {
+	                String sellerMsg = "[신규주문] 등록하신 상품에 새로운 주문이 접수되었습니다. (주문번호: " + orderNo + ")";
 	                notificationService.sendNotification(sId, "ORDER", sellerMsg, "/order/sellerList.do");
-	            }
+	            }	     
 	        } catch (Exception ne) {}
 
 	        resultMap.put("result", "success");
