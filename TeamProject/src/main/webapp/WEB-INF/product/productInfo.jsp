@@ -521,7 +521,8 @@
                 }
 
                 .actions {
-                    display: flex;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
                     gap: 10px 12px;
                     max-width: 500px;
                 }
@@ -532,8 +533,8 @@
                 }
 
                 .actions .btn {
-                    min-width: 0;
                     width: 100%;
+                    min-width: 0;
                 }
 
                 .detail-img-wrap {
@@ -1313,9 +1314,10 @@
                                             <button @click="fnBasket(info.productNo, qty)" class="btn btn-outline"
                                                 :disabled="!canBuy || !selected || qty <= 0"
                                                 :title="!canBuy ? (isSoldOut ? '품절된 상품입니다' : '판매 중지된 상품입니다') : ''">장바구니</button>
-                                            <button @click="fnToggleWish" class="btn btn-like" :class="{active: liked}">
-                                                {{ liked ? '❤️' : '♡' }}
-                                            </button>    
+                                            <button @click="fnChat" class="btn btn-primary">실시간 채팅</button>
+                                            <button @click="fnToggleWish" class="btn btn-outline" :class="{active: liked}">
+                                                {{ liked ? '❤️' : '♡' }}찜하기
+                                            </button> 
                                         </div>
                                     </div>
                                 </div>
