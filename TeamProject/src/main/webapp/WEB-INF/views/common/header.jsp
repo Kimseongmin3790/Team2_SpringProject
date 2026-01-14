@@ -36,6 +36,12 @@
                     <div class="login-group">
                         <c:choose>
                             <c:when test="${not empty sessionId}">
+                                <div class="noti-wrap">
+                                    <a href="javascript:;" id="btnNoti" title="알림">
+                                        <i class="fa-solid fa-bell"></i>
+                                        <span id="notiBadge" class="noti-badge" style="display:none;">0</span>
+                                    </a>
+                                </div>
                                 <span class="user-name">[${sessionName}님]</span>
                                 <button class="btn-logout" id="btnLogout">로그아웃</button>
                             </c:when>
@@ -77,6 +83,10 @@
                                 </c:otherwise>
                             </c:choose>
                         </c:if>
+                        
+                        <a href="${path}/wishlist/list.do" id="btnWish" title="찜 목록">
+                            <i class="fa-solid fa-heart"></i>
+                        </a>
 
                         <a href="javascript:;" id="btnCart" title="장바구니" data-status="${sessionScope.sessionStatus}">
                             <i class="fa-solid fa-cart-shopping"></i>

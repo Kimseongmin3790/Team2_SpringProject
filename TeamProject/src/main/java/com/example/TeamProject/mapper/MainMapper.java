@@ -37,4 +37,5 @@ public interface MainMapper {
     
     // 유저 좌표 조회
     HashMap<String, Object> selectUserLocation(@Param("userId") String userId);
+    
 }

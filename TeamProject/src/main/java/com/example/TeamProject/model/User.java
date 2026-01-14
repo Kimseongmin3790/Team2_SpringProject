@@ -13,10 +13,23 @@ public class User {
 	private String address;
 	private String cdatetime;
 	private String totalPoint;
-	private String verified;
 	private String lat;
 	private String lng;
 	private String status;
 	private String userBirth;
 	private String userGender;
+	private String verified;
+	private String sellerType;
+	private String teleSaleNo;
+	private String saleRawAgri;
+	private String saleProcessed;
+	private String saleLivestock;
+	private String saleSeafood;
+	private String saleOther;
+	private String foodBizType;
+	private String foodBizNo;
+	private String livestockBizType;
+	private String livestockBizNo;
+	private String seafoodBizType;
+	private String seafoodBizNo;
 }

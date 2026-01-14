@@ -4,8 +4,32 @@
 
 <mapper namespace="com.example.TeamProject.mapper.AdminMapper">
 	<select id="selectUserList" parameterType="hashmap" resultType="com.example.TeamProject.model.User">
-		SELECT U.USER_ID, U.EMAIL, U.NAME, U.PHONE, U.USER_ROLE, U.ADDRESS, U.STATUS, TO_CHAR(U.CDATETIME, 'YYYY-MM-DD') AS CDATETIME, TO_CHAR(U.USER_BIRTH, 'YYYY-MM-DD') AS USER_BIRTH, 
-		DECODE(U.USER_GENDER, 'M', '남성', '여성') AS USER_GENDER, S.VERIFIED
+		SELECT 
+			U.USER_ID, 
+			U.EMAIL, 
+			U.NAME, 
+			U.PHONE, 
+			U.USER_ROLE, 
+			U.ADDRESS, 
+			U.STATUS, 
+			TO_CHAR(U.CDATETIME, 'YYYY-MM-DD') AS CDATETIME, 
+			TO_CHAR(U.USER_BIRTH, 'YYYY-MM-DD') AS USER_BIRTH, 
+			DECODE(U.USER_GENDER, 'M', '남성', '여성') AS USER_GENDER, 
+			
+			s.VERIFIED         AS verified,
+		    s.SELLER_TYPE      AS sellerType,
+		    s.TELE_SALE_NO     AS teleSaleNo,
+		    s.SALE_RAW_AGRI    AS saleRawAgri,
+		    s.SALE_PROCESSED   AS saleProcessed,
+		    s.SALE_LIVESTOCK   AS saleLivestock,
+		    s.SALE_SEAFOOD     AS saleSeafood,
+		    s.SALE_OTHER       AS saleOther,
+		    s.FOOD_BIZ_TYPE    AS foodBizType,
+		    s.FOOD_BIZ_NO      AS foodBizNo,
+		    s.LIVESTOCK_BIZ_TYPE AS livestockBizType,
+		    s.LIVESTOCK_BIZ_NO   AS livestockBizNo,
+		    s.SEAFOOD_BIZ_TYPE   AS seafoodBizType,
+		    s.SEAFOOD_BIZ_NO     AS seafoodBizNo
 		FROM USERS U 
 		LEFT JOIN SELLER_INFO S ON U.USER_ID = S.USER_ID
 	</select>
