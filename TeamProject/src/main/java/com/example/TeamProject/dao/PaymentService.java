@@ -190,4 +190,11 @@ public class PaymentService {
         if (s.equals("delivery") || s.equals("visit") || s.equals("pickup")) return s;
         return "delivery";
     }
+    public List<Cart> selectPaymentLines(HashMap<String, Object> map) {
+        return paymentMapper.selectPaymentLines(map);
+    }
+
+    public int deleteCartByNos(HashMap<String, Object> map) {
+        return paymentMapper.deleteCartByNos(map);
+    }
 }

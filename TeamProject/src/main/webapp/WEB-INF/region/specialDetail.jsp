@@ -286,7 +286,7 @@
                                         success: (res) => {
                                             if (res.result === "success") {
                                                 // ✅ payment.jsp는 cartNos 파라미터 있으면 “장바구니 모드”로 동작함
-                                                location.href = this.path + "/payment.do?cartNos=" + encodeURIComponent(res.cartNos);
+                                                location.href = this.path + "/product/payment.do?cartNos=" + encodeURIComponent(res.cartNos);
                                             } else {
                                                 alert(res.message || "박스 담기에 실패했습니다.");
                                                 if (res.code === "LOGIN_REQUIRED") location.href = this.path + "/login.do";

@@ -55,11 +55,11 @@ public class RegionController {
 	    return new Gson().toJson(resultMap);
 	}
 	
-//	@RequestMapping(value="/region/cart/addBundle.dox", method=RequestMethod.POST, produces="application/json;charset=UTF-8")
-//	@ResponseBody
-//	public String addBundleToCart(@RequestParam HashMap<String,Object> map, HttpSession session) throws Exception {
-//	    HashMap<String,Object> res = regionService.addBundleToCart(map, session);
-//	    return new Gson().toJson(res);
-//	}
+	@RequestMapping(value="/region/cart/addBundle.dox", method=RequestMethod.POST, produces="application/json;charset=UTF-8")
+	@ResponseBody
+	public String addBundleToCart(@RequestParam HashMap<String,Object> map, HttpSession session) throws Exception {
+	    HashMap<String,Object> res = regionService.addBundleToCart(map, session);
+	    return new Gson().toJson(res);
+	}
 
 }
