@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.ChatRoomMapper">
+   
+    	<!-- 1) orderId로 방 조회 -->
+	    <select id="findByOrderId" parameterType="hashmap" resultType="com.example.TeamProject.model.ChatRoom">
+	        SELECT * 
+	        FROM P_CHAT_ROOM
+	        WHERE ORDER_ID = #{orderId}
+	    </select>
+	    
+	    <!-- 2) 상품 상세 문의용: productNo + buyerId + sellerId -->
+ 	    <select id="findByParticipants" parameterType="hashmap" resultType="com.example.TeamProject.model.ChatRoom">
+	      SELECT *
+	      FROM P_CHAT_ROOM
+	      WHERE PRODUCT_NO = #{productNo}
+	        AND BUYER_ID = #{buyerId}
+	        AND SELLER_ID = #{sellerId}
+	    </select>
+	    
+	    <!-- 3) 방 생성 -->
+  <insert id="insertRoom" parameterType="hashmap">
+    <selectKey keyProperty="roomId" resultType="int" order="BEFORE">
+      SELECT SEQ_CHAT_ROOM.NEXTVAL AS roomId FROM DUAL
+    </selectKey>
+
+    INSERT INTO P_CHAT_ROOM 
+    (
+      ROOM_ID, ORDER_ID, BUYER_ID, SELLER_ID, LAST_MESSAGE_ID, LAST_MESSAGE_AT, BUYER_LAST_READ_MESSAGE_ID,
+      SELLER_LAST_READ_MESSAGE_ID, CDATETIME, UDATETIME, PRODUCT_NO
+    ) VALUES 
+    (
+      #{roomId}, #{orderId, jdbcType=NUMERIC}, #{buyerId}, #{sellerId}, NULL, NULL, NULL, NULL, SYSDATE, SYSDATE, #{productNo}
+    )
+  </insert>
+    
+	  <update id="updateLastMessage">
+		  UPDATE P_CHAT_ROOM
+		  SET LAST_MESSAGE_ID = (
+		        SELECT MAX(MESSAGE_ID) FROM P_CHAT_MESSAGE WHERE ROOM_ID = #{roomId}
+		      ),
+		      LAST_MESSAGE_AT = SYSDATE,
+		      UDATETIME = SYSDATE
+		  WHERE ROOM_ID = #{roomId}
+	  </update>
+
+
+</mapper>

@@ -412,7 +412,8 @@
                 }
 
                 .btn-like {
-                    flex: 0 0 50px; /* 가로 50px 고정 */
+                    flex: 0 0 50px;
+                    /* 가로 50px 고정 */
                     min-width: 50px !important;
                     background: #fff;
                     color: var(--text-900);
@@ -529,7 +530,7 @@
 
                 .actions .btn-primary,
                 .actions .btn-outline {
-                    flex: 1; 
+                    flex: 1;
                 }
 
                 .actions .btn {
@@ -1315,9 +1316,10 @@
                                                 :disabled="!canBuy || !selected || qty <= 0"
                                                 :title="!canBuy ? (isSoldOut ? '품절된 상품입니다' : '판매 중지된 상품입니다') : ''">장바구니</button>
                                             <button @click="fnChat" class="btn btn-primary">실시간 채팅</button>
-                                            <button @click="fnToggleWish" class="btn btn-outline" :class="{active: liked}">
+                                            <button @click="fnToggleWish" class="btn btn-outline"
+                                                :class="{active: liked}">
                                                 {{ liked ? '❤️' : '♡' }}찜하기
-                                            </button> 
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -1961,6 +1963,22 @@
                             },
                             error: (xhr) => { alert('서버오류: ' + xhr.status); }
                         });
+                    },
+
+                    fnChat() {
+                        if (!this.userId) {
+                            alert("로그인 후 이용 가능합니다.");
+                            location.href = "/login.do";
+                            return;
+                        }
+
+                        const productNo = String(this.productNo ?? "").trim();
+                        const sellerId = String(this.info?.sellerId ?? "").trim();
+
+                        const params = new URLSearchParams({ productNo, sellerId });
+                        const url = "/chat.do?" + params.toString();
+
+                        window.open(url, "chatPopup", "width=520,height=720,resizable=yes,scrollbars=yes");
                     },
 
                     // 댓글

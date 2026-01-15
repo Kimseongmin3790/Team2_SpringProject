@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.ChatMessageMapper">
+   
+      <!-- 메시지 목록 -->
+	  <select id="findByRoomId" parameterType="hashmap" resultType="com.example.TeamProject.model.ChatMessage">
+	    SELECT
+	      MESSAGE_ID,
+	      ROOM_ID,
+	      SENDER_ID,
+	      MESSAGE_TYPE,
+	      CONTENT,
+	      TO_CHAR(CDATETIME, 'YYYY-MM-DD HH24:MI:SS') AS CDATETIME
+	    FROM P_CHAT_MESSAGE
+	    WHERE ROOM_ID = #{roomId}
+	    ORDER BY MESSAGE_ID ASC
+	  </select>
+	  
+	   <!-- 메시지 저장 -->
+	  <insert id="insertMessage" parameterType="hashmap">
+	    INSERT INTO P_CHAT_MESSAGE (
+	      MESSAGE_ID, ROOM_ID, SENDER_ID, MESSAGE_TYPE, CONTENT, CDATETIME
+	    ) VALUES (
+	      SEQ_CHAT_MESSAGE.NEXTVAL, #{roomId}, #{senderId}, #{messageType}, #{content}, SYSDATE
+	    )
+	  </insert>
+	  
+</mapper>
