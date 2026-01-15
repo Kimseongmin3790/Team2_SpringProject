@@ -118,38 +118,11 @@
       <artifactId>json</artifactId>
       <version>20230227</version>
     </dependency>
-
-		<!-- ❓ CDN을 이미 쓰고 있으면 아래 WebJars는 생략 가능 -->
-		<!--
-    <dependency>
-      <groupId>org.webjars</groupId>
-      <artifactId>webjars-locator-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.webjars</groupId>
-      <artifactId>sockjs-client</artifactId>
-      <version>1.5.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.webjars</groupId>
-      <artifactId>stomp-websocket</artifactId>
-      <version>2.3.4</version>
-    </dependency>
-    -->
-    <dependency>
-	  <groupId>org.webjars</groupId>
-	  <artifactId>sockjs-client</artifactId>
-	  <version>1.5.1</version>
-	</dependency>
+	
+	<!-- WebSocket (서버) -->
 	<dependency>
-	  <groupId>org.webjars</groupId>
-	  <artifactId>stomp-websocket</artifactId>
-	  <version>2.3.4</version>
-	</dependency>
-	<dependency>
-	  <groupId>org.webjars</groupId>
-	  <artifactId>webjars-locator-core</artifactId>
-	  <version>0.52</version>
+	  <groupId>org.springframework.boot</groupId>
+	  <artifactId>spring-boot-starter-websocket</artifactId>
 	</dependency>
 
 		<!-- 테스트 -->
