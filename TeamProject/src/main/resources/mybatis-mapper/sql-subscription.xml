@@ -95,5 +95,76 @@
 	      SYSDATE
 	  )
 	</insert>
+	
+	<select id="selectPlanById" parameterType="int" resultType="hashmap">
+	  SELECT
+	    PLAN_ID       AS "planId",
+	    PLAN_NAME     AS "planName",
+	    PERIOD_TYPE   AS "periodType",
+	    BASE_PRICE         AS "price",
+	    THUMBNAIL_URL     AS "imageUrl",
+	    IS_ACTIVE     AS "isActive"
+	  FROM SUBSCRIPTION_PLAN
+	  WHERE PLAN_ID = #{planId}
+	</select>
+	
+	<insert id="insertSubscriptionOrder" parameterType="hashmap">
+	  <selectKey keyProperty="subOrderId" resultType="int" order="BEFORE">
+	    SELECT SUBSCRIPTION_ORDER_SEQ.NEXTVAL FROM DUAL
+	  </selectKey>
+	
+	  INSERT INTO SUBSCRIPTION_ORDER (
+	    SUB_ORDER_ID,
+	    SUBSCRIPTION_ID,
+	    ORDER_NO,
+	    AMOUNT,
+	    STATUS,
+	    BILLING_AT,
+	    CDATETIME,
+	    UDATETIME
+	  ) VALUES (
+	    #{subOrderId},
+	    #{subscriptionId},
+	    #{orderNo},
+	    #{amount},
+	    NVL(#{status}, 'PAID'),
+	    SYSDATE,
+	    SYSDATE,
+	    SYSDATE
+	  )
+	</insert>
+	
+	<update id="updateSubscriptionAfterPaid" parameterType="hashmap">
+	  UPDATE SUBSCRIPTION
+	  SET
+	    LAST_ORDER_NO = #{lastOrderNo},
+	    NEXT_BILLING_DATE =
+	      CASE #{periodType}
+	        WHEN 'WEEKLY'   THEN TRUNC(SYSDATE) + 7
+	        WHEN 'BIWEEKLY' THEN TRUNC(SYSDATE) + 14
+	        WHEN 'MONTHLY'  THEN ADD_MONTHS(TRUNC(SYSDATE), 1)
+	        ELSE NULL
+	      END,
+	    UDATETIME = SYSDATE
+	  WHERE SUBSCRIPTION_ID = #{subscriptionId}
+	</update>
+	
+	<select id="selectUserSubscriptions" parameterType="string" resultType="hashmap">
+	  SELECT
+	    s.SUBSCRIPTION_ID                            AS "subscriptionId",
+	    s.PLAN_ID                                    AS "planId",
+	    p.PLAN_NAME                                  AS "planName",
+	    p.PERIOD_TYPE                                AS "periodType",
+	    p.BASE_PRICE                                      AS "planPrice",
+	    p.THUMBNAIL_URL                                  AS "imageUrl",
+	    s.STATUS                                     AS "status",
+	    TO_CHAR(s.START_DATE, 'YYYY-MM-DD')          AS "startDate",
+	    TO_CHAR(s.NEXT_BILLING_DATE, 'YYYY-MM-DD')   AS "nextBillingDate",
+	    s.LAST_ORDER_NO                              AS "lastOrderNo"
+	  FROM SUBSCRIPTION s
+	  JOIN SUBSCRIPTION_PLAN p ON p.PLAN_ID = s.PLAN_ID
+	  WHERE s.USER_ID = #{userId}
+	  ORDER BY s.SUBSCRIPTION_ID DESC
+	</select>
 
 </mapper>

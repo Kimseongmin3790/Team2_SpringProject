@@ -18,4 +18,12 @@ public interface SubscriptionMapper {
     HashMap<String, Object> selectSubscriptionPlanDetail(HashMap<String, Object> map);
     
     void insertSubscription(HashMap<String, Object> map);
+    
+    HashMap<String, Object> selectPlanById(int planId);
+    
+    int insertSubscriptionOrder(HashMap<String, Object> map);
+    
+    int updateSubscriptionAfterPaid(HashMap<String, Object> map);
+    
+    List<HashMap<String, Object>> selectUserSubscriptions(String userId);
 }

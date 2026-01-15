@@ -16,6 +16,10 @@
             <link rel="stylesheet" href="${path}/resources/css/footer.css" />
 
             <style>
+                * {
+                    box-sizing: border-box;
+                }
+
                 body {
                     margin: 0;
                     font-family: "Noto Sans KR", sans-serif;
@@ -139,6 +143,54 @@
                     font-weight: 700;
                     color: #388e3c;
                 }
+
+                .btn-map-detail {
+                    background: #4caf50;
+                    color: #fff;
+                    border: none;
+                    border-radius: 10px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    transition: .2s;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
+                }
+
+                .btn-map-detail:hover {
+                    background: #43a047;
+                    transform: translateY(-1px);
+                }
+
+                .btn-map-detail:active {
+                    transform: translateY(0);
+                }
+
+                .btn-mini {
+                    margin-top: 8px;
+                    width: 100%;
+                    padding: 8px 10px;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 8px;
+                    background: #fff;
+                    cursor: pointer;
+                }
+
+                .btn-mini:hover {
+                    background: #f3f3f3;
+                }
+
+                .form-control {
+                    width: 100%;
+                    padding: 8px;
+                    border: 1px solid #ddd;
+                    border-radius: 6px;
+                    outline: none;
+                    box-sizing: border-box;
+                    /* 혹시 몰라 한 번 더 */
+                }
+
+                .form-control:focus {
+                    border-color: #4caf50;
+                }
             </style>
         </head>
 
@@ -157,25 +209,26 @@
                             </div>
                         </div>
 
-                        <div style="display:flex; gap:10px; margin-top:12px;">
+                        <div style="display:flex; gap:10px; margin-top:12px; align-items: center;">
                             <button class="btn-map-detail" style="padding:10px 14px;" @click="buyBox">
                                 이 박스 한 번에 구매하기
                             </button>
+                            <div style="font-weight:800; color:#d84315;">
+                                합계 {{ boxTotalPrice.toLocaleString() }}원
+                            </div>
                         </div>
 
                         <h3 class="sub-title">구성 상품</h3>
                         <div class="product-list">
-                            <div class="product-card" v-for="p in products" :key="p.productNo"
-                                @click="goProduct(p.productNo)">
-                                <img :src="fullUrl(p.imageUrl)" alt="">
+                            <div class="product-card" v-for="p in products" :key="p.productNo">
+                                <img :src="fullUrl(p.imageUrl)" alt="" @click="goProduct(p.productNo)">
                                 <div class="product-body">
                                     <h4>{{ p.pname }}</h4>
                                     <p>{{ p.pinfo }}</p>
                                     <div class="origin">원산지: {{ p.origin }}</div>
                                     <!-- ✅ 옵션 선택 -->
                                     <div style="margin-top:8px;">
-                                        <select v-model.number="p.selectedOptionNo"
-                                            style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                                        <select v-model.number="p.selectedOptionNo" class="form-control">
                                             <option v-for="op in (p.options||[])" :key="op.optionNo"
                                                 :value="op.optionNo" :disabled="Number(op.stockQty) <= 0">
                                                 {{ op.unit }} ({{ calcUnitPrice(p, op).toLocaleString() }}원)
@@ -186,13 +239,13 @@
 
                                     <!-- ✅ 수량(기본 1, 박스 구성이라면 보통 고정 1로 둬도 됨) -->
                                     <div style="margin-top:8px;">
-                                        <input type="number" min="1" v-model.number="p.qty"
-                                            style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                                        <input type="number" min="1" v-model.number="p.qty" class="form-control">
                                     </div>
 
                                     <div class="price" style="margin-top:8px;">
-                                        {{ calcSelectedPrice(p).toLocaleString() }}원
+                                        {{ (calcSelectedPrice(p) * (p.qty || 1)).toLocaleString() }}원
                                     </div>
+                                    <button class="btn-mini" @click="goProduct(p.productNo)">상세보기</button>
                                 </div>
                             </div>
                         </div>
@@ -210,6 +263,17 @@
                                     header: null,
                                     products: []
                                 };
+                            },
+                            computed: {
+                                boxTotalPrice() {
+                                    return (this.products || []).reduce((sum, p) => {
+                                        const ops = p.options || [];
+                                        const op = ops.find(o => Number(o.optionNo) === Number(p.selectedOptionNo));
+                                        const unit = Number(p.price || 0) + Number(op?.addPrice || 0);
+                                        const qty = Math.max(1, Number(p.qty || 1));
+                                        return sum + unit * qty;
+                                    }, 0);
+                                }
                             },
                             methods: {
                                 fullUrl(u) {
@@ -286,7 +350,7 @@
                                         success: (res) => {
                                             if (res.result === "success") {
                                                 // ✅ payment.jsp는 cartNos 파라미터 있으면 “장바구니 모드”로 동작함
-                                                location.href = this.path + "/product/payment.do?cartNos=" + encodeURIComponent(res.cartNos);
+                                                location.href = this.path + "/product/payment.do?cartNos=" + encodeURIComponent(res.cartNos) + "&test=1";
                                             } else {
                                                 alert(res.message || "박스 담기에 실패했습니다.");
                                                 if (res.code === "LOGIN_REQUIRED") location.href = this.path + "/login.do";
