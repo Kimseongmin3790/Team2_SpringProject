@@ -276,9 +276,7 @@
 
                         <h2 class="section-title">정기배송 안내</h2>
                         <div class="guide-list">
-                            <ul>
-                                <li>정기배송 결제는 차후 통합 결제 모듈(PortOne)과 연동하여 구현할 수 있습니다.</li>
-                                <li>배송 주기(주 1회, 격주, 월 1회)는 플랜별로 고정되며, 변경 기능은 추후 옵션으로 확장 가능합니다.</li>
+                            <ul>                                                
                                 <li>서울/수도권 외 지역은 배송 일정이 1~2일 추가 소요될 수 있습니다.</li>
                                 <li>기상 상황, 산지 수급 상황 등에 따라 일부 구성품이 동급 품목으로 변경될 수 있습니다.</li>
                             </ul>
@@ -359,7 +357,7 @@
                                         return;
                                     }
 
-                                    location.href = this.path + "/product/payment.do?mode=subscription&planId=" + this.planId;
+                                    location.href = this.path + "/product/payment.do?mode=subscription&planId=" + this.planId + "&test=1";
                                 },
                                 goList() {
                                     location.href = this.path + "/subscription/list.do";

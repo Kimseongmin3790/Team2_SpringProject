@@ -111,7 +111,7 @@
 
                 .tabs-list {
                     display: grid;
-                    grid-template-columns: repeat(4, 1fr);
+                    grid-template-columns: repeat(5, 1fr);
                     gap: 0.5rem;
                     margin-bottom: 2rem;
                     background-color: #f3f4f6;
@@ -818,6 +818,10 @@
                                     @click="activeTab = 'orders'">
                                     주문내역
                                 </button>
+                                <button class="tab-trigger" :class="{ active: activeTab === 'subscriptions' }"
+                                    @click="activeTab = 'subscriptions'">
+                                    정기배송
+                                </button>
                                 <button class="tab-trigger" :class="{ active: activeTab === 'reviews' }"
                                     @click="activeTab = 'reviews'">
                                     리뷰 관리
@@ -1010,6 +1014,35 @@
                                 </div>
                             </div>
 
+                            <!-- 정기배송 탭 -->
+                            <div class="tab-content" :class="{ active: activeTab === 'subscriptions' }">
+                                <div v-if="subscriptions.length">
+                                    <div class="card" v-for="s in subscriptions" :key="s.subscriptionId">
+                                        <div class="order-header">
+                                            <div>
+                                                <p class="order-date">시작일: {{ s.startDate }}</p>
+                                                <p class="order-number">구독번호: {{ s.subscriptionId }}</p>
+                                            </div>
+                                            <div class="order-header-actions">
+                                                <span class="badge badge-info">{{ s.status }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="order-details-section">
+                                            <div class="detail-row"><span>플랜</span><span>{{ s.planName }}</span></div>
+                                            <div class="detail-row"><span>주기</span><span>{{ s.periodType }}</span></div>
+                                            <div class="detail-row"><span>다음 결제일</span><span>{{ s.nextBillingDate || '-'
+                                                    }}</span></div>
+                                            <div class="detail-row"><span>최근 주문번호</span><span>{{ s.lastOrderNo || '-'
+                                                    }}</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-else class="card">
+                                    <p class="text-center text-muted">정기배송 내역이 없습니다.</p>
+                                </div>
+                            </div>
 
                             <!-- 리뷰 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'reviews' }">
@@ -1196,8 +1229,8 @@
                             quantity: 1,
                             maxQuantity: 1
 
-                        }
-
+                        },
+                        subscriptions: []
                     };
                 },
                 computed: {
@@ -1242,6 +1275,8 @@
                             this.fnLoadOrders();
                         } else if (newTab === 'reviews') {
                             this.fnLoadReviews();
+                        } else if (newTab === 'subscriptions') {
+                            this.fnLoadSubscriptions();
                         }
                     }
                 },
@@ -1778,6 +1813,22 @@
                         return classes[status] || "badge";
                     },
 
+                    fnLoadSubscriptions() {
+                        $.ajax({
+                            url: CTX + "/myPage/subscriptions.dox",
+                            type: "GET",
+                            dataType: "json",
+                            success: (res) => {
+                                if (res.result === "success") {
+                                    this.subscriptions = res.list || [];
+                                } else {
+                                    alert(res.message || "정기배송 내역 조회 실패");
+                                }
+                            },
+                            error: () => alert("서버 통신 오류")
+                        });
+                    },
+
                 },
                 mounted() {
                     let self = this;
@@ -1789,6 +1840,7 @@
                     self.fnUserInfo();
                     self.fnLoadOrders();
                     self.fnLoadCart();
+                    if (self.activeTab === 'subscriptions') self.fnLoadSubscriptions();
                 }
             })
             window.vueObj = app.mount('#app');

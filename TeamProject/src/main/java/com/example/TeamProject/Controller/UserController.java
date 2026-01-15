@@ -23,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.TeamProject.dao.OrderService;
 import com.example.TeamProject.dao.SellerService;
+import com.example.TeamProject.dao.SubscriptionService;
 import com.example.TeamProject.dao.UserService;
 import com.example.TeamProject.mapper.UserMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -43,6 +44,9 @@ public class UserController {
 
 	@Autowired
 	private SellerService sellerService;
+	
+	@Autowired
+	SubscriptionService subscriptionService;
 	
 	@RequestMapping("/login.do")
 	public String login(Model model) throws Exception {
@@ -617,6 +621,16 @@ public class UserController {
 		HashMap<String, Object> resultMap = userService.getSellerProductDetail(map);
 
 		return new Gson().toJson(resultMap);
+	}
+	
+	@RequestMapping(value = "/myPage/subscriptions.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String getSubscriptionHistory(HttpSession session) throws Exception {
+	    String userId = (String) session.getAttribute("sessionId");
+
+	    HashMap<String, Object> resultMap = subscriptionService.getSubscriptionHistory(userId);
+
+	    return new Gson().toJson(resultMap);
 	}
 	
 	@PostMapping(
