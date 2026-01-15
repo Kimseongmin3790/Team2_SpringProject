@@ -18,6 +18,9 @@ public interface SubscriptionMapper {
     HashMap<String, Object> selectSubscriptionPlanDetail(HashMap<String, Object> map);
     
     void insertSubscription(HashMap<String, Object> map);
+  
+    // 결제 예정자 조회 
+    List<HashMap<String, Object>> selectUpcomingBillingList();
     
     HashMap<String, Object> selectPlanById(int planId);
     

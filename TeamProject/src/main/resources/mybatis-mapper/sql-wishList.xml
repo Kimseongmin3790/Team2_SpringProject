@@ -76,6 +76,11 @@
          ORDER BY w.CDATETIME DESC
      </select>
      
-     
-
+     <!-- 특정 상품을 찜한 사용자 목록 조회 -->
+	<select id="selectWishUserIds" parameterType="int" resultType="string">
+	    SELECT USER_ID
+	    FROM WISHLIST
+	    WHERE PRODUCT_NO = #{productNo}
+	</select>
+       
  </mapper>

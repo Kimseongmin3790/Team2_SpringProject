@@ -21,7 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.TeamProject.mapper.ProductMapper;
 import com.example.TeamProject.mapper.UserMapper;
+import com.example.TeamProject.mapper.WishListMapper;
 import com.example.TeamProject.model.Cart;
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.SellerVO;
@@ -50,10 +52,19 @@ public class UserService {
 	MailService mailService;
 	
 	@Autowired 
-	SellerService sellerService;
+	private SellerService sellerService;
 	
 	@Autowired
     private ObjectMapper objectMapper;
+	
+	@Autowired
+	private WishListMapper wishListMapper;
+
+	@Autowired
+	private ProductMapper productMapper;
+
+	@Autowired
+	private NotificationService notificationService;
 
 	public HashMap<String, Object> addUser(HashMap<String, Object> map) {
 		// TODO Auto-generated method stub
@@ -679,6 +690,12 @@ public class UserService {
     ) throws Exception {
 
         Map<String, Object> out = new HashMap<>();
+        
+        // 업데이트 전 기존 상태 조회
+        HashMap<String, Object> pQuery = new HashMap<>();
+        pQuery.put("productNo", productNo);
+        Product oldProduct = productMapper.selectProduct(pQuery);
+        String oldStatus = (oldProduct != null) ? oldProduct.getProductStatus() : "";
 
         // 기본 상품 업데이트
         Map<String, Object> base = new HashMap<>();
@@ -770,6 +787,22 @@ public class UserService {
                     userMapper.insertImage(img);
                 }
             }
+        }
+        
+        if ("SELLING".equalsIgnoreCase(productStatus) && ("SOLDOUT".equalsIgnoreCase(oldStatus) || "HIDDEN".equalsIgnoreCase(oldStatus))) {
+        	try {
+        		// 이 상품을 찜한 유저 목록 조회
+        		List<String> userIds = wishListMapper.selectWishUserIds(productNo);
+
+        		if (userIds != null && !userIds.isEmpty()) {
+        			String msg = "[재입고] 찜하신 '" + pname + "' 상품이 다시 입고되었습니다!";
+        		    for (String userId : userIds) {
+        		    	notificationService.sendNotification(userId, "NOTICE", msg, "/productInfo.do?productNo=" + productNo);
+        		    }
+        		}
+        	} catch (Exception ne) {
+        		System.err.println("재입고 알림 전송 실패: " + ne.getMessage());
+        	}
         }
 
         out.put("result", "success");

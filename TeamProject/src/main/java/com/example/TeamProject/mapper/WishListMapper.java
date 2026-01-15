@@ -19,4 +19,6 @@ public interface WishListMapper {
     int deleteWishListMulti(HashMap<String, Object> map);
     // 내가 찜한 상품 리스트 조회
     List<Product> selectWishList(HashMap<String, Object> map);
+    // 특정 상품을 찜한 사용자 목록 조회 (재입고 알림용)
+    List<String> selectWishUserIds(int productNo);
 }

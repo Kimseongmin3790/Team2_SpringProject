@@ -286,6 +286,7 @@
 
                             <!-- 결제 버튼 -->
                             <button class="btn-pay" @click="fnPay">결제하기</button>
+                            <button class="btn-pay" style="background-color: #666; margin-top: 10px;" @click="fnTestPay">테스트 결제 (알림확인용)</button>
                         </section>
                     </main>
                 </div>
@@ -364,6 +365,64 @@
                     }
                 },
                 methods: {
+                    fnTestPay() {
+                        if (!confirm("PG 연동 없이 바로 결제 완료 처리하시겠습니까? (알림 테스트용)")) return;
+
+                        const memo = this.requestValue === 'direct'
+                            ? (this.requestDirect || '').trim()
+                            : (this.requestLabel || '').trim();
+
+                        const line = this.products[0] || {};
+                        const amount = Math.max(0, Math.floor(Number(this.finalPrice) || 0));
+
+                        // 테스트용 가짜 데이터
+                        const fakeImpUid = "TEST_IMP_" + new Date().getTime();
+                        const fakeMerchantUid = "TEST_ORD_" + new Date().getTime();
+
+                        let url = "${path}/payment/testVerify.dox";
+                        let data = {
+                            impUid: fakeImpUid,
+                            merchantUid: fakeMerchantUid,
+                            amount: amount,
+                            
+                            buyerId: this.buyer.userId,
+                            receivName: this.buyer.name,
+                            receivPhone: this.buyer.phone,
+                            deliverAddr: this.buyer.address,
+                            memo: memo,
+                            usedPoint: this.usedPoint
+                        };
+
+                        if (IS_SUBSCRIPTION_MODE) {
+                            alert("구독 테스트 결제는 아직 지원하지 않습니다.");
+                            return;
+                        } else if (IS_CART_MODE) {
+                            data.cartNos = CART_CSV;
+                        } else {
+                            data.productNo = line.productNo;
+                            data.optionNo = line.optionNo;
+                            data.quantity = line.quantity;
+                            data.fulfillment = line.fulfillment || this.fulfillment;
+                        }
+
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            dataType: "json",
+                            data: data,
+                            success: (res) => {
+                                if (res.result === "success") {
+                                    alert("[테스트] 결제 완료! 주문번호: " + res.orderNo + "\n알림이 발송되었습니다.");
+                                    location.href = "${path}/buyerMyPage.do?activeTab=orders";
+                                } else {
+                                    alert("[테스트] 실패: " + res.message);
+                                }
+                            },
+                            error: (xhr) => {
+                                alert("서버 오류: " + xhr.status);
+                            }
+                        });
+                    },
                     fnProduct() {
                         if (IS_SUBSCRIPTION_MODE && this.subscriptionPlanId) {
                             // ✅ 정기배송 전용 플로우

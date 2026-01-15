@@ -212,6 +212,38 @@
         .btn-go-shop:hover {
             background: #4da554;
         }
+        /* 품절/숨김 상태 스타일 */
+        .wish-item.soldout {
+            background-color: #f9f9f9;
+        }
+        .wish-item.soldout .wish-image img {
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
+        .wish-item.soldout .wish-name {
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        /* 상태 배지 (이미지 위) */
+        .status-badge {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            z-index: 2;
+        }
+        .wish-image {
+            position: relative; 
+        }
     </style>
 </head>
 <body>
@@ -233,20 +265,33 @@
             
             <div v-if="list.length > 0">
                 <div class="wish-list">
-                    <div v-for="item in list" :key="item.productNo" class="wish-item">
+                    <div v-for="item in list" :key="item.productNo"
+                        class="wish-item"
+                        :class="{ 'soldout': item.productStatus !== 'SELLING' }">
+
                         <div class="wish-checkbox">
                             <input type="checkbox" :value="item.productNo" v-model="selectedItems">
                         </div>
+
                         <div class="wish-image" @click="fnDetail(item.productNo)">
-                            <img :src="item.imagePath || '/resources/img/no-image.png'" alt="상품이미지" @error="item.imagePath='/resources/img/no-image.png'">
+                            <img :src="item.imagePath || '/resources/img/no-image.png'" alt="상품이미지"
+                                @error="item.imagePath='/resources/img/no-image.png'">
+
+                            <div v-if="item.productStatus === 'SOLDOUT'" class="status-badge">품절</div>
+                            <div v-if="item.productStatus === 'HIDDEN'" class="status-badge">판매중지</div>
                         </div>
+
                         <div class="wish-info">
                             <div class="wish-seller">{{ item.sellerName || '판매자 정보 없음' }}</div>
                             <div class="wish-name" @click="fnDetail(item.productNo)">{{ item.pName }}</div>
                             <div class="wish-price">{{ Number(item.price).toLocaleString() }}원</div>
                         </div>
+
                         <div class="wish-buttons">
-                            <button class="btn-detail" @click="fnDetail(item.productNo)">상세보기</button>
+                            <button class="btn-detail" @click="fnDetail(item.productNo)"
+                                    :disabled="item.productStatus !== 'SELLING'">
+                                {{ item.productStatus === 'SELLING' ? '상세보기' : '구매불가' }}
+                            </button>
                             <button class="btn-remove" @click="fnRemove(item.productNo)">삭제</button>
                         </div>
                     </div>

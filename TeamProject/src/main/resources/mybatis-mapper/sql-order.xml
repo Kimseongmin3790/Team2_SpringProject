@@ -367,4 +367,16 @@
 	    WHERE ORDER_NO = #{orderNo}
 	</select>
 	
+	<!-- 알림용 대표 상품명 조회 -->
+	<select id="selectOrderProductName" parameterType="int" resultType="string">
+	    SELECT
+	        CASE
+	            WHEN COUNT(*) > 1 THEN MAX(P.PNAME) || ' 외 ' || (COUNT(*) - 1) || '건'
+	            ELSE MAX(P.PNAME)
+	        END
+	    FROM ORDER_ITEM OI
+	    JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
+	    WHERE OI.ORDER_NO = #{orderNo}
+	</select>
+	
 </mapper>

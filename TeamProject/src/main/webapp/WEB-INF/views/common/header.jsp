@@ -36,6 +36,7 @@
                     <div class="login-group">
                         <c:choose>
                             <c:when test="${not empty sessionId}">
+                                <input type="hidden" id="hdSessionId" value="${sessionId}">
                                 <div class="noti-wrap">
                                     <a href="javascript:;" id="btnNoti" title="알림">
                                         <i class="fa-solid fa-bell"></i>
@@ -116,4 +117,6 @@
 
         </header>
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
         <script src="${path}/resources/js/header.js"></script>

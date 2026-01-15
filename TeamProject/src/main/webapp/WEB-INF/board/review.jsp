@@ -102,9 +102,9 @@
 
                         <p class="review-content">{{ review.content }}</p>
 
-                        <div v-if="review.images && review.images.length > 0" class="review-images">
+                        <div v-if="review.reviewImages && review.reviewImages.length > 0" class="review-images">
                             <img
-                                v-for="(image, index) in review.images"
+                                v-for="(image, index) in review.reviewImages"
                                 :key="index"
                                 :src="image"
                                 :alt="'리뷰 이미지 ' + (index + 1)"
