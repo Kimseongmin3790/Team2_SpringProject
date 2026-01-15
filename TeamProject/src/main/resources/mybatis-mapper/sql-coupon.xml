@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.TeamProject.mapper.CouponMapper">
+
+    <!-- 내 쿠폰 목록 조회  -->
+    <select id="selectMyCoupons" parameterType="string" resultType="hashmap">
+        SELECT
+            UC.ISSUE_NO,
+            UC.COUPON_NO,
+            C.COUPON_NAME,
+            C.DISCOUNT_TYPE,
+            C.DISCOUNT_AMOUNT,
+            C.MAX_DISCOUNT_PRICE,
+            C.MIN_ORDER_PRICE,
+            TO_CHAR(UC.END_DATE, 'YYYY-MM-DD') AS END_DATE
+        FROM USER_COUPON UC
+        JOIN COUPON C ON UC.COUPON_NO = C.COUPON_NO
+        WHERE UC.USER_ID = #{userId}
+          AND UC.STATUS = 'UNUSED'
+          AND UC.END_DATE >= TRUNC(SYSDATE)
+        ORDER BY C.DISCOUNT_AMOUNT DESC
+    </select>
+
+    <!-- 쿠폰 사용 처리 -->
+    <update id="useCoupon" parameterType="int">
+        UPDATE USER_COUPON
+        SET STATUS = 'USED',
+            USED_DATE = SYSDATE
+        WHERE ISSUE_NO = #{issueNo}
+    </update>
+
+    <!-- 전체 회원 쿠폰 일괄 발급 -->
+    <insert id="insertBulkCoupons" parameterType="int">
+        INSERT INTO USER_COUPON (
+            ISSUE_NO, USER_ID, COUPON_NO, STATUS, CDATETIME, END_DATE
+        )
+        SELECT
+            USER_COUPON_SEQ.NEXTVAL,
+            U.USER_ID,
+            C.COUPON_NO,
+            'UNUSED',
+            SYSDATE,
+            SYSDATE + C.EXPIRE_DAYS  -- 쿠폰에 설정된 유효일수만큼 계산
+        FROM USERS U
+        CROSS JOIN COUPON C
+        WHERE C.COUPON_NO = #{couponNo}
+          AND U.STATUS = 'ACTIVE'  -- 활성 유저에게만 발급
+          AND NOT EXISTS (         -- 중복 발급 방지 (선택 사항)
+              SELECT 1 FROM USER_COUPON
+              WHERE USER_ID = U.USER_ID AND COUPON_NO = C.COUPON_NO AND STATUS = 'UNUSED'
+          )
+    </insert>
+
+</mapper>

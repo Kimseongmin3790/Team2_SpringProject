@@ -194,6 +194,119 @@
                     float: right;
                     font-weight: 600;
                 }
+                /* 쿠폰 선택 영역 */
+                .coupon-section {
+                    margin-top: 10px;
+                    padding-top: 10px;
+                    border-top: 1px dashed #ddd;
+                }
+
+                /* 쿠폰 모달 마스크 */
+                .modal-mask {
+                    position: fixed;
+                    z-index: 9998;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                /* 모달 컨테이너 */
+                .modal-container {
+                    width: 400px;
+                    background: #fff;
+                    border-radius: 12px;
+                    padding: 20px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                }
+
+                .modal-title {
+                    margin-bottom: 20px;
+                    border-bottom: 2px solid #5dbb63;
+                    padding-bottom: 10px;
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+
+                .modal-body {
+                    max-height: 400px;
+                    overflow-y: auto;
+                }
+
+                .modal-empty {
+                    text-align: center;
+                    padding: 40px 0;
+                    color: #bbb;
+                }
+
+                /* 개별 쿠폰 항목 */
+                .coupon-item {
+                    border: 2px solid #f0f0f0;
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 12px;
+                    cursor: pointer;
+                    transition: 0.2s;
+                }
+
+                .coupon-item:hover {
+                    border-color: #5dbb63;
+                    background: #f9fff9;
+                }
+
+                .coupon-name {
+                    font-weight: 700;
+                    font-size: 15px;
+                    color: #333;
+                }
+
+                .coupon-benefit {
+                    color: #5dbb63;
+                    font-size: 18px;
+                    font-weight: 800;
+                    margin: 5px 0;
+                }
+
+                .coupon-condition {
+                    font-size: 12px;
+                    color: #999;
+                }
+
+                /* 유틸리티 */
+                .btn-close {
+                    background: #666 !important;
+                    margin-top: 20px;
+                    padding: 10px 0;
+                    font-size: 16px;
+                }
+
+                .discount-text {
+                    color: #ff4444;
+                    font-weight: 700;
+                    font-size: 14px;
+                }
+
+                .btn-cancel {
+                    margin-left: 8px;
+                    font-size: 12px;
+                    color: #999;
+                    text-decoration: underline;
+                    cursor: pointer;
+                }
+
+                .readonly-input {
+                    background: #f9f9f9 !important;
+                    color: #333 !important;
+                }
+
+                .text-right {
+                    margin-top: 5px;
+                    text-align: right;
+                }
             </style>
         </head>
 
@@ -268,6 +381,22 @@
                             <!-- 주문 요약 -->
                             <div class="box">
                                 <h3>주문 요약</h3>
+                                <div class="coupon-section">
+                                    <label style="font-size:14px; font-weight:600; color:#666;">쿠폰 할인</label>
+                                    <div class="input-row">
+                                        <input type="text"
+                                            :value="selectedCoupon ? selectedCoupon.COUPON_NAME : '적용 가능한 쿠폰을 확인하세요'"
+                                            readonly
+                                            class="readonly-input">
+                                        <button type="button" class="btn" @click="fnShowCoupons">쿠폰조회</button>
+                                    </div>
+                                    <div v-if="selectedCoupon" class="text-right">
+                                        <span class="discount-text">
+                                            -{{ couponDiscountAmount.toLocaleString() }}원 할인 적용
+                                        </span>
+                                        <a class="btn-cancel" @click="fnCancelCoupon">취소</a>
+                                    </div>
+                                </div>
                                 <div class="price-summary">
                                     상품금액 <span>{{ totalPrice.toLocaleString() }}원</span><br>
                                     배송비 <span>{{ shippingFeeC.toLocaleString() }}원</span><br>
@@ -288,6 +417,33 @@
                             <button class="btn-pay" @click="fnPay">결제하기</button>
                             <button class="btn-pay" style="background-color: #666; margin-top: 10px;" @click="fnTestPay">테스트 결제 (알림확인용)</button>
                         </section>
+                        <!-- 쿠폰 선택 모달 -->
+                        <div v-if="showCouponModal" class="modal-mask" @click.self="showCouponModal = false">
+                            <div class="modal-container">
+                                <h3 class="modal-title">보유 쿠폰 목록</h3>
+
+                                <div class="modal-body">
+                                    <div v-if="couponList.length === 0" class="modal-empty">
+                                        사용 가능한 쿠폰이 없습니다.
+                                    </div>
+                                    <div v-for="c in couponList" :key="c.UC_ID" class="coupon-item" @click="fnSelectCoupon(c)">
+                                        <div class="coupon-name">
+                                            {{ c.COUPON_NAME }}
+                                        </div>
+                                        <div class="coupon-benefit">
+                                            {{ c.DISCOUNT_TYPE === 'FIXED' ? c.DISCOUNT_VALUE.toLocaleString() + '원' : c.DISCOUNT_VALUE + '%' }} 할인
+                                        </div>
+                                        <div class="coupon-condition">
+                                            {{ Number(c.MIN_ORDER_PRICE).toLocaleString() }}원 이상 구매 시 사용 가능
+                                            <br>유효기간: ~ {{ c.END_DATE }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-pay btn-close" @click="showCouponModal = false">
+                                    닫기
+                                </button>
+                            </div>
+                        </div>   
                     </main>
                 </div>
 
@@ -339,6 +495,10 @@
                         requestValue: '',
                         requestLabel: '',
                         requestDirect: '',
+                        // 쿠폰 관련
+                        showCouponModal: false,
+                        couponList: [],
+                        selectedCoupon: null,
 
                         // 상세 진입 시에만 의미 있음
                         fulfillment: SINGLE.fulfillment,
@@ -346,6 +506,23 @@
                     };
                 },
                 computed: {
+                    // 쿠폰 할인 금액 계산기
+                    couponDiscountAmount() {
+                        if (!this.selectedCoupon) return 0;
+
+                        const total = this.totalPrice; // 상품 합계 금액
+
+                        // 최소 주문 금액 미달 시 할인 0원
+                        if (total < Number(this.selectedCoupon.MIN_ORDER_PRICE)) return 0;
+
+                        if (this.selectedCoupon.DISCOUNT_TYPE === 'FIXED') {
+                            // 정액 할인 (예: 1,000원)
+                            return Number(this.selectedCoupon.DISCOUNT_VALUE);
+                        } else {
+                            // 정률 할인 (예: 10%)
+                            return Math.floor(total * (Number(this.selectedCoupon.DISCOUNT_VALUE) / 100));
+                        }
+                    },
                     totalPrice() {
                         return this.products.reduce((sum, p) => {
                             const unit = Number(p.unitPrice || p.price || 0);
@@ -361,10 +538,43 @@
                         return hasDelivery ? 3000 : 0;
                     },
                     finalPrice() {
-                        return this.totalPrice + this.shippingFeeC - this.usedPoint;
+                        const sum = this.totalPrice + this.shippingFeeC - this.usedPoint - this.couponDiscountAmount;
+                        return Math.max(0, sum); 
                     }
                 },
                 methods: {
+                    // 쿠폰 목록 조회
+                    fnShowCoupons() {
+                        $.ajax({
+                            url: "${path}/coupon/myList.dox",
+                            type: "POST",
+                            dataType: "json",
+                            success: (res) => {
+                                if (res.result === 'success') {
+                                    this.couponList = res.list;
+                                    this.showCouponModal = true;
+                                } else {
+                                    alert("쿠폰 정보를 불러오지 못했습니다.");
+                                }
+                            },
+                            error: () => alert("서버 통신 오류")
+                        });
+                    },
+                    // 쿠폰 선택 시
+                    fnSelectCoupon(c) {
+                        if (this.totalPrice < Number(c.MIN_ORDER_PRICE)) {
+                            alert(Number(c.MIN_ORDER_PRICE).toLocaleString() + "원 이상 구매 시 사용 가능합니다.");
+                            return;
+                        }
+                        this.selectedCoupon = c;
+                        this.showCouponModal = false;
+                    },
+
+                    // 쿠폰 선택 취소
+                    fnCancelCoupon() {
+                        this.selectedCoupon = null;
+                    },
+
                     fnTestPay() {
                         if (!confirm("PG 연동 없이 바로 결제 완료 처리하시겠습니까? (알림 테스트용)")) return;
 
@@ -390,7 +600,8 @@
                             receivPhone: this.buyer.phone,
                             deliverAddr: this.buyer.address,
                             memo: memo,
-                            usedPoint: this.usedPoint
+                            usedPoint: this.usedPoint,
+                            ucId: this.selectedCoupon ? this.selectedCoupon.UC_ID : null
                         };
 
                         if (IS_SUBSCRIPTION_MODE) {
@@ -663,7 +874,9 @@
 
                                             // (선택) 포인트 검증용
                                             usedPoint: this.usedPoint,
-                                            testPay: "Y"
+                                            testPay: "Y",
+
+                                            ucId: this.selectedCoupon ? this.selectedCoupon.UC_ID : null
                                         },
                                         success: function (data) {
                                             if (data.result == "success") {

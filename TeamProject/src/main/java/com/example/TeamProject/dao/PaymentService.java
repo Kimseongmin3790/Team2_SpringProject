@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.example.TeamProject.mapper.CouponMapper;
 import com.example.TeamProject.mapper.PaymentMapper;
 import com.example.TeamProject.mapper.ProductMapper;
 import com.example.TeamProject.model.Cart;
@@ -28,6 +29,9 @@ public class PaymentService {
 	
 	@Autowired
 	ProductMapper productMapper;
+	
+	@Autowired
+	private CouponMapper couponMapper;
 
 	@Value("${portone.rest-key}")
     private String REST_KEY;
@@ -205,5 +209,10 @@ public class PaymentService {
 
     public int deleteCartByNos(HashMap<String, Object> map) {
         return paymentMapper.deleteCartByNos(map);
+    }
+    
+    // 쿠폰 사용 처리
+    public void useCoupon(int ucId) throws Exception {
+        couponMapper.useCoupon(ucId);
     }
 }
