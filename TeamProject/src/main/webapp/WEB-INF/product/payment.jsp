@@ -311,6 +311,9 @@
             const MODE = (root?.dataset?.mode || 'normal').toLowerCase();
             const SUB_PLAN_ID = parseInt(root?.dataset?.planId, 10) || null;
             const IS_SUBSCRIPTION_MODE = MODE === 'subscription';
+            const qs = new URLSearchParams(location.search);
+            const TEST_PAY = qs.get("test") === "1";  // ✅ test=1이면 1원 결제
+
 
             const app = Vue.createApp({
                 data() {
@@ -509,13 +512,20 @@
                         }
 
                         // 총 결제 금액 = finalPrice (정수/0원 이상으로 보정)
-                        const amount = Math.max(0, Math.floor(Number(this.finalPrice) || 0));
+                        // const amount = Math.max(0, Math.floor(Number(this.finalPrice) || 0));
+                        const expectedAmount = Math.max(0, Math.floor(Number(this.finalPrice) || 0));
+                        const payAmount = TEST_PAY ? 1 : expectedAmount;
 
-                        // 0원 결제는 PG에서 막힐 수 있으니 처리 분기
-                        if (amount === 0) {
-                            alert("결제 금액이 0원입니다. 포인트 전액 결제 처리 로직으로 분기하세요.");
+                        if (payAmount === 0) {
+                            alert("결제 금액이 0원입니다.");
                             return;
                         }
+
+                        // 0원 결제는 PG에서 막힐 수 있으니 처리 분기
+                        // if (amount === 0) {
+                        //     alert("결제 금액이 0원입니다. 포인트 전액 결제 처리 로직으로 분기하세요.");
+                        //     return;
+                        // }
 
                         // PortOne 객체 생성
                         const IMP = window.IMP;
@@ -526,7 +536,7 @@
                             pay_method: "card", // 결제수단
                             merchant_uid: "ORD" + new Date().getTime(), // 고유 주문번호
                             name: orderName, // 결제명
-                            amount: amount,
+                            amount: payAmount,
                             buyer_email: this.buyer.email,
                             buyer_name: this.buyer.name,
                             buyer_tel: this.buyer.phone,
@@ -554,12 +564,13 @@
                                             memo: memo,
 
                                             planId: this.subscriptionPlanId,
-                                            periodType: line.periodType  // WEEKLY / BIWEEKLY / MONTHLY
+                                            periodType: line.periodType,  // WEEKLY / BIWEEKLY / MONTHLY
+                                            testPay: "Y"
                                         },
                                         success: function (data) {
                                             if (data.result == "success") {
                                                 alert("정기배송 신청이 완료되었습니다. 구독번호 " + data.subscriptionId);
-                                                location.href = "${path}/buyerMyPage.do?activeTab=subscriptions";
+                                                location.href = "${path}/buyerMyPage.do?tab=subscriptions";
                                             } else {
                                                 alert("정기배송 저장 실패: " + (data.message || ''));
                                             }
@@ -568,7 +579,7 @@
                                             alert("서버 통신 오류");
                                         }
                                     });
-
+                                    return;
                                 }
 
                                 // ✅ 2) 장바구니/번들(특산물 박스) 결제면 cartNos로 verify
@@ -592,7 +603,8 @@
                                             cartNos: CART_CSV,
 
                                             // (선택) 포인트 검증용
-                                            usedPoint: this.usedPoint
+                                            usedPoint: this.usedPoint,
+                                            testPay: "Y"
                                         },
                                         success: function (data) {
                                             if (data.result == "success") {
@@ -608,8 +620,7 @@
                                     });
                                     return;
                                 }
-
-                                const line = this.products[0] || {};
+                            
                                 $.ajax({
                                     url: "${path}/payment/verify.dox",
                                     type: "POST",
@@ -630,7 +641,8 @@
                                         unitPrice: line.unitPrice || line.price,
                                         fulfillment: line.fulfillment || this.fulfillment,
 
-                                        usedPoint: this.usedPoint
+                                        usedPoint: this.usedPoint,
+                                        testPay: "Y"
                                     },
                                     success: function (data) {
                                         if (data.result == "success") {

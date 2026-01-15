@@ -20,10 +20,11 @@
           min-height: 100vh;
           display: flex;
           flex-direction: column;
+          min-height: auto !important;
         }
 
         .content {
-          flex: 1;
+          flex: 0 0 auto !important;
           background: #faf8f0;
           padding-bottom: 80px;
         }
