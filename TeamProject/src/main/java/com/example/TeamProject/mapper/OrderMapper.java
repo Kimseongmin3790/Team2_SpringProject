@@ -36,9 +36,7 @@ public interface OrderMapper {
     int updateRefundStatus(HashMap<String, Object> paramMap);
     // 알림용 구매자 조회
     String selectBuyerIdByOrderNo(int orderNo);
-
- 
-
-    
-    
+    // 알림용 대표 상품명 조회
+    String selectOrderProductName(int orderNo);
+   
 }

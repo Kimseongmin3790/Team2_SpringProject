@@ -200,6 +200,28 @@ $(document).ready(function() {
 	    location.href = path + "/notification/list.do";
 	});
 	
+	// 실시간 알림 (WebSocket)
+	// 세션 아이디가 없으면 연결하지 않음
+	const mySessionId = $("#btnLogout").length > 0 ? "user" : "";
+
+	if ($("#btnLogout").length > 0) { // 로그인 상태 체크
+	    const socket = new SockJS(path + '/ws');
+	    const stompClient = Stomp.over(socket);
+	    stompClient.debug = null;
+
+	    stompClient.connect({}, function(frame) {
+	        const userId = $("#hdSessionId").val();
+
+	        if (userId) {
+	            stompClient.subscribe('/topic/notifications/' + userId, function(res) {
+	                const noti = JSON.parse(res.body);
+	                fnGetNotiCount();
+	                alert("🔔 " + noti.message);
+	            });
+	        }
+	    });
+	}
+	
 	markActiveNav();
 	$(window).on("hashchange", markActiveNav);
 

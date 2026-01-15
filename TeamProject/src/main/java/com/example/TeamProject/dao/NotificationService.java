@@ -2,8 +2,11 @@ package com.example.TeamProject.dao;
 
 import java.util.HashMap;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
 import com.example.TeamProject.mapper.NotificationMapper;
 
 @Service
@@ -11,8 +14,11 @@ public class NotificationService {
 
     @Autowired
     NotificationMapper notificationMapper;
+    
+    @Autowired
+    SimpMessagingTemplate messagingTemplate;
 
-    // 알림 전송 
+    // 알림 전송 (DB 저장 + 실시간 전송)
     public void sendNotification(String userId, String type, String message, String linkUrl) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("userId", userId);
@@ -20,6 +26,13 @@ public class NotificationService {
         map.put("message", message);
         map.put("linkUrl", linkUrl);
         notificationMapper.insertNotification(map);
+        // 웹소켓 실시간 전송
+        try {
+            messagingTemplate.convertAndSend("/topic/notifications/" + userId, map);
+            System.out.println("실시간 알림 전송 성공: " + userId);
+        } catch (Exception e) {
+            System.err.println("실시간 알림 전송 실패: " + e.getMessage());
+        }
     }
 
     // 내 알림 목록 조회

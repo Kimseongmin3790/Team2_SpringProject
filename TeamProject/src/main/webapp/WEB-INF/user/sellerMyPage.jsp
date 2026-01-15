@@ -908,18 +908,6 @@
                                 <label class="form-label">농가 위치</label>
                                 <input type="text" class="form-input" v-model="farmInfo.location">
                             </div>
-                            <div class="info-item">
-                                <div class="info-label">농가 소개</div>
-                                <div class="info-value">{{ farmInfo.description }}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">인증 현황</div>
-                                <div class="cert-badges">
-                                    <span v-for="cert in farmInfo.certifications" :key="cert" class="cert-badge">
-                                        {{ cert }}
-                                    </span>
-                                </div>
-                            </div>
                         </div>
                         <button type="submit" class="btn btn-primary" style="margin-top: 2rem;">농가 정보 저장</button>
                     </form>
@@ -1062,8 +1050,6 @@
                     name: '',
                     owner: '',
                     location: '',
-                    description: '3대째 이어온 친환경 농법으로 건강한 농산물을 재배하고 있습니다.', // db 추가 ?
-                    certifications: ['GAP 인증', '유기농 인증', '친환경 인증']
                 },
                 reviews: [],
                 profile: {

@@ -280,6 +280,15 @@ public class PaymentController {
 	        subMap.put("status", "ACTIVE");
 	        subMap.put("periodType", String.valueOf(map.get("periodType")));
 	        subscriptionService.insertSubscription(subMap);
+	        
+	        // [추가] 정기구독 신청 완료 알림 발송
+	        try {
+	            String buyerId = (String) map.get("buyerId");
+	            String msg = "[정기구독] 신청이 완료되었습니다. 첫 배송부터 꼼꼼히 챙겨드릴게요!";
+	            notificationService.sendNotification(buyerId, "NOTICE", msg, "/buyerMyPage.do?tab=subscriptions");
+	        } catch (Exception ne) {
+	            System.err.println("정기구독 알림 발송 실패: " + ne.getMessage());
+	        }
 
 	        resultMap.put("result", "success");
 	        resultMap.put("orderNo", orderNo);
@@ -309,6 +318,142 @@ public class PaymentController {
 	        try { list.add(Long.parseLong(s)); } catch (Exception ignore) {}
 	    }
 	    return list;
+	}
+	
+	@Transactional(rollbackFor = Exception.class)
+	@RequestMapping(value = "/payment/testVerify.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String testVerifyPayment(@RequestParam HashMap<String, Object> map, HttpSession session) throws Exception {
+	    HashMap<String, Object> resultMap = new HashMap<>();
+
+	    try {
+	        String sessionUser = (String) session.getAttribute("sessionId");
+	        if (sessionUser == null || sessionUser.isBlank()) {
+	            resultMap.put("result", "fail");
+	            resultMap.put("code", "LOGIN_REQUIRED");
+	            resultMap.put("message", "로그인이 필요합니다.");
+	            return new Gson().toJson(resultMap);
+	        }
+
+	        // 테스트 모드이므로 PG 검증 생략
+	        String impUid = String.valueOf(map.get("impUid")); // 가짜 ID
+	        // String merchantUid = String.valueOf(map.get("merchantUid"));
+	        int paidAmount = toInt(map.get("amount"), 0);
+
+	        // 2) 모드 분기 (verifyPayment와 동일 로직)
+	        String cartNosCsv = String.valueOf(map.getOrDefault("cartNos", "")).trim();
+	        boolean isCartMode = (cartNosCsv != null && !cartNosCsv.isBlank() && !"null".equalsIgnoreCase(cartNosCsv));
+
+	        List<com.example.TeamProject.model.Cart> lines;
+
+	        if (isCartMode) {
+	            List<Long> cartNoList = parseCsvToLongList(cartNosCsv);
+	            if (cartNoList.isEmpty()) throw new IllegalArgumentException("cartNos가 올바르지 않습니다.");
+
+	            HashMap<String, Object> q = new HashMap<>();
+	            q.put("userId", sessionUser);
+	            q.put("cartNoList", cartNoList);
+
+	            lines = paymentService.selectPaymentLines(q);
+	            if (lines == null || lines.isEmpty()) throw new IllegalStateException("결제 대상(cart)이 없습니다.");
+	        } else {
+	            Integer productNo = toInt(map.get("productNo"), null);
+	            Integer optionNo  = toInt(map.get("optionNo"), null);
+	            Integer quantity  = Math.max(1, toInt(map.get("quantity"), 1));
+	            String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
+
+	            if (productNo == null) throw new IllegalArgumentException("productNo가 없습니다.");
+
+	            HashMap<String, Object> q = new HashMap<>();
+	            q.put("productNo", productNo);
+	            q.put("optionNo", optionNo);
+	            q.put("quantity", quantity);
+	            q.put("fulfillment", fulfillment);
+
+	            lines = paymentService.selectPaymentLines(q);
+	            if (lines == null || lines.isEmpty()) throw new IllegalStateException("결제 대상(단건)이 없습니다.");
+	        }
+	        
+	        // 4) ORDERS INSERT
+	        HashMap<String, Object> orderMap = new HashMap<>();
+	        orderMap.put("totalPrice", paidAmount);
+	        orderMap.put("status", "결제완료"); // 바로 결제완료
+	        orderMap.put("receivName", map.get("receivName"));
+	        orderMap.put("receivPhone", map.get("receivPhone"));
+	        orderMap.put("deliverAddr", map.get("deliverAddr"));
+	        orderMap.put("memo", map.get("memo"));
+	        orderMap.put("buyerId", sessionUser);
+
+	        paymentService.insertOrder(orderMap);
+	        int orderNo = (int) orderMap.get("orderNo");
+
+	        // 5) PAYMENT INSERT
+	        HashMap<String, Object> payMap = new HashMap<>();
+	        payMap.put("orderNo", orderNo);
+	        payMap.put("paymentMethod", "TEST_CARD");
+	        payMap.put("paymentStatus", "SUCCESS");
+	        payMap.put("transactionNo", impUid);
+	        payMap.put("amount", paidAmount);
+	        paymentService.insertPayment(payMap);
+	        
+	        Set<String> sellerIds = new HashSet<>();
+
+	        // 6) ORDER_ITEM + 재고 차감
+	        for (com.example.TeamProject.model.Cart l : lines) {
+	            Integer productNo = toInt(l.getProductNo(), null);
+	            Integer optionNo  = toInt(l.getOptionNo(), null);
+	            Integer qty       = Math.max(1, toInt(l.getQuantity(), 1));
+	            Integer unitPrice = toInt(l.getUnitPrice(), 0);
+
+	            if (l.getSellerId() != null) sellerIds.add(l.getSellerId());
+
+	            if (optionNo != null) {
+	                paymentService.decreaseOptionStock(optionNo, qty);
+	                paymentService.refreshProductStatusByProductNo(productNo);
+	            }
+
+	            HashMap<String, Object> itemMap = new HashMap<>();
+	            itemMap.put("orderNo", orderNo);
+	            itemMap.put("quantity", qty);
+	            itemMap.put("price", unitPrice);
+	            itemMap.put("productNo", productNo);
+	            itemMap.put("optionNo", optionNo);
+
+	            paymentService.insertOrderItem(itemMap);
+	        }
+
+	        // 7) 장바구니 삭제
+	        if (isCartMode) {
+	            HashMap<String, Object> del = new HashMap<>();
+	            del.put("userId", sessionUser);
+	            del.put("cartNoList", parseCsvToLongList(cartNosCsv));
+	            paymentService.deleteCartByNos(del);
+	        }
+
+	        // 8) 알림 발송 (테스트의 핵심)
+	        try {
+	            String buyerId = (String) map.get("buyerId");
+	            String msg = "[테스트주문] 결제가 완료되었습니다. (주문번호: " + orderNo + ")";
+	            notificationService.sendNotification(buyerId, "ORDER", msg, "/buyerMyPage.do?tab=orders");
+	            
+	            for (String sId : sellerIds) {
+	                String sellerMsg = "[신규주문] 등록하신 상품에 새로운 주문이 접수되었습니다. (주문번호: " + orderNo + ")";
+	                notificationService.sendNotification(sId, "ORDER", sellerMsg, "/order/sellerList.do");
+	            }	     
+	        } catch (Exception ne) {
+	        	ne.printStackTrace();
+	        }
+
+	        resultMap.put("result", "success");
+	        resultMap.put("orderNo", orderNo);
+	        resultMap.put("message", "테스트 결제 완료");
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        resultMap.put("result", "fail");
+	        resultMap.put("message", e.getMessage());
+	    }
+	    return new Gson().toJson(resultMap);
 	}
 
 }

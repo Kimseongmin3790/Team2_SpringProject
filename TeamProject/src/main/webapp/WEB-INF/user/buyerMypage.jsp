@@ -1031,6 +1031,14 @@
                                                 </div>
                                                 <p class="review-date">{{ review.cdate }}</p>
                                                 <p class="review-text">{{ review.content }}</p>
+                                                <div v-if="review.comments && review.comments.length > 0"
+                                                    style="margin-top:10px; background:#f9f9f9; padding:10px; border-radius:5px;">
+                                                    <div v-for="comment in review.comments" :key="comment.commentNo">
+                                                        <strong style="color:#16a34a;">판매자 답변</strong>
+                                                        <p style="margin:5px 0; font-size:0.9rem;">{{ comment.contents }}</p>
+                                                        <span style="font-size:0.8rem; color:#888;">{{ comment.cDatetime }}</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="order-actions">
                                                 <button class="btn btn-outline btn-sm"

@@ -381,7 +381,10 @@ public class OrderService {
  	        int result = orderMapper.updateRefundStatus(paramMap);
  	        if (result > 0) {
  	            resultMap.put("result", "success");
- 	           
+ 	            int orderNo = Integer.parseInt(paramMap.get("orderNo").toString());
+	 	        String status = "환불" + paramMap.get("status").toString(); 
+	 	        sendStatusNotification(orderNo, status);
+ 
  	        } else {
  	            resultMap.put("result", "fail");
  	            resultMap.put("message", "이미 처리되었거나 존재하지 않는 환불 요청입니다.");
@@ -398,9 +401,12 @@ public class OrderService {
  	private void sendStatusNotification(int orderNo, String status) {
  	    try {
  	        String buyerId = orderMapper.selectBuyerIdByOrderNo(orderNo);
- 	        if (buyerId != null) {
- 	        	String msg = "[주문소식] 주문번호(" + orderNo + ")의 상태가 '" + status + "'(으)로 변경되었습니다.";
- 	        	notificationService.sendNotification(buyerId, "ORDER", msg, "/buyerMyPage.do?tab=orders");
+ 	        if (buyerId != null) {          
+ 	           String productName = orderMapper.selectOrderProductName(orderNo);
+
+ 	            String msg = "[" + status + "] '" + productName + "' 주문의 상태가 변경되었습니다.";
+
+ 	            notificationService.sendNotification(buyerId, "ORDER", msg, "/buyerMyPage.do?tab=orders");
  	        }
  	    } catch (Exception e) {
  	        System.err.println("주문 상태 알림 전송 실패: " + e.getMessage());

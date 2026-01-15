@@ -219,6 +219,27 @@
             transition: color 0.2s;
         }
         .clear-all-btn:hover { color: #4b5563; }
+        /* 알림 안내 가이드 */
+        .noti-guide {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* 하단 알림 아이콘 범례 */
+        .noti-legend {
+            margin-top: 30px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            font-size: 13px;
+            color: #9ca3af;
+        }
     </style>
 </head>
 <body>
@@ -230,6 +251,9 @@
                 <div class="noti-header">
                     <h2>알림 타임라인</h2>
                     <p style="color:#6b7280; font-size:15px;">소중한 농산물의 소식을 실시간으로 확인하세요</p>
+                    <div class="noti-guide">
+                        <i class="fa-solid fa-circle-info"></i> 알림은 최근 30일간의 기록만 보관되며, 이후에는 자동으로 삭제됩니다.
+                    </div>
                 </div>
                 <div class="action-bar" v-if="list.length > 0">
                     <button class="clear-all-btn" @click="fnRemoveRead">읽은 알림 모두 삭제</button>
@@ -266,6 +290,12 @@
                             {{ n }}
                         </button>
                         <button @click="fnList(currentPage + 1)" :disabled="currentPage === totalPages">다음</button>
+                    </div>
+                    <div class="noti-legend">
+                        <span>📦 주문/배송</span>
+                        <span>🔔 시스템/재입고</span>
+                        <span>💬 답변/채팅</span>
+                        <span>🎁 혜택/이벤트</span>
                     </div>
                 </div>
 
