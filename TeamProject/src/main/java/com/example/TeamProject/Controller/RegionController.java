@@ -45,6 +45,10 @@ public class RegionController {
 	public String getRegionSpecialDetail(@RequestParam HashMap<String, Object> map) throws Exception {
 		// map 안에는 regionId가 들어옴
 		HashMap<String, Object> resultMap = regionService.getRegionSpecialById(map);
+		for (String k : resultMap.keySet()) {
+		    Object v = resultMap.get(k);
+		    System.out.println("[JSON CHECK] " + k + " => " + (v == null ? "null" : v.getClass().getName()));
+		}
 		return new Gson().toJson(resultMap);
 	}
 	

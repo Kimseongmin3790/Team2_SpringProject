@@ -38,25 +38,25 @@
 
     <!-- 상세에 포함된 상품 목록 -->
     <select id="selectRegionSpecialProducts" parameterType="hashmap" resultType="hashmap">
-        SELECT
-            rsp.RSP_ID         AS "rspId",
-            p.PRODUCT_NO       AS "productNo",
-            p.PNAME            AS "pname",
-            p.PINFO            AS "pinfo",
-            p.PRICE            AS "price",
-            p.ORIGIN           AS "origin",
-            img.IMAGE_URL      AS "imageUrl"
-        FROM REGION_SPECIAL_PRODUCT rsp
-        JOIN PRODUCT p
-          ON rsp.PRODUCT_NO = p.PRODUCT_NO
-        LEFT JOIN PRODUCT_IMAGE img
-          ON img.PRODUCT_NO = p.PRODUCT_NO
-         AND img.IS_THUMBNAIL = 'Y'
-        WHERE rsp.REGION_ID = #{regionId}
-        ORDER BY
-            rsp.SORT_ORDER NULLS LAST,
-            rsp.RSP_ID
-    </select>
+	  SELECT
+	      rsp.RSP_ID         AS "rspId",
+	      p.PRODUCT_NO       AS "productNo",
+	      p.PNAME            AS "pname",
+	      p.PINFO            AS "pinfo",
+	      p.PRICE            AS "price",
+	      p.ORIGIN           AS "origin",
+	      NVL(DBMS_LOB.SUBSTR(img.IMAGE_URL, 4000, 1), '') AS "imageUrl"
+	  FROM REGION_SPECIAL_PRODUCT rsp
+	  JOIN PRODUCT p
+	    ON rsp.PRODUCT_NO = p.PRODUCT_NO
+	  LEFT JOIN PRODUCT_IMAGE img
+	    ON img.PRODUCT_NO = p.PRODUCT_NO
+	   AND UPPER(TRIM(img.IS_THUMBNAIL)) = 'Y'
+	  WHERE rsp.REGION_ID = #{regionId}
+	  ORDER BY
+	      rsp.SORT_ORDER NULLS LAST,
+	      rsp.RSP_ID
+	</select>
     
     <select id="selectAllRegionSpecialList" resultType="hashmap">
 	  <![CDATA[
