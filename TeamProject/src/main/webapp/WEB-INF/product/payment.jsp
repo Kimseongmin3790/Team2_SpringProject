@@ -307,6 +307,17 @@
                     margin-top: 5px;
                     text-align: right;
                 }
+                .max-discount-label {
+                    font-size: 0.7em;
+                    color: #ff6a00;
+                    margin-left: 5px;
+                }
+
+                .max-applied-info {
+                    font-size: 0.8em;
+                    color: #999;
+                    margin-left: 4px;
+                }
             </style>
         </head>
 
@@ -393,6 +404,11 @@
                                     <div v-if="selectedCoupon" class="text-right">
                                         <span class="discount-text">
                                             -{{ couponDiscountAmount.toLocaleString() }}원 할인 적용
+                                            <small v-if="selectedCoupon.DISCOUNT_TYPE === 'R' &&
+                                                        totalPrice * (selectedCoupon.DISCOUNT_AMOUNT/100) > selectedCoupon.MAX_DISCOUNT_PRICE"
+                                                class="max-applied-info">
+                                                (최대 한도 적용됨)
+                                            </small>
                                         </span>
                                         <a class="btn-cancel" @click="fnCancelCoupon">취소</a>
                                     </div>
@@ -426,12 +442,20 @@
                                     <div v-if="couponList.length === 0" class="modal-empty">
                                         사용 가능한 쿠폰이 없습니다.
                                     </div>
-                                    <div v-for="c in couponList" :key="c.UC_ID" class="coupon-item" @click="fnSelectCoupon(c)">
+                                    <div v-for="c in couponList" :key="c.ISSUE_NO" class="coupon-item" @click="fnSelectCoupon(c)">
                                         <div class="coupon-name">
                                             {{ c.COUPON_NAME }}
                                         </div>
                                         <div class="coupon-benefit">
-                                            {{ c.DISCOUNT_TYPE === 'FIXED' ? c.DISCOUNT_VALUE.toLocaleString() + '원' : c.DISCOUNT_VALUE + '%' }} 할인
+                                            <span v-if="(c.DISCOUNT_TYPE || c.discountType) === 'F'">
+                                                {{ Number(c.DISCOUNT_AMOUNT || c.discountAmount).toLocaleString() }}원 할인
+                                            </span>
+                                            <span v-else>
+                                                {{ c.DISCOUNT_AMOUNT || c.discountAmount }}% 할인
+                                                <small v-if="(c.MAX_DISCOUNT_PRICE || c.maxDiscountPrice) > 0" class="max-discount-label">
+                                                    (최대 {{ Number(c.MAX_DISCOUNT_PRICE || c.maxDiscountPrice).toLocaleString() }}원)
+                                                </small>
+                                            </span>
                                         </div>
                                         <div class="coupon-condition">
                                             {{ Number(c.MIN_ORDER_PRICE).toLocaleString() }}원 이상 구매 시 사용 가능
@@ -515,12 +539,15 @@
                         // 최소 주문 금액 미달 시 할인 0원
                         if (total < Number(this.selectedCoupon.MIN_ORDER_PRICE)) return 0;
 
-                        if (this.selectedCoupon.DISCOUNT_TYPE === 'FIXED') {
-                            // 정액 할인 (예: 1,000원)
-                            return Number(this.selectedCoupon.DISCOUNT_VALUE);
+                        if (this.selectedCoupon.DISCOUNT_TYPE === 'F') { 
+                            return Number(this.selectedCoupon.DISCOUNT_AMOUNT); 
                         } else {
-                            // 정률 할인 (예: 10%)
-                            return Math.floor(total * (Number(this.selectedCoupon.DISCOUNT_VALUE) / 100));
+                            let discount = Math.floor(total * (Number(this.selectedCoupon.DISCOUNT_AMOUNT) / 100));
+                            // 최대 할인 한도 적용
+                            if (this.selectedCoupon.MAX_DISCOUNT_PRICE > 0 && discount > this.selectedCoupon.MAX_DISCOUNT_PRICE) {
+                                discount = this.selectedCoupon.MAX_DISCOUNT_PRICE;
+                            }
+                            return discount;
                         }
                     },
                     totalPrice() {
@@ -601,7 +628,7 @@
                             deliverAddr: this.buyer.address,
                             memo: memo,
                             usedPoint: this.usedPoint,
-                            ucId: this.selectedCoupon ? this.selectedCoupon.UC_ID : null
+                            ucId: this.selectedCoupon ? this.selectedCoupon.ISSUE_NO : null
                         };
 
                         if (IS_SUBSCRIPTION_MODE) {
@@ -876,7 +903,7 @@
                                             usedPoint: this.usedPoint,
                                             testPay: "Y",
 
-                                            ucId: this.selectedCoupon ? this.selectedCoupon.UC_ID : null
+                                            ucId: this.selectedCoupon ? this.selectedCoupon.ISSUE_NO : null
                                         },
                                         success: function (data) {
                                             if (data.result == "success") {

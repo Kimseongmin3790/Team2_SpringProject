@@ -123,7 +123,7 @@ $(document).ready(function() {
 			// 일반 사용자: 기존 이동
 			const sessionStatus = mypageBtn.data("status");
 			if(!sessionStatus) return location.href = path + "/login.do";
-			if(sessionStatus === "BUYER") location.href = path + "/buyerMyPage.do";
+			if(sessionStatus === "BUYER" || sessionStatus === "ADMIN") location.href = path + "/buyerMyPage.do";
 		}
 	});
 

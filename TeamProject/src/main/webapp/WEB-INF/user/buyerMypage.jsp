@@ -14,780 +14,132 @@
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <style>
-                .w-100 {
-                    width: 100%;
-                }
-
-                .mt-1 {
-                    margin-top: 1rem;
-                }
-
-                .btn.text-danger {
-                    color: #ef4444;
-                }
-
-                .text-center {
-                    text-align: center;
-                }
-
-                .text-muted {
-                    color: #6b7280;
-                }
-
-                .order-item-divider {
-                    margin-top: 1rem;
-                    border-top: 1px solid #f3f4f6;
-                    padding-top: 1rem;
-                }
-
-                .icon-warning {
-                    font-size: 1.5rem;
-                }
-
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-
-                html,
-                body {
-                    height: 100%;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                    color: #333;
-                    background-color: #f9fafb;
-                }
-
-                #app {
-                    min-height: 100vh;
-                    display: flex;
-                    flex-direction: column;
-                }
-
-                .content {
-                    flex: 1;
-                    padding: 2rem 1rem;
-                }
-
-                .container {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                }
-
-                .user-banner {
-                    background: linear-gradient(to right, #f0fdf4, #d1fae5);
-                    border-radius: 8px;
-                    padding: 1.5rem;
-                    margin-bottom: 2rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                }
-
-                .user-avatar {
-                    width: 64px;
-                    height: 64px;
-                    background-color: #22c55e;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                    font-size: 1.5rem;
-                    font-weight: bold;
-                }
-
-                .user-info h2 {
-                    font-size: 1.25rem;
-                    font-weight: bold;
-                    margin-bottom: 0.25rem;
-                }
-
-                .user-info p {
-                    font-size: 0.875rem;
-                    color: #6b7280;
-                }
-
-                .tabs-list {
-                    display: grid;
-                    grid-template-columns: repeat(5, 1fr);
-                    gap: 0.5rem;
-                    margin-bottom: 2rem;
-                    background-color: #f3f4f6;
-                    padding: 0.25rem;
-                    border-radius: 8px;
-                }
-
-                .tab-trigger {
-                    padding: 0.75rem 1rem;
-                    background-color: transparent;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                    color: #6b7280;
-                    transition: all 0.2s;
-                }
-
-                .tab-trigger:hover {
-                    background-color: #e5e7eb;
-                }
-
-                .tab-trigger.active {
-                    background-color: white;
-                    color: #22c55e;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                }
-
-                .tab-content {
-                    display: none;
-                }
-
-                .tab-content.active {
-                    display: block;
-                }
-
-                .card {
-                    background-color: white;
-                    border-radius: 8px;
-                    padding: 1.5rem;
-                    margin-bottom: 1rem;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                }
-
-                .cart-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                }
-
-                .cart-item-image {
-                    width: 80px;
-                    height: 80px;
-                    background-color: #f3f4f6;
-                    border-radius: 8px;
-                    flex-shrink: 0;
-                }
-
-                .cart-item-image img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    border-radius: 8px;
-                }
-
-                .cart-item-info {
-                    flex: 1;
-                }
-
-                .cart-item-info h3 {
-                    font-weight: 600;
-                    margin-bottom: 0.25rem;
-                }
-
-                .cart-item-info p {
-                    font-size: 0.875rem;
-                    color: #6b7280;
-                    margin-bottom: 0.5rem;
-                }
-
-                .cart-item-price {
-                    font-weight: bold;
-                    color: #22c55e;
-                }
-
-                .quantity-control {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                }
-
-                .quantity-btn {
-                    width: 32px;
-                    height: 32px;
-                    border: 1px solid #e5e7eb;
-                    background-color: white;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 1rem;
-                }
-
-                .quantity-btn:hover {
-                    background-color: #f9fafb;
-                }
-
-                .quantity-value {
-                    width: 32px;
-                    text-align: center;
-                }
-
-                .btn {
-                    padding: 0.5rem 1rem;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                    transition: all 0.2s;
-                }
-
-                .btn-primary {
-                    background-color: #22c55e;
-                    color: white;
-                }
-
-                .btn-primary:hover {
-                    background-color: #16a34a;
-                }
-
-                .btn-outline {
-                    background-color: white;
-                    color: #6b7280;
-                    border: 1px solid #e5e7eb;
-                }
-
-                .btn-outline:hover {
-                    background-color: #f9fafb;
-                }
-
-                .btn-danger {
-                    background-color: #ef4444;
-                    color: white;
-                }
-
-                .btn-danger:hover {
-                    background-color: #dc2626;
-                }
-
-                .btn-sm {
-                    padding: 0.375rem 0.75rem;
-                    font-size: 0.8125rem;
-                }
-
-                .btn-lg {
-                    padding: 0.75rem 1.5rem;
-                    font-size: 1rem;
-                }
-
-                .order-summary {
-                    max-width: 320px;
-                    margin-left: auto;
-                }
-
-                .summary-row {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 0.5rem;
-                    font-size: 0.875rem;
-                }
-
-                .summary-total {
-                    border-top: 1px solid #e5e7eb;
-                    padding-top: 0.5rem;
-                    margin-top: 0.5rem;
-                    display: flex;
-                    justify-content: space-between;
-                    font-weight: bold;
-                    font-size: 1.125rem;
-                }
-
-                .summary-total .price {
-                    color: #22c55e;
-                }
-
-                .badge {
-                    display: inline-block;
-                    padding: 0.25rem 0.75rem;
-                    background-color: #22c55e;
-                    color: white;
-                    border-radius: 9999px;
-                    font-size: 0.75rem;
-                    font-weight: 500;
-                }
-
-                .order-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 1rem;
-                }
-
-                .order-date {
-                    font-size: 0.875rem;
-                    color: #6b7280;
-                }
-
-                .order-number {
-                    font-weight: 600;
-                }
-
-                .review-item {
-                    display: flex;
-                    gap: 1rem;
-                }
-
-                .review-content {
-                    flex: 1;
-                }
-
-                .review-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    margin-bottom: 0.5rem;
-                }
-
-                .review-header h3 {
-                    font-weight: 600;
-                }
-
-                .stars {
-                    color: #fbbf24;
-                }
-
-                .review-date {
-                    font-size: 0.875rem;
-                    color: #6b7280;
-                    margin-bottom: 0.5rem;
-                }
-
-                .review-text {
-                    font-size: 0.875rem;
-                }
-
-                .form-group {
-                    margin-bottom: 1.5rem;
-                }
-
-                .form-label {
-                    display: block;
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                    margin-bottom: 0.5rem;
-                }
-
-                .form-input {
-                    width: 100%;
-                    padding: 0.5rem 0.75rem;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 6px;
-                    font-size: 0.875rem;
-                }
-
-                .form-input:focus {
-                    outline: none;
-                    border-color: #22c55e;
-                    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-                }
-
-                .form-actions {
-                    display: flex;
-                    gap: 0.5rem;
-                }
-
-                .form-actions .btn {
-                    flex: 1;
-                }
-
-                .form-input.readonly-input {
-                    background-color: #f2f2f2;
-                    cursor: not-allowed;
-                }
-
-                .profile-form {
-                    max-width: 672px;
-                    margin: 0 auto;
-                }
-
-                .danger-zone {
-                    margin-top: 3rem;
-                    padding-top: 2rem;
-                    border-top: 2px solid #fee2e2;
-                }
-
-                .danger-zone-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    margin-bottom: 1rem;
-                }
-
-                .danger-zone-title {
-                    color: #dc2626;
-                    font-weight: 600;
-                    font-size: 1.125rem;
-                }
-
-                .danger-zone-content {
-                    background-color: #fef2f2;
-                    border: 1px solid #fecaca;
-                    border-radius: 0.5rem;
-                    padding: 1.5rem;
-                }
-
-                .danger-zone-desc {
-                    color: #991b1b;
-                    margin-bottom: 1rem;
-                }
-
-                @media (max-width: 768px) {
-                    .tabs-list {
-                        grid-template-columns: repeat(2, 1fr);
-                    }
-
-                    .cart-item {
-                        flex-wrap: wrap;
-                    }
-
-                    .order-summary {
-                        max-width: 100%;
-                    }
-                }
-
-                .error-message {
-                    color: #dc2626;
-                    font-size: 0.8rem;
-                    font-weight: 500;
-                    margin-top: 0.25rem;
-                }
-
-                .btn-outline-success {
-                    background-color: white;
-                    color: #22c55e;
-                    border: 1px solid #22c55e;
-                }
-
-                .btn-outline-success:hover {
-                    background-color: #22c55e;
-                    color: white;
-                }
-
-                .btn-outline-info {
-                    background-color: white;
-                    color: #3b82f6;
-                    border: 1px solid #3b82f6;
-                }
-
-                .btn-outline-info:hover {
-                    background-color: #3b82f6;
-                    color: white;
-                }
-
-                .order-header-actions {
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-                    gap: 0.75rem;
-                }
-
-                .cart-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                }
-
-
-                .cart-item-image {
-                    width: 80px;
-                    height: 80px;
-                    background-color: #f3f4f6;
-                    border-radius: 8px;
-                    flex-shrink: 0;
-                }
-
-                .cart-link {
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                    flex: 1;
-                    min-width: 0;
-                    text-decoration: none;
-                    color: inherit;
-                }
-
-                .cart-link:hover,
-                .cart-link:visited {
-                    text-decoration: none;
-                    color: inherit;
-                }
-
-                .cart-link:focus {
-                    outline: none;
-                }
-
-                .quantity-control {
-                    margin-left: 1rem;
-                }
-
-                .cart-item .btn-danger {
-                    margin-left: .5rem;
-                }
-
-                .bulk-actions {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    margin: .75rem 0 1rem;
-                }
-
-                .bulk-actions .toggle-all {
-                    display: flex;
-                    align-items: center;
-                    gap: .5rem;
-                    font-size: .9rem;
-                    color: #374151;
-                }
-
-                .bulk-actions-right {
-                    display: flex;
-                    gap: .5rem;
-                }
-
-                .btn[disabled] {
-                    opacity: .5;
-                    cursor: not-allowed;
-                }
-
-                @media (max-width: 480px) {
-                    .cart-item {
-                        flex-wrap: wrap;
-                    }
-
-                    .quantity-control,
-                    .cart-item .btn-danger {
-                        margin-top: .5rem;
-                    }
-                }
-
-                .order-details-section {
-                    padding: 15px;
-                    background-color: #f9f9f9;
-                    border-top: 1px solid #eee;
-                    margin-top: 10px;
-                    border-radius: 0 0 8px 8px;
-                }
-
-                .order-details-section .detail-row {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 5px 0;
-                    font-size: 0.9em;
-                }
-
-                .order-details-section .detail-row span:first-child {
-                    font-weight: bold;
-                    color: #555;
-                }
-
-                .order-details-section .total-price {
-                    font-size: 1.1em;
-                    font-weight: bold;
-                    color: #333;
-                    border-top: 1px dashed #ddd;
-                    padding-top: 10px;
-                    margin-top: 10px;
-                }
-
-                .modal-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 1000;
-                }
-
-                .modal-content {
-                    background-color: #fff;
-                    padding: 25px;
-                    border-radius: 10px;
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-                    width: 90%;
-                    max-width: 500px;
-                    position: relative;
-                    box-sizing: border-box;
-                }
-
-                .modal-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 15px;
-                    border-bottom: 1px solid #eee;
-                    padding-bottom: 10px;
-                }
-
-                .modal-header h3 {
-                    margin: 0;
-                    font-size: 1.4em;
-                    color: #333;
-                }
-
-                .modal-header .close-button {
-                    background: none;
-                    border: none;
-                    font-size: 2em;
-                    cursor: pointer;
-                    color: #999;
-                }
-
-                .modal-body {
-                    margin-bottom: 20px;
-                }
-
-                .modal-body p {
-                    font-size: 1em;
-                    margin-bottom: 15px;
-                    color: #333;
-                }
-
-                .modal-body label {
-                    display: block;
-                    margin-bottom: 8px;
-                    font-weight: bold;
-                    color: #555;
-                }
-
-                .modal-body textarea.form-input {
-                    width: 100%;
-                    padding: 10px;
-                    border: 1px solid #ccc;
-                    border-radius: 5px;
-                    font-size: 1em;
-                    resize: vertical;
-                    box-sizing: border-box;
-                }
-
-                .form-group {
-                    margin-bottom: 15px;
-                }
-
-                .modal-footer {
-                    display: flex;
-                    justify-content: flex-end;
-                    gap: 10px;
-                    border-top: 1px solid #eee;
-                    padding-top: 15px;
-                }
-
-                .modal-footer .btn {
-                    padding: 8px 18px;
-                    font-size: 0.95em;
-                }
-
-                .item-option-info {
-                    font-size: 0.9em;
-                    color: #666;
-                    background-color: #f5f5f5;
-                    padding: 3px 8px;
-                    border-radius: 4px;
-                    display: inline-block;
-                    margin-top: 5px;
-                    margin-bottom: 5px;
-                }
-
-                .quantity-control {
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                }
-
-                .quantity-control .quantity-btn {
-                    width: 30px;
-                    height: 30px;
-                    border: 1px solid #ccc;
-                    background-color: #f0f0f0;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    font-size: 1.2em;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    padding: 0;
-                }
-
-                .quantity-control .quantity-btn:disabled {
-                    background-color: #e0e0e0;
-                    cursor: not-allowed;
-                    color: #aaa;
-                }
-
-                .quantity-control .quantity-input {
-                    width: 60px;
-                    text-align: center;
-                    -moz-appearance: textfield;/
-                }
-
-                .quantity-control .quantity-input::-webkit-outer-spin-button,
-                .quantity-control .quantity-input::-webkit-inner-spin-button {
-                    -webkit-appearance: none;
-                    margin: 0;
-                }
-
-                .refund-status-badge {
-                    display: inline-block;
-                    padding: 4px 8px;
-                    margin-left: 10px;
-                    border-radius: 5px;
-                    font-size: 0.8em;
-                    font-weight: bold;
-                    color: #fff;
-                    background-color: #ffc107;
-                    vertical-align: middle;
-                }
-
-                .refund-status-badge.approved {
-                    background-color: #28a745;
-                }
-
-                .refund-status-badge.rejected {
-                    background-color: #dc3545;
-                }
-
-                .refund-action-group {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-
-                .refund-action-group .btn-secondary {
-                    background-color: #6c757d;
-                    color: #fff;
-                    border-color: #6c757d;
-                }
-
-                .badge-info {
-                    background-color: #e0f7fa;
-                    color: #006064;
-                }
-
-                .badge-shipping {
-                    background-color: #e9d5ff;
-                    color: #6b21a8;
-                }
-
-                .badge-completed {
-                    background-color: #d1fae5;
-                    color: #065f46;
-                }
-
-                .form-input:disabled {
-                    background-color: #f3f4f6;
-                    cursor: not-allowed;
-                    color: #6b7280;
-                }
-
-                .non-editable-text {
-                    font-size: 0.8rem;
-                    color: #6b7280;
-                    margin-top: 0.5rem;
-                }
+                .w-100 { width: 100%; }
+                .mt-1 { margin-top: 1rem; }
+                .btn.text-danger { color: #ef4444; }
+                .text-center { text-align: center; }
+                .text-muted { color: #6b7280; }
+                .order-item-divider { margin-top: 1rem; border-top: 1px solid #f3f4f6; padding-top: 1rem; }
+                .icon-warning { font-size: 1.5rem; }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #333; background-color: #f9fafb; }
+                #app { min-height: 100vh; display: flex; flex-direction: column; }
+                .content { flex: 1; padding: 2rem 1rem; }
+                .container { max-width: 1200px; margin: 0 auto; }
+                .user-banner { background: linear-gradient(to right, #f0fdf4, #d1fae5); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+                .user-avatar { width: 64px; height: 64px; background-color: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; }
+                .user-info h2 { font-size: 1.25rem; font-weight: bold; margin-bottom: 0.25rem; }
+                .user-info p { font-size: 0.875rem; color: #6b7280; }
+                
+                /* 쿠폰 버튼 스타일 추가 */
+                .coupon-btn { margin-left: auto; background: white; border: 1px solid #22c55e; border-radius: 8px; padding: 10px 20px; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+                .coupon-btn:hover { background: #f0fdf4; transform: translateY(-2px); }
+                .coupon-icon { font-size: 1.5rem; color: #16a34a; margin-bottom: 2px; }
+                .coupon-text { font-size: 0.9rem; font-weight: bold; color: #333; display: block; }
+
+                .tabs-list { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 2rem; background-color: #f3f4f6; padding: 0.25rem; border-radius: 8px; }
+                .tab-trigger { padding: 0.75rem 1rem; background-color: transparent; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; color: #6b7280; transition: all 0.2s; }
+                .tab-trigger:hover { background-color: #e5e7eb; }
+                .tab-trigger.active { background-color: white; color: #22c55e; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+                .tab-content { display: none; }
+                .tab-content.active { display: block; }
+                .card { background-color: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+                .cart-item { display: flex; align-items: center; gap: 1rem; }
+                .cart-item-image { width: 80px; height: 80px; background-color: #f3f4f6; border-radius: 8px; flex-shrink: 0; }
+                .cart-item-image img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+                .cart-item-info { flex: 1; }
+                .cart-item-info h3 { font-weight: 600; margin-bottom: 0.25rem; }
+                .cart-item-info p { font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem; }
+                .cart-item-price { font-weight: bold; color: #22c55e; }
+                .quantity-control { display: flex; align-items: center; gap: 0.5rem; }
+                .quantity-btn { width: 32px; height: 32px; border: 1px solid #e5e7eb; background-color: white; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+                .quantity-btn:hover { background-color: #f9fafb; }
+                .quantity-value { width: 32px; text-align: center; }
+                .btn { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; }
+                .btn-primary { background-color: #22c55e; color: white; }
+                .btn-primary:hover { background-color: #16a34a; }
+                .btn-outline { background-color: white; color: #6b7280; border: 1px solid #e5e7eb; }
+                .btn-outline:hover { background-color: #f9fafb; }
+                .btn-danger { background-color: #ef4444; color: white; }
+                .btn-danger:hover { background-color: #dc2626; }
+                .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
+                .btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
+                .order-summary { max-width: 320px; margin-left: auto; }
+                .summary-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem; }
+                .summary-total { border-top: 1px solid #e5e7eb; padding-top: 0.5rem; margin-top: 0.5rem; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.125rem; }
+                .summary-total .price { color: #22c55e; }
+                .badge { display: inline-block; padding: 0.25rem 0.75rem; background-color: #22c55e; color: white; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+                .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+                .order-date { font-size: 0.875rem; color: #6b7280; }
+                .order-number { font-weight: 600; }
+                .review-item { display: flex; gap: 1rem; }
+                .review-content { flex: 1; }
+                .review-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+                .review-header h3 { font-weight: 600; }
+                .stars { color: #fbbf24; }
+                .review-date { font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem; }
+                .review-text { font-size: 0.875rem; }
+                .form-group { margin-bottom: 1.5rem; }
+                .form-label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; }
+                .form-input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; }
+                .form-input:focus { outline: none; border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1); }
+                .form-actions { display: flex; gap: 0.5rem; }
+                .form-actions .btn { flex: 1; }
+                .form-input.readonly-input { background-color: #f2f2f2; cursor: not-allowed; }
+                .profile-form { max-width: 672px; margin: 0 auto; }
+                .danger-zone { margin-top: 3rem; padding-top: 2rem; border-top: 2px solid #fee2e2; }
+                .danger-zone-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+                .danger-zone-title { color: #dc2626; font-weight: 600; font-size: 1.125rem; }
+                .danger-zone-content { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 0.5rem; padding: 1.5rem; }
+                .danger-zone-desc { color: #991b1b; margin-bottom: 1rem; }
+                @media (max-width: 768px) { .tabs-list { grid-template-columns: repeat(2, 1fr); } .cart-item { flex-wrap: wrap; } .order-summary { max-width: 100%; } }
+                .error-message { color: #dc2626; font-size: 0.8rem; font-weight: 500; margin-top: 0.25rem; }
+                .btn-outline-success { background-color: white; color: #22c55e; border: 1px solid #22c55e; }
+                .btn-outline-success:hover { background-color: #22c55e; color: white; }
+                .btn-outline-info { background-color: white; color: #3b82f6; border: 1px solid #3b82f6; }
+                .btn-outline-info:hover { background-color: #3b82f6; color: white; }
+                .order-header-actions { display: flex; flex-direction: row; align-items: center; gap: 0.75rem; }
+                .cart-link { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0; text-decoration: none; color: inherit; }
+                .cart-link:hover, .cart-link:visited { text-decoration: none; color: inherit; }
+                .cart-link:focus { outline: none; }
+                .quantity-control { margin-left: 1rem; }
+                .cart-item .btn-danger { margin-left: .5rem; }
+                .bulk-actions { display: flex; align-items: center; justify-content: space-between; margin: .75rem 0 1rem; }
+                .bulk-actions .toggle-all { display: flex; align-items: center; gap: .5rem; font-size: .9rem; color: #374151; }
+                .bulk-actions-right { display: flex; gap: .5rem; }
+                .btn[disabled] { opacity: .5; cursor: not-allowed; }
+                @media (max-width: 480px) { .cart-item { flex-wrap: wrap; } .quantity-control, .cart-item .btn-danger { margin-top: .5rem; } }
+                .order-details-section { padding: 15px; background-color: #f9f9f9; border-top: 1px solid #eee; margin-top: 10px; border-radius: 0 0 8px 8px; }
+                .order-details-section .detail-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.9em; }
+                .order-details-section .detail-row span:first-child { font-weight: bold; color: #555; }
+                .order-details-section .total-price { font-size: 1.1em; font-weight: bold; color: #333; border-top: 1px dashed #ddd; padding-top: 10px; margin-top: 10px; }
+                .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+                .modal-content { background-color: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); width: 90%; max-width: 500px; position: relative; box-sizing: border-box; }
+                .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+                .modal-header h3 { margin: 0; font-size: 1.4em; color: #333; }
+                .modal-header .close-button { background: none; border: none; font-size: 2em; cursor: pointer; color: #999; }
+                .modal-body { margin-bottom: 20px; }
+                .modal-body p { font-size: 1em; margin-bottom: 15px; color: #333; }
+                .modal-body label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+                .modal-body textarea.form-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em; resize: vertical; box-sizing: border-box; }
+                .form-group { margin-bottom: 15px; }
+                .modal-footer { display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
+                .modal-footer .btn { padding: 8px 18px; font-size: 0.95em; }
+                .item-option-info { font-size: 0.9em; color: #666; background-color: #f5f5f5; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; margin-bottom: 5px; }
+                .quantity-control .quantity-btn { width: 30px; height: 30px; border: 1px solid #ccc; background-color: #f0f0f0; border-radius: 5px; cursor: pointer; font-size: 1.2em; display: flex; justify-content: center; align-items: center; padding: 0; }
+                .quantity-control .quantity-btn:disabled { background-color: #e0e0e0; cursor: not-allowed; color: #aaa; }
+                .quantity-control .quantity-input { width: 60px; text-align: center; -moz-appearance: textfield; }
+                .quantity-control .quantity-input::-webkit-outer-spin-button, .quantity-control .quantity-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+                .refund-status-badge { display: inline-block; padding: 4px 8px; margin-left: 10px; border-radius: 5px; font-size: 0.8em; font-weight: bold; color: #fff; background-color: #ffc107; vertical-align: middle; }
+                .refund-status-badge.approved { background-color: #28a745; }
+                .refund-status-badge.rejected { background-color: #dc3545; }
+                .refund-action-group { display: flex; align-items: center; gap: 8px; }
+                .refund-action-group .btn-secondary { background-color: #6c757d; color: #fff; border-color: #6c757d; }
+                .badge-info { background-color: #e0f7fa; color: #006064; }
+                .badge-shipping { background-color: #e9d5ff; color: #6b21a8; }
+                .badge-completed { background-color: #d1fae5; color: #065f46; }
+                .form-input:disabled { background-color: #f3f4f6; cursor: not-allowed; color: #6b7280; }
+                .non-editable-text { font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem; }
             </style>
         </head>
 
@@ -806,31 +158,62 @@
                                     <h2>{{ userName }}님</h2>
                                     <p>{{ userEmail }}</p>
                                 </div>
+                                <!-- 쿠폰함 바로가기 버튼 추가 -->
+                                <div class="coupon-btn" @click="activeTab = 'coupons'">
+                                    <i class="fa-solid fa-ticket coupon-icon"></i>
+                                    <span class="coupon-text">쿠폰함</span>
+                                </div>
                             </div>
 
                             <!-- 탭 -->
                             <div class="tabs-list">
-                                <button class="tab-trigger" :class="{ active: activeTab === 'cart' }"
-                                    @click="activeTab = 'cart'">
-                                    장바구니
-                                </button>
-                                <button class="tab-trigger" :class="{ active: activeTab === 'orders' }"
-                                    @click="activeTab = 'orders'">
-                                    주문내역
-                                </button>
-                                <button class="tab-trigger" :class="{ active: activeTab === 'subscriptions' }"
-                                    @click="activeTab = 'subscriptions'">
-                                    정기배송
-                                </button>
-                                <button class="tab-trigger" :class="{ active: activeTab === 'reviews' }"
-                                    @click="activeTab = 'reviews'">
-                                    리뷰 관리
-                                </button>
-                                <button class="tab-trigger" :class="{ active: activeTab === 'profile' }"
-                                    @click="activeTab = 'profile'">
-                                    회원정보
-                                </button>
+                                <button class="tab-trigger" :class="{ active: activeTab === 'cart' }" @click="activeTab = 'cart'">장바구니</button>
+                                <button class="tab-trigger" :class="{ active: activeTab === 'orders' }" @click="activeTab = 'orders'">주문내역</button>
+                                <button class="tab-trigger" :class="{ active: activeTab === 'subscriptions' }" @click="activeTab = 'subscriptions'">정기배송</button>
+                                <button class="tab-trigger" :class="{ active: activeTab === 'reviews' }" @click="activeTab = 'reviews'">리뷰 관리</button>
+                                <button class="tab-trigger" :class="{ active: activeTab === 'profile' }" @click="activeTab = 'profile'">회원정보</button>
                             </div>
+
+                            <!-- 쿠폰함 탭 (버튼은 없지만 activeTab이 coupons면 보임) -->
+                            <div class="tab-content" :class="{ active: activeTab === 'coupons' }">
+                                <div class="card" style="border-left: 5px solid #22c55e;">
+                                    <h3 style="margin-bottom: 10px; color: #1a5d1a;"><i class="fa-solid fa-ticket"></i> 내 쿠폰함</h3>
+                                    <p class="text-muted" style="font-size: 0.9rem;">발급받은 쿠폰을 확인하세요. (사용 가능한 쿠폰만 표시됩니다)</p>
+                                </div>
+
+                                <div v-if="coupons.length > 0">
+                                    <div class="card" v-for="c in coupons" :key="c.ISSUE_NO || c.issueNo">
+                                        <div class="cart-item">
+                                            <div class="cart-item-image" style="background-color: #fff1f2; display: flex; align-items: center; justify-content: center; color: #e11d48; font-size: 1.5rem;">
+                                                <i class="fa-solid fa-ticket"></i>
+                                            </div>
+                                            <div class="cart-item-info">
+                                                <h3>{{ c.COUPON_NAME || c.couponName }}</h3>
+                                                <p style="color:#666; font-size:0.9rem;">
+                                                    <span v-if="(c.DISCOUNT_TYPE || c.discountType) === 'F'">
+                                                        {{ Number(c.DISCOUNT_AMOUNT || c.discountAmount).toLocaleString() }}원 할인
+                                                    </span>
+                                                    <span v-else>
+                                                        {{ c.DISCOUNT_AMOUNT || c.discountAmount }}% 할인 
+                                                        (최대 {{ Number(c.MAX_DISCOUNT_PRICE || c.maxDiscountPrice).toLocaleString() }}원)
+                                                    </span>
+                                                </p>
+                                                <p style="font-size:0.8rem; color:#888;">
+                                                    최소주문금액: {{ Number(c.MIN_ORDER_PRICE || c.minOrderPrice).toLocaleString() }}원 | 
+                                                    유효기간: ~{{ c.END_DATE || c.endDate }}
+                                                </p>
+                                            </div>
+                                            <div class="quantity-control">
+                                                <span class="badge badge-completed">사용가능</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="card">
+                                    <p class="text-center text-muted" style="padding: 30px;">보유한 쿠폰이 없습니다.</p>
+                                </div>
+                            </div>
+
                             <!-- 장바구니 탭 -->
                             <div class="tab-content" :class="{ active: activeTab === 'cart' }">
                                 <div class="bulk-actions" v-if="activeTab === 'cart' && cartItems.length">
@@ -892,6 +275,10 @@
                                         <div>
                                             <p class="order-date">{{ order.orderdate }}</p>
                                             <p class="order-number">주문번호: {{ order.orderNo }}</p>
+                                            <p v-if="order.couponName" style="font-size: 0.85rem; color: #e11d48; margin-top: 4px;">
+                                                <i class="fa-solid fa-ticket"></i> 사용 쿠폰: {{ order.couponName }}
+                                                <span v-if="order.couponDiscount > 0">(-{{ Number(order.couponDiscount).toLocaleString() }}원 할인)</span>
+                                            </p>
                                         </div>
                                         <div class="order-header-actions">
                                             <span v-if="getOrderOverallRefundStatus(order) === '대기'"
@@ -937,16 +324,16 @@
                                             <!-- 수량 표시 조정 -->
                                             <p v-if="item.refundStatus === '승인'">
                                                 수량: {{ item.quantity - item.refundQuantity }}개
-                                                <span class="text-muted">(원래 {{ item.quantity }}개, {{
+                                                <span class="text-muted">(원래 {{ item.quantity }}개, {{ 
                                                     item.refundQuantity }}개 환불)</span>
                                             </p>
                                             <p v-else>수량: {{ item.quantity }}개</p>
 
                                             <!-- 가격 표시 조정 -->
                                             <p v-if="item.refundStatus === '승인'" class="cart-item-price">
-                                                {{ (Number(item.price || 0) - (item.price / item.quantity *
+                                                {{ (Number(item.price || 0) - (item.price / item.quantity * 
                                                 item.refundQuantity)).toLocaleString() }}원
-                                                <span class="text-muted">(원래 {{ Number(item.price || 0).toLocaleString()
+                                                <span class="text-muted">(원래 {{ Number(item.price || 0).toLocaleString() 
                                                     }}원)</span>
                                             </p>
                                             <p v-else class="cart-item-price">
@@ -1003,7 +390,7 @@
                                         </div>
                                         <div class="detail-row total-price">
                                             <span>최종 결제 금액</span>
-                                            <span>{{ (Number(order.totalPrice || 0) -
+                                            <span>{{ (Number(order.totalPrice || 0) - 
                                                 getRefundedAmount(order)).toLocaleString() }}원</span>
                                         </div>
                                     </div>
@@ -1031,9 +418,9 @@
                                         <div class="order-details-section">
                                             <div class="detail-row"><span>플랜</span><span>{{ s.planName }}</span></div>
                                             <div class="detail-row"><span>주기</span><span>{{ s.periodType }}</span></div>
-                                            <div class="detail-row"><span>다음 결제일</span><span>{{ s.nextBillingDate || '-'
+                                            <div class="detail-row"><span>다음 결제일</span><span>{{ s.nextBillingDate || '-' 
                                                     }}</span></div>
-                                            <div class="detail-row"><span>최근 주문번호</span><span>{{ s.lastOrderNo || '-'
+                                            <div class="detail-row"><span>최근 주문번호</span><span>{{ s.lastOrderNo || '-' 
                                                     }}</span></div>
                                         </div>
                                     </div>
@@ -1058,7 +445,7 @@
                                                 <div class="review-header">
                                                     <h3>{{ review.productName }}</h3>
                                                     <div class="stars">
-                                                        <span v-for="n in 5" :key="n">{{ n <= review.rating ? '★' : '☆'
+                                                        <span v-for="n in 5" :key="n">{{ n <= review.rating ? '★' : '☆' 
                                                                 }}</span>
                                                     </div>
                                                 </div>
@@ -1126,7 +513,7 @@
                                         <label class="form-label">비밀번호 확인</label>
                                         <input type="password" class="form-input" placeholder="새 비밀번호 확인"
                                             v-model="profile.confirmPassword">
-                                        <div v-if="errors.confirmPassword" class="error-message">{{
+                                        <div v-if="errors.confirmPassword" class="error-message">{{ 
                                             errors.confirmPassword }}</div>
                                     </div>
                                     <div class="form-actions">
@@ -1200,7 +587,7 @@
             }
 
             const root = document.getElementById('app');
-            const zap = s => (s || '').replace(/[\u200B-\u200D\uFEFF]/g, '');
+            const zap = s => (s || '').replace(/[​-‍﻿]/g, '');
 
             const CTX = zap(root?.dataset?.ctx);
             const USER = zap(root?.dataset?.userId);
@@ -1216,6 +603,7 @@
                         cartItems: [],
                         orders: [],
                         reviews: [],
+                        coupons: [], // 쿠폰 데이터 추가
                         profile: {},
                         loginType: '',
                         userRole: '',
@@ -1277,6 +665,8 @@
                             this.fnLoadReviews();
                         } else if (newTab === 'subscriptions') {
                             this.fnLoadSubscriptions();
+                        } else if (newTab === 'coupons') {
+                            this.fnLoadCoupons(); // 쿠폰 탭 클릭 시 로드
                         }
                     }
                 },
@@ -1482,7 +872,7 @@
                         }
 
                         if (self.profile.newPassword) {
-                            const pwdRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+\[\]{};:'",.<>\/?\\|`~])(?!.*\s).{8,16}$/;
+                            const pwdRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+[\]{};:'",.<>\/?\\|`~])(?!.*\s).{8,16}$/;
                             if (!pwdRegex.test(self.profile.newPassword)) {
                                 self.errors.newPassword = "비밀번호는 소문자, 숫자, 특수문자를 포함하여 8~16자 이내여야 합니다.";
                                 isValid = false;
@@ -1616,6 +1006,24 @@
                                 }
                             },
                             error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                        });
+                    },
+                    
+                    /* 쿠폰 목록 불러오기 (신규) */
+                    fnLoadCoupons: function () {
+                        let self = this;
+                        $.ajax({
+                            url: CTX + "/coupon/myList.dox",
+                            type: "POST",
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.result === 'success') {
+                                    self.coupons = data.list || [];
+                                } else {
+                                    console.error('쿠폰 불러오기 실패');
+                                }
+                            },
+                            error: function (xhr) { console.error('서버오류: ' + xhr.status); }
                         });
                     },
 
@@ -1798,8 +1206,8 @@
                             return '전체 환불 완료'; // 모든 상품이 환불 처리됨 (승인 또는 거절)
                         } else if (processedRefundItems > 0 && processedRefundItems < totalItems) {
                             return '부분 환불 완료'; // 일부 상품만 환불 처리됨 (승인 또는 거절)
-                        } else {
-                            return null; // 환불 관련 없음
+                        } else { // 환불 관련 없음
+                            return null;
                         }
                     },
                     getStatusClass(status) {
@@ -1841,6 +1249,7 @@
                     self.fnLoadOrders();
                     self.fnLoadCart();
                     if (self.activeTab === 'subscriptions') self.fnLoadSubscriptions();
+                    if (self.activeTab === 'coupons') self.fnLoadCoupons(); // 쿠폰 탭 클릭 시 로드
                 }
             })
             window.vueObj = app.mount('#app');

@@ -17,6 +17,9 @@
 	    <result property="uDatetime" column="uDatetime"/>
 	    <result property="optionUnit" column="optionUnit"/>
 		<result property="optionAddPrice" column="optionAddPrice"/>
+		<result property="issueNo" column="issueNo"/>
+		<result property="couponName" column="couponName"/>
+		<result property="couponDiscount" column="couponDiscount"/>
 	
 	    <!-- 배송 정보를 위한 매핑 추가 -->
 	    <result property="courier" column="courier"/>
@@ -84,6 +87,13 @@
 		    SELECT
 		        O.ORDER_NO AS orderNo,
 		        O.BUYER_ID AS buyerId,
+		        O.ISSUE_NO AS issueNo,
+				C.COUPON_NAME AS couponName,
+				CASE
+				    WHEN C.DISCOUNT_TYPE = 'F' THEN C.DISCOUNT_AMOUNT
+				    WHEN C.DISCOUNT_TYPE = 'R' THEN FLOOR(O.TOTAL_PRICE / (1 - C.DISCOUNT_AMOUNT/100) * (C.DISCOUNT_AMOUNT/100))
+				    ELSE 0
+				END AS couponDiscount,
 		        TO_CHAR(O.ORDERDATE, 'YYYY-MM-DD HH24:MI:SS') AS orderDate,
 		        O.TOTAL_PRICE AS totalAmount,
 		        O.STATUS AS status,
@@ -105,6 +115,8 @@
 		R_PEND.ORDER_ITEM_NO WHERE OI_PEND.ORDER_NO = o.ORDER_NO AND R_PEND.STATUS = '대기') AS pendingRefundItemCount
 		    FROM ORDERS O
 		    LEFT JOIN DELIVERY D ON O.ORDER_NO = D.ORDER_NO
+		    LEFT JOIN USER_COUPON UC ON O.ISSUE_NO = UC.ISSUE_NO
+		    LEFT JOIN COUPON C ON UC.COUPON_NO = C.COUPON_NO
 		    WHERE O.BUYER_ID = #{userId}
 		    	AND NOT EXISTS (
 					SELECT 1 FROM SUBSCRIPTION_ORDER SO WHERE SO.ORDER_NO = O.ORDER_NO
@@ -377,6 +389,21 @@
 	    FROM ORDER_ITEM OI
 	    JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
 	    WHERE OI.ORDER_NO = #{orderNo}
+	</select>
+	
+	<!-- 환불 알람용 -->
+	<select id="selectSellerIdByOrderItemNo" parameterType="int" resultType="string">
+	    SELECT P.SELLER_ID
+	    FROM ORDER_ITEM OI
+	    JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
+	    WHERE OI.ORDER_ITEM_NO = #{orderItemNo}
+	</select>
+	
+	<select id="selectProductNameByOrderItemNo" parameterType="int" resultType="string">
+	    SELECT P.PNAME
+	    FROM ORDER_ITEM OI
+	    JOIN PRODUCT P ON OI.PRODUCT_NO = P.PRODUCT_NO
+	    WHERE OI.ORDER_ITEM_NO = #{orderItemNo}
 	</select>
 	
 </mapper>

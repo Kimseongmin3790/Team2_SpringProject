@@ -342,6 +342,13 @@ public class OrderService {
  	     try {
  	    	 int result = orderMapper.insertRefundRequest(paramMap);
  	         if (result > 0) {
+ 	        	 int orderItemNo = Integer.parseInt(paramMap.get("orderItemNo").toString());
+ 	        	 String sellerId = orderMapper.selectSellerIdByOrderItemNo(orderItemNo);
+ 	        	 String productName = orderMapper.selectProductNameByOrderItemNo(orderItemNo);
+ 	        	 if (sellerId != null) {
+ 	        	     String msg = "[환불요청] '" + productName + "' 상품에 대한 환불 신청이 접수되었습니다."; 	     
+ 	        	     notificationService.sendNotification(sellerId, "ORDER", msg, "/order/sellerList.do");
+ 	        	 }        	 
  	        	 resultMap.put("result", "success");
  	         } else {
  	             resultMap.put("result", "fail");
