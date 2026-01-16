@@ -213,23 +213,53 @@
 
                 /* ===== 상품 카드 ===== */
                 .grid-item.product {
-                    aspect-ratio: 3 / 5.5;
+                    height: 610px;
+                    /* 원하는 카드 높이로 고정 (필요하면 조절) */
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .grid-item.product .image-wrapper {
+                    height: 320px;
+                    /* 이미지 영역 고정 높이 */
+                    flex: 0 0 320px;
+                    border-radius: 10px;
+                    overflow: hidden;
+                }
+
+                /* ✅ 이미지가 어떤 비율이든 꽉 채우되 잘리도록 */
+                .grid-item.product .image-wrapper img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    /* 비율 달라도 카드 규격 유지 */
+                    object-position: center;
+                    display: block;
                 }
 
                 .grid-item.product .info {
                     flex: 1;
-                    background: transparent;
+                    display: flex;
+                    flex-direction: column;
+                    padding: 10px 8px;
                     text-align: center;
-                    padding: 6px;
-                    margin-top: 10px;
                 }
 
                 .grid-item.product .info h4 {
+                    margin: 0 0 6px;
                     font-size: 22px;
-                    font-weight: bold;
-                    color: #2e7d32;
-                    margin-bottom: 1px;
-                    text-align: left;
+                    line-height: 1.2;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 1;
+                    /* 제목 1줄 */
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+
+                .grid-item.product .info .meta-bottom {                    
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
                 }
 
                 /* animation */
@@ -273,23 +303,20 @@
                 }
 
                 .grid-item.product .info .desc {
-                    font-size: 18px;
-                    color: blue;
-                    margin-bottom: 1px;
-                    line-height: 1.4;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
+                    margin: 0 0 8px;
+                    line-height: 1.35;
                     display: -webkit-box;
                     -webkit-line-clamp: 2;
+                    /* 설명 2줄 */
                     -webkit-box-orient: vertical;
-                    text-align: left;
+                    overflow: hidden;
                 }
 
                 .grid-item.product .info .price {
                     color: orange;
                     font-weight: bold;
                     font-size: 22px;
-                    text-align: left;
+                    text-align: center !important;
                 }
 
                 .grid-item.product .info .review {
@@ -297,6 +324,7 @@
                     align-items: center;
                     gap: 4px;
                     margin-top: 4px;
+                    justify-content: center;
                 }
 
                 /* 별 평점 */
@@ -315,22 +343,14 @@
                     color: #555;
                 }
 
-                .grid-item.product .info .date {
-                    color: black;
-                    font-size: 20px;
-                    text-align: left;
-                }
-
-                .grid-item.product .info .region {
-                    color: cornflowerblue;
-                    font-size: 20px;
-                    text-align: left;
-                }
-
+                .grid-item.product .info .date,
+                .grid-item.product .info .region,
                 .grid-item.product .info .seller {
-                    color: green;
-                    font-size: 20px;
-                    text-align: left;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    font-size: 14px;
+                    line-height: 1.2;
                 }
 
                 /* ===== 가격 필터 ===== */
@@ -798,6 +818,111 @@
                     opacity: .45;
                     cursor: not-allowed;
                 }
+
+                .product-toolbar {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin: 10px 50px 0;
+                    padding: 12px 14px;
+                    background: #fff;
+                    border: 1px solid #e6e6e6;
+                    border-radius: 12px;
+                    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+                }
+
+                .result-count {
+                    font-size: 16px;
+                    color: #2e7d32;
+                    font-weight: 700;
+                }
+
+                .sort-select {
+                    height: 40px;
+                    padding: 0 12px;
+                    border-radius: 10px;
+                    border: 1px solid #d9d9d9;
+                    font-size: 15px;
+                    outline: none;
+                    cursor: pointer;
+                }
+
+                .sort-select:focus {
+                    border-color: #4caf50;
+                    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+                }
+
+                .quick-filter {
+                    margin-top: 10px;
+                }
+
+                .quick-filter h3 {
+                    color: #1a5d1a;
+                    font-size: 22px;
+                    margin-bottom: 12px;
+                    font-weight: bold;
+                }
+
+                .qf-row {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 12px;
+                }
+
+                .qf-input {
+                    width: 100%;
+                    height: 42px;
+                    padding: 0 40px 0 12px;
+                    border: 1px solid #dfe7df;
+                    border-radius: 10px;
+                    outline: none;
+                    font-size: 15px;
+                    background: #fff;
+                    transition: border-color .2s, box-shadow .2s;
+                }
+
+                .qf-input:focus {
+                    border-color: #5dbb63;
+                    box-shadow: 0 0 0 4px rgba(93, 187, 99, .15);
+                }
+
+                .qf-clear {
+                    position: absolute;
+                    right: 10px;
+                    height: 28px;
+                    width: 28px;
+                    border: none;
+                    border-radius: 50%;
+                    background: #eef4ee;
+                    cursor: pointer;
+                    font-size: 14px;
+                }
+
+                .qf-toggle {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 10px 12px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    user-select: none;
+                    background: rgba(255, 255, 255, .6);
+                    border: 1px solid #e8efe8;
+                    margin-bottom: 10px;
+                    transition: transform .12s, background .2s;
+                }
+
+                .qf-toggle:hover {
+                    background: #f3fbf3;
+                    transform: translateX(2px);
+                }
+
+                .qf-toggle input[type="checkbox"] {
+                    width: 18px;
+                    height: 18px;
+                    accent-color: #4CAF50;
+                }
             </style>
 
         <body>
@@ -866,6 +991,33 @@
 
                         <span v-if="viewLevel === 'product'">
                             <div class="sidebar-divider"></div>
+
+                            <div class="quick-filter">
+                                <h3>빠른 필터</h3>
+
+                                <!-- 검색어 즉시 필터 -->
+                                <div class="qf-row">
+                                    <input type="text" v-model.trim="keyword" placeholder="상품명/설명/판매자 검색"
+                                        class="qf-input" />
+                                    <button v-if="keyword" class="qf-clear" @click="keyword=''">✕</button>
+                                </div>
+
+                                <!-- 토글들 -->
+                                <label class="qf-toggle">
+                                    <input type="checkbox" v-model="hideSoldout" />
+                                    <span>품절 제외</span>
+                                </label>
+
+                                <label class="qf-toggle">
+                                    <input type="checkbox" v-model="hideHidden" />
+                                    <span>판매중지 제외</span>
+                                </label>
+
+                                <label class="qf-toggle">
+                                    <input type="checkbox" v-model="onlyRating4" />
+                                    <span>별점 4.0 이상만</span>
+                                </label>
+                            </div>
 
                             <div class="price-filter">
                                 <h3>가격</h3>
@@ -985,6 +1137,23 @@
 
                         <!-- 상품 -->
                         <div v-else-if="viewLevel === 'product'">
+                            <!-- ✅ 상품 정렬 바 -->
+                            <div class="product-toolbar">
+                                <div class="toolbar-left">
+                                    <span class="result-count">총 {{ sortedProducts.length }}개</span>
+                                </div>
+
+                                <div class="toolbar-right">
+                                    <select v-model="sortKey" class="sort-select">
+                                        <option value="latest">최신순</option>
+                                        <option value="ratingDesc">별점 높은순</option>
+                                        <option value="nameAsc">가나다순</option>
+                                        <option value="priceAsc">가격 낮은순</option>
+                                        <option value="priceDesc">가격 높은순</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div class="grid">
                                 <div class="grid-item product" v-for="p in pagedProducts" :key="p.productNo"
                                     :class="statusClass(p)" @click="onProductClick(p)">
@@ -996,21 +1165,27 @@
                                     <div class="info">
                                         <h4>{{ p.pName }}</h4>
                                         <div class="desc">{{ p.pInfo }}</div>
-                                        <div class="price">{{ Number(p.price).toLocaleString() }}원</div>
-                                        <div class="review">
-                                            <span v-for="i in 5" :key="i">
-                                                <i v-if="Number(p.rating) >= i" class="fas fa-star full-star"></i>
-                                                <i v-else-if="Number(p.rating) >= i - 0.5"
-                                                    class="fas fa-star-half-alt half-star"></i>
-                                                <i v-else class="far fa-star empty-star"></i>
-                                            </span>
-                                            <span class="rating-number">
-                                                ({{ p.rating ? Number(p.rating).toFixed(1) : '0.0' }})
-                                            </span>
+
+                                        <div class="meta-bottom">
+                                            <div class="price">{{ Number(p.price).toLocaleString() }}원</div>
+
+                                            <div class="review">
+                                                <span v-for="i in 5" :key="i">
+                                                    <i v-if="Number(p.rating) >= i" class="fas fa-star full-star"></i>
+                                                    <i v-else-if="Number(p.rating) >= i - 0.5"
+                                                        class="fas fa-star-half-alt half-star"></i>
+                                                    <i v-else class="far fa-star empty-star"></i>
+                                                </span>
+                                                <span class="rating-number">
+                                                    ({{ p.rating ? Number(p.rating).toFixed(1) : '0.0' }})
+                                                </span>
+                                            </div>
+
+                                            <div class="date">📅생산일: {{ p.cdate }}</div>
+                                            <div class="region">🌾원산지: {{ p.origin }}</div>
+                                            <div class="seller">👨‍🌾판매자: {{p.businessName}}({{ p.userName }})
+                                            </div>
                                         </div>
-                                        <div class="date">📅생산일: {{ p.cdate }}</div>
-                                        <div class="region">🌾원산지: {{ p.origin }}</div>
-                                        <div class="seller">👨‍🌾Agricola: {{p.businessName}}({{ p.userName }})</div>
                                     </div>
                                 </div>
                             </div>
@@ -1073,6 +1248,11 @@
                         sessionStatus: '',
                         currentProductPage: 1,
                         productsPerPage: 12,
+                        sortKey: "latest",
+                        keyword: '',
+                        hideSoldout: false,
+                        hideHidden: false,
+                        onlyRating4: false,
                     };
                 },
 
@@ -1126,6 +1306,31 @@
                         if (this.selectedRegion && typeof this.selectedRegion === 'string' && this.selectedRegion.trim() !== '') {
                             result = result.filter((p) => (p.region || '').includes(this.selectedRegion));
                         }
+
+                        // ✅ 상태 토글 (품절/판매중지 제외)
+                        if (this.hideSoldout) {
+                            result = result.filter(p => String(p.productStatus || '').toUpperCase() !== 'SOLDOUT');
+                        }
+                        if (this.hideHidden) {
+                            result = result.filter(p => String(p.productStatus || '').toUpperCase() !== 'HIDDEN');
+                        }
+
+                        // ✅ 별점 4.0 이상만
+                        if (this.onlyRating4) {
+                            result = result.filter(p => Number(p.rating || 0) >= 4.0);
+                        }
+
+                        // ✅ 검색어 즉시 필터 (상품명/설명/판매자/원산지 등)
+                        const kw = (this.keyword || '').trim().toLowerCase();
+                        if (kw) {
+                            result = result.filter(p => {
+                                const hay = [
+                                    p.pName, p.pInfo, p.businessName, p.userName, p.origin, p.region
+                                ].map(v => String(v || '').toLowerCase()).join(' ');
+                                return hay.includes(kw);
+                            });
+                        }
+
                         return result;
                     },
 
@@ -1142,13 +1347,13 @@
                     },
 
                     totalProductPages() {
-                        const n = Math.ceil((this.filteredProducts?.length || 0) / this.productsPerPage);
+                        const n = Math.ceil((this.sortedProducts?.length || 0) / this.productsPerPage);
                         return Math.max(1, n);
                     },
 
                     pagedProducts() {
                         const start = (this.currentProductPage - 1) * this.productsPerPage;
-                        return (this.filteredProducts || []).slice(start, start + this.productsPerPage);
+                        return (this.sortedProducts || []).slice(start, start + this.productsPerPage);
                     },
 
                     childrenMap() {
@@ -1188,6 +1393,48 @@
                         return out;
                     },
 
+                    sortedProducts() {
+                        const list = [...(this.filteredProducts || [])];
+
+                        const toNum = (v) => {
+                            const n = Number(v);
+                            return isNaN(n) ? 0 : n;
+                        };
+
+                        // ✅ 최신순 기준: 1) regDate/udatetime 같은 게 있으면 그걸로, 2) 없으면 productNo DESC로
+                        const getLatestValue = (p) => {
+                            // 있으면 이 키들 중 하나로 정렬 (프로젝트에 맞는 키로 하나만 써도 됨)
+                            const d = p.cdatetimeRaw;
+                            if (d) return new Date(p.cdatetimeRaw).getTime() || 0;
+                            return toNum(p.productNo); // fallback
+                        };
+
+                        switch (this.sortKey) {
+                            case 'ratingDesc':
+                                list.sort((a, b) => toNum(b.rating) - toNum(a.rating));
+                                break;
+
+                            case 'nameAsc':
+                                list.sort((a, b) => String(a.pName || '').localeCompare(String(b.pName || ''), 'ko'));
+                                break;
+
+                            case 'priceAsc':
+                                list.sort((a, b) => toNum(a.price) - toNum(b.price));
+                                break;
+
+                            case 'priceDesc':
+                                list.sort((a, b) => toNum(b.price) - toNum(a.price));
+                                break;
+
+                            case 'latest':
+                            default:
+                                list.sort((a, b) => getLatestValue(b) - getLatestValue(a));
+                                break;
+                        }
+
+                        return list;
+                    },
+
                 },
 
                 watch: {
@@ -1201,6 +1448,11 @@
                     selectedPriceRange() { this.currentProductPage = 1; },
                     customMinPrice() { this.currentProductPage = 1; },
                     customMaxPrice() { this.currentProductPage = 1; },
+                    sortKey() { this.currentProductPage = 1; },
+                    keyword() { this.currentProductPage = 1; },
+                    hideSoldout() { this.currentProductPage = 1; },
+                    hideHidden() { this.currentProductPage = 1; },
+                    onlyRating4() { this.currentProductPage = 1; },
                 },
 
                 methods: {

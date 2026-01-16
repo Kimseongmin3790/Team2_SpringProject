@@ -45,5 +45,6 @@ public class Product {
 	
 	private String region;
 	private int productCount;
+	private String cdatetimeRaw;
 	
 }
