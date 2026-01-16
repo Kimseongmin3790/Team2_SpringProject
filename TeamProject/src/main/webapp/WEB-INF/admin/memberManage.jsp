@@ -24,7 +24,7 @@
                 }
 
                 .admin-container {
-                    max-width: 1200px;
+                    max-width: 1800px;
                     margin: 60px auto;
                     padding: 0 15px 60px;
                     box-sizing: border-box;
@@ -69,35 +69,33 @@
 
                 .table-wrap {
                     width: 100%;
-                    overflow-x: auto;
-                    margin: 0 auto;
+                    overflow: hidden;
                 }
 
                 .member-table {
                     width: 100%;
-                    min-width: 1000px;
+                    min-width: 0;
+                    table-layout: fixed;
                     border-collapse: collapse;
-                    background: white;
+                    background: #fff;
                     border-radius: 10px;
                     overflow: hidden;
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-                    margin: 0 auto;
                 }
 
                 .member-table th {
                     background: #4caf50;
-                    color: white;
-                    padding: 12px;
-                    font-weight: 600;
+                    color: #fff;
+                    padding: 12px 6px;
+                    font-weight: 700;
                     text-align: center;
                     white-space: nowrap;
+                    font-size: 13px;
                 }
 
                 .member-table td {
-                    padding: 10px;
                     text-align: center;
                     border-bottom: 1px solid #eee;
-                    vertical-align: middle;
                 }
 
                 .member-table th,
@@ -105,15 +103,93 @@
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    line-height: 1.25;
+                    font-size: 13px;
+                    padding: 10px 6px;
+                    vertical-align: middle;
                 }
 
+                .member-table th:nth-child(1),
+                .member-table td:nth-child(1) {
+                    width: 90px;
+                }
+
+                /* 회원ID */
+                .member-table th:nth-child(2),
                 .member-table td:nth-child(2) {
-                    max-width: 120px;
+                    width: 70px;
                 }
 
-                .member-table td:nth-child(7) {
-                    max-width: 100px;
+                /* 이름 */
+                .member-table th:nth-child(3),
+                .member-table td:nth-child(3) {
+                    width: 95px;
                 }
+
+                /* 생년월일 */
+                .member-table th:nth-child(4),
+                .member-table td:nth-child(4) {
+                    width: 55px;
+                }
+
+                /* 성별 */
+                .member-table th:nth-child(5),
+                .member-table td:nth-child(5) {
+                    width: 190px;
+                    text-align: left;
+                }
+
+                /* 주소 */
+                .member-table th:nth-child(6),
+                .member-table td:nth-child(6) {
+                    width: 170px;
+                    text-align: left;
+                }
+
+                /* 이메일 */
+                .member-table th:nth-child(7),
+                .member-table td:nth-child(7) {
+                    width: 90px;
+                }
+
+                /* 가입일 */
+                .member-table th:nth-child(8),
+                .member-table td:nth-child(8) {
+                    width: 110px;
+                }
+
+                /* 전화번호 */
+                .member-table th:nth-child(9),
+                .member-table td:nth-child(9) {
+                    width: 70px;
+                }
+
+                /* 유형 */
+                .member-table th:nth-child(10),
+                .member-table td:nth-child(10) {
+                    width: 260px;
+                    text-align: left;
+                }
+
+                /* 판매자정보 */
+                .member-table th:nth-child(11),
+                .member-table td:nth-child(11) {
+                    width: 90px;
+                }
+
+                /* 승인상태 */
+                .member-table th:nth-child(12),
+                .member-table td:nth-child(12) {
+                    width: 90px;
+                }
+
+                /* 승인관리 */
+                .member-table th:nth-child(13),
+                .member-table td:nth-child(13) {
+                    width: 140px;
+                }
+
+                /* 유저상태 */
 
                 .member-table tr:hover {
                     background-color: #f9f9f9;
@@ -123,12 +199,13 @@
                     background: #5dbb63;
                     color: white;
                     border: none;
-                    padding: 5px 10px;
+                    padding: 6px 10px;
                     border-radius: 6px;
-                    font-size: 13px;
+                    font-size: 12px;
                     cursor: pointer;
                     transition: 0.2s;
                     margin: 0 3px;
+                    white-space: nowrap;
                 }
 
                 .btn-action.reject {
@@ -163,6 +240,7 @@
 
                 .status-box {
                     display: flex;
+                    flex-wrap: wrap;
                     justify-content: center;
                     align-items: center;
                     gap: 6px;
@@ -173,6 +251,7 @@
                     border-radius: 6px;
                     border: 1px solid #ccc;
                     font-size: 13px;
+                    width: 72px;
                 }
             </style>
         </head>

@@ -24,7 +24,7 @@
                 }
 
                 .admin-container {
-                    max-width: 1200px;
+                    max-width: 1700px;
                     margin: 60px auto;
                     padding: 0 15px 60px;
                     box-sizing: border-box;
@@ -85,7 +85,8 @@
 
                 .product-table {
                     width: 100%;
-                    min-width: 1000px;
+                    min-width: 0;
+                    table-layout: fixed;
                     border-collapse: collapse;
                     background: white;
                     border-radius: 10px;
@@ -280,8 +281,7 @@
                                         <th>가격</th>
                                         <th>단위</th>
                                         <th>재고</th>
-                                        <th>등록일</th>
-                                        <th>추천</th>
+                                        <th>등록일</th>                                        
                                         <th>상태</th>
                                         <th>상태 설정</th>
                                     </tr>
@@ -295,13 +295,7 @@
                                         <td>{{ item.price.toLocaleString() }}원</td>
                                         <td>{{ item.unit }}</td>
                                         <td>{{ item.stock }}</td>
-                                        <td>{{ item.cdate }}</td>
-                                        <td>
-                                            <button class="btn-recommend" :class="{ active: item.recommend === 'Y' }"
-                                                @click="fnToggleRecommend(item)">
-                                                {{ item.recommend === 'Y' ? '추천안하기' : '추천하기' }}
-                                            </button>
-                                        </td>
+                                        <td>{{ item.cdate }}</td>                                    
 
                                         <td>
                                             <span :class="['status-badge', statusClass(item.productStatus)]">
