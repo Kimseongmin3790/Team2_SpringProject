@@ -13,6 +13,8 @@ import com.example.TeamProject.dao.ChatService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Controller
 public class ChatTestController {
 
@@ -75,6 +77,20 @@ public class ChatTestController {
 
 		return gson.toJson(resultMap);
 
+	}
+
+	@RequestMapping(value = "/chat/rooms.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String rooms(HttpServletRequest request) {
+		String userId = (String) request.getSession().getAttribute("sessionId");
+		HashMap<String, Object> resultMap = chatService.listMyRooms(userId);
+
+		Gson gson = new GsonBuilder().registerTypeAdapter(java.time.LocalDateTime.class,
+				(com.google.gson.JsonSerializer<java.time.LocalDateTime>) (src, typeOfSrc,
+						context) -> new com.google.gson.JsonPrimitive(src.toString()))
+				.create();
+
+		return gson.toJson(resultMap);
 	}
 
 }
