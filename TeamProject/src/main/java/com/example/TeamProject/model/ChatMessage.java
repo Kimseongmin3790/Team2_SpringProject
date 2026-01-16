@@ -6,8 +6,8 @@ import lombok.Data;
 
 @Data
 public class ChatMessage {
-	private int messageId;
-    private int roomId;
+	private long messageId;
+    private long roomId;
     private String senderId;
 
     private String messageType; // TEXT/IMAGE/FILE/SYSTEM

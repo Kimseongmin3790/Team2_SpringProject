@@ -1,6 +1,7 @@
 package com.example.TeamProject.mapper;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -18,6 +19,8 @@ public interface ChatRoomMapper {
 
 	// ✅ 방 생성 (roomId selectKey로 map에 넣어줌)
 	void insertRoom(HashMap<String, Object> map);
+	
+	List<ChatRoom> listMyChatRooms(HashMap<String, Object> map);
 
 }
 	

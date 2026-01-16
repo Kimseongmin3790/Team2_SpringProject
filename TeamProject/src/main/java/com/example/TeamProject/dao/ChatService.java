@@ -53,6 +53,24 @@ public class ChatService {
         map.put("buyerId", buyerId);
         map.put("sellerId", sellerId);
     }
+    
+    public HashMap<String, Object> listMyRooms(String sessionId) {
+
+        HashMap<String, Object> result = new HashMap<>();
+        HashMap<String, Object> param = new HashMap<>();
+
+        param.put("userId", sessionId);
+
+        try {
+            result.put("list", chatRoomMapper.listMyChatRooms(param));
+            result.put("result", "success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("result", "fail");
+        }
+
+        return result;
+    }
 
     public HashMap<String, Object> getChatRoom(HashMap<String, Object> map) {
         HashMap<String, Object> resultMap = new HashMap<>();
