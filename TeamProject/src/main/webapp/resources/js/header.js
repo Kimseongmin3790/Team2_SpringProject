@@ -216,13 +216,13 @@ $(document).ready(function() {
 	    stompClient.connect({}, function(frame) {
 	        const userId = $("#hdSessionId").val();
 
-	        if (userId) {
+	        /*if (userId) {
 	            stompClient.subscribe('/topic/notifications/' + userId, function(res) {
 	                const noti = JSON.parse(res.body);
 	                fnGetNotiCount();
 	                alert("🔔 " + noti.message);
 	            });
-	        }
+	        }*/
 	    });
 	}
 	

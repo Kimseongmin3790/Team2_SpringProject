@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import com.example.TeamProject.mapper.ChatMessageMapper;
 import com.example.TeamProject.mapper.ChatRoomMapper;
 import com.example.TeamProject.model.ChatRoom;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class ChatService {
@@ -17,6 +19,9 @@ public class ChatService {
 
     @Autowired
     ChatMessageMapper chatMessageMapper;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     // ✅ 공통: 빈 값 정리 + 숫자 변환(필요할 때만)
     private Integer toIntOrNull(Object v) {
@@ -142,8 +147,39 @@ public class ChatService {
     public HashMap<String, Object> addMessage(HashMap<String, Object> map) {
         HashMap<String, Object> result = new HashMap<>();
         try {
+        	// 1) 메시지 저장
             chatMessageMapper.insertMessage(map);
+            
+            // 2) 방 last_message 갱신
             chatRoomMapper.updateLastMessage(map);
+            
+            // 3) 방 정보 조회해서 상대방 계산
+            ChatRoom room = chatRoomMapper.findByRoomId(map);
+            String senderId = String.valueOf(map.get("senderId"));
+
+            String receiverId;
+            if (senderId.equals(room.getBuyerId())) {
+                receiverId = room.getSellerId();
+            } else {
+                receiverId = room.getBuyerId();
+            }
+            
+            // 4) 알림 생성 (상대방에게)
+            String pName = room.getPName(); // 너 ChatRoom에 pName 매핑돼있다고 가정
+            String encPName = URLEncoder.encode(pName == null ? "" : pName, StandardCharsets.UTF_8);
+            String msgPreview = String.valueOf(map.get("content"));
+            if (msgPreview.length() > 30) msgPreview = msgPreview.substring(0, 30) + "...";
+
+            String message = "[" + pName + "] 새 채팅: " + msgPreview;
+            String linkUrl = "/chat.do"
+            	    + "?roomId=" + room.getRoomId()
+            	    + "&productNo=" + room.getProductNo()
+            	    + "&sellerId=" + URLEncoder.encode(room.getSellerId(), StandardCharsets.UTF_8)
+            	    + "&buyerId=" + URLEncoder.encode(room.getBuyerId(), StandardCharsets.UTF_8)
+            	    + "&pName=" + encPName;
+
+            notificationService.sendNotification(receiverId, "CHAT", message, linkUrl);
+            
             result.put("result", "success");
         } catch (Exception e) {
             e.printStackTrace();
