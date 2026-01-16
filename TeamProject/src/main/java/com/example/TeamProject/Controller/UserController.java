@@ -158,6 +158,7 @@ public class UserController {
 		double[] coords = userService.getCoordinatesFromAddress(addr);
 		double lat = coords[0];
 		double lng = coords[1];
+		System.out.println(lat + ", " + lng);
 
 		map.put("lat", lat);
 		map.put("lng", lng);

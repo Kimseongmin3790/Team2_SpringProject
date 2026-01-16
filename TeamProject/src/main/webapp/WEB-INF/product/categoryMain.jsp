@@ -41,13 +41,29 @@
                 /* ===== 좌측 카테고리 ===== */
                 .product-category-page .sidebar {
                     flex: 0 0 320px;
-                    background: transparent;
-                    padding: 10px 0;
-                    border: none;
-                    box-shadow: none;
                     position: sticky;
                     top: 100px;
+
+                    /* ✅ 기존 calc(100vh - 1200px) 때문에 높이 0이 됨 → 정상 높이로 */
+                    height: calc(100vh - 140px);
+                    overflow-y: auto;
+                    overflow-x: hidden;
+
+                    /* 기존 스타일 유지하면서 보기좋게 */
+                    padding: 10px 10px 20px 0;
+                    background: transparent;
+                    border: none;
+                    box-shadow: none;
                     align-self: flex-start;
+                }
+
+                .product-category-page .sidebar::-webkit-scrollbar {
+                    width: 8px;
+                }
+
+                .product-category-page .sidebar::-webkit-scrollbar-thumb {
+                    background: #d7e7d8;
+                    border-radius: 8px;
                 }
 
                 .sidebar-header {
@@ -684,6 +700,104 @@
                 .product--hidden:hover .image-wrapper img {
                     transform: scale(1.01);
                 }
+
+                .sidebar-actions {
+                    display: flex;
+                    gap: 8px;
+                    margin: 10px 0 18px;
+                }
+
+                .sidebar-actions .btn-side {
+                    border: 1px solid #dcdcdc;
+                    background: #fff;
+                    color: #1a5d1a;
+                    border-radius: 10px;
+                    padding: 8px 10px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: .2s;
+                }
+
+                .sidebar-actions .btn-side:hover {
+                    background: #e8f5e9;
+                    border-color: #a9d6ad;
+                }
+
+                .cat-row {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 10px;
+                }
+
+                .cat-row .chev {
+                    font-size: 14px;
+                    color: #6b7280;
+                    transition: transform .2s;
+                }
+
+                .cat-row.open .chev {
+                    transform: rotate(90deg);
+                }
+
+                .cat-all {
+                    font-size: 15px;
+                    padding: 8px 12px;
+                    margin: 6px 0 8px;
+                    border-radius: 8px;
+                    background: #f7faf7;
+                    color: #2e7d32;
+                    border: 1px dashed #cfe6d2;
+                }
+
+                .cat-all:hover {
+                    background: #e8f5e9;
+                }
+
+                /* ===== Product pagination (softer UI) ===== */
+                .product-pagination {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 8px;
+                    margin: 28px 0 10px;
+                    flex-wrap: wrap;
+                }
+
+                .product-pagination .page-btn,
+                .product-pagination .page-num {
+                    border: 1px solid #e5e7eb;
+                    background: #fff;
+                    border-radius: 12px;
+                    padding: 10px 12px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: .2s;
+                }
+
+                .product-pagination .page-btn:hover,
+                .product-pagination .page-num:hover {
+                    background: #e8f5e9;
+                    border-color: #a9d6ad;
+                }
+
+                .product-pagination .page-num.active {
+                    background: #4caf50;
+                    border-color: #4caf50;
+                    color: #fff;
+                    font-weight: 700;
+                }
+
+                .product-pagination .page-num.ellipsis {
+                    cursor: default;
+                    background: transparent;
+                    border-color: transparent;
+                }
+
+                .product-pagination button:disabled {
+                    opacity: .45;
+                    cursor: not-allowed;
+                }
             </style>
 
         <body>
@@ -698,22 +812,50 @@
                                 v-if="isSeller">상품등록</button>
                         </div>
 
+                        <div class="sidebar-actions">
+                            <button class="btn-side" @click="showAllProducts">
+                                <i class="fa-solid fa-list"></i> 전체상품
+                            </button>
+                            <button class="btn-side" @click="collapseCategories">
+                                <i class="fa-solid fa-angles-up"></i> 접기
+                            </button>
+                        </div>
+
                         <ul>
                             <li v-for="p in parentCategories" :key="p.categoryNo">
-                                <div @click="toggleParent(p.categoryNo)"
-                                    :class="{ active: selectedParent === p.categoryNo }">
-                                    {{ p.categoryName }}
+                                <div class="cat-row" :class="{ open: String(selectedParent) === String(p.categoryNo) }"
+                                    @click="toggleParent(p.categoryNo, true)">
+                                    <span :class="{ active: String(selectedParent) === String(p.categoryNo) }">
+                                        {{ p.categoryName }}
+                                    </span>
+                                    <i class="fa-solid fa-chevron-right chev"></i>
                                 </div>
-                                <ul v-if="selectedParent === p.categoryNo">
+
+                                <ul v-if="String(selectedParent) === String(p.categoryNo)">
+                                    <!-- ✅ 대분류 전체보기 -->
+                                    <li class="cat-all" @click.stop="selectParentOnly(p.categoryNo)">
+                                        전체 보기
+                                    </li>
+
                                     <li v-for="m in getChildCategories(p.categoryNo)" :key="m.categoryNo">
-                                        <div @click.stop="toggleChild(m.categoryNo)"
-                                            :class="{ active: selectedChild === m.categoryNo }">
-                                            {{ m.categoryName }}
+                                        <div class="cat-row"
+                                            :class="{ open: String(selectedChild) === String(m.categoryNo) }"
+                                            @click.stop="toggleChild(m.categoryNo, true)">
+                                            <span :class="{ active: String(selectedChild) === String(m.categoryNo) }">
+                                                {{ m.categoryName }}
+                                            </span>
+                                            <i class="fa-solid fa-chevron-right chev"></i>
                                         </div>
-                                        <ul v-if="selectedChild === m.categoryNo">
+
+                                        <ul v-if="String(selectedChild) === String(m.categoryNo)">
+                                            <!-- ✅ 중분류 전체보기 -->
+                                            <li class="cat-all" @click.stop="selectChildOnly(m.categoryNo)">
+                                                전체 보기
+                                            </li>
+
                                             <li v-for="s in getChildCategories(m.categoryNo)" :key="s.categoryNo"
                                                 @click.stop="selectSub(s.categoryNo)"
-                                                :class="{ active: selectedSub === s.categoryNo }">
+                                                :class="{ active: String(selectedSub) === String(s.categoryNo) }">
                                                 {{ s.categoryName }}
                                             </li>
                                         </ul>
@@ -785,7 +927,7 @@
                         <!-- Breadcrumb -->
                         <div class="breadcrumb">
                             <a href="main.do" class="home">홈<span class="breadcrumb-sep">></span></a>
-                            <a href="productCategory.do#v=parent" class="home">상품목록
+                            <a href="productCategory.do#v=product" class="home">상품목록
                                 <span class="breadcrumb-sep" v-if="breadcrumb.length > 0">></span>
                             </a>
                             <span v-for="(b, i) in breadcrumb" :key="i" @click="goToLevel(i)">
@@ -844,7 +986,7 @@
                         <!-- 상품 -->
                         <div v-else-if="viewLevel === 'product'">
                             <div class="grid">
-                                <div class="grid-item product" v-for="p in filteredProducts" :key="p.productNo"
+                                <div class="grid-item product" v-for="p in pagedProducts" :key="p.productNo"
                                     :class="statusClass(p)" @click="onProductClick(p)">
                                     <div class="image-wrapper">
                                         <span v-if="statusLabel(p)" class="status-badge">{{ statusLabel(p) }}</span>
@@ -876,6 +1018,19 @@
                                 style="font-size: 50px; text-align: left; color: #2e7d32; padding-top: 30px;">
                                 등록된 상품이 없습니다. 곧 다시 뵙겠습니다.
                             </div>
+                            <div v-if="filteredProducts.length > 0" class="product-pagination">
+                                <button class="page-btn" @click="prevProductPage"
+                                    :disabled="currentProductPage === 1">이전</button>
+
+                                <button v-for="(p, idx) in pageWindow" :key="p + '-' + idx" class="page-num"
+                                    :class="{ active: p === currentProductPage, ellipsis: p === '...' }"
+                                    :disabled="p === '...'" @click="p !== '...' && goProductPage(p)">
+                                    {{ p }}
+                                </button>
+
+                                <button class="page-btn" @click="nextProductPage"
+                                    :disabled="currentProductPage === totalProductPages">다음</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -896,7 +1051,7 @@
                         selectedParent: null,
                         selectedChild: null,
                         selectedSub: null,
-                        viewLevel: 'parent',
+                        viewLevel: 'product',
                         initialCategoryNo: '${categoryNo}',
 
                         priceRanges: [
@@ -907,7 +1062,7 @@
                             { label: '20,000원 ~ 30,000원', min: 20000, max: 30000 },
                             { label: '30,000원 이상', min: 30000, max: Infinity }
                         ],
-                        selectedPriceRange: null,
+                        selectedPriceRange: 0,
                         customMinPrice: null,
                         customMaxPrice: null,
 
@@ -915,7 +1070,9 @@
                         selectedRegion: null,
                         currentRegionPage: 1,
                         regionsPerPage: 10,
-                        sessionStatus: ''
+                        sessionStatus: '',
+                        currentProductPage: 1,
+                        productsPerPage: 12,
                     };
                 },
 
@@ -938,9 +1095,13 @@
 
                         // 카테고리 필터
                         if (this.selectedSub) {
-                            result = result.filter(
-                                (p) => Number(p.categoryNo) === Number(this.selectedSub)
-                            );
+                            result = result.filter(p => String(p.categoryNo) === String(this.selectedSub));
+                        } else if (this.selectedChild) {
+                            const cats = this.getDescendants(this.selectedChild);
+                            result = result.filter(p => cats.includes(String(p.categoryNo)));
+                        } else if (this.selectedParent) {
+                            const cats = this.getDescendants(this.selectedParent);
+                            result = result.filter(p => cats.includes(String(p.categoryNo)));
                         }
 
                         // 가격 필터
@@ -962,7 +1123,7 @@
                         }
 
                         // 지역 필터
-                        if (this.selectedRegion && typeof this.selectedRegion === 'string' && this.selectedRegion.trim() !== '') {                            
+                        if (this.selectedRegion && typeof this.selectedRegion === 'string' && this.selectedRegion.trim() !== '') {
                             result = result.filter((p) => (p.region || '').includes(this.selectedRegion));
                         }
                         return result;
@@ -978,13 +1139,68 @@
 
                     isSeller() {
                         return (this.sessionStatus || '').toUpperCase() === 'SELLER';
-                    }
+                    },
+
+                    totalProductPages() {
+                        const n = Math.ceil((this.filteredProducts?.length || 0) / this.productsPerPage);
+                        return Math.max(1, n);
+                    },
+
+                    pagedProducts() {
+                        const start = (this.currentProductPage - 1) * this.productsPerPage;
+                        return (this.filteredProducts || []).slice(start, start + this.productsPerPage);
+                    },
+
+                    childrenMap() {
+                        const map = {};
+                        (this.categoryList || []).forEach(c => {
+                            const p = String(c.parentCategoryNo ?? '');
+                            const id = String(c.categoryNo ?? '');
+                            if (!map[p]) map[p] = [];
+                            map[p].push(id);
+                        });
+                        return map;
+                    },
+
+                    pageWindow() {
+                        const total = this.totalProductPages;
+                        const cur = this.currentProductPage;
+
+                        if (total <= 7) {
+                            return Array.from({ length: total }, (_, i) => i + 1);
+                        }
+
+                        const out = [];
+                        const push = (v) => out.push(v);
+
+                        push(1);
+
+                        let start = Math.max(2, cur - 2);
+                        let end = Math.min(total - 1, cur + 2);
+
+                        if (start > 2) push('...');
+
+                        for (let i = start; i <= end; i++) push(i);
+
+                        if (end < total - 1) push('...');
+
+                        push(total);
+                        return out;
+                    },
+
                 },
 
                 watch: {
                     selectedRegion(newVal, oldVal) {
                         if (!newVal || newVal === oldVal) return;
-                    }
+                    },
+                    selectedParent() { this.currentProductPage = 1; },
+                    selectedChild() { this.currentProductPage = 1; },
+                    selectedSub() { this.currentProductPage = 1; },
+                    selectedRegion() { this.currentProductPage = 1; },
+                    selectedPriceRange() { this.currentProductPage = 1; },
+                    customMinPrice() { this.currentProductPage = 1; },
+                    customMaxPrice() { this.currentProductPage = 1; },
                 },
 
                 methods: {
@@ -1125,7 +1341,7 @@
                         const p = qs.get('p') || '';
                         const c = qs.get('c') || '';
                         const s = qs.get('s') || '';
-                        const v = qs.get('v') || 'parent';
+                        const v = qs.get('v') || 'product';
                         const r = qs.get('r') ? decodeURIComponent(qs.get('r')) : ''; // ✅ 지역 복원
 
                         const has = (no) => this.categoryList.some(x => x.categoryNo === String(no));
@@ -1143,11 +1359,13 @@
                         }
 
                         // ✅ viewLevel 설정 로직 개선
-                        if (okP && okC && okS && (v === 'product' || v === 'sub')) {
+                        // ✅ viewLevel 설정 로직 (수정)
+                        if (v === 'product') {
+                            // p만 있어도, p+c만 있어도 "상품 화면"이 기본
                             this.viewLevel = 'product';
-                        } else if (okP && okC && v !== 'parent') {
+                        } else if (okP && okC && v === 'sub') {
                             this.viewLevel = 'sub';
-                        } else if (okP) {
+                        } else if (okP && v === 'child') {
                             this.viewLevel = 'child';
                         } else {
                             this.viewLevel = 'parent';
@@ -1170,22 +1388,37 @@
                         return cat ? cat.categoryName : '';
                     },
 
-                    toggleParent(no) {
+                    toggleParent(no, fromSidebar = false) {
                         const id = String(no);
+
                         if (this.selectedParent === id) {
-                            this.selectedParent = ''; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'parent';
+                            this.selectedParent = '';
+                            this.selectedChild = '';
+                            this.selectedSub = '';
                         } else {
-                            this.selectedParent = id; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child';
+                            this.selectedParent = id;
+                            this.selectedChild = '';
+                            this.selectedSub = '';
                         }
+
+                        // ✅ 사이드바 클릭이면 항상 상품 화면
+                        this.viewLevel = fromSidebar ? 'product' : 'child';
                         this.writeHash(true);
                     },
-                    toggleChild(no) {
+
+                    toggleChild(no, fromSidebar = false) {
                         const id = String(no);
+
                         if (this.selectedChild === id) {
-                            this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'child';
+                            this.selectedChild = '';
+                            this.selectedSub = '';
                         } else {
-                            this.selectedChild = id; this.selectedSub = ''; this.viewLevel = 'sub';
+                            this.selectedChild = id;
+                            this.selectedSub = '';
                         }
+
+                        // ✅ 사이드바 클릭이면 항상 상품 화면
+                        this.viewLevel = fromSidebar ? 'product' : 'sub';
                         this.writeHash(true);
                     },
                     selectSub(no) {
@@ -1205,7 +1438,15 @@
 
                     applyInitialCategory() {
                         const no = this.initialCategoryNo ? String(this.initialCategoryNo) : '';
-                        if (!no) { this.selectedParent = ''; this.selectedChild = ''; this.selectedSub = ''; this.viewLevel = 'parent'; return; }
+
+                        if (!no) {
+                            this.selectedParent = '';
+                            this.selectedChild = '';
+                            this.selectedSub = '';
+                            this.viewLevel = 'product';
+                            if (this.selectedPriceRange == null) this.selectPriceRange = 0;
+                            return;
+                        }
 
                         const target = this.categoryList.find(c => c.categoryNo === no);
                         if (!target) { this.selectedParent = ''; this.viewLevel = 'parent'; return; }
@@ -1283,14 +1524,78 @@
                             alert('판매 중지된 상품입니다.');
                             return;
                         }
-                        location.href="/productInfo.do?productNo=" + p.productNo;
+                        location.href = "/productInfo.do?productNo=" + p.productNo;
                     },
                     altText(p) {
                         const s = this.getStatus(p);
                         if (s === 'SOLDOUT') return '품절된 상품 이미지';
                         if (s === 'HIDDEN') return '판매 중지된 상품 이미지';
                         return '상품 이미지';
-                    }
+                    },
+
+                    nextProductPage() {
+                        if (this.currentProductPage < this.totalProductPages) {
+                            this.currentProductPage++;
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    },
+                    prevProductPage() {
+                        if (this.currentProductPage > 1) {
+                            this.currentProductPage--;
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    },
+                    goProductPage(p) {
+                        this.currentProductPage = p;
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    },
+
+                    getDescendants(rootNo) {
+                        const root = String(rootNo || '');
+                        if (!root) return [];
+                        const out = new Set([root]);
+                        const stack = [root];
+                        while (stack.length) {
+                            const cur = stack.pop();
+                            const kids = this.childrenMap[cur] || [];
+                            kids.forEach(k => {
+                                if (!out.has(k)) { out.add(k); stack.push(k); }
+                            });
+                        }
+                        return Array.from(out);
+                    },
+
+                    showAllProducts() {
+                        this.selectedParent = '';
+                        this.selectedChild = '';
+                        this.selectedSub = '';
+                        this.viewLevel = 'product';
+                        this.writeHash(true);
+                    },
+
+                    collapseCategories() {
+                        this.selectedParent = '';
+                        this.selectedChild = '';
+                        this.selectedSub = '';
+                        // 상품은 그대로 보고, 카테고리만 접는 UX
+                        this.viewLevel = 'product';
+                        this.writeHash(true);
+                    },
+
+                    selectParentOnly(parentNo) {
+                        this.selectedParent = String(parentNo);
+                        this.selectedChild = '';
+                        this.selectedSub = '';
+                        this.viewLevel = 'product';
+                        this.writeHash(true);
+                    },
+
+                    selectChildOnly(childNo) {
+                        this.selectedChild = String(childNo);
+                        this.selectedSub = '';
+                        this.viewLevel = 'product';
+                        this.writeHash(true);
+                    },
 
                 },
 

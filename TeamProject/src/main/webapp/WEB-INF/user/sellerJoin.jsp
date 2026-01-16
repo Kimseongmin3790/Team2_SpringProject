@@ -643,7 +643,7 @@
                                     if (data.result == "success") {
                                         self.fnAddSeller();
                                     } else {
-                                        alert("오류 발생");
+                                        Swal.fire('⚠️', '오류 발생', 'warning');
                                     }
                                 }
                             });

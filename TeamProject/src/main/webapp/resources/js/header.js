@@ -6,15 +6,19 @@ $(document).ready(function() {
 		type: "POST",
 		dataType: "json",
 		success: function(res) {
+			const enc = (v) => encodeURIComponent(String(v));
+
 			const linkTop = (pNo) =>
-				path + "/productCategory.do#p=" + encodeURIComponent(String(pNo)) + "&v=child";
+			  path + "/productCategory.do#p=" + enc(pNo) + "&v=product";
+
 			const linkMid = (pNo, cNo) =>
-				path + "/productCategory.do#p=" + encodeURIComponent(String(pNo)) +
-				"&c=" + encodeURIComponent(String(cNo)) + "&v=sub";
+			  path + "/productCategory.do#p=" + enc(pNo) +
+			  "&c=" + enc(cNo) + "&v=product";
+
 			const linkLow = (pNo, cNo, sNo) =>
-				path + "/productCategory.do#p=" + encodeURIComponent(String(pNo)) +
-				"&c=" + encodeURIComponent(String(cNo)) +
-				"&s=" + encodeURIComponent(String(sNo)) + "&v=product";
+			  path + "/productCategory.do#p=" + enc(pNo) +
+			  "&c=" + enc(cNo) +
+			  "&s=" + enc(sNo) + "&v=product";
 
 			const menu = $("#dropdownMenu");
 			menu.empty();
