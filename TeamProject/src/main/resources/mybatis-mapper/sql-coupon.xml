@@ -42,15 +42,93 @@
             C.COUPON_NO,
             'UNUSED',
             SYSDATE,
-            SYSDATE + C.EXPIRE_DAYS  -- 쿠폰에 설정된 유효일수만큼 계산
+            SYSDATE + C.EXPIRE_DAYS 
         FROM USERS U
         CROSS JOIN COUPON C
         WHERE C.COUPON_NO = #{couponNo}
-          AND U.STATUS = 'ACTIVE'  -- 활성 유저에게만 발급
-          AND NOT EXISTS (         -- 중복 발급 방지 (선택 사항)
+          AND U.STATUS = 'ACTIVE'  
+          AND U.STATUS != 'ADMIN'
+          AND NOT EXISTS (         
               SELECT 1 FROM USER_COUPON
               WHERE USER_ID = U.USER_ID AND COUPON_NO = C.COUPON_NO AND STATUS = 'UNUSED'
           )
     </insert>
+    
+    <!-- 쿠폰 생성 (관리자용) -->
+	<insert id="insertCoupon" parameterType="hashmap">
+	    INSERT INTO COUPON (
+	        COUPON_NO,
+	        COUPON_NAME,
+	        DISCOUNT_TYPE,
+	        DISCOUNT_AMOUNT,
+	        MAX_DISCOUNT_PRICE,
+	        MIN_ORDER_PRICE,
+	        EXPIRE_DAYS,
+	        CDATETIME,
+	        NOTI_MESSAGE
+	    ) VALUES (
+	        COUPON_SEQ.NEXTVAL,
+	        #{couponName},
+	        #{discountType},
+	        #{discountAmount},
+	        #{maxDiscountPrice},
+	        #{minOrderPrice},
+	        #{expireDays},
+	        SYSDATE,
+	        #{notiMessage}
+	    )
+	</insert>
+    
+    <!-- 쿠폰 상세 정보 -->
+    <select id="selectCouponDetail" parameterType="int" resultType="hashmap">
+	    SELECT
+	        COUPON_NO,
+	        COUPON_NAME,
+	        NOTI_MESSAGE
+	    FROM COUPON
+	    WHERE COUPON_NO = #{couponNo}
+	</select>
+    
+    
+
+    <!-- 관리자용 쿠폰 목록 조회 (통계 포함) -->
+    <select id="selectAdminCouponList" resultType="hashmap">
+        SELECT 
+            C.COUPON_NO,
+            C.COUPON_NAME,
+            C.DISCOUNT_TYPE,
+            C.DISCOUNT_AMOUNT,
+            C.EXPIRE_DAYS,
+            TO_CHAR(C.CDATETIME, 'YYYY-MM-DD') AS CDATETIME,
+            C.NOTI_MESSAGE,
+            (SELECT COUNT(*) FROM USER_COUPON WHERE COUPON_NO = C.COUPON_NO) AS ISSUED_CNT,
+            (SELECT COUNT(*) FROM USER_COUPON WHERE COUPON_NO = C.COUPON_NO AND STATUS = 'USED') AS USED_CNT
+        FROM COUPON C
+        ORDER BY C.COUPON_NO DESC
+    </select>
+
+    <!-- 쿠폰 삭제 -->
+    <delete id="deleteCoupon" parameterType="int">
+        DELETE FROM COUPON WHERE COUPON_NO = #{couponNo}
+    </delete>
+
+    <!-- 알림 발송을 위한 전체 활성 회원 ID 조회 (기존) -->
+    <select id="selectAllActiveUserIds" resultType="string">
+        SELECT USER_ID FROM USERS WHERE STATUS = 'ACTIVE' AND STATUS != 'ADMIN'
+    </select>
+
+    <!-- 해당 쿠폰을 아직 받지 않은 활성 유저 ID 조회 (신규) -->
+    <select id="selectUnissuedActiveUserIds" parameterType="int" resultType="string">
+        SELECT U.USER_ID
+        FROM USERS U
+        WHERE U.STATUS = 'ACTIVE'
+        AND U.STATUS != 'ADMIN'
+          AND NOT EXISTS (
+              SELECT 1 
+              FROM USER_COUPON UC 
+              WHERE UC.USER_ID = U.USER_ID 
+                AND UC.COUPON_NO = #{couponNo}
+          )
+    </select>
 
 </mapper>

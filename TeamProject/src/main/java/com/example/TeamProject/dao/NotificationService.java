@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import jakarta.annotation.PostConstruct;
 
 import com.example.TeamProject.mapper.NotificationMapper;
 
@@ -17,6 +19,30 @@ public class NotificationService {
     
     @Autowired
     SimpMessagingTemplate messagingTemplate;
+
+    // 서버 시작 시 오래된 알림 자동 삭제 
+    @PostConstruct
+    public void init() {
+        System.out.println("=== [알림 서비스] 서버 시작: 30일 경과 알림 정리 수행 ===");
+        try {
+            int count = notificationMapper.deleteOldNotifications();
+            System.out.println("=== [알림 서비스] 정리 완료: " + count + "건 삭제됨 ===");
+        } catch (Exception e) {
+            System.err.println("!!! [알림 서비스] 초기화 중 에러: " + e.getMessage());
+        }
+    }
+
+    // 매일 자정마다 오래된 알림 자동 삭제
+    @Scheduled(cron = "0 0 0 * * *")
+    public void autoDeleteOldNotifications() {
+        System.out.println("=== [스케줄러] 자정: 30일 경과 알림 자동 삭제 시작 ===");
+        try {
+            int count = notificationMapper.deleteOldNotifications();
+            System.out.println("=== [스케줄러] 삭제 완료: " + count + "건 ===");
+        } catch (Exception e) {
+            System.err.println("!!! [스케줄러] 에러: " + e.getMessage());
+        }
+    }
 
     // 알림 전송 (DB 저장 + 실시간 전송)
     public void sendNotification(String userId, String type, String message, String linkUrl) {

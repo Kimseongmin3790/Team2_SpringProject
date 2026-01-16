@@ -229,12 +229,13 @@ public class PaymentController {
 	            del.put("userId", sessionUser);
 	            del.put("cartNoList", parseCsvToLongList(cartNosCsv));
 	            paymentService.deleteCartByNos(del);
-	            // 쿠폰 사용 처리
-	            Integer ucId = toInt(map.get("ucId"), null);
-	            if (ucId != null) {
-	                paymentService.useCoupon(ucId);
-	            }
+	                 
 	        }
+	        // 쿠폰 사용 처리
+	        Integer ucId = toInt(map.get("ucId"), null);
+            if (ucId != null) {
+                paymentService.useCoupon(ucId);
+            }
         
         // 알림 발송 
 	        try {
@@ -531,11 +532,13 @@ public class PaymentController {
 	            del.put("userId", sessionUser);
 	            del.put("cartNoList", parseCsvToLongList(cartNosCsv));
 	            paymentService.deleteCartByNos(del);
-	            Integer ucId = toInt(map.get("ucId"), null);
-	            if (ucId != null) {
-	                paymentService.useCoupon(ucId);
-	            }
+	            
 	        }
+	        // 쿠폰 사용 처리
+	        Integer ucId = toInt(map.get("ucId"), null);
+            if (ucId != null) {
+                paymentService.useCoupon(ucId);
+            }
 
 	        // 8) 알림 발송 (테스트의 핵심)
 	        try {

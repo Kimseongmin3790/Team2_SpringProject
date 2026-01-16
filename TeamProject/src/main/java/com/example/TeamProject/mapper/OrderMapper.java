@@ -38,5 +38,8 @@ public interface OrderMapper {
     String selectBuyerIdByOrderNo(int orderNo);
     // 알림용 대표 상품명 조회
     String selectOrderProductName(int orderNo);
+    // 환불 알람용
+    String selectSellerIdByOrderItemNo(int orderItemNo);
+    String selectProductNameByOrderItemNo(int orderItemNo);
    
 }
