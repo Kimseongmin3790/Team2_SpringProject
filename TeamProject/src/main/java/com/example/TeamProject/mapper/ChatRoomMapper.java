@@ -21,6 +21,9 @@ public interface ChatRoomMapper {
 	void insertRoom(HashMap<String, Object> map);
 	
 	List<ChatRoom> listMyChatRooms(HashMap<String, Object> map);
+	
+	// 방 정보 조회
+	ChatRoom findByRoomId(HashMap<String, Object> map);
 
 }
 	

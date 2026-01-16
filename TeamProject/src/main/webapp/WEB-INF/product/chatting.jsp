@@ -519,7 +519,6 @@
                     if (this.roomId) {
                         this.fnLoadMessages();
                         this.fnConnectWs();
-                        this.fnLoadHeaderByRoomId(); // pName 채우는 용도(아래 B 참고)
                         return;
                     }
 

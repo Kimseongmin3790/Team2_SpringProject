@@ -41,6 +41,16 @@
 	    )
 	  </insert>
 	  
+	  <select id="findByRoomId" parameterType="hashmap" resultType="com.example.TeamProject.model.ChatRoom">
+		  SELECT
+		    R.*,
+		    P.PNAME AS pName
+		  FROM P_CHAT_ROOM R
+		  JOIN PRODUCT P ON P.PRODUCT_NO = R.PRODUCT_NO
+		  WHERE R.ROOM_ID = #{roomId}
+		</select>
+
+	  
 	  <select id="listMyChatRooms" parameterType="hashmap" resultType="com.example.TeamProject.model.ChatRoom">
 		  SELECT
 		    R.ROOM_ID              AS roomId,
