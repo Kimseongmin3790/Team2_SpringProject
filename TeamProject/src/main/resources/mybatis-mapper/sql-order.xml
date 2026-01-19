@@ -20,6 +20,7 @@
 		<result property="issueNo" column="issueNo"/>
 		<result property="couponName" column="couponName"/>
 		<result property="couponDiscount" column="couponDiscount"/>
+		<result property="deliveryFee" column="DELIVERY_FEE"/>
 	
 	    <!-- 배송 정보를 위한 매핑 추가 -->
 	    <result property="courier" column="courier"/>
@@ -49,6 +50,7 @@
         <result property="imageUrl" column="imageUrl"/>
         <result property="hasReview" column="hasReview"/>
         <result property="refundStatus" column="refundStatus"/>
+        <result property="optionNo" column="OPTION_NO"/>
     </resultMap>
     
      <resultMap id="orderDetailResultMap" type="com.example.TeamProject.model.Order">
@@ -68,6 +70,7 @@
      <result property="issueNo" column="ISSUE_NO"/>
 	 <result property="couponName" column="COUPON_NAME"/>
 	 <result property="couponDiscount" column="COUPON_DISCOUNT"/>
+	 <result property="deliveryFee" column="DELIVERY_FEE"/>
 
      <collection property="items" ofType="com.example.TeamProject.model.OrderItem">
          <id property="orderItemNo" column="ORDER_ITEM_NO"/>
@@ -82,6 +85,7 @@
          <result property="refundStatus" column="REFUND_STATUS"/>
 		 <result property="refundReason" column="REFUND_REASON"/>
 		 <result property="refundQuantity" column="REFUND_QUANTITY"/>
+		 <result property="optionNo" column="OPTION_NO"/>
      </collection>
  </resultMap>
 
@@ -92,6 +96,7 @@
 		        O.BUYER_ID AS buyerId,
 		        O.ISSUE_NO AS issueNo,
 				C.COUPON_NAME AS couponName,
+				O.DELIVERY_FEE,
 				CASE
 				    WHEN C.DISCOUNT_TYPE = 'F' THEN C.DISCOUNT_AMOUNT
 				    WHEN C.DISCOUNT_TYPE = 'R' THEN FLOOR(
@@ -138,6 +143,7 @@
 	        OI.PRODUCT_NO,
 	        OI.QUANTITY,
 	        OI.PRICE,
+	        OI.OPTION_NO,
 	        P.PNAME AS productName,
 	        (SELECT PI.IMAGE_URL FROM PRODUCT_IMAGE PI WHERE PI.PRODUCT_NO = P.PRODUCT_NO AND PI.IS_THUMBNAIL
 	= 'Y' AND ROWNUM = 1) AS imageUrl,
@@ -276,6 +282,7 @@
 	         u.NAME as BUYER_NAME,
 	         pay.PAYMENT_METHOD,
 	         d.COURIER, d.TRACKING_NO,
+	         o.DELIVERY_FEE,
 	         o.ISSUE_NO,
 	         c.COUPON_NAME,
 	         CASE
@@ -283,7 +290,7 @@
 	            WHEN c.DISCOUNT_TYPE = 'R' THEN FLOOR((SELECT SUM(OI_SUB.PRICE * OI_SUB.QUANTITY) FROM ORDER_ITEM OI_SUB WHERE OI_SUB.ORDER_NO = o.ORDER_NO) * (c.DISCOUNT_AMOUNT/100))
 	            ELSE 0
 	         END AS COUPON_DISCOUNT,
-	         oi.ORDER_ITEM_NO, oi.PRODUCT_NO, oi.QUANTITY, oi.PRICE as ITEM_PRICE,
+	         oi.ORDER_ITEM_NO, oi.OPTION_NO, oi.PRODUCT_NO, oi.QUANTITY, oi.PRICE as ITEM_PRICE,
 	         p.PNAME as PRODUCT_NAME,
 	         po.UNIT as OPTION_UNIT, po.ADD_PRICE as OPTION_ADD_PRICE,
 	         (SELECT pi.IMAGE_URL FROM PRODUCT_IMAGE pi WHERE pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_THUMBNAIL

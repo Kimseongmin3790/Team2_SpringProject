@@ -1057,7 +1057,7 @@
 
                                         <div class="detail-row">
                                             <span>배송비</span>
-                                            <span>3,000원</span>
+                                            <span>{{ Number(order.deliveryFee || 0).toLocaleString() }}원</span>
                                         </div>
 
                                         <div v-if="order.couponDiscount > 0" class="detail-row" style="color: #e11d48;">

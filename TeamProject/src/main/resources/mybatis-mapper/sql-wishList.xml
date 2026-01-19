@@ -74,6 +74,7 @@
          
          WHERE w.USER_ID = #{userId}
          ORDER BY w.CDATETIME DESC
+         OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
      </select>
      
      <!-- 특정 상품을 찜한 사용자 목록 조회 -->
@@ -81,6 +82,13 @@
 	    SELECT USER_ID
 	    FROM WISHLIST
 	    WHERE PRODUCT_NO = #{productNo}
+	</select>
+	
+	<!-- 전체 찜 개수 조회 (페이징용) -->
+	<select id="countWishList" parameterType="hashmap" resultType="int">
+	    SELECT COUNT(*)
+	    FROM WISHLIST
+	    WHERE USER_ID = #{userId}
 	</select>
        
  </mapper>

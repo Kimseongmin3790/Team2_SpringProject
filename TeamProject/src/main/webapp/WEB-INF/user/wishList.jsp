@@ -244,6 +244,37 @@
         .wish-image {
             position: relative; 
         }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 30px;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .pagination button.active {
+            background: #5dbb63;
+            color: #fff;
+            border-color: #5dbb63;
+            font-weight: bold;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination button:hover:not(:disabled):not(.active) {
+            background: #f8f8f8;
+        }
     </style>
 </head>
 <body>
@@ -252,7 +283,7 @@
         <div class="wish-container">
             <div class="wish-header">
                 <div class="wish-title-box">
-                    <h2>찜한 상품</h2>
+                    <h2>찜한 상품 ({{ totalCount }})</h2>
                     <p>마음에 드는 상품을 한눈에 모아보세요.</p>
                 </div>
                 <div class="wish-actions" v-if="list.length > 0">
@@ -296,6 +327,15 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- 페이징 UI (v-if 내부로 이동) -->
+                <div class="pagination" v-if="totalCount > pageSize">
+                    <button @click="fnList(currentPage - 1)" :disabled="currentPage === 1">이전</button>
+                    <button v-for="n in totalPages" :key="n" @click="fnList(n)" :class="{ active: currentPage === n }">
+                        {{ n }}
+                    </button>
+                    <button @click="fnList(currentPage + 1)" :disabled="currentPage === totalPages">다음</button>
+                </div>
             </div>
 
             <div v-else class="empty-wish">
@@ -311,6 +351,9 @@
             data() {
                 return {
                     list: [],
+                    currentPage: 1, 
+                    pageSize: 5,   
+                    totalCount: 0,  
                     selectedItems: [],
                     userId: "${sessionScope.sessionId}"
                 }
@@ -318,19 +361,28 @@
             computed: {
                 allSelected() {
                     return this.list.length > 0 && this.selectedItems.length === this.list.length;
+                },
+                totalPages() {
+                    return Math.ceil(this.totalCount / this.pageSize);
                 }
             },
             methods: {
                 // 찜 목록 조회
-                fnList() {
+                fnList(page) {
+                    if (page) this.currentPage = page; 
                     let self = this;
                     $.ajax({
                         url: "/wishlist/list.dox",
                         type: "POST",
                         dataType: "json",
+                        data: {
+                            currentPage: self.currentPage, 
+                            pageSize: self.pageSize        
+                        },
                         success: function(data) {
                             if(data.result === "success") {
                                 self.list = data.list;
+                                self.totalCount = data.totalCount; 
                             }
                         }
                     });
@@ -383,8 +435,9 @@
                         data: { productNo: productNo },
                         success: function(data) {
                             if(data.result === "success") {
-                                self.list = self.list.filter(item => item.productNo !== productNo);
-                                self.selectedItems = self.selectedItems.filter(no => no !== productNo);
+                                alert("삭제되었습니다.");
+                                self.fnList(); 
+                                self.selectedItems = []; 
                             }
                         }
                     });

@@ -35,4 +35,7 @@ public interface PaymentMapper {
 	int deleteCartByNos(HashMap<String, Object> map);
 	
 	List<Cart> selectPaymentLines(HashMap<String, Object> map);
+	
+	// 환불시 재고 복구
+	int increaseOptionStock(Map<String, Object> map);
 }
