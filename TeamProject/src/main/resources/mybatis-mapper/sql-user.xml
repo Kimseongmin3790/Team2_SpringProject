@@ -150,18 +150,30 @@
 	
 	<!--유저 프로필 업데이트 -->
 	<update id="updateProfile" parameterType="hashmap">
-	    UPDATE USERS
-	    <set>
-	    	EMAIL = #{email},
-	        PHONE = #{phone},
-	        ADDRESS = #{address},
-	        UDATETIME = SYSDATE
-	        <if test="hashPwd != null and hashPwd != ''">
-	            , PASSWORD = #{hashPwd}
-	        </if>
-	    </set>
-	    WHERE USER_ID = #{userId}
+	  UPDATE USERS
+	  <set>
+	    <if test="email != null and email != ''">
+	      EMAIL = #{email},
+	    </if>
+	    <if test="phone != null and phone != ''">
+	      PHONE = #{phone},
+	    </if>
+	
+	    <if test="address != null and address != ''">
+	      ADDRESS = #{address, jdbcType=VARCHAR},
+	      LAT = #{lat, jdbcType=NUMERIC},
+	      LNG = #{lng, jdbcType=NUMERIC},
+	    </if>
+	
+	    UDATETIME = SYSDATE
+	
+	    <if test="hashPwd != null and hashPwd != ''">
+	      , PASSWORD = #{hashPwd, jdbcType=VARCHAR}
+	    </if>
+	  </set>
+	  WHERE USER_ID = #{userId, jdbcType=VARCHAR}
 	</update>
+
 	
 	<!--계정 삭제 -->
 	<update id="updateUserStatus" parameterType="map">

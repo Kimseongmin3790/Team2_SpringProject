@@ -803,7 +803,8 @@
 
         <body>
             <div id="app" data-ctx="<c:out value='${pageContext.request.contextPath}'/>"
-                data-user-id="<c:out value='${sessionId}'/>" data-active-tab="<c:out value='${param.activeTab}'/>">
+                data-user-id="<c:out value='${sessionScope.sessionId}'/>"
+                data-active-tab="<c:out value='${param.activeTab}'/>">
                 <!-- 공통 헤더 -->
                 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
@@ -1052,7 +1053,8 @@
                                         </div>
                                         <div class="detail-row">
                                             <span>상품 금액</span>
-                                            <span>{{ order.items.reduce((acc, item) => acc + (Number(item.price) * Number(item.quantity)), 0).toLocaleString() }}원</span>
+                                            <span>{{ order.items.reduce((acc, item) => acc + (Number(item.price) *
+                                                Number(item.quantity)), 0).toLocaleString() }}원</span>
                                         </div>
 
                                         <div class="detail-row">
@@ -1072,7 +1074,8 @@
 
                                         <div class="detail-row total-price">
                                             <span>최종 결제 금액</span>
-                                            <span>{{ (Number(order.totalPrice || 0) - getRefundedAmount(order)).toLocaleString() }}원</span>
+                                            <span>{{ (Number(order.totalPrice || 0) -
+                                                getRefundedAmount(order)).toLocaleString() }}원</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1200,7 +1203,7 @@
                                             errors.confirmPassword }}</div>
                                     </div>
                                     <div class="form-actions">
-                                        <button class="btn btn-primary" @click="saveProfile">저장하기</button>
+                                        <button  class="btn btn-primary" @click="saveProfile">저장하기</button>
                                         <button class="btn btn-outline">취소</button>
                                     </div>
                                 </div>
@@ -1279,8 +1282,8 @@
             const app = Vue.createApp({
                 data() {
                     return {
-                        userId: root?.dataset?.userId || '',
-                        activeTab: root?.dataset?.activeTab || 'cart',
+                        userId: USER || '',
+                        activeTab: TAB || 'cart',
                         userName: "",
                         userEmail: "",
                         cartItems: [],
@@ -1574,6 +1577,7 @@
                         }
 
                         const profileData = {
+                            userId: self.userId,
                             phone: self.profile.phone.replaceAll('-', ''),
                             address: self.profile.address,
                         };
@@ -1659,7 +1663,7 @@
                                     success: function (response) {
                                         if (response.result === 'success') {
                                             alert('회원 계정이 성공적으로 탈퇴되었습니다.');
-                                            location.href = '${pageContext.request.contextPath}/';
+                                            location.href = '/main.do';
                                         } else {
                                             alert(response.message || '계정 탈퇴 중 오류가 발생했습니다.');
                                         }

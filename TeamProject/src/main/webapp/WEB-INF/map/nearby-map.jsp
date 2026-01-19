@@ -39,24 +39,27 @@
                 .page-header {
                     display: flex;
                     align-items: center;
-                    justify-content: space-between;
                     gap: 12px;
                     padding: 16px 20px;
                     max-width: 1200px;
                     width: 100%;
                     margin: 16px auto 0;
+
+                    flex-wrap: wrap;
                 }
 
                 .page-header h1 {
-                    margin: 0;
-                    font-size: 1.4rem;
-                    color: #1a5d1a;
-                    font-weight: 700;
+                    flex: 0 0 auto;
                 }
+
 
                 .page-header .btns {
                     display: flex;
+                    align-items: center;
                     gap: 8px;
+
+                    flex: 0 0 auto;
+                    margin-left: auto;
                 }
 
                 .btn {
@@ -197,21 +200,26 @@
                 }
 
                 @media (max-width: 960px) {
-                    .map-wrap {
-                        grid-template-columns: 1fr;
+                    .searchbar {
+                        flex: 1 1 100%;
+                        min-width: 0;
+                        max-width: 100%;
                     }
 
-                    #bigmap,
-                    .side {
-                        height: 60vh;
+                    .page-header .btns {
+                        width: 100%;
+                        margin-left: 0;
+                        justify-content: flex-end;
                     }
                 }
 
                 .searchbar {
                     display: flex;
-                    gap: 8px;
                     align-items: center;
-                    flex: 1;
+                    gap: 8px;
+
+                    flex: 1 1 520px;
+                    min-width: 420px;
                     max-width: 620px;
                 }
 
@@ -268,6 +276,70 @@
                 .btn--light:hover {
                     background: #e6f6e6;
                 }
+
+                .agri-user-label {
+                    position: relative;
+                    display: inline-flex !important;
+                    align-items: center;
+                    gap: 6px;
+
+                    padding: 7px 10px !important;
+                    background: #ffffff !important;
+                    border: 1px solid rgba(0, 0, 0, .15) !important;
+                    border-radius: 999px !important;
+
+                    color: #111 !important;
+                    -webkit-text-fill-color: #111 !important;
+                    font-size: 13px !important;
+                    font-weight: 800 !important;
+                    line-height: 1 !important;
+                    white-space: nowrap !important;
+
+                    box-shadow: 0 6px 14px rgba(0, 0, 0, .14) !important;
+
+                    /* ✅ 마커 위로 올리기 (yAnchor보다 안정적) */
+                    transform: translateY(calc(-100% - 18px));
+                    pointer-events: none;
+                    /* 지도 클릭 방해 X */
+                }
+
+                .agri-user-label::after {
+                    content: "";
+                    position: absolute;
+                    left: 50%;
+                    bottom: -7px;
+                    transform: translateX(-50%);
+                    width: 0;
+                    height: 0;
+                    border-left: 7px solid transparent;
+                    border-right: 7px solid transparent;
+                    border-top: 7px solid #ffffff;
+                    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .12));
+                }
+
+                .agri-user-dot {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    background: #5dbb63;
+                    box-shadow: 0 0 0 3px rgba(93, 187, 99, .20);
+                }
+
+                /* 카카오 커스텀 오버레이/인포윈도우 레이어를 최상단으로 */
+                #bigmap .wrap,
+                #bigmap .wrap * {
+                    box-sizing: border-box;
+                }
+
+                #bigmap .wrap,
+                #bigmap .wrap * {
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                }
+
+                #bigmap .agri-user-label {
+                    z-index: 2147483647 !important;
+                }
             </style>
         </head>
 
@@ -287,10 +359,9 @@
                         <div class="btns">
                             <button class="btn btn--line" @click="goHome">메인으로</button>
                             <button class="btn btn--line" @click="goPrevCenter" title="검색 전 중심으로 복귀">이전 위치</button>
-                            <button class="btn btn--line" @click="recenterToMyPos" title="브라우저 현재 위치로 이동">현재 위치</button>
-                            <button class="btn" :class="{'btn--line': followMe}" @click="toggleFollowMe"
-                                title="내 위치 자동추적 On/Off">
-                                {{ followMe ? '추적 해제' : '내 위치 추적' }}
+                            <button type="button" class="btn" :class="{'btn--line': followMe}" :disabled="isToggling"
+                                @click.stop.prevent="toggleFollowMe">
+                                {{ followMe ? '내 주소로' : '내 위치 추적' }}
                             </button>
                         </div>
                     </div>
@@ -347,8 +418,9 @@
                         const app = Vue.createApp({
                             data() {
                                 return {
+                                    __vmId: Math.random().toString(36).slice(2),
                                     path: "${pageContext.request.contextPath}",
-                                    center: { lat: 37.5665, lng: 126.9780 },  // 기본: 서울시청
+                                    center: { lat: 37.5665, lng: 126.9780 },
                                     map: null,
                                     rangeKm: 3,
                                     onlyInRange: false,
@@ -363,9 +435,12 @@
                                     myPos: null,        // {lat, lng} - 브라우저 내 위치
                                     userMarker: null,   // 내 위치 마커
                                     prevCenter: null,   // 검색/이동 전 중심 저장
-                                    geoWatchId: null,   // watchPosition id
                                     followMe: false,    // 내 위치 추적 모드
-                                    isAddressSearch: false
+                                    isAddressSearch: false,
+                                    isToggling: false,
+                                    _userOverlay: null,
+                                    isLoggedIn: false,
+                                    prevUserPin: null,
                                 };
                             },
                             computed: {
@@ -388,6 +463,18 @@
                                 hasActiveFilter() { return !!(this.onlyInRange || (this.searchText && !this.isAddressSearch)); }
                             },
                             methods: {
+                                _setUserLabel(text) {
+                                    if (!this._userOverlay) return;
+                                    const safe = String(text)
+                                        .replace(/&/g, "&amp;")
+                                        .replace(/</g, "&lt;")
+                                        .replace(/>/g, "&gt;")
+                                        .replace(/"/g, "&quot;")
+                                        .replace(/'/g, "&#39;");
+                                    this._userOverlay.setContent(`<div class="agri-user-label">${safe}</div>`);
+                                },
+
+
                                 goHome() { location.href = this.path + "/main.do"; },
                                 inRange(p) {
                                     if (!p.lat || !p.lng) return false;
@@ -399,7 +486,7 @@
                                     const params = new URLSearchParams(location.search);
                                     return params.get(key);
                                 },
-                                initFromQueryOrBrowser() {
+                                async initFromQueryOrBrowser() {
                                     const qLat = parseFloat(this.qs('lat'));
                                     const qLng = parseFloat(this.qs('lng'));
                                     const qRange = parseInt(this.qs('rangeKm'), 10);
@@ -412,37 +499,34 @@
                                     if (qOnly === 'Y') this.onlyInRange = true;
                                     if (qOnly === 'N') this.onlyInRange = false;
 
-                                    if (!(qLat && qLng)) {
-                                        // 쿼리 없으면 사용자/브라우저 위치 우선
-                                        $.ajax({
-                                            url: this.path + "/main/data/userLocation.dox",
-                                            type: "POST",
-                                            dataType: "json",
-                                            success: (res) => {
-                                                if (res.login && res.lat && res.lng) {
-                                                    this.center = { lat: res.lat, lng: res.lng };
-                                                } else {
-                                                    this.tryBrowserGeolocation();
-                                                }
-                                                this.initMapThenLoad();
-                                            },
-                                            error: () => {
-                                                this.tryBrowserGeolocation();
-                                                this.initMapThenLoad();
+                                    // ✅ 쿼리가 없으면: 서버(가입 주소 좌표) -> 실패 시 브라우저 GPS -> 그래도 실패면 기본값 유지
+                                    if (isNaN(qLat) || isNaN(qLng)) {
+                                        let decided = false;
+
+                                        try {
+                                            const res = await $.ajax({
+                                                url: this.path + "/main/data/userLocation.dox",
+                                                type: "POST",
+                                                dataType: "json",
+                                                timeout: 5000
+                                            });
+                                            this.isLoggedIn = !!res?.login;
+
+                                            const lat = parseFloat(res?.lat);
+                                            const lng = parseFloat(res?.lng);
+                                            if (res?.login && Number.isFinite(lat) && Number.isFinite(lng)) {
+                                                this.center = { lat, lng };
+                                                decided = true;
                                             }
-                                        });
-                                    } else {
-                                        this.initMapThenLoad();
+
+                                        } catch (e) { }
+
                                     }
+
+                                    // ✅ 여기서 "확정된 center"로 지도 생성
+                                    this.initMapThenLoad();
                                 },
-                                tryBrowserGeolocation() {
-                                    if (navigator.geolocation) {
-                                        navigator.geolocation.getCurrentPosition(
-                                            pos => this.center = { lat: pos.coords.latitude, lng: pos.coords.longitude },
-                                            () => { } // 무시: 기본값 유지
-                                        );
-                                    }
-                                },
+
                                 initMapThenLoad() {
                                     const container = document.getElementById("bigmap");
                                     this.map = new kakao.maps.Map(container, {
@@ -453,6 +537,7 @@
                                     if (!this._infoWindow) {
                                         this._infoWindow = new kakao.maps.InfoWindow({ removable: false });
                                     }
+
                                     kakao.maps.event.addListener(this.map, "click", () => {
                                         if (this._infoWindow && this._infoWindow.getMap()) {
                                             this._infoWindow.close();
@@ -460,13 +545,24 @@
                                         }
                                     });
 
-                                    // 내 위치 마커
-                                    const me = new kakao.maps.Marker({ position: new kakao.maps.LatLng(this.center.lat, this.center.lng), map: this.map });
-                                    new kakao.maps.InfoWindow({ content: "<div style='padding:5px;'>내 위치</div>" }).open(this.map, me);
+                                    // initMapThenLoad() 끝부분에서:
+                                    // ✅ 초기 표시 규칙
+                                    if (!this.isLoggedIn) {
+                                        // 비로그인: 서울시청
+                                        this.followMe = false;
+                                        this._setCenter(37.5665, 126.9780, { level: 6, rememberPrev: false });
+                                        this._updateUserMarker(37.5665, 126.9780, "서울시청");
+                                    } else {
+                                        // 로그인: 기본은 내 주소(DB)
+                                        this.followMe = false;
+                                        this._updateUserMarker(this.center.lat, this.center.lng, "내 주소");
+                                    }
 
                                     this.drawRangeCircles();
                                     this.loadProducers();
+
                                 },
+
                                 loadProducers() {
                                     $.ajax({
                                         url: this.path + "/main/data/sellerList.dox",
@@ -577,89 +673,171 @@
                                 },
                                 // 중심을 바꾸기 전에 반드시 이전 중심 저장
                                 _setCenter(lat, lng, { level = null, rememberPrev = true } = {}) {
-                                    if (rememberPrev) this.prevCenter = { ...this.center };
+                                    if (rememberPrev) {
+                                        this.prevCenter = { ...this.center };
+                                        this.prevUserPin = this._userOverlay
+                                            ? {
+                                                lat: this._userOverlay.getPosition().getLat(),
+                                                lng: this._userOverlay.getPosition().getLng(),
+                                                label: this.followMe ? "현재 위치" : "내 주소"
+                                            }
+                                            : {
+                                                lat: this.center.lat, lng: this.center.lng,
+                                                label: this.followMe ? "현재 위치" : "내 주소"
+                                            };
+                                    }
+
                                     this.center = { lat, lng };
                                     if (this.map) {
                                         this.map.setCenter(new kakao.maps.LatLng(lat, lng));
                                         if (level != null) this.map.setLevel(level);
                                     }
-                                    this._updateUserMarker(lat, lng);
                                     this.drawRangeCircles();
                                     this.updateMarkerVisibility();
                                     this._syncUrl();
                                     this.loadProducers();
                                 },
 
-                                recenterToMyPos() {
-                                    if (!navigator.geolocation) { alert("이 브라우저는 위치 기능을 지원하지 않습니다."); return; }
-                                    navigator.geolocation.getCurrentPosition(
-                                        pos => {
-                                            this.myPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                                            this._setCenter(this.myPos.lat, this.myPos.lng, { level: 6, rememberPrev: true });
-                                        },
-                                        err => {
-                                            console.warn("GPS 실패:", err.code, err.message);
-                                            // ❗ HTTPS가 아니거나 권한 거부면 자주 실패합니다(로컬은 localhost만 예외).
-                                            // 대체 1) 서버 세션 위치 사용 시도
-                                            $.ajax({
-                                                url: this.path + "/main/data/userLocation.dox",
-                                                type: "POST", dataType: "json", timeout: 5000
-                                            }).done(res => {
-                                                if (res && res.lat && res.lng) {
-                                                    this._setCenter(res.lat, res.lng, { level: 6, rememberPrev: true });
-                                                } else {
-                                                    alert("현재 위치 권한이 없어서 기본 위치(서울시청)로 이동합니다.");
-                                                    this._setCenter(37.5665, 126.9780, { level: 6, rememberPrev: true });
-                                                }
-                                            }).fail(() => {
-                                                alert("현재 위치를 가져올 수 없어 기본 위치(서울시청)로 이동합니다.");
-                                                this._setCenter(37.5665, 126.9780, { level: 6, rememberPrev: true });
-                                            });
-                                        },
-                                        { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
-                                    );
-                                },
-
                                 goPrevCenter() {
-                                    if (!this.prevCenter) return;
+                                    if (!this.prevCenter) return alert("이전 위치가 아직 없어요. 먼저 위치를 한 번 이동해보세요.");
+
+                                    // 지도/목록 이동
                                     this._setCenter(this.prevCenter.lat, this.prevCenter.lng, { rememberPrev: false });
+
+                                    // ✅ 내 핀도 같이 이동
+                                    const pin = this.prevUserPin;
+                                    if (pin && Number.isFinite(pin.lat) && Number.isFinite(pin.lng)) {
+                                        this._updateUserMarker(pin.lat, pin.lng, pin.label || "내 위치");
+                                    } else {
+                                        this._updateUserMarker(this.prevCenter.lat, this.prevCenter.lng, "내 위치");
+                                    }
                                 },
 
-                                toggleFollowMe() {
-                                    if (!navigator.geolocation) {
-                                        alert("브라우저가 위치 기능을 지원하지 않습니다.");
+                                async applyFollowState() {
+                                    // 비로그인: 항상 서울시청
+                                    if (!this.isLoggedIn) {
+                                        this.followMe = false;
+                                        this._setCenter(37.5665, 126.9780, { level: 6, rememberPrev: true });
+                                        this._updateUserMarker(37.5665, 126.9780, "서울시청");
                                         return;
                                     }
-                                    if (!this.followMe) {
-                                        // ON
-                                        this.followMe = true;
-                                        this.geoWatchId = navigator.geolocation.watchPosition(
-                                            pos => {
-                                                this.myPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                                                // 추적 모드에서는 지도 중심도 따라가게
-                                                this._setCenter(this.myPos.lat, this.myPos.lng, { rememberPrev: false });
-                                            },
-                                            err => console.warn("watchPosition 실패:", err && err.message),
-                                            { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
-                                        );
-                                    } else {
-                                        // OFF
-                                        if (this.geoWatchId != null) navigator.geolocation.clearWatch(this.geoWatchId);
-                                        this.geoWatchId = null;
-                                        this.followMe = false;
+
+                                    if (this.followMe) {
+                                        // ✅ 추적 ON => GPS
+                                        const ok = await new Promise(resolve => {
+                                            if (!navigator.geolocation) return resolve(false);
+                                            navigator.geolocation.getCurrentPosition(
+                                                (pos) => {
+                                                    const lat = pos.coords.latitude;
+                                                    const lng = pos.coords.longitude;
+                                                    if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) return resolve(false);
+
+                                                    this.myPos = { lat, lng };
+                                                    this._setCenter(lat, lng, { level: 6, rememberPrev: true });
+                                                    this._updateUserMarker(lat, lng, "현재 위치");
+                                                    resolve(true);
+                                                },
+                                                () => resolve(false),
+                                                { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 }
+                                            );
+                                        });
+
+                                        if (!ok) {
+                                            alert("현재 위치를 가져오지 못했어요. 위치 권한/HTTPS를 확인해 주세요.");
+                                            // GPS 실패하면 추적 ON 유지할지/끄고 내주소로 돌릴지 선택인데,
+                                            // UX상 보통 '끄고 내주소'가 낫다:
+                                            this.followMe = false;
+                                            await this.applyFollowState();
+                                        }
+                                        return;
+                                    }
+
+                                    // ✅ 추적 OFF => 내 주소(DB)
+                                    try {
+                                        const res = await $.ajax({
+                                            url: this.path + "/main/data/userLocation.dox",
+                                            type: "POST",
+                                            dataType: "json",
+                                            timeout: 5000
+                                        });
+
+                                        const lat = Number(res?.lat);
+                                        const lng = Number(res?.lng);
+
+                                        if (res?.login === true && Number.isFinite(lat) && Number.isFinite(lng)) {
+                                            this._setCenter(lat, lng, { level: 6, rememberPrev: true });
+                                            this._updateUserMarker(lat, lng, "내 주소");
+                                        } else {
+                                            // 로그인인데 좌표 없으면 서울시청으로 fallback
+                                            this._setCenter(lat, lng, { level: 6, rememberPrev: true });
+                                            this._updateUserMarker(37.5665, 126.9780, "서울시청");
+                                        }
+                                    } catch (e) {
+                                        this._setCenter(37.5665, 126.9780, { level: 6, rememberPrev: false });
+                                        this._updateUserMarker(37.5665, 126.9780, "서울시청");
                                     }
                                 },
 
-                                _updateUserMarker(lat, lng) {
-                                    if (!this.map) return;
-                                    const pos = new kakao.maps.LatLng(lat, lng);
-                                    if (this.userMarker) {
-                                        this.userMarker.setPosition(pos);
-                                    } else {
-                                        this.userMarker = new kakao.maps.Marker({ position: pos, map: this.map });
-                                        new kakao.maps.InfoWindow({ content: "<div style='padding:5px;'>내 위치</div>" })
-                                            .open(this.map, this.userMarker);
+                                async toggleFollowMe() {
+                                    if (this.isToggling) return;
+                                    this.isToggling = true;
+                                    try {
+                                        this.followMe = !this.followMe;
+                                        await this.applyFollowState();
+                                    } finally {
+                                        this.isToggling = false;
                                     }
+                                },
+
+                                _updateUserMarker(lat, lng, labelText = "내 위치") {
+                                    if (!this.map) return;
+
+                                    const pos = new kakao.maps.LatLng(lat, lng);
+
+                                    // 마커
+                                    if (!this.userMarker) {
+                                        this.userMarker = new kakao.maps.Marker({ position: pos });
+                                    } else {
+                                        this.userMarker.setPosition(pos);
+                                    }
+                                    this.userMarker.setMap(this.map);
+
+                                    // 라벨(CustomOverlay)
+                                    const safe = String(labelText)
+                                        .replace(/&/g, "&amp;")
+                                        .replace(/</g, "&lt;")
+                                        .replace(/>/g, "&gt;")
+                                        .replace(/"/g, "&quot;")
+                                        .replace(/'/g, "&#39;");
+
+                                    const content =
+                                        '<div class="agri-user-label"><span class="agri-user-dot"></span>' +
+                                        safe +
+                                        '</div>';
+
+                                    if (!this._userOverlay) {
+                                        this._userOverlay = new kakao.maps.CustomOverlay({
+                                            position: pos,
+                                            content,
+                                            xAnchor: 0.5,  // ✅ CSS에서 -50% 처리
+                                            yAnchor: 1.0,
+                                            zIndex: 2147483647
+                                        });
+                                    } else {
+                                        this._userOverlay.setPosition(pos);
+                                        this._userOverlay.setContent(content);
+                                    }
+
+                                    this._userOverlay.setMap(this.map);
+                                },
+
+                                _escapeHtml(s) {
+                                    return String(s)
+                                        .replace(/&/g, "&amp;")
+                                        .replace(/</g, "&lt;")
+                                        .replace(/>/g, "&gt;")
+                                        .replace(/"/g, "&quot;")
+                                        .replace(/'/g, "&#39;");
                                 },
 
                                 goSeller(userId) {
