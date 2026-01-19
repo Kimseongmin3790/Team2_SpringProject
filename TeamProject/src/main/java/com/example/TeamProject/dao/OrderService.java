@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.TeamProject.mapper.CouponMapper;
 import com.example.TeamProject.mapper.OrderMapper;
 import com.example.TeamProject.model.Order;
 
@@ -18,6 +19,9 @@ public class OrderService {
     
     @Autowired
     NotificationService notificationService;
+    
+    @Autowired 
+    private CouponMapper couponMapper;
      
     public HashMap<String, Object> getOrderHistory(String userId) {
         HashMap<String, Object> resultMap = new HashMap<>();
@@ -388,6 +392,14 @@ public class OrderService {
  	        int result = orderMapper.updateRefundStatus(paramMap);
  	        if (result > 0) {
  	            resultMap.put("result", "success");
+ 	            
+ 	           if ("승인".equals(paramMap.get("status"))) {
+ 	        	    Order order = orderMapper.selectOrderDetail(paramMap);
+ 	        	    if (order != null && order.getIssueNo() != 0) {
+ 	        	        couponMapper.restoreCoupon(order.getIssueNo());
+ 	        	    }
+ 	        	}
+
  	            int orderNo = Integer.parseInt(paramMap.get("orderNo").toString());
 	 	        String status = "환불" + paramMap.get("status").toString(); 
 	 	        sendStatusNotification(orderNo, status);

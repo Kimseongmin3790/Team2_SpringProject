@@ -130,5 +130,13 @@
                 AND UC.COUPON_NO = #{couponNo}
           )
     </select>
+    
+    <!-- 환불 시 쿠폰 복구 -->
+	<update id="restoreCoupon" parameterType="int">
+	    UPDATE USER_COUPON
+	    SET STATUS = 'UNUSED',
+	        USED_DATE = NULL
+	    WHERE ISSUE_NO = #{issueNo}
+	</update>
 
 </mapper>

@@ -968,7 +968,6 @@
                                             <span v-else :class="getStatusClass(order.status)">
                                                 {{ order.status }}
                                             </span>
-                                            <!-- 배송조회 버튼은 별도로 유지 -->
                                             <button class="btn btn-outline-info btn-sm" @click="trackDelivery(order)"
                                                 v-if="order.courier && order.trackingNo &&
                                         getOrderOverallRefundStatus(order) !== '전체 환불 완료'">배송조회</button>
@@ -1052,17 +1051,28 @@
                                             <span>{{ order.memo }}</span>
                                         </div>
                                         <div class="detail-row">
-                                            <span>총 주문 금액</span>
-                                            <span>{{ Number(order.totalPrice || 0).toLocaleString() }}원</span>
+                                            <span>상품 금액</span>
+                                            <span>{{ order.items.reduce((acc, item) => acc + (Number(item.price) * Number(item.quantity)), 0).toLocaleString() }}원</span>
                                         </div>
+
+                                        <div class="detail-row">
+                                            <span>배송비</span>
+                                            <span>3,000원</span>
+                                        </div>
+
+                                        <div v-if="order.couponDiscount > 0" class="detail-row" style="color: #e11d48;">
+                                            <span>- 쿠폰 할인 ({{ order.couponName }})</span>
+                                            <span>{{ Number(order.couponDiscount).toLocaleString() }}원</span>
+                                        </div>
+
                                         <div v-if="getRefundedAmount(order) > 0" class="detail-row text-danger">
-                                            <span>- 환불된 금액</span>
+                                            <span>- 환불 완료</span>
                                             <span>{{ getRefundedAmount(order).toLocaleString() }}원</span>
                                         </div>
+
                                         <div class="detail-row total-price">
                                             <span>최종 결제 금액</span>
-                                            <span>{{ (Number(order.totalPrice || 0) -
-                                                getRefundedAmount(order)).toLocaleString() }}원</span>
+                                            <span>{{ (Number(order.totalPrice || 0) - getRefundedAmount(order)).toLocaleString() }}원</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1855,18 +1865,30 @@
                         return combo > 0 ? combo : Number(i.price || 0);
                     },
                     getRefundedAmount(order) {
-                        if (!order || !order.items) {
-                            return 0;
-                        }
+                        if (!order || !order.items) return 0;
 
-                        return order.items.reduce((total, item) => {
+                        let refundTotal = order.items.reduce((total, item) => {
                             if (item.refundStatus === '승인') {
                                 const unitPrice = item.price / item.quantity;
-                                const refundValue = unitPrice * item.refundQuantity;
-                                return total + refundValue;
+                                return total + (unitPrice * item.refundQuantity);
                             }
                             return total;
                         }, 0);
+
+                        const isAllRefunded = order.processedRefundItemCount === order.totalItemCount;
+                        const isBeforeShipping = order.status === '결제완료' || order.status === '배송 준비중';
+
+                        if (isAllRefunded) {
+                            if (order.couponDiscount > 0) {
+                                refundTotal -= order.couponDiscount;
+                            }
+
+                            if (isBeforeShipping) {
+                                refundTotal += 3000;
+                            }
+                        }
+
+                        return Math.max(0, refundTotal);
                     },
                     getOrderOverallRefundStatus(order) {
                         if (!order || order.totalItemCount === undefined) {

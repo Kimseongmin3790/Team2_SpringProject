@@ -76,7 +76,7 @@ public class PaymentController {
 	    HashMap<String, Object> resultMap = new HashMap<>();
 
 	    try {
-	        // ✅ 로그인 방어 (세션 기준)
+	        // 로그인 방어 
 	        String sessionUser = (String) session.getAttribute("sessionId");
 	        if (sessionUser == null || sessionUser.isBlank()) {
 	            resultMap.put("result", "fail");
@@ -88,7 +88,7 @@ public class PaymentController {
 	        String impUid = String.valueOf(map.get("impUid"));
 	        String merchantUid = String.valueOf(map.get("merchantUid"));
 
-	        // 1) PortOne 결제 검증
+	        // PortOne 결제 검증
 	        String accessToken = paymentService.getPortOneAccessToken();
 	        HashMap<String, Object> paymentData = paymentService.getPaymentData(impUid, accessToken);
 
@@ -104,7 +104,7 @@ public class PaymentController {
 	            throw new IllegalStateException("결제가 완료되지 않았습니다. status=" + status);
 	        }
 
-	        // 2) 모드 분기: cartNos 있으면 다건(특산물 박스/장바구니)
+	        // 모드 분기: cartNos 있으면 다건(특산물 박스/장바구니)
 	        String cartNosCsv = String.valueOf(map.getOrDefault("cartNos", "")).trim();
 	        boolean isCartMode = (cartNosCsv != null && !cartNosCsv.isBlank() && !"null".equalsIgnoreCase(cartNosCsv));
 
@@ -139,7 +139,7 @@ public class PaymentController {
 	            if (lines == null || lines.isEmpty()) throw new IllegalStateException("결제 대상(단건)이 없습니다.");
 	        }
 
-	        // 3) 서버 기준 금액 계산(변조 방지) + PG 금액 비교
+	        // 서버 기준 금액 계산(변조 방지) + PG 금액 비교
 	        int goodsTotal = 0;
 	        boolean hasDelivery = false;
 
@@ -166,19 +166,16 @@ public class PaymentController {
 	        int usedPoint = Math.max(0, toInt(map.get("usedPoint"), 0));
 	        int expectedAmount = Math.max(0, goodsTotal + shippingFee - usedPoint);
 	        if (!isTestPay) {
-	            // ✅ 운영: 반드시 일치해야 함
 	            if (paidAmount != expectedAmount) {
 	                throw new IllegalStateException("결제금액 불일치(서버=" + expectedAmount + ", PG=" + paidAmount + ")");
 	            }
-	        } else {
-	            // ✅ 테스트: 1원 결제 허용 (원하면 1원만 허용하도록)
+	        } else {	
 	            if (paidAmount != 1) {
 	                throw new IllegalStateException("테스트 결제는 1원만 허용됩니다. paidAmount=" + paidAmount);
 	            }
-	            // 테스트 결제인데도 주문 총액을 1원으로 저장할지 / 실금액으로 저장할지 선택 필요
 	        }	       
 
-	        // 4) ORDERS INSERT (네 컬럼에 맞춤)
+	        // ORDERS INSERT
 	        HashMap<String, Object> orderMap = new HashMap<>();
 	        int orderTotalToSave = isTestPay ? expectedAmount : paidAmount;
 
@@ -189,11 +186,15 @@ public class PaymentController {
 	        orderMap.put("deliverAddr", map.get("deliverAddr"));
 	        orderMap.put("memo", map.get("memo"));
 	        orderMap.put("buyerId", sessionUser);
+	        
+	        if (map.get("ucId") != null && !String.valueOf(map.get("ucId")).isBlank()) {
+	            orderMap.put("issueNo", map.get("ucId"));
+	        }
 
 	        paymentService.insertOrder(orderMap);
 	        int orderNo = (int) orderMap.get("orderNo");
 
-	        // 5) PAYMENT INSERT
+	        // PAYMENT INSERT
 	        HashMap<String, Object> payMap = new HashMap<>();
 	        payMap.put("orderNo", orderNo);
 	        payMap.put("paymentMethod", paymentMethod.toUpperCase());
@@ -204,7 +205,7 @@ public class PaymentController {
 	        
 	        Set<String> sellerIds = new HashSet<>();
 
-	        // 6) ORDER_ITEM 여러 건 INSERT + 재고 차감
+	        // ORDER_ITEM 여러 건 INSERT + 재고 차감
 	        for (com.example.TeamProject.model.Cart l : lines) {
 	            Integer productNo = toInt(l.getProductNo(), null);
 	            Integer optionNo  = toInt(l.getOptionNo(), null);
@@ -231,7 +232,7 @@ public class PaymentController {
 	            paymentService.insertOrderItem(itemMap);
 	        }
 
-	        // 7) cart 모드면 결제된 cart 삭제(선택이지만 보통 필요)
+	        // cart 모드면 결제된 cart 삭제
 	        if (isCartMode) {
 	            HashMap<String, Object> del = new HashMap<>();
 	            del.put("userId", sessionUser);
@@ -286,7 +287,7 @@ public class PaymentController {
 	    HashMap<String, Object> resultMap = new HashMap<>();
 
 	    try {
-	        // 0) 로그인 방어
+	        // 로그인 방어
 	        String sessionUser = (String) session.getAttribute("sessionId");
 	        if (sessionUser == null || sessionUser.isBlank()) {
 	            resultMap.put("result", "fail");
@@ -295,26 +296,26 @@ public class PaymentController {
 	            return new Gson().toJson(resultMap);
 	        }
 
-	        // 1) 테스트 결제 여부 (프론트: testPay=Y)
+	        // 테스트 결제 여부 
 	        boolean isTest = "Y".equalsIgnoreCase(String.valueOf(map.getOrDefault("testPay", "N")));
 
-	        // 2) 필수값
+	        // 필수값
 	        String impUid = String.valueOf(map.get("impUid"));
 	        Integer planId = toInt(map.get("planId"), null);
 	        if (planId == null) throw new IllegalArgumentException("planId가 없습니다.");
 
-	        // 3) 서버 기준 플랜 조회(변조 방지)
+	        // 서버 기준 플랜 조회
 	        HashMap<String, Object> plan = subscriptionService.getPlanById(planId);
 	        if (plan == null || plan.isEmpty()) throw new IllegalStateException("플랜 정보를 찾을 수 없습니다.");
 
-	        String periodType = String.valueOf(plan.get("periodType")); // 서버값 우선
+	        String periodType = String.valueOf(plan.get("periodType")); 
 	        int planPrice = toInt(plan.get("price"), 0);
 	        if (planPrice <= 0) throw new IllegalStateException("플랜 가격이 올바르지 않습니다.");
 
-	        int expectedAmount = planPrice;     // (포인트 적용하면 여기서 차감)
-	        int amountToSave  = expectedAmount; // ✅ DB 저장은 실제 가격
+	        int expectedAmount = planPrice;     
+	        int amountToSave  = expectedAmount;
 
-	        // 4) PortOne 검증
+	        // PortOne 검증
 	        String accessToken = paymentService.getPortOneAccessToken();
 	        HashMap<String, Object> paymentData = paymentService.getPaymentData(impUid, accessToken);
 
@@ -325,7 +326,6 @@ public class PaymentController {
 	            throw new IllegalStateException("결제가 완료되지 않았습니다. status=" + status);
 	        }
 
-	        // ✅ 테스트면 PG=1원만 체크, 실결제면 금액 일치 체크
 	        if (isTest) {
 	            if (paidAmount != 1) {
 	                throw new IllegalStateException("테스트 결제는 1원만 허용됩니다. paid=" + paidAmount);
@@ -341,7 +341,7 @@ public class PaymentController {
 	            paymentMethod = "UNKNOWN";
 	        }
 
-	        // 5) ORDERS 저장 (테이블 필수 컬럼 맞춰서)
+	        // ORDERS 저장 
 	        HashMap<String, Object> orderMap = new HashMap<>();
 	        orderMap.put("totalPrice", amountToSave);
 	        orderMap.put("status", "결제완료");
@@ -354,7 +354,7 @@ public class PaymentController {
 	        paymentService.insertOrder(orderMap);
 	        int orderNo = (int) orderMap.get("orderNo");
 
-	        // 6) PAYMENT 저장 (DB는 실제금액)
+	        // PAYMENT 저장
 	        HashMap<String, Object> payMap = new HashMap<>();
 	        payMap.put("orderNo", orderNo);
 	        payMap.put("paymentMethod", paymentMethod.toUpperCase());
@@ -363,7 +363,7 @@ public class PaymentController {
 	        payMap.put("amount", amountToSave);
 	        paymentService.insertPayment(payMap);
 
-	        // 7) SUBSCRIPTION 생성
+	        // SUBSCRIPTION 생성
 	        HashMap<String, Object> subMap = new HashMap<>();
 	        subMap.put("planId", planId);
 	        subMap.put("userId", sessionUser);
@@ -371,7 +371,7 @@ public class PaymentController {
 	        subMap.put("orderNo", orderNo);
 	        subscriptionService.insertSubscription(subMap);
 	        
-	        // [추가] 정기구독 신청 완료 알림 발송
+	        // 정기구독 신청 완료 알림 발송
 	        try {
 	            String buyerId = (String) map.get("buyerId");
 	            String msg = "[정기구독] 신청이 완료되었습니다. 첫 배송부터 꼼꼼히 챙겨드릴게요!";
@@ -390,7 +390,7 @@ public class PaymentController {
 	        subOrderMap.put("status", "PAID");
 	        subscriptionService.insertSubscriptionOrder(subOrderMap);
 
-	        // 9) SUBSCRIPTION 업데이트: last_order_no, next_billing_date
+	        // SUBSCRIPTION 업데이트
 	        HashMap<String, Object> upd = new HashMap<>();
 	        upd.put("subscriptionId", subscriptionId);
 	        upd.put("lastOrderNo", orderNo);
@@ -452,7 +452,7 @@ public class PaymentController {
 	        // String merchantUid = String.valueOf(map.get("merchantUid"));
 	        int paidAmount = toInt(map.get("amount"), 0);
 
-	        // 2) 모드 분기 (verifyPayment와 동일 로직)
+	        // 모드 분기 
 	        String cartNosCsv = String.valueOf(map.getOrDefault("cartNos", "")).trim();
 	        boolean isCartMode = (cartNosCsv != null && !cartNosCsv.isBlank() && !"null".equalsIgnoreCase(cartNosCsv));
 
@@ -486,20 +486,25 @@ public class PaymentController {
 	            if (lines == null || lines.isEmpty()) throw new IllegalStateException("결제 대상(단건)이 없습니다.");
 	        }
 	        
-	        // 4) ORDERS INSERT
+	        // ORDERS INSERT
 	        HashMap<String, Object> orderMap = new HashMap<>();
 	        orderMap.put("totalPrice", paidAmount);
-	        orderMap.put("status", "결제완료"); // 바로 결제완료
+	        orderMap.put("status", "결제완료"); 
 	        orderMap.put("receivName", map.get("receivName"));
 	        orderMap.put("receivPhone", map.get("receivPhone"));
 	        orderMap.put("deliverAddr", map.get("deliverAddr"));
 	        orderMap.put("memo", map.get("memo"));
 	        orderMap.put("buyerId", sessionUser);
 
+	        // 쿠폰 번호가 있으면 주문 정보에 포함 (저장 순서 개선)
+	        if (map.get("ucId") != null && !String.valueOf(map.get("ucId")).isBlank()) {
+	            orderMap.put("issueNo", map.get("ucId"));
+	        }
+
 	        paymentService.insertOrder(orderMap);
 	        int orderNo = (int) orderMap.get("orderNo");
-
-	        // 5) PAYMENT INSERT
+	        
+	        // PAYMENT INSERT
 	        HashMap<String, Object> payMap = new HashMap<>();
 	        payMap.put("orderNo", orderNo);
 	        payMap.put("paymentMethod", "TEST_CARD");
@@ -510,7 +515,7 @@ public class PaymentController {
 	        
 	        Set<String> sellerIds = new HashSet<>();
 
-	        // 6) ORDER_ITEM + 재고 차감
+	        // ORDER_ITEM + 재고 차감
 	        for (com.example.TeamProject.model.Cart l : lines) {
 	            Integer productNo = toInt(l.getProductNo(), null);
 	            Integer optionNo  = toInt(l.getOptionNo(), null);
@@ -534,7 +539,7 @@ public class PaymentController {
 	            paymentService.insertOrderItem(itemMap);
 	        }
 
-	        // 7) 장바구니 삭제
+	        // 장바구니 삭제
 	        if (isCartMode) {
 	            HashMap<String, Object> del = new HashMap<>();
 	            del.put("userId", sessionUser);
@@ -548,7 +553,7 @@ public class PaymentController {
                 paymentService.useCoupon(ucId);
             }
 
-	        // 8) 알림 발송 (테스트의 핵심)
+	        // 알림 발송 
 	        try {
 	            String buyerId = (String) map.get("buyerId");
 	            String msg = "[테스트주문] 결제가 완료되었습니다. (주문번호: " + orderNo + ")";

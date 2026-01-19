@@ -32,4 +32,7 @@ public interface CouponMapper {
 
     // 쿠폰 삭제
     int deleteCoupon(int couponNo);
+    
+    // 환불시 쿠폰 복구
+    int restoreCoupon(int issueNo);
 }
