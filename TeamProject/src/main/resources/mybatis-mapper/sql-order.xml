@@ -65,6 +65,9 @@
      <result property="paymentMethod" column="PAYMENT_METHOD"/>
      <result property="courier" column="COURIER"/>
      <result property="trackingNo" column="TRACKING_NO"/>
+     <result property="issueNo" column="ISSUE_NO"/>
+	 <result property="couponName" column="COUPON_NAME"/>
+	 <result property="couponDiscount" column="COUPON_DISCOUNT"/>
 
      <collection property="items" ofType="com.example.TeamProject.model.OrderItem">
          <id property="orderItemNo" column="ORDER_ITEM_NO"/>
@@ -91,7 +94,11 @@
 				C.COUPON_NAME AS couponName,
 				CASE
 				    WHEN C.DISCOUNT_TYPE = 'F' THEN C.DISCOUNT_AMOUNT
-				    WHEN C.DISCOUNT_TYPE = 'R' THEN FLOOR(O.TOTAL_PRICE / (1 - C.DISCOUNT_AMOUNT/100) * (C.DISCOUNT_AMOUNT/100))
+				    WHEN C.DISCOUNT_TYPE = 'R' THEN FLOOR(
+					    (SELECT SUM(OI.PRICE * OI.QUANTITY)
+					     FROM ORDER_ITEM OI
+					     WHERE OI.ORDER_NO = O.ORDER_NO) * (C.DISCOUNT_AMOUNT/100)
+					)
 				    ELSE 0
 				END AS couponDiscount,
 		        TO_CHAR(O.ORDERDATE, 'YYYY-MM-DD HH24:MI:SS') AS orderDate,
@@ -269,12 +276,18 @@
 	         u.NAME as BUYER_NAME,
 	         pay.PAYMENT_METHOD,
 	         d.COURIER, d.TRACKING_NO,
+	         o.ISSUE_NO,
+	         c.COUPON_NAME,
+	         CASE
+	            WHEN c.DISCOUNT_TYPE = 'F' THEN c.DISCOUNT_AMOUNT
+	            WHEN c.DISCOUNT_TYPE = 'R' THEN FLOOR((SELECT SUM(OI_SUB.PRICE * OI_SUB.QUANTITY) FROM ORDER_ITEM OI_SUB WHERE OI_SUB.ORDER_NO = o.ORDER_NO) * (c.DISCOUNT_AMOUNT/100))
+	            ELSE 0
+	         END AS COUPON_DISCOUNT,
 	         oi.ORDER_ITEM_NO, oi.PRODUCT_NO, oi.QUANTITY, oi.PRICE as ITEM_PRICE,
 	         p.PNAME as PRODUCT_NAME,
 	         po.UNIT as OPTION_UNIT, po.ADD_PRICE as OPTION_ADD_PRICE,
 	         (SELECT pi.IMAGE_URL FROM PRODUCT_IMAGE pi WHERE pi.PRODUCT_NO = p.PRODUCT_NO AND pi.IS_THUMBNAIL
 	 = 'Y' AND ROWNUM = 1) as IMAGE_URL,
-	         -- 환불 정보 추가 (대문자 별칭으로 수정)
 	         r.STATUS as REFUND_STATUS,
 	         r.REASON as REFUND_REASON,
 	         r.REFUND_AMOUNT as REFUND_QUANTITY
@@ -283,6 +296,8 @@
 	     LEFT JOIN USERS u ON o.BUYER_ID = u.USER_ID
 	     LEFT JOIN DELIVERY d ON o.ORDER_NO = d.ORDER_NO
 	     LEFT JOIN PAYMENT pay ON o.ORDER_NO = pay.ORDER_NO
+	     LEFT JOIN USER_COUPON uc ON o.ISSUE_NO = uc.ISSUE_NO
+    	 LEFT JOIN COUPON c ON uc.COUPON_NO = c.COUPON_NO
 	     LEFT JOIN ORDER_ITEM oi ON o.ORDER_NO = oi.ORDER_NO
 	     LEFT JOIN PRODUCT p ON oi.PRODUCT_NO = p.PRODUCT_NO
 	     LEFT JOIN PRODUCT_OPTION po ON oi.OPTION_NO = po.OPTION_NO
