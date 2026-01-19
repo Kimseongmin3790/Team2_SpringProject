@@ -27,6 +27,9 @@ public class WishListController {
     // 찜 목록 페이지 이동
     @RequestMapping("/wishlist/list.do")
     public String wishList(HttpSession session, Model model) {
+        if (session.getAttribute("sessionId") == null) {
+            return "redirect:/login.do"; 
+        }
         return "user/wishList";
     }
 

@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.TeamProject.mapper.CouponMapper;
 import com.example.TeamProject.mapper.OrderMapper;
+import com.example.TeamProject.mapper.PaymentMapper;
 import com.example.TeamProject.model.Order;
+import com.example.TeamProject.model.OrderItem;
 
 @Service
 public class OrderService {
@@ -22,6 +24,9 @@ public class OrderService {
     
     @Autowired 
     private CouponMapper couponMapper;
+    
+    @Autowired
+    private PaymentMapper paymentMapper;
      
     public HashMap<String, Object> getOrderHistory(String userId) {
         HashMap<String, Object> resultMap = new HashMap<>();
@@ -390,25 +395,53 @@ public class OrderService {
  	    HashMap<String, Object> resultMap = new HashMap<>();
  	    try {
  	        int result = orderMapper.updateRefundStatus(paramMap);
+
  	        if (result > 0) {
  	            resultMap.put("result", "success");
- 	            
- 	           if ("승인".equals(paramMap.get("status"))) {
- 	        	    Order order = orderMapper.selectOrderDetail(paramMap);
- 	        	    if (order != null && order.getIssueNo() != 0) {
- 	        	        couponMapper.restoreCoupon(order.getIssueNo());
- 	        	    }
- 	        	}
 
- 	            int orderNo = Integer.parseInt(paramMap.get("orderNo").toString());
-	 	        String status = "환불" + paramMap.get("status").toString(); 
-	 	        sendStatusNotification(orderNo, status);
- 
- 	        } else {
- 	            resultMap.put("result", "fail");
- 	            resultMap.put("message", "이미 처리되었거나 존재하지 않는 환불 요청입니다.");
+ 	            if ("승인".equals(paramMap.get("status"))) {
+ 	                Order order = orderMapper.selectOrderDetail(paramMap);
+
+ 	                if (order == null) {
+ 	                } else {
+ 	                    
+ 	                    if (order.getIssueNo() != null && order.getIssueNo() != 0) {
+ 	                        couponMapper.restoreCoupon(order.getIssueNo());
+ 	                    }
+
+ 	                    if (order.getItems() != null) {
+ 	                        String targetItemNo = String.valueOf(paramMap.get("orderItemNo"));
+
+ 	                        for (OrderItem item : order.getItems()) {
+ 	                            if (String.valueOf(item.getOrderItemNo()).equals(targetItemNo)) {
+
+ 	                                if (item.getOptionNo() != null && item.getOptionNo() != 0) {
+ 	                                    HashMap<String, Object> stockMap = new HashMap<>();
+ 	                                    stockMap.put("optionNo", item.getOptionNo());
+ 	                                    stockMap.put("qty", item.getRefundQuantity());
+
+ 	                                    int stockResult = paymentMapper.increaseOptionStock(stockMap);
+ 	                                    paymentMapper.refreshProductStatusByProductNo(item.getProductNo());
+ 	                                } else {
+ 	                                }
+ 	                            }
+ 	                        }
+ 	                    }
+ 	                }
+ 	            }
+
+ 	            // 알림 발송 (안전하게 감싸기)
+ 	            try {
+ 	                int orderNo = Integer.parseInt(paramMap.get("orderNo").toString());
+ 	                sendStatusNotification(orderNo, "환불" + paramMap.get("status").toString());
+ 	                System.out.println("[완료] 알림 전송 완료");
+ 	            } catch (Exception e) {
+ 	                System.out.println("[에러] 알림 전송 중 실패: " + e.getMessage());
+ 	            }
  	        }
+ 	        System.out.println("====== [환불 디버그 종료] ======");
  	    } catch (Exception e) {
+ 	        System.out.println("!!! [치명적 에러 발생] !!!");
  	        e.printStackTrace();
  	        resultMap.put("result", "fail");
  	        resultMap.put("message", "환불 처리 중 오류가 발생했습니다.");
@@ -431,5 +464,7 @@ public class OrderService {
  	        System.err.println("주문 상태 알림 전송 실패: " + e.getMessage());
  	    }
  	}
+ 	
+ 	
     
 }

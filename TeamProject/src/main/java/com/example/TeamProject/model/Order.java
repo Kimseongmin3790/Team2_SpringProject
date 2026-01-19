@@ -35,4 +35,6 @@ public class Order {
 	private String couponName;     
 	private Integer couponDiscount;
 	
+	private Integer deliveryFee;
+	
 }

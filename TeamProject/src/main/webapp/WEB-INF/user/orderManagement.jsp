@@ -964,7 +964,7 @@
                                             <span>
                                                 {{ (item.price / item.quantity * item.refundQuantity).toLocaleString() }}원
                                                 <span v-if="showShippingRefundHint(item)" class="refund-hint">
-                                                    (전체 환불 시 배송비 3,000원 추가 환불 필요)
+                                                    (전체 환불 시 배송비 {{ selectedOrder.deliveryFee.toLocaleString() }}원 추가 환불 필요)
                                                 </span>
                                             </span>
                                         </p>
@@ -1017,7 +1017,7 @@
                                 <!-- 배송비 -->
                                 <div class="detail-row">
                                     <span class="detail-label">배송비</span>
-                                    <span class="detail-value">3,000원</span>
+                                    <span class="detail-value">{{ Number(selectedOrder.deliveryFee || 0).toLocaleString() }}원</span>
                                 </div>
 
                                 <!-- 쿠폰 할인 -->
@@ -1166,6 +1166,7 @@
                     data: {
                         orderNo: self.selectedOrder.orderNo,
                         orderItemNo: item.orderItemNo,
+                        sellerId: self.sessionId,
                         status: newStatus // '승인' 또는 '거절'
                     },
                     success: function(response) {
@@ -1418,6 +1419,8 @@
                     return total;
                 }, 0);
 
+                if (refundTotal === 0) return 0;
+
                 const isAllRefunded = order.processedRefundItemCount === order.totalItemCount;
                 const isBeforeShipping = order.status === '결제완료' || order.status === '배송 준비중';
 
@@ -1425,7 +1428,6 @@
                     if (order.couponDiscount > 0) {
                         refundTotal -= order.couponDiscount;
                     }
-
                     if (isBeforeShipping) {
                         refundTotal += 3000;
                     }

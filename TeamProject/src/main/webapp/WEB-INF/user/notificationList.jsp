@@ -314,6 +314,7 @@
                                 </div>
                             </div>
                             <div class="action-bar" v-if="list.length > 0">
+                                <button class="clear-all-btn" @click="fnReadAll" style="margin-right: 15px;">모든 알림 읽음 처리</button>
                                 <button class="clear-all-btn" @click="fnRemoveRead">읽은 알림 모두 삭제</button>
                             </div>
 
@@ -561,8 +562,22 @@
                                         minute: "2-digit",
                                         hour12: false
                                     });
+                                },
+                                fnReadAll() {
+                                    if (!confirm("모든 알림을 읽음 처리하시겠습니까?")) return;
+                                    let self = this;
+                                    $.ajax({
+                                        url: "/notification/read.dox",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: {}, 
+                                        success: function (data) {
+                                            alert("모든 알림이 읽음 처리되었습니다.");
+                                            self.fnList(); 
+                                            $("#notiBadge").hide().text("0");
+                                        }
+                                    });
                                 }
-
                             },
                             mounted() {
                                 if (!this.userId) {

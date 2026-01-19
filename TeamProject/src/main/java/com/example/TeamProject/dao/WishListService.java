@@ -15,7 +15,7 @@ public class WishListService {
 	@Autowired
 	WishListMapper wishListMapper;
 	
-	// 찜 여부 확인 (0: 안함, 1: 함) DB 확인용
+	// 찜 여부 확인 (0: 안함, 1: 함)
 	public int checkWishList(HashMap<String, Object> map) {
 	    try {
 	        return wishListMapper.checkWishList(map);
@@ -60,13 +60,25 @@ public class WishListService {
 
 	// 찜한 상품 리스트 조회
 	public HashMap<String, Object> getWishList(HashMap<String, Object> map) {
-	    HashMap<String, Object> resultMap = new HashMap<String, Object>();
+	    HashMap<String, Object> resultMap = new HashMap<>();
 	    try {
-	        List<Product> list = wishListMapper.selectWishList(map);
+	        int currentPage = Integer.parseInt(map.getOrDefault("currentPage", 1).toString());
+	        int pageSize = Integer.parseInt(map.getOrDefault("pageSize", 10).toString());
+	        int offset = (currentPage - 1) * pageSize;
+
+	        map.put("offset", offset);
+	        map.put("pageSize", pageSize);
+
+	        int totalCount = wishListMapper.countWishList(map);
+
+	        List<HashMap<String, Object>> list = wishListMapper.selectWishList(map);
+
 	        resultMap.put("list", list);
+	        resultMap.put("totalCount", totalCount); 
 	        resultMap.put("result", "success");
 	    } catch (Exception e) {
 	        resultMap.put("result", "fail");
+	        resultMap.put("message", e.getMessage());
 	    }
 	    return resultMap;
 	}
@@ -77,7 +89,7 @@ public class WishListService {
 	    try {
 	        int count = wishListMapper.checkWishList(map);
 	        resultMap.put("result", "success");
-	        resultMap.put("isWish", count > 0); // 찜 여부 true/false
+	        resultMap.put("isWish", count > 0); 
 	    } catch (Exception e) {
 	        resultMap.put("result", "fail");
 	        resultMap.put("message", e.getMessage());

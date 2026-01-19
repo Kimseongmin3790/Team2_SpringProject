@@ -19,7 +19,8 @@
 	        ORDERDATE,
 	        UDATETIME,
 	        BUYER_ID,
-	        ISSUE_NO
+	        ISSUE_NO,
+	        DELIVERY_FEE
 	    ) VALUES (
 	        #{orderNo},
 	        #{totalPrice},
@@ -31,7 +32,8 @@
 	        SYSDATE,
 	        SYSDATE,
 	        #{buyerId},
-	        #{issueNo, jdbcType=INTEGER}
+	        #{issueNo, jdbcType=INTEGER},
+	        #{deliveryFee}
 	    )
 	</insert>
 	
@@ -218,5 +220,13 @@
 	      #{no}
 	    </foreach>
 	</delete>
+	
+	<!-- 환불 시 재고 복구 -->
+	<update id="increaseOptionStock" parameterType="map">
+	  UPDATE PRODUCT_OPTION
+	     SET STOCK_QTY = STOCK_QTY + #{qty},
+	         UDATETIME = SYSDATE
+	   WHERE OPTION_NO = #{optionNo}
+	</update>
 	
 </mapper>

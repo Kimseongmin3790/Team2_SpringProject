@@ -164,7 +164,8 @@ public class PaymentController {
 	        }
 
 	        int usedPoint = Math.max(0, toInt(map.get("usedPoint"), 0));
-	        int expectedAmount = Math.max(0, goodsTotal + shippingFee - usedPoint);
+	        int couponDiscount = Math.max(0, toInt(map.get("couponDiscount"), 0));
+	        int expectedAmount = Math.max(0, goodsTotal + shippingFee - usedPoint - couponDiscount);       
 	        if (!isTestPay) {
 	            if (paidAmount != expectedAmount) {
 	                throw new IllegalStateException("결제금액 불일치(서버=" + expectedAmount + ", PG=" + paidAmount + ")");
@@ -191,6 +192,7 @@ public class PaymentController {
 	            orderMap.put("issueNo", map.get("ucId"));
 	        }
 
+	        orderMap.put("deliveryFee", shippingFee);
 	        paymentService.insertOrder(orderMap);
 	        int orderNo = (int) orderMap.get("orderNo");
 
@@ -486,6 +488,11 @@ public class PaymentController {
 	            if (lines == null || lines.isEmpty()) throw new IllegalStateException("결제 대상(단건)이 없습니다.");
 	        }
 	        
+	        int shippingFee = 0;
+	        for (Cart l : lines) {
+	            shippingFee += toInt(l.getShippingFee(), 0);
+	        }
+	        
 	        // ORDERS INSERT
 	        HashMap<String, Object> orderMap = new HashMap<>();
 	        orderMap.put("totalPrice", paidAmount);
@@ -496,11 +503,12 @@ public class PaymentController {
 	        orderMap.put("memo", map.get("memo"));
 	        orderMap.put("buyerId", sessionUser);
 
-	        // 쿠폰 번호가 있으면 주문 정보에 포함 (저장 순서 개선)
+	        // 쿠폰 번호가 있으면 주문 정보에 포함
 	        if (map.get("ucId") != null && !String.valueOf(map.get("ucId")).isBlank()) {
 	            orderMap.put("issueNo", map.get("ucId"));
 	        }
-
+	       
+	        orderMap.put("deliveryFee", shippingFee);
 	        paymentService.insertOrder(orderMap);
 	        int orderNo = (int) orderMap.get("orderNo");
 	        
