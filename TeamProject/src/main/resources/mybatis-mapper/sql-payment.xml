@@ -18,7 +18,8 @@
 	        MEMO,
 	        ORDERDATE,
 	        UDATETIME,
-	        BUYER_ID
+	        BUYER_ID,
+	        ISSUE_NO
 	    ) VALUES (
 	        #{orderNo},
 	        #{totalPrice},
@@ -29,7 +30,8 @@
 	        #{memo},
 	        SYSDATE,
 	        SYSDATE,
-	        #{buyerId}
+	        #{buyerId},
+	        #{issueNo, jdbcType=INTEGER}
 	    )
 	</insert>
 	

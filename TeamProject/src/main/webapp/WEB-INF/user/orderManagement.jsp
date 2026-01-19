@@ -677,6 +677,12 @@
     .product-card .refund-details:last-child {
         margin-bottom: 0;
     }
+    .refund-hint {
+	    font-size: 0.8em;
+	    color: #dc3545; 
+	    margin-left: 5px;
+	    font-weight: normal;
+	}
     </style>
 </head>
 <body>
@@ -953,7 +959,15 @@
                                     <div class="refund-info">
                                         <p><strong>환불 상태:</strong> <span class="badge badge-refund-request">{{ item.refundStatus }}</span></p>
                                         <p><strong>환불 요청 수량:</strong> {{ item.refundQuantity }}개</p>
-                                        <p><strong>환불 금액:</strong> {{ (item.price / item.quantity * item.refundQuantity).toLocaleString() }}원</p>
+                                       <p>
+                                            <strong>환불 금액:</strong>
+                                            <span>
+                                                {{ (item.price / item.quantity * item.refundQuantity).toLocaleString() }}원
+                                                <span v-if="showShippingRefundHint(item)" class="refund-hint">
+                                                    (전체 환불 시 배송비 3,000원 추가 환불 필요)
+                                                </span>
+                                            </span>
+                                        </p>
                                         <p><strong>환불 사유:</strong> {{ item.refundReason }}</p>
                                     </div>
                                     <!-- '대기' 상태일 때만 승인/거절 버튼 표시 -->
@@ -992,26 +1006,37 @@
                         <div class="detail-section">
                             <h3>결제 정보</h3>
                             <div class="detail-box">
+                                <!-- 상품 합계 (원가) -->
                                 <div class="detail-row">
-                                    <span class="detail-label">총 주문 금액</span>
-                                    <span class="detail-value">{{ (selectedOrder.totalPrice).toLocaleString()}}원</span>
+                                    <span class="detail-label">상품 합계</span>
+                                    <span class="detail-value">
+                                        {{ selectedOrder.items.reduce((acc, i) => acc + (i.price * i.quantity), 0).toLocaleString() }}원
+                                    </span>
                                 </div>
-                                <div v-if="getRefundedAmount(selectedOrder) > 0" class="detail-row text-danger">
-                                    <span class="detail-label">- 환불된 금액</span>
-                                    <span class="detail-value">{{ getRefundedAmount(selectedOrder).toLocaleString() }}원</span>
-                                </div>
+
+                                <!-- 배송비 -->
                                 <div class="detail-row">
                                     <span class="detail-label">배송비</span>
                                     <span class="detail-value">3,000원</span>
                                 </div>
+
+                                <!-- 쿠폰 할인 -->
+                                <div class="detail-row" v-if="selectedOrder.couponDiscount > 0" style="color: #e11d48;">
+                                    <span class="detail-label">쿠폰 할인</span>
+                                    <span class="detail-value">-{{ Number(selectedOrder.couponDiscount).toLocaleString() }}원</span>
+                                </div>
+
+                                <!-- 환불액 -->
+                                <div v-if="getRefundedAmount(selectedOrder) > 0" class="detail-row" style="color: #dc3545;">
+                                    <span class="detail-label">- 환불된 금액</span>
+                                    <span class="detail-value">{{ getRefundedAmount(selectedOrder).toLocaleString() }}원</span>
+                                </div>
+
+                                <!-- 최종 결제 금액 -->
                                 <div class="detail-row total">
                                     <span class="detail-label">최종 결제금액</span>
                                     <span class="detail-value">
-                                        {{
-                                            (selectedOrder.totalPrice - getRefundedAmount(selectedOrder)
-                                            + (selectedOrder.totalPrice - getRefundedAmount(selectedOrder) > 0 ? 3000 : 0))
-                                            .toLocaleString()
-                                        }}원
+                                        {{ (selectedOrder.totalPrice - getRefundedAmount(selectedOrder)).toLocaleString() }}원
                                     </span>
                                 </div>
                                 <div class="detail-row">
@@ -1122,6 +1147,11 @@
             }
         },
         methods: {
+            showShippingRefundHint(item) {
+                if (!this.selectedOrder) return false;
+                const isBeforeShipping = this.selectedOrder.status === '결제완료' || this.selectedOrder.status === '배송 준비중';
+                return isBeforeShipping; 
+            },
             processRefund(item, newStatus) {
                 const actionText = newStatus === '승인' ? '승인' : '거절';
                 if (!confirm('"' + item.productName + '" 상품의 환불 요청을 ' + actionText + '하시겠습니까?')) {
@@ -1134,6 +1164,7 @@
                     type: "POST",
                     dataType: "json",
                     data: {
+                        orderNo: self.selectedOrder.orderNo,
                         orderItemNo: item.orderItemNo,
                         status: newStatus // '승인' 또는 '거절'
                     },
@@ -1377,19 +1408,30 @@
                 this.goToPage(this.currentPage + 1);
             },
             getRefundedAmount(order) {
-                if (!order || !order.items) {
-                    return 0;
-                }
+                if (!order || !order.items) return 0;
 
-                return order.items.reduce((total, item) => {
+                let refundTotal = order.items.reduce((total, item) => {
                     if (item.refundStatus === '승인') {
-                        // (상품 단가) * (환불 수량)
                         const unitPrice = item.price / item.quantity;
-                        const refundValue = unitPrice * item.refundQuantity;
-                        return total + refundValue;
+                        return total + (unitPrice * item.refundQuantity);
                     }
                     return total;
                 }, 0);
+
+                const isAllRefunded = order.processedRefundItemCount === order.totalItemCount;
+                const isBeforeShipping = order.status === '결제완료' || order.status === '배송 준비중';
+
+                if (isAllRefunded) {
+                    if (order.couponDiscount > 0) {
+                        refundTotal -= order.couponDiscount;
+                    }
+
+                    if (isBeforeShipping) {
+                        refundTotal += 3000;
+                    }
+                }
+
+                return Math.max(0, refundTotal);
             },
             getOrderOverallRefundStatus(order) {
                 if (!order || order.totalItemCount === undefined) { // totalItemCount가 없으면 아직 데이터가 안 넘어온 것
