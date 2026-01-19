@@ -329,12 +329,23 @@
                                         <textarea name="pinfo" rows="4" placeholder="상품 상세 설명을 입력하세요"
                                             required></textarea>
 
-                                        <!-- ✅ 기본 가격 -->
+                                        <!-- 기본 가격 -->
                                         <label>기본 가격</label>
                                         <input type="number" name="price" v-model.number="basePrice"
                                             placeholder="예) 5000" min="0" required>
 
-                                        <!-- ✅ 옵션 빌더 -->
+                                        <label>배송 조건</label>
+                                        <select v-model="shippingType" required>
+                                            <option value="ROOM">상온</option>
+                                            <option value="REFRIGERATED">냉장</option>
+                                            <option value="FROZEN">냉동</option>
+                                        </select>
+                                        <p style="margin-top:6px;color:#777">
+                                            신선도 유지를 위한 배송 타입을 선택하세요. (냉장/냉동은 배송비가 달라질 수 있어요)
+                                        </p>
+
+
+                                        <!-- 옵션 빌더 -->
                                         <h4>옵션 (단위/추가금/재고)</h4>
                                         <table class="option-table">
                                             <thead>
@@ -465,7 +476,8 @@
                                     // 에디터 이미지
                                     detailFiles: [],
                                     // 카테고리
-                                    top: "", mid: "", leaf: ""
+                                    top: "", mid: "", leaf: "",
+                                    shippingType : "ROOM"
                                 };
                             },
                             methods: {
@@ -490,6 +502,7 @@
                                         origin: $('input[name="origin"]').val().trim(),
                                         recommend: "N",
                                         productStatus: "SELLING",
+                                        shippingType: this.shippingType,
 
                                         optionsJson: JSON.stringify(this.options.map(o => ({
                                             optionName: o.label.trim(),                  // 예: "500G", "1KG"

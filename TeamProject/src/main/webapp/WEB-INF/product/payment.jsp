@@ -194,6 +194,7 @@
                     float: right;
                     font-weight: 600;
                 }
+
                 /* 쿠폰 선택 영역 */
                 .coupon-section {
                     margin-top: 10px;
@@ -221,7 +222,7 @@
                     background: #fff;
                     border-radius: 12px;
                     padding: 20px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
                 }
 
                 .modal-title {
@@ -307,6 +308,7 @@
                     margin-top: 5px;
                     text-align: right;
                 }
+
                 .max-discount-label {
                     font-size: 0.7em;
                     color: #ff6a00;
@@ -329,7 +331,9 @@
                     data-product-no="<c:out value='${param.productNo}'/>" data-qty="<c:out value='${param.qty}'/>"
                     data-option-no="<c:out value='${param.optionNo}'/>"
                     data-fulfillment="<c:out value='${param.fulfillment}'/>" data-mode="<c:out value='${param.mode}'/>"
-                    data-plan-id="<c:out value='${param.planId}'/>">
+                    data-plan-id="<c:out value='${param.planId}'/>"
+                    data-shipping-fee="<c:out value='${param.shippingFee}'/>">
+
 
                     <main class="content">
                         <!-- 좌측 -->
@@ -397,14 +401,14 @@
                                     <div class="input-row">
                                         <input type="text"
                                             :value="selectedCoupon ? selectedCoupon.COUPON_NAME : '적용 가능한 쿠폰을 확인하세요'"
-                                            readonly
-                                            class="readonly-input">
+                                            readonly class="readonly-input">
                                         <button type="button" class="btn" @click="fnShowCoupons">쿠폰조회</button>
                                     </div>
                                     <div v-if="selectedCoupon" class="text-right">
                                         <span class="discount-text">
                                             -{{ couponDiscountAmount.toLocaleString() }}원 할인 적용
-                                            <small v-if="selectedCoupon.DISCOUNT_TYPE === 'R' &&
+                                            <small
+                                                v-if="selectedCoupon.DISCOUNT_TYPE === 'R' &&
                                                         totalPrice * (selectedCoupon.DISCOUNT_AMOUNT/100) > selectedCoupon.MAX_DISCOUNT_PRICE"
                                                 class="max-applied-info">
                                                 (최대 한도 적용됨)
@@ -431,7 +435,8 @@
 
                             <!-- 결제 버튼 -->
                             <button class="btn-pay" @click="fnPay">결제하기</button>
-                            <button class="btn-pay" style="background-color: #666; margin-top: 10px;" @click="fnTestPay">테스트 결제 (알림확인용)</button>
+                            <button class="btn-pay" style="background-color: #666; margin-top: 10px;"
+                                @click="fnTestPay">테스트 결제 (알림확인용)</button>
                         </section>
                         <!-- 쿠폰 선택 모달 -->
                         <div v-if="showCouponModal" class="modal-mask" @click.self="showCouponModal = false">
@@ -442,7 +447,8 @@
                                     <div v-if="couponList.length === 0" class="modal-empty">
                                         사용 가능한 쿠폰이 없습니다.
                                     </div>
-                                    <div v-for="c in couponList" :key="c.ISSUE_NO" class="coupon-item" @click="fnSelectCoupon(c)">
+                                    <div v-for="c in couponList" :key="c.ISSUE_NO" class="coupon-item"
+                                        @click="fnSelectCoupon(c)">
                                         <div class="coupon-name">
                                             {{ c.COUPON_NAME }}
                                         </div>
@@ -452,8 +458,10 @@
                                             </span>
                                             <span v-else>
                                                 {{ c.DISCOUNT_AMOUNT || c.discountAmount }}% 할인
-                                                <small v-if="(c.MAX_DISCOUNT_PRICE || c.maxDiscountPrice) > 0" class="max-discount-label">
-                                                    (최대 {{ Number(c.MAX_DISCOUNT_PRICE || c.maxDiscountPrice).toLocaleString() }}원)
+                                                <small v-if="(c.MAX_DISCOUNT_PRICE || c.maxDiscountPrice) > 0"
+                                                    class="max-discount-label">
+                                                    (최대 {{ Number(c.MAX_DISCOUNT_PRICE ||
+                                                    c.maxDiscountPrice).toLocaleString() }}원)
                                                 </small>
                                             </span>
                                         </div>
@@ -467,7 +475,7 @@
                                     닫기
                                 </button>
                             </div>
-                        </div>   
+                        </div>
                     </main>
                 </div>
 
@@ -486,8 +494,10 @@
                 productNo: parseInt(root?.dataset?.productNo, 10) || null,
                 qty: parseInt(root?.dataset?.qty, 10) || null,
                 optionNo: (root?.dataset?.optionNo || null),
-                fulfillment: (root?.dataset?.fulfillment || 'delivery').toLowerCase()
+                fulfillment: (root?.dataset?.fulfillment || 'delivery').toLowerCase(),
+                shippingFee: parseInt(root?.dataset?.shippingFee, 10) || 0
             };
+
             const IS_CART_MODE = !!CART_CSV;  // true면 장바구니, false면 단건
             const MODE = (root?.dataset?.mode || 'normal').toLowerCase();
             const SUB_PLAN_ID = parseInt(root?.dataset?.planId, 10) || null;
@@ -539,8 +549,8 @@
                         // 최소 주문 금액 미달 시 할인 0원
                         if (total < Number(this.selectedCoupon.MIN_ORDER_PRICE)) return 0;
 
-                        if (this.selectedCoupon.DISCOUNT_TYPE === 'F') { 
-                            return Number(this.selectedCoupon.DISCOUNT_AMOUNT); 
+                        if (this.selectedCoupon.DISCOUNT_TYPE === 'F') {
+                            return Number(this.selectedCoupon.DISCOUNT_AMOUNT);
                         } else {
                             let discount = Math.floor(total * (Number(this.selectedCoupon.DISCOUNT_AMOUNT) / 100));
                             // 최대 할인 한도 적용
@@ -559,14 +569,15 @@
                     },
                     // 단건 결제 - 상세에서 수령방법이 '택배'면 3,000, '방문'이면 0.
                     shippingFeeC() {
-                        // 단건이면 첫 상품 기준 / 다건이면 some(delivery)
-                        if (this.shippingFeeFromDetail > 0) return this.shippingFeeFromDetail;
-                        const hasDelivery = this.products.some(p => (p.fulfillment || 'delivery') === 'delivery');
-                        return hasDelivery ? 3000 : 0;
+                        const fees = this.products
+                            .filter(p => (p.fulfillment || 'delivery') === 'delivery')
+                            .map(p => Number(p.shippingFee || 0));
+                        return fees.length ? Math.max(...fees) : 0;
                     },
+
                     finalPrice() {
                         const sum = this.totalPrice + this.shippingFeeC - this.usedPoint - this.couponDiscountAmount;
-                        return Math.max(0, sum); 
+                        return Math.max(0, sum);
                     }
                 },
                 methods: {
@@ -621,7 +632,7 @@
                             impUid: fakeImpUid,
                             merchantUid: fakeMerchantUid,
                             amount: amount,
-                            
+
                             buyerId: this.buyer.userId,
                             receivName: this.buyer.name,
                             receivPhone: this.buyer.phone,
@@ -701,6 +712,8 @@
                                 dataType: "json",
                                 data: { userId: USER, cartNos: CART_CSV },
                                 success: (res) => {
+                                    console.log("[payment/list] raw res =", res);
+                                    console.log("[payment/list] res.list[0] =", res.list?.[0]);
                                     if (res.result === 'success') {
                                         this.products = (res.list || []).map(p => ({
                                             ...p,
@@ -709,6 +722,9 @@
                                             shippingFee: Number(p.shippingFee ?? 0),
                                             fulfillment: (p.fulfillment || 'delivery').toLowerCase()
                                         }));
+                                        console.log("[products mapped] products[0] =", this.products?.[0]);
+                                        console.log("[products mapped] shippingFeeC =", this.shippingFeeC);
+
                                     } else {
                                         alert(res.message || '결제 대상 불러오기 실패');
                                     }
@@ -728,9 +744,12 @@
                                     productNo: SINGLE.productNo,
                                     quantity: SINGLE.qty,
                                     optionNo: SINGLE.optionNo,
-                                    fulfillment: SINGLE.fulfillment
+                                    fulfillment: SINGLE.fulfillment,
+                                    shippingFee: SINGLE.shippingFee
                                 },
                                 success: (res) => {
+                                    console.log("[payment/list] raw res =", res);
+                                    console.log("[payment/list] res.list[0] =", res.list?.[0]);
                                     if (res.result === 'success') {
                                         this.products = (res.list || []).map(p => ({
                                             ...p,
@@ -739,6 +758,9 @@
                                             shippingFee: Number(p.shippingFee ?? 0),
                                             fulfillment: (p.fulfillment || SINGLE.fulfillment || 'delivery').toLowerCase()
                                         }));
+                                        console.log("[products mapped] products[0] =", this.products?.[0]);
+                                        console.log("[products mapped] shippingFeeC =", this.shippingFeeC);
+
                                     } else {
                                         alert(res.message || '결제 대상 불러오기 실패');
                                     }
@@ -919,7 +941,7 @@
                                     });
                                     return;
                                 }
-                            
+
                                 $.ajax({
                                     url: "${path}/payment/verify.dox",
                                     type: "POST",

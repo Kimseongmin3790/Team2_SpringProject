@@ -1216,13 +1216,23 @@
                                     <p style="line-height:20px;">{{ info.pInfo }}</p>
                                 </div>
 
-                                <div v-if="fulfillment=='delivery'">
-                                    <div><b>원산지</b> {{info.origin}}</div>
-                                    <div><b>배송비</b> 3,000원 | 도서산간 배송비 추가</div>
-                                    <div><b>배송 안내</b> 배송비 3,000원</div>
-                                </div>
-                                <div v-else>
-                                    <div><b>원산지</b> {{info.origin}}</div>
+                                <div>
+                                    <div><b>원산지</b> {{ info.origin }}</div>
+
+                                    <div v-if="fulfillment === 'delivery'">
+                                        <div><b>배송 유형</b> {{ shippingTypeLabel }}</div>
+                                        <div>
+                                            <b>배송비</b> {{ shippingFee.toLocaleString() }}원
+                                            <span class="muted">| 도서산간 추가 배송비 별도</span>
+                                        </div>
+                                        <div class="muted" style="margin-top:4px;">{{ shippingGuideText }}</div>
+                                    </div>
+
+                                    <div v-else>
+                                        <div><b>수령 방식</b> 방문 수령</div>
+                                        <div><b>배송비</b> 0원</div>
+                                        <div class="muted" style="margin-top:4px;">방문 수령 상품입니다. 배송비가 부과되지 않습니다.</div>
+                                    </div>
                                 </div>
 
                                 <!-- 수령방법 -->
@@ -1572,7 +1582,33 @@
                         });
                     },
 
+                    shippingTypeKey() {
+                        // 서버에서 오는 값: info.shippingType (ROOM/REFRIGERATED/FROZEN)
+                        return String(this.info?.shippingType || "ROOM").trim().toUpperCase();
+                    },
 
+                    shippingTypeLabel() {
+                        const m = { ROOM: "상온", REFRIGERATED: "냉장", FROZEN: "냉동" };
+                        return m[this.shippingTypeKey] || "상온";
+                    },
+
+                    shippingFee() {
+                        // ✅ 방문수령이면 무조건 0원
+                        if (this.fulfillment !== "delivery") return 0;
+
+                        // ✅ 택배일 때 배송유형별 기본 배송비
+                        const feeMap = {
+                            ROOM: 3000,
+                            REFRIGERATED: 4000,
+                            FROZEN: 5000
+                        };
+                        return feeMap[this.shippingTypeKey] ?? 3000;
+                    },
+
+                    shippingGuideText() {
+                        if (this.fulfillment !== "delivery") return "방문 수령 상품입니다. 배송비가 부과되지 않습니다.";
+                        return "신선도 유지를 위해 " + this.shippingTypeLabel + " 배송으로 발송됩니다.";
+                    },
 
                     //====== 리뷰 ======
                     filteredReviews() {
@@ -1619,6 +1655,13 @@
                                     ...data.info,
                                     productStatus: String(
                                         data.info?.productStatus ?? data.info?.PRODUCT_STATUS ?? ""
+                                    ).trim().toUpperCase(),
+                                    // shippingType 정규화 추가
+                                    shippingType: String(
+                                        data.info?.shippingType ??
+                                        data.info?.SHIPPING_TYPE ??
+                                        data.info?.shipping_type ??
+                                        "ROOM"
                                     ).trim().toUpperCase()
                                 };
                                 self.fileList = data.fileList;
@@ -1868,7 +1911,18 @@
 
                     // 상세 토글
                     openDetail() { this.showDetail = true; },
+
                     closeDetail() { this.showDetail = false; },
+
+                    calcShippingFee() {
+                        if (this.fulfillment !== 'delivery') return 0;
+
+                        const t = String(this.info?.shippingType || 'ROOM').toUpperCase();
+                        // 예시 정책(너가 원하는 값으로 조정)
+                        if (t === 'FROZEN') return 5000;
+                        if (t === 'REFRIGERATED') return 4000;
+                        return 3000; // ROOM
+                    },
 
                     // CTA
                     fnPurchase(productNo, qty) {
@@ -1888,7 +1942,8 @@
                             return;
                         }
 
-                        const fee = (this.fulfillment === 'delivery') ? 3000 : 0;
+                        const fee = this.shippingFee;
+
                         const opt = this.selectedOption;
 
                         // 서버에서 고유 옵션키를 쓰면 optionNo/id, 없다면 idx 전송
@@ -1928,14 +1983,18 @@
                             return;
                         }
 
-                        const fee = (this.fulfillment === 'delivery') ? 3000 : 0;
+                        console.log('shippingTypeKey=', this.shippingTypeKey);
+                        console.log('computed shippingFee=', this.shippingFee);
+                        const fee = this.shippingFee; // <- 이렇게 고정
+                        console.log('fee to send=', fee);
+
                         const opt = this.selectedOption;
                         const optionNo = opt.optionNo ?? opt.id ?? opt.idx;
 
                         const param = {
                             userId: this.userId,
                             productNo: productNo,
-                            quantity: this.qty,                 // 🔹 장바구니 API는 quantity 사용 중이므로 유지
+                            quantity: this.qty,                 // 장바구니 API는 quantity 사용 중이므로 유지
                             fulfillment: this.fulfillment,
                             shippingFee: fee,
                             optionNo,                           // 장바구니에도 옵션키 저장
@@ -1952,6 +2011,7 @@
                             data: param,
                             success: (data) => {
                                 if (data.result === 'success') {
+                                    console.log(this.shippingTypeKey, this.shippingFee)
                                     if (confirm("장바구니에 담겼습니다. 장바구니로 이동하시겠습니까?")) {
                                         pageChange('/buyerMyPage.do', { productNo });
                                     } else {

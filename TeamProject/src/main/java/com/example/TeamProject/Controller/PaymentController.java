@@ -1,7 +1,6 @@
 package com.example.TeamProject.Controller;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,9 +15,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.TeamProject.dao.NotificationService;
 import com.example.TeamProject.dao.PaymentService;
 import com.example.TeamProject.dao.SubscriptionService;
-import com.example.TeamProject.dao.NotificationService;
+import com.example.TeamProject.model.Cart;
 import com.google.gson.Gson;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -154,7 +154,15 @@ public class PaymentController {
 	        
 	        String testPay = String.valueOf(map.getOrDefault("testPay", "")).trim();
 	        boolean isTestPay = "Y".equalsIgnoreCase(testPay) || "true".equalsIgnoreCase(testPay);
-	        int shippingFee = hasDelivery ? 3000 : 0;
+	        int shippingFee = 0;
+
+	        for (Cart l : lines) {
+	            String f = String.valueOf(l.getFulfillment());
+	            if ("delivery".equalsIgnoreCase(f)) {
+	                shippingFee = Math.max(shippingFee, toInt(l.getShippingFee(), 0)); // 배송 상품 중 최대 배송비
+	            }
+	        }
+
 	        int usedPoint = Math.max(0, toInt(map.get("usedPoint"), 0));
 	        int expectedAmount = Math.max(0, goodsTotal + shippingFee - usedPoint);
 	        if (!isTestPay) {

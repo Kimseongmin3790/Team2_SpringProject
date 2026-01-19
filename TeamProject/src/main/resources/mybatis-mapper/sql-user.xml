@@ -173,13 +173,15 @@
 	
 	 <!-- 이미 담은 상품이면 수량만 + N -->
     <update id="updateCartQty" parameterType="hashmap">
-        UPDATE CART
-        SET
-            QUANTITY   = NVL(QUANTITY, 0) + #{quantity},
-            ADDED_AT  = SYSDATE
-        WHERE USER_ID    = #{userId}
-          AND PRODUCT_NO = #{productNo}
-    </update>
+	  UPDATE CART
+	  SET QUANTITY = NVL(QUANTITY, 0) + #{quantity},
+	      SHIPPING_FEE = #{shippingFee},
+	      FULFILLMENT = #{fulfillment},
+	      ADDED_AT = SYSDATE
+	  WHERE USER_ID = #{userId}
+	    AND PRODUCT_NO = #{productNo}
+	</update>
+
     
     <!-- 없으면 새로 한 줄 추가 -->
     <insert id="insertCart" parameterType="hashmap">

@@ -506,7 +506,8 @@ public class UserService {
 	        Integer optionNo  = toInt(in.get("optionNo"), null);
 	        Integer qty       = Math.max(1, toInt(in.get("quantity"), 1));
 	        String fulfillment= normalizeFulfillment(safeStrOrDefault(in.get("fulfillment"), "delivery"));
-	        Integer shippingFee = "delivery".equals(fulfillment) ? 3000 : 0;
+	        Integer shippingFee = toInt(in.get("shippingFee"), 3000);
+	        if (!"delivery".equals(fulfillment)) shippingFee = 0;
 
 	        if (userId == null || userId.isBlank() || productNo == null) {
 	            out.put("result", "fail");
