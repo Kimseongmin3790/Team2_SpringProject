@@ -134,6 +134,7 @@ public class ProductController {
 			@RequestParam(value = "pname", required = false) String pname,
 			@RequestParam(value = "pinfo", required = false) String pinfo,
 			@RequestParam(value = "price", required = false) Integer price,
+			@RequestParam(value = "shippingType", required = false, defaultValue = "ROOM") String shippingType,
 			@RequestParam(value = "origin", required = false) String origin,
 			@RequestParam(value = "recommend", required = false, defaultValue = "N") String recommend,
 			@RequestParam(value = "productStatus", required = false, defaultValue = "SELLING") String productStatus,
@@ -165,6 +166,7 @@ public class ProductController {
 				productData.put("pname", pname);
 				productData.put("pinfo", pinfo);
 				productData.put("price", price);
+				productData.put("shippingType", shippingType);
 				productData.put("origin", origin);
 				productData.put("recommend", recommend);
 				productData.put("productStatus", productStatus);

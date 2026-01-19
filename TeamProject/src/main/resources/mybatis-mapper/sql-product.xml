@@ -8,11 +8,11 @@
 	    INSERT INTO PRODUCT (
 	        PRODUCT_NO, SELLER_ID, CATEGORY_NO, PNAME, PINFO,
 	        PRICE, ORIGIN, CDATETIME, UDATETIME,
-	        RECOMMEND, PRODUCT_STATUS
+	        RECOMMEND, PRODUCT_STATUS, SHIPPING_TYPE
 	    ) VALUES (
 	        PRODUCT_SEQ.NEXTVAL, #{sellerId}, #{categoryNo}, #{pname}, #{pinfo},
 	        #{price}, #{origin}, SYSDATE, SYSDATE,
-	        #{recommend}, #{productStatus}
+	        #{recommend}, #{productStatus}, NVL(#{shippingType}, 'ROOM')
 	    )
 	</insert>
 
@@ -116,6 +116,7 @@
 	        P.PNAME            AS pName,
 	        P.PINFO            AS pInfo,
 	        P.PRICE            AS price,
+	        P.SHIPPING_TYPE AS shippingType,
 	        P.ORIGIN	       AS origin,
 	        P.PRODUCT_STATUS   AS productStatus,
 	        TO_CHAR(P.CDATETIME, 'YY-MM-DD') AS cdate,

@@ -196,7 +196,8 @@ public class UserController {
 	        // 수령 방법 & 배송비는 서버에서 결정 (클라 shippingFee 무시)
 	        String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
 	        fulfillment = "pickup".equalsIgnoreCase(fulfillment) ? "pickup" : "delivery";
-	        int shippingFee = "delivery".equals(fulfillment) ? 3000 : 0;
+	        int shippingFee = toInt(map.get("shippingFee"), 3000);
+	        if (!"delivery".equals(fulfillment)) shippingFee = 0;
 
 	        // 필수값 검증
 	        if (productNo == null) {
@@ -204,6 +205,9 @@ public class UserController {
 	            res.put("message", "productNo가 없습니다.");
 	            return new com.google.gson.Gson().toJson(res);
 	        }
+	        
+	        System.out.println("raw request map=" + map);
+	        System.out.println("raw shippingFee=" + map.get("shippingFee"));
 
 	        // 서비스에 넘길 '클린 파라미터' 구성 (불신 필드 제거: unitPrice/totalPrice/optionUnit 등)
 	        HashMap<String, Object> clean = new HashMap<>();
@@ -214,8 +218,12 @@ public class UserController {
 	        clean.put("fulfillment", fulfillment);
 	        clean.put("shippingFee", shippingFee);
 
+	        System.out.println("clean before service=" + clean);
+
 	        // 장바구니 저장 (MERGE or INSERT) -> cartNo 반환 기대
 	        HashMap<String, Object> resultMap = userService.addCart(clean);
+	        System.out.println("service before mapper=" + map);
+	        System.out.println("service shippingFee=" + map.get("shippingFee"));
 
 	        // cartNo 세션 보조 저장 (선택)
 	        Long cartNo = toLong(resultMap.get("cartNo"));
