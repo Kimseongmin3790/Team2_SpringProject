@@ -50,13 +50,13 @@ public class UserService {
 
 	@Autowired
 	MailService mailService;
-	
-	@Autowired 
-	private SellerService sellerService;
-	
+
 	@Autowired
-    private ObjectMapper objectMapper;
-	
+	private SellerService sellerService;
+
+	@Autowired
+	private ObjectMapper objectMapper;
+
 	@Autowired
 	private WishListMapper wishListMapper;
 
@@ -115,66 +115,69 @@ public class UserService {
 	}
 
 	public HashMap<String, Object> login(HashMap<String, Object> map, HttpSession session) {
-	    HashMap<String, Object> resultMap = new HashMap<>();
-	    try {
-	        User user = userMapper.loginUser(map);
-	        String message = "";
-	        String result = "";
+		HashMap<String, Object> resultMap = new HashMap<>();
+		try {
+			User user = userMapper.loginUser(map);
+			String message = "";
+			String result = "";
 
-	        if (user != null) {
-	            if ("WITHDRAWN".equals(user.getStatus())) {
-	                message = "탈퇴 처리된 계정입니다. 계정을 복구하시겠습니까?";
-	                result = "WITHDRAWN_CAN_RECOVER";
-	                resultMap.put("msg", message);
-	                resultMap.put("result", result);
-	                return resultMap;
-	            }
+			if (user != null) {
+				if ("WITHDRAWN".equals(user.getStatus())) {
+					message = "탈퇴 처리된 계정입니다. 계정을 복구하시겠습니까?";
+					result = "WITHDRAWN_CAN_RECOVER";
+					resultMap.put("msg", message);
+					resultMap.put("result", result);
+					return resultMap;
+				}
 
-	            boolean loginFlg = passwordEncoder.matches((String) map.get("userPwd"), user.getPassword());
-	            if (loginFlg) {
-	                message = "로그인 성공";
-	                result = "success";
-	                session.setAttribute("sessionId", user.getUserId());
-	                session.setAttribute("sessionStatus", user.getUserRole());
-	                session.setAttribute("sessionName", user.getName());
-	                session.setAttribute("sessionLat", user.getLat());
-	                session.setAttribute("sessionLng", user.getLng());
+				boolean loginFlg = passwordEncoder.matches((String) map.get("userPwd"), user.getPassword());
+				if (loginFlg) {
+					message = "로그인 성공";
+					result = "success";
+					session.setAttribute("sessionId", user.getUserId());
+					session.setAttribute("sessionStatus", user.getUserRole());
+					session.setAttribute("sessionName", user.getName());
+					session.setAttribute("sessionLat", user.getLat());
+					session.setAttribute("sessionLng", user.getLng());
+					
+					System.out.println("[login after] JSESSION=" + session.getId()
+				    + " sessionIdAttr=" + session.getAttribute("sessionId"));
 
-	                // 판매자 상태 확인
-	                if ("SELLER".equals(user.getUserRole())) {
-	                    HashMap<String, Object> sellerResult = sellerService.getSellerInfoForMyPage(user.getUserId());
-	                    String verifiedStatus = "N";
-	                    if ("success".equals(sellerResult.get("result"))) {
-	                        SellerVO sellerVO = (SellerVO) sellerResult.get("sellerInfo");
-	                        if (sellerVO != null && sellerVO.getVerified() != null) {
-	                            verifiedStatus = sellerVO.getVerified();
-	                        }
-	                    }
-	                    session.setAttribute("sellerVerifiedStatus", verifiedStatus);
-	                } else {
-	                    session.removeAttribute("sellerVerifiedStatus");
-	                }
-	            } else {
-	                message = "비밀번호가 일치하지 않습니다.";
-	                result = "fail";
-	            }
-	        } else {
-	            message = "아이디가 존재하지 않습니다.";
-	            result = "fail";
-	        }
-	        resultMap.put("msg", message);
-	        resultMap.put("result", result);
-	    } catch (Exception e) {
-	        resultMap.put("result", "fail");
-	    }
-	    return resultMap;
+					// 판매자 상태 확인
+					if ("SELLER".equals(user.getUserRole())) {
+						HashMap<String, Object> sellerResult = sellerService.getSellerInfoForMyPage(user.getUserId());
+						String verifiedStatus = "N";
+						if ("success".equals(sellerResult.get("result"))) {
+							SellerVO sellerVO = (SellerVO) sellerResult.get("sellerInfo");
+							if (sellerVO != null && sellerVO.getVerified() != null) {
+								verifiedStatus = sellerVO.getVerified();
+							}
+						}
+						session.setAttribute("sellerVerifiedStatus", verifiedStatus);
+					} else {
+						session.removeAttribute("sellerVerifiedStatus");
+					}
+				} else {
+					message = "비밀번호가 일치하지 않습니다.";
+					result = "fail";
+				}
+			} else {
+				message = "아이디가 존재하지 않습니다.";
+				result = "fail";
+			}
+			resultMap.put("msg", message);
+			resultMap.put("result", result);
+		} catch (Exception e) {
+			resultMap.put("result", "fail");
+		}
+		return resultMap;
 	}
 
 	public HashMap<String, Object> logout(HashMap<String, Object> map, HttpSession session) {
-	    HashMap<String, Object> resultMap = new HashMap<>();
-	    session.invalidate();
-	    resultMap.put("result", "success");
-	    return resultMap;
+		HashMap<String, Object> resultMap = new HashMap<>();
+		session.invalidate();
+		resultMap.put("result", "success");
+		return resultMap;
 	}
 
 	public HashMap<String, Object> findId(HashMap<String, Object> map) {
@@ -196,7 +199,7 @@ public class UserService {
 
 		return resultMap;
 	}
-	
+
 	public HashMap<String, Object> findIdByPhone(HashMap<String, Object> map) {
 		// TODO Auto-generated method stub
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
@@ -320,26 +323,26 @@ public class UserService {
 		HashMap<String, Object> resultMap = new HashMap<>();
 
 		try {
-			// 전화번호 유효성 검사 및 하이픈 제거
-			if (map.containsKey("phone")) {
-				String phone = (String) map.get("phone");
+			// 1) 전화번호 검증 + 하이픈 제거
+			if (map.containsKey("phone") && map.get("phone") != null) {
+				String phone = String.valueOf(map.get("phone"));
 				String rawPhone = phone.replaceAll("-", "");
 
-				// 정규식: 10~11자리의 숫자
 				if (!rawPhone.matches("^\\d{10,11}$")) {
 					resultMap.put("result", "fail");
 					resultMap.put("message", "올바른 전화번호 형식이 아닙니다. (예: 01012345678)");
 					return resultMap;
 				}
-				map.put("phone", rawPhone); // 정제된 데이터로 교체
+				map.put("phone", rawPhone);
 			}
 
-			// 비밀번호 유효성 검사 및 암호화
+			// 2) 비밀번호 검증 + 암호화
 			if (map.containsKey("password") && map.get("password") != null
-					&& !((String) map.get("password")).isEmpty()) {
-				String password = (String) map.get("password");
+					&& !String.valueOf(map.get("password")).isEmpty()) {
 
+				String password = String.valueOf(map.get("password"));
 				String pwdRegex = "^(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()\\-_=+\\[\\]{};:'\\\",.<>\\/?\\\\|`~])(?!.*\\s).{8,16}$";
+
 				if (!password.matches(pwdRegex)) {
 					resultMap.put("result", "fail");
 					resultMap.put("message", "비밀번호는 소문자, 숫자, 특수문자를 포함하여 8~16자 이내여야 합니다.");
@@ -350,7 +353,20 @@ public class UserService {
 				map.put("hashPwd", hashPwd);
 			}
 
+			// ✅ 3) 주소가 들어오면 좌표 재계산 (여기가 네가 물어본 코드 위치!)
+			if (map.containsKey("address") && map.get("address") != null) {
+				String address = String.valueOf(map.get("address")).trim();
+				if (!address.isEmpty()) {
+					double[] coords = getCoordinatesFromAddress(address);
+					System.out.println("[UPDATE] address=" + address + " coords=" + coords[0] + "," + coords[1]);
+					map.put("lat", coords[0]);
+					map.put("lng", coords[1]);
+				}
+			}
+
+			// ✅ 4) 업데이트는 항상 실행 (주소 없다고 업데이트 안 되는 버그 방지)
 			userMapper.updateProfile(map);
+
 			resultMap.put("result", "success");
 
 		} catch (Exception e) {
@@ -363,18 +379,28 @@ public class UserService {
 	}
 
 	// 주소를 좌표로 변환
+	// 주소를 좌표로 변환
 	public double[] getCoordinatesFromAddress(String address) {
-		double[] result = new double[2];
+		double[] result = new double[2]; // 기본 0,0
+
+		if (address != null) {
+			address = address.replaceAll("\\s*\\([^\\)]*\\)\\s*", " ").trim(); // 괄호 제거
+			address = address.replaceAll(",\\s*\\d+\\s*$", "").trim(); // 끝 ", 1" 제거
+			address = address.replaceAll("\\s+", " "); // 공백 정리
+		}
+
 		try {
 			String query = URLEncoder.encode(address, "UTF-8");
 			String apiUrl = "https://dapi.kakao.com/v2/local/search/address.json?query=" + query;
 
-			URL url = new URL(apiUrl);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
 			conn.setRequestMethod("GET");
 			conn.setRequestProperty("Authorization", "KakaoAK " + kakaoApiKey);
 
-			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+			int code = conn.getResponseCode();
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(code >= 200 && code < 300) ? conn.getInputStream() : conn.getErrorStream(), "UTF-8"));
+
 			StringBuilder sb = new StringBuilder();
 			String line;
 			while ((line = br.readLine()) != null)
@@ -382,15 +408,46 @@ public class UserService {
 			br.close();
 
 			JSONObject json = new JSONObject(sb.toString());
-			if (json.getJSONArray("documents").length() > 0) {
-				JSONObject addr = json.getJSONArray("documents").getJSONObject(0);
-				JSONObject addressObj = addr.getJSONObject("address");
-				result[0] = addressObj.getDouble("y");
-				result[1] = addressObj.getDouble("x");
+			if (json.getJSONArray("documents").length() == 0) {
+				System.out.println("[KAKAO] no documents for: " + address + " resp=" + sb);
+				return result;
 			}
+
+			JSONObject doc = json.getJSONArray("documents").getJSONObject(0);
+
+			// ✅ 1) doc 최상단 x/y 우선
+			if (doc.has("y") && doc.has("x") && !doc.isNull("y") && !doc.isNull("x")) {
+				result[0] = Double.parseDouble(doc.get("y").toString()); // lat
+				result[1] = Double.parseDouble(doc.get("x").toString()); // lng
+				return result;
+			}
+
+			// ✅ 2) road_address fallback
+			if (doc.has("road_address") && !doc.isNull("road_address")) {
+				JSONObject ra = doc.getJSONObject("road_address");
+				if (ra.has("y") && ra.has("x") && !ra.isNull("y") && !ra.isNull("x")) {
+					result[0] = Double.parseDouble(ra.get("y").toString());
+					result[1] = Double.parseDouble(ra.get("x").toString());
+					return result;
+				}
+			}
+
+			// ✅ 3) address fallback
+			if (doc.has("address") && !doc.isNull("address")) {
+				JSONObject a = doc.getJSONObject("address");
+				if (a.has("y") && a.has("x") && !a.isNull("y") && !a.isNull("x")) {
+					result[0] = Double.parseDouble(a.get("y").toString());
+					result[1] = Double.parseDouble(a.get("x").toString());
+					return result;
+				}
+			}
+
+			System.out.println("[KAKAO] coords not found for: " + address + " doc=" + doc);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 		return result;
 	}
 
@@ -457,106 +514,109 @@ public class UserService {
 	// 계정 복구
 	@Transactional
 	public HashMap<String, Object> recoverUser(HashMap<String, Object> map) {
-	    HashMap<String, Object> resultMap = new HashMap<>();
+		HashMap<String, Object> resultMap = new HashMap<>();
 
-	    try {
-	        String userId = (String) map.get("userId");
-	        if (userId == null || userId.isEmpty()) {
-	            resultMap.put("result", "fail");
-	            resultMap.put("message", "사용자 ID가 누락되었습니다.");
-	            return resultMap;
-	        }
+		try {
+			String userId = (String) map.get("userId");
+			if (userId == null || userId.isEmpty()) {
+				resultMap.put("result", "fail");
+				resultMap.put("message", "사용자 ID가 누락되었습니다.");
+				return resultMap;
+			}
 
-	        // 기본 사용자 계정 복구 (STATUS를 'ACTIVE'로)
-	        int updatedRows = userMapper.updateUserStatus(userId, "ACTIVE");
+			// 기본 사용자 계정 복구 (STATUS를 'ACTIVE'로)
+			int updatedRows = userMapper.updateUserStatus(userId, "ACTIVE");
 
-	        if (updatedRows > 0) {
-	            // 복구된 사용자의 정보 다시 조회 (USER_ROLE 확인용)
-	            HashMap<String, Object> paramMap = new HashMap<>();
-	            paramMap.put("userId", userId);
-	            User recoveredUser = userMapper.loginUser(paramMap);
+			if (updatedRows > 0) {
+				// 복구된 사용자의 정보 다시 조회 (USER_ROLE 확인용)
+				HashMap<String, Object> paramMap = new HashMap<>();
+				paramMap.put("userId", userId);
+				User recoveredUser = userMapper.loginUser(paramMap);
 
-	            // 사용자가 판매자라면, 판매자 관련 정보도 복구
-	            if (recoveredUser != null && "SELLER".equals(recoveredUser.getUserRole())) {
-	                sellerService.recoverSellerAccount(userId); // 새로운 판매자 복구 서비스 호출
-	            }
+				// 사용자가 판매자라면, 판매자 관련 정보도 복구
+				if (recoveredUser != null && "SELLER".equals(recoveredUser.getUserRole())) {
+					sellerService.recoverSellerAccount(userId); // 새로운 판매자 복구 서비스 호출
+				}
 
-	            resultMap.put("result", "success");
-	            resultMap.put("message", "계정이 성공적으로 복구되었습니다.");
-	        } else {
-	            resultMap.put("result", "fail");
-	            resultMap.put("message", "계정 복구에 실패했습니다. 사용자 ID를 확인해주세요.");
-	        }
+				resultMap.put("result", "success");
+				resultMap.put("message", "계정이 성공적으로 복구되었습니다.");
+			} else {
+				resultMap.put("result", "fail");
+				resultMap.put("message", "계정 복구에 실패했습니다. 사용자 ID를 확인해주세요.");
+			}
 
-	    } catch (Exception e) {
-	        resultMap.put("result", "fail");
-	        resultMap.put("message", "계정 복구 중 오류가 발생했습니다.");
-	        e.printStackTrace();
-	    }
+		} catch (Exception e) {
+			resultMap.put("result", "fail");
+			resultMap.put("message", "계정 복구 중 오류가 발생했습니다.");
+			e.printStackTrace();
+		}
 
-	    return resultMap;
+		return resultMap;
 	}
 
 	public HashMap<String, Object> addCart(HashMap<String, Object> in) {
-	    HashMap<String, Object> out = new HashMap<>();
-	    try {
-	        // 파라미터 정규화
-	        String userId     = safeStr(in.get("userId"));
-	        Integer productNo = toInt(in.get("productNo"), null);
-	        Integer optionNo  = toInt(in.get("optionNo"), null);
-	        Integer qty       = Math.max(1, toInt(in.get("quantity"), 1));
-	        String fulfillment= normalizeFulfillment(safeStrOrDefault(in.get("fulfillment"), "delivery"));
-	        Integer shippingFee = toInt(in.get("shippingFee"), 3000);
-	        if (!"delivery".equals(fulfillment)) shippingFee = 0;
+		HashMap<String, Object> out = new HashMap<>();
+		try {
+			// 파라미터 정규화
+			String userId = safeStr(in.get("userId"));
+			Integer productNo = toInt(in.get("productNo"), null);
+			Integer optionNo = toInt(in.get("optionNo"), null);
+			Integer qty = Math.max(1, toInt(in.get("quantity"), 1));
+			String fulfillment = normalizeFulfillment(safeStrOrDefault(in.get("fulfillment"), "delivery"));
+			Integer shippingFee = toInt(in.get("shippingFee"), 3000);
+			if (!"delivery".equals(fulfillment))
+				shippingFee = 0;
 
-	        if (userId == null || userId.isBlank() || productNo == null) {
-	            out.put("result", "fail");
-	            out.put("message", "필수값 누락(userId/productNo)");
-	            return out;
-	        }
+			if (userId == null || userId.isBlank() || productNo == null) {
+				out.put("result", "fail");
+				out.put("message", "필수값 누락(userId/productNo)");
+				return out;
+			}
 
-	        // 동일 라인(cart key) 존재 여부
-	        Map<String,Object> key = new HashMap<>();
-	        key.put("userId", userId);
-	        key.put("productNo", productNo);
-	        key.put("optionNo", optionNo);
-	        key.put("fulfillment", fulfillment);
+			// 동일 라인(cart key) 존재 여부
+			Map<String, Object> key = new HashMap<>();
+			key.put("userId", userId);
+			key.put("productNo", productNo);
+			key.put("optionNo", optionNo);
+			key.put("fulfillment", fulfillment);
 
-	        Long cartNo = userMapper.selectCartNoByKey(key);
+			Long cartNo = userMapper.selectCartNoByKey(key);
 
-	        if (cartNo != null) {
-	            // 있으면 수량 누적 + 배송비 최신화
-	            Map<String,Object> upd = new HashMap<>(key);
-	            upd.put("quantity", qty);
-	            upd.put("shippingFee", shippingFee);
-	            int updated = userMapper.updateCartQtyByKey(upd);
-	            if (updated <= 0) throw new IllegalStateException("장바구니 수량 업데이트 실패");
-	        } else {
-	            // 없으면 신규 INSERT
-	            Map<String,Object> ins = new HashMap<>(key);
-	            ins.put("quantity", qty);
-	            ins.put("shippingFee", shippingFee);
-	            userMapper.insertCarts(ins);
-	            cartNo = toLong(ins.get("cartNo"));
-	            if (cartNo == null) {
-	                cartNo = userMapper.selectCartNoByKey(key);
-	            }
-	            if (cartNo == null) throw new IllegalStateException("장바구니 행 생성 실패");
-	        }
+			if (cartNo != null) {
+				// 있으면 수량 누적 + 배송비 최신화
+				Map<String, Object> upd = new HashMap<>(key);
+				upd.put("quantity", qty);
+				upd.put("shippingFee", shippingFee);
+				int updated = userMapper.updateCartQtyByKey(upd);
+				if (updated <= 0)
+					throw new IllegalStateException("장바구니 수량 업데이트 실패");
+			} else {
+				// 없으면 신규 INSERT
+				Map<String, Object> ins = new HashMap<>(key);
+				ins.put("quantity", qty);
+				ins.put("shippingFee", shippingFee);
+				userMapper.insertCarts(ins);
+				cartNo = toLong(ins.get("cartNo"));
+				if (cartNo == null) {
+					cartNo = userMapper.selectCartNoByKey(key);
+				}
+				if (cartNo == null)
+					throw new IllegalStateException("장바구니 행 생성 실패");
+			}
 
-	        out.put("result", "success");
-	        out.put("cartNo", cartNo);
-	        out.put("quantity", qty);
-	        out.put("fulfillment", fulfillment);
-	        out.put("shippingFee", shippingFee);
-	        return out;
+			out.put("result", "success");
+			out.put("cartNo", cartNo);
+			out.put("quantity", qty);
+			out.put("fulfillment", fulfillment);
+			out.put("shippingFee", shippingFee);
+			return out;
 
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        out.put("result", "fail");
-	        out.put("message", e.getMessage());
-	        return out;
-	    }
+		} catch (Exception e) {
+			e.printStackTrace();
+			out.put("result", "fail");
+			out.put("message", e.getMessage());
+			return out;
+		}
 	}
 
 	public HashMap<String, Object> getCartList(HashMap<String, Object> map) {
@@ -580,7 +640,7 @@ public class UserService {
 		// TODO Auto-generated method stub
 		HashMap<String, Object> resultMap = new HashMap<>();
 		try {
-			int cnt  = userMapper.updateQty(map);
+			int cnt = userMapper.updateQty(map);
 			resultMap.put("cnt", cnt);
 			resultMap.put("result", "success");
 		} catch (Exception e) {
@@ -595,7 +655,7 @@ public class UserService {
 		// TODO Auto-generated method stub
 		HashMap<String, Object> resultMap = new HashMap<>();
 		try {
-			int cnt = userMapper.deleteCartItem(map); 
+			int cnt = userMapper.deleteCartItem(map);
 			resultMap.put("cnt", cnt);
 			resultMap.put("result", "success");
 		} catch (Exception e) {
@@ -619,7 +679,7 @@ public class UserService {
 		}
 		return resultMap;
 	}
-	
+
 	public HashMap<String, Object> getSellerProductList(HashMap<String, Object> map) {
 		// TODO Auto-generated method stub
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
@@ -634,7 +694,7 @@ public class UserService {
 		}
 		return resultMap;
 	}
-	
+
 	public HashMap<String, Object> hiddenSellerProduct(HashMap<String, Object> map) {
 		// TODO Auto-generated method stub
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
@@ -648,7 +708,7 @@ public class UserService {
 		}
 		return resultMap;
 	}
-	
+
 	public HashMap<String, Object> getSellerProductDetail(HashMap<String, Object> map) {
 		// TODO Auto-generated method stub
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
@@ -657,12 +717,12 @@ public class UserService {
 			List<Product> option = userMapper.getsellerProductOption(map);
 			List<Product> image = userMapper.getsellerProductImage(map);
 			Product category = userMapper.getsellerProductCategory(toInt(detail.getCategoryNo(), null));
-			
+
 			resultMap.put("detail", detail);
 			resultMap.put("option", option);
 			resultMap.put("image", image);
 			resultMap.put("category", category);
-			
+
 			resultMap.put("result", "sucess");
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -671,197 +731,209 @@ public class UserService {
 		}
 		return resultMap;
 	}
-	
+
 	@Transactional
-    public Map<String, Object> updateProductAll(
-            Integer productNo,
-            Integer categoryNo,
-            String pname,
-            String pinfo,
-            Integer price,
-            String origin,
-            String productStatus,
-            String optionsJson,              
-            String deletedOptionNosJson,     
-            String deletedImageNosJson, 
-            MultipartFile thumbnail,
-            List<MultipartFile> galleryImages,
-            List<MultipartFile> detailImages,
-            String uploadDir
-    ) throws Exception {
+	public Map<String, Object> updateProductAll(Integer productNo, Integer categoryNo, String pname, String pinfo,
+			Integer price, String origin, String productStatus, String optionsJson, String deletedOptionNosJson,
+			String deletedImageNosJson, MultipartFile thumbnail, List<MultipartFile> galleryImages,
+			List<MultipartFile> detailImages, String uploadDir) throws Exception {
 
-        Map<String, Object> out = new HashMap<>();
-        
-        // 업데이트 전 기존 상태 조회
-        HashMap<String, Object> pQuery = new HashMap<>();
-        pQuery.put("productNo", productNo);
-        Product oldProduct = productMapper.selectProduct(pQuery);
-        String oldStatus = (oldProduct != null) ? oldProduct.getProductStatus() : "";
+		Map<String, Object> out = new HashMap<>();
 
-        // 기본 상품 업데이트
-        Map<String, Object> base = new HashMap<>();
-        base.put("productNo", productNo);
-        base.put("categoryNo", categoryNo);
-        base.put("pname", pname);
-        base.put("pinfo", pinfo);
-        base.put("price", price);
-        base.put("origin", origin);
-        base.put("productStatus", productStatus); // SELLING / SOLDOUT / HIDDEN
+		// 업데이트 전 기존 상태 조회
+		HashMap<String, Object> pQuery = new HashMap<>();
+		pQuery.put("productNo", productNo);
+		Product oldProduct = productMapper.selectProduct(pQuery);
+		String oldStatus = (oldProduct != null) ? oldProduct.getProductStatus() : "";
 
-        userMapper.updateProduct(base);
+		// 기본 상품 업데이트
+		Map<String, Object> base = new HashMap<>();
+		base.put("productNo", productNo);
+		base.put("categoryNo", categoryNo);
+		base.put("pname", pname);
+		base.put("pinfo", pinfo);
+		base.put("price", price);
+		base.put("origin", origin);
+		base.put("productStatus", productStatus); // SELLING / SOLDOUT / HIDDEN
 
-        // 삭제 옵션 처리
-        List<Integer> deletedOptionNos = parseIntList(deletedOptionNosJson);
-        if (!deletedOptionNos.isEmpty()) {
-            Map<String, Object> delParam = new HashMap<>();
-            delParam.put("productNo", productNo);
-            delParam.put("optionNos", deletedOptionNos);
-            userMapper.deleteOptions(delParam);
-        }
+		userMapper.updateProduct(base);
 
-        // 옵션 upsert
-        List<Map<String, Object>> options = parseOptionList(optionsJson);
-        for (Map<String, Object> op0 : options) {
-            Integer optionNo = toInt(op0.get("optionNo"), null);
-            String optionName = String.valueOf(op0.getOrDefault("optionName", "")).trim();
-            Integer addPriceV = toInt(op0.get("addPrice"), 0);
-            Integer stockV = toInt(op0.get("stock"), 0);
+		// 삭제 옵션 처리
+		List<Integer> deletedOptionNos = parseIntList(deletedOptionNosJson);
+		if (!deletedOptionNos.isEmpty()) {
+			Map<String, Object> delParam = new HashMap<>();
+			delParam.put("productNo", productNo);
+			delParam.put("optionNos", deletedOptionNos);
+			userMapper.deleteOptions(delParam);
+		}
 
-            Map<String, Object> op = new HashMap<>();
-            op.put("productNo", productNo);
-            op.put("unit", optionName);
-            op.put("addPrice", addPriceV);
-            op.put("stockQty", stockV);
+		// 옵션 upsert
+		List<Map<String, Object>> options = parseOptionList(optionsJson);
+		for (Map<String, Object> op0 : options) {
+			Integer optionNo = toInt(op0.get("optionNo"), null);
+			String optionName = String.valueOf(op0.getOrDefault("optionName", "")).trim();
+			Integer addPriceV = toInt(op0.get("addPrice"), 0);
+			Integer stockV = toInt(op0.get("stock"), 0);
 
-            if (optionNo != null) {
-                op.put("optionNo", optionNo);
-                userMapper.updateOption(op);
-            } else {
-            	userMapper.insertOption(op);
-            }
-        }
+			Map<String, Object> op = new HashMap<>();
+			op.put("productNo", productNo);
+			op.put("unit", optionName);
+			op.put("addPrice", addPriceV);
+			op.put("stockQty", stockV);
 
-        // 삭제 이미지 처리
-        List<Integer> deletedImageNos = parseIntList(deletedImageNosJson);
-        if (!deletedImageNos.isEmpty()) {
-            Map<String, Object> delParam = new HashMap<>();
-            delParam.put("productNo", productNo);
-            delParam.put("imageNos", deletedImageNos);
-            userMapper.deleteImages(delParam);
-        }
+			if (optionNo != null) {
+				op.put("optionNo", optionNo);
+				userMapper.updateOption(op);
+			} else {
+				userMapper.insertOption(op);
+			}
+		}
 
-        // 썸네일 / 갤러리 / 상세 이미지 저장
-        new File(uploadDir).mkdirs();
+		// 삭제 이미지 처리
+		List<Integer> deletedImageNos = parseIntList(deletedImageNosJson);
+		if (!deletedImageNos.isEmpty()) {
+			Map<String, Object> delParam = new HashMap<>();
+			delParam.put("productNo", productNo);
+			delParam.put("imageNos", deletedImageNos);
+			userMapper.deleteImages(delParam);
+		}
 
-        // 썸네일 새로 올라오면 기존 썸네일 해제 + 신규 저장
-        if (thumbnail != null && !thumbnail.isEmpty()) {
-        	userMapper.clearThumbnail(productNo);
-            String url = saveFile(thumbnail, uploadDir);
-            Map<String, Object> img = new HashMap<>();
-            img.put("productNo", productNo);
-            img.put("imageUrl", url);
-            img.put("imageType", "Y"); // 썸네일
-            userMapper.insertImage(img);
-        }
+		// 썸네일 / 갤러리 / 상세 이미지 저장
+		new File(uploadDir).mkdirs();
 
-        if (galleryImages != null) {
-            for (MultipartFile f : galleryImages) {
-                if (f != null && !f.isEmpty()) {
-                    String url = saveFile(f, uploadDir);
-                    Map<String, Object> img = new HashMap<>();
-                    img.put("productNo", productNo);
-                    img.put("imageUrl", url);
-                    img.put("imageType", "A");
-                    userMapper.insertImage(img);
-                }
-            }
-        }
+		// 썸네일 새로 올라오면 기존 썸네일 해제 + 신규 저장
+		if (thumbnail != null && !thumbnail.isEmpty()) {
+			userMapper.clearThumbnail(productNo);
+			String url = saveFile(thumbnail, uploadDir);
+			Map<String, Object> img = new HashMap<>();
+			img.put("productNo", productNo);
+			img.put("imageUrl", url);
+			img.put("imageType", "Y"); // 썸네일
+			userMapper.insertImage(img);
+		}
 
-        if (detailImages != null) {
-            for (MultipartFile f : detailImages) {
-                if (f != null && !f.isEmpty()) {
-                    String url = saveFile(f, uploadDir);
-                    Map<String, Object> img = new HashMap<>();
-                    img.put("productNo", productNo);
-                    img.put("imageUrl", url);
-                    img.put("imageType", "N");
-                    userMapper.insertImage(img);
-                }
-            }
-        }
-        
-        if ("SELLING".equalsIgnoreCase(productStatus) && ("SOLDOUT".equalsIgnoreCase(oldStatus) || "HIDDEN".equalsIgnoreCase(oldStatus))) {
-        	try {
-        		// 이 상품을 찜한 유저 목록 조회
-        		List<String> userIds = wishListMapper.selectWishUserIds(productNo);
+		if (galleryImages != null) {
+			for (MultipartFile f : galleryImages) {
+				if (f != null && !f.isEmpty()) {
+					String url = saveFile(f, uploadDir);
+					Map<String, Object> img = new HashMap<>();
+					img.put("productNo", productNo);
+					img.put("imageUrl", url);
+					img.put("imageType", "A");
+					userMapper.insertImage(img);
+				}
+			}
+		}
 
-        		if (userIds != null && !userIds.isEmpty()) {
-        			String msg = "[재입고] 찜하신 '" + pname + "' 상품이 다시 입고되었습니다!";
-        		    for (String userId : userIds) {
-        		    	notificationService.sendNotification(userId, "NOTICE", msg, "/productInfo.do?productNo=" + productNo);
-        		    }
-        		}
-        	} catch (Exception ne) {
-        		System.err.println("재입고 알림 전송 실패: " + ne.getMessage());
-        	}
-        }
+		if (detailImages != null) {
+			for (MultipartFile f : detailImages) {
+				if (f != null && !f.isEmpty()) {
+					String url = saveFile(f, uploadDir);
+					Map<String, Object> img = new HashMap<>();
+					img.put("productNo", productNo);
+					img.put("imageUrl", url);
+					img.put("imageType", "N");
+					userMapper.insertImage(img);
+				}
+			}
+		}
 
-        out.put("result", "success");
-        out.put("productNo", productNo);
-        return out;
-    }
-	
+		if ("SELLING".equalsIgnoreCase(productStatus)
+				&& ("SOLDOUT".equalsIgnoreCase(oldStatus) || "HIDDEN".equalsIgnoreCase(oldStatus))) {
+			try {
+				// 이 상품을 찜한 유저 목록 조회
+				List<String> userIds = wishListMapper.selectWishUserIds(productNo);
+
+				if (userIds != null && !userIds.isEmpty()) {
+					String msg = "[재입고] 찜하신 '" + pname + "' 상품이 다시 입고되었습니다!";
+					for (String userId : userIds) {
+						notificationService.sendNotification(userId, "NOTICE", msg,
+								"/productInfo.do?productNo=" + productNo);
+					}
+				}
+			} catch (Exception ne) {
+				System.err.println("재입고 알림 전송 실패: " + ne.getMessage());
+			}
+		}
+
+		out.put("result", "success");
+		out.put("productNo", productNo);
+		return out;
+	}
+
 	/* ===== 유틸 ===== */
-	private String safeStr(Object v){ return v==null? null : String.valueOf(v); }
-	private String safeStrOrDefault(Object v, String def){
-	    String s = safeStr(v);
-	    return (s==null || s.isBlank() || "null".equalsIgnoreCase(s) || "undefined".equalsIgnoreCase(s)) ? def : s;
+	private String safeStr(Object v) {
+		return v == null ? null : String.valueOf(v);
 	}
-	private Integer toInt(Object v, Integer def){
-	    if (v == null) return def;
-	    if (v instanceof Number) return ((Number)v).intValue();
-	    try {
-	        String s = v.toString().trim().replaceAll(",", "");
-	        if (s.isEmpty() || "null".equalsIgnoreCase(s) || "undefined".equalsIgnoreCase(s)) return def;
-	        return new java.math.BigDecimal(s).intValue();
-	    } catch (Exception e){ return def; }
-	}
-	private Long toLong(Object v){
-	    if (v == null) return null;
-	    if (v instanceof Number) return ((Number)v).longValue();
-	    try { return new java.math.BigDecimal(v.toString().trim()).longValue(); }
-	    catch(Exception e){ return null; }
-	}
-	private String normalizeFulfillment(String f){
-	    return "pickup".equalsIgnoreCase(f) ? "pickup" : "delivery";
-	}
-	private List<Integer> parseIntList(String json) {
-        try {
-            if (json == null || json.isBlank()) return List.of();
-            return objectMapper.readValue(json, new TypeReference<List<Integer>>() {});
-        } catch (Exception e) {
-            return List.of();
-        }
-    }
 
-    private List<Map<String, Object>> parseOptionList(String json) {
-        try {
-            if (json == null || json.isBlank()) return List.of();
-            return objectMapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {});
-        } catch (Exception e) {
-            return List.of();
-        }
-    }
-    private String saveFile(MultipartFile file, String uploadDir) throws IOException {
-        String ext = "";
-        String name = file.getOriginalFilename();
-        if (name != null && name.lastIndexOf('.') >= 0) {
-            ext = name.substring(name.lastIndexOf('.'));
-        }
-        String saved = java.util.UUID.randomUUID() + ext;
-        File dest = new File(uploadDir, saved);
-        file.transferTo(dest);
-        return "/resources/uploads/productImage/" + saved;
-    }
+	private String safeStrOrDefault(Object v, String def) {
+		String s = safeStr(v);
+		return (s == null || s.isBlank() || "null".equalsIgnoreCase(s) || "undefined".equalsIgnoreCase(s)) ? def : s;
+	}
+
+	private Integer toInt(Object v, Integer def) {
+		if (v == null)
+			return def;
+		if (v instanceof Number)
+			return ((Number) v).intValue();
+		try {
+			String s = v.toString().trim().replaceAll(",", "");
+			if (s.isEmpty() || "null".equalsIgnoreCase(s) || "undefined".equalsIgnoreCase(s))
+				return def;
+			return new java.math.BigDecimal(s).intValue();
+		} catch (Exception e) {
+			return def;
+		}
+	}
+
+	private Long toLong(Object v) {
+		if (v == null)
+			return null;
+		if (v instanceof Number)
+			return ((Number) v).longValue();
+		try {
+			return new java.math.BigDecimal(v.toString().trim()).longValue();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private String normalizeFulfillment(String f) {
+		return "pickup".equalsIgnoreCase(f) ? "pickup" : "delivery";
+	}
+
+	private List<Integer> parseIntList(String json) {
+		try {
+			if (json == null || json.isBlank())
+				return List.of();
+			return objectMapper.readValue(json, new TypeReference<List<Integer>>() {
+			});
+		} catch (Exception e) {
+			return List.of();
+		}
+	}
+
+	private List<Map<String, Object>> parseOptionList(String json) {
+		try {
+			if (json == null || json.isBlank())
+				return List.of();
+			return objectMapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {
+			});
+		} catch (Exception e) {
+			return List.of();
+		}
+	}
+
+	private String saveFile(MultipartFile file, String uploadDir) throws IOException {
+		String ext = "";
+		String name = file.getOriginalFilename();
+		if (name != null && name.lastIndexOf('.') >= 0) {
+			ext = name.substring(name.lastIndexOf('.'));
+		}
+		String saved = java.util.UUID.randomUUID() + ext;
+		File dest = new File(uploadDir, saved);
+		file.transferTo(dest);
+		return "/resources/uploads/productImage/" + saved;
+	}
 
 }
