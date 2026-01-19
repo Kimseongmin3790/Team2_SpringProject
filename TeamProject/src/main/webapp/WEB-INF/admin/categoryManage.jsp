@@ -11,6 +11,7 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
@@ -237,15 +238,19 @@
                                         <td class="actions">
                                             <template v-if="!c._edit">
                                                 <button class="btn-edit" @click="startEdit(c)"><i
-                                                        class="fa-solid fa-pen"></i> 수정</button>
+                                                        class="fa-solid fa-pen"></i>
+                                                    수정</button>
                                                 <button class="btn-del" @click="remove(c)"><i
-                                                        class="fa-solid fa-trash"></i> 삭제</button>
+                                                        class="fa-solid fa-trash"></i>
+                                                    삭제</button>
                                             </template>
                                             <template v-else>
                                                 <button class="btn-edit" @click="save(c)"><i
-                                                        class="fa-solid fa-check"></i> 저장</button>
+                                                        class="fa-solid fa-check"></i>
+                                                    저장</button>
                                                 <button class="btn-del" @click="cancelEdit(c)"><i
-                                                        class="fa-solid fa-xmark"></i> 취소</button>
+                                                        class="fa-solid fa-xmark"></i>
+                                                    취소</button>
                                             </template>
                                         </td>
                                     </tr>
@@ -275,10 +280,32 @@
                 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
                     <script>
+                        // ✅ alert / confirm 만 SweetAlert2로 대체 (다른 로직은 그대로)
+                        window.alert = function (msg) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: '⚠️',
+                                text: String(msg ?? ''),
+                                confirmButtonColor: '#5dbb63'
+                            });
+                        };
+
+                        window.confirm = function (msg) {
+                            return Swal.fire({
+                                icon: 'warning',
+                                title: '⚠️',
+                                text: String(msg ?? ''),
+                                showCancelButton: true,
+                                confirmButtonText: '확인',
+                                cancelButtonText: '취소',
+                                confirmButtonColor: '#5dbb63'
+                            }).then(r => r.isConfirmed);
+                        };
+
                         const app = Vue.createApp({
                             data() {
                                 return {
-                                    list: [],       
+                                    list: [],
                                     filtered: [],
                                     parentCandidates: [],
                                     filterParent: "",
@@ -289,9 +316,9 @@
                             computed: {
                                 parentOptions() {
                                     const no = this.form.no;
-                                    if (no == null || no === '') return this.list; 
+                                    if (no == null || no === '') return this.list;
                                     const needDigits = String(no).length - 1;
-                                    if (needDigits <= 0) return [];             
+                                    if (needDigits <= 0) return [];
                                     return this.list.filter(v => String(v.CATEGORYNO).length === needDigits);
                                 },
                                 allowedRangeText() {
@@ -381,17 +408,20 @@
                                 },
 
                                 remove(c) {
-                                    if (!confirm("삭제하시겠습니까? 하위 카테고리가 있으면 삭제가 제한될 수 있습니다.")) return;
+                                    // ✅ confirm만 Promise 방식으로 처리 (동일 로직 유지)
                                     const self = this;
-                                    $.ajax({
-                                        url: this.path() + "/admin/category/delete.dox",
-                                        type: "POST",
-                                        dataType: "json",
-                                        data: { categoryNo: c.CATEGORYNO },
-                                        success(res) {
-                                            if (res && res.result === "fail") { alert(res.message || "삭제 실패"); return; }
-                                            self.load();
-                                        }
+                                    window.confirm("삭제하시겠습니까? 하위 카테고리가 있으면 삭제가 제한될 수 있습니다.").then((ok) => {
+                                        if (!ok) return;
+                                        $.ajax({
+                                            url: this.path() + "/admin/category/delete.dox",
+                                            type: "POST",
+                                            dataType: "json",
+                                            data: { categoryNo: c.CATEGORYNO },
+                                            success(res) {
+                                                if (res && res.result === "fail") { alert(res.message || "삭제 실패"); return; }
+                                                self.load();
+                                            }
+                                        });
                                     });
                                 },
 

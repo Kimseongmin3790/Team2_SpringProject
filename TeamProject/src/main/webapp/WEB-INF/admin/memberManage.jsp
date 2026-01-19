@@ -12,6 +12,7 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css" />
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css" />
@@ -189,8 +190,6 @@
                     width: 140px;
                 }
 
-                /* 유저상태 */
-
                 .member-table tr:hover {
                     background-color: #f9f9f9;
                 }
@@ -328,7 +327,6 @@
                                             <div v-else>-</div>
                                         </td>
 
-                                        <!-- 판매자 승인 상태 -->
                                         <td>
                                             <span v-if="item.userRole === 'SELLER'">
                                                 {{ item.verified === 'Y' ? '승인완료' : '미승인' }}
@@ -336,7 +334,6 @@
                                             <span v-else>-</span>
                                         </td>
 
-                                        <!-- 판매자 승인 관리 버튼 (여기서 로직 강화) -->
                                         <td>
                                             <template v-if="item.userRole === 'SELLER'">
                                                 <button v-if="item.verified === 'N'" class="btn-action"
@@ -372,7 +369,29 @@
                     </div>
                 </div>
                 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+
                     <script>
+                        // ✅ 공통 옵션(버튼 보라색 방지 + 항상 초록 confirm)
+                        const swalOk = {
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#5dbb63',
+                            allowOutsideClick: false
+                        };
+
+                        const swalConfirm = (text, confirmText = '확인', cancelText = '취소') => {
+                            return Swal.fire({
+                                icon: 'warning',
+                                title: '⚠️',
+                                text: String(text),
+                                showCancelButton: true,
+                                confirmButtonText: confirmText,
+                                cancelButtonText: cancelText,
+                                confirmButtonColor: '#5dbb63',
+                                cancelButtonColor: '#999',
+                                allowOutsideClick: false
+                            });
+                        };
+
                         const app = Vue.createApp({
                             data() {
                                 return {
@@ -419,8 +438,11 @@
                                             if (data.result == "success") {
                                                 self.userList = data.list;
                                             } else {
-                                                alert("오류가 발생했습니다.");
+                                                Swal.fire({ icon: 'error', title: '❌', text: "오류가 발생했습니다.", ...swalOk });
                                             }
+                                        },
+                                        error: function () {
+                                            Swal.fire({ icon: 'error', title: '❌', text: "서버와 통신 중 오류가 발생했습니다.", ...swalOk });
                                         }
                                     });
                                 },
@@ -450,147 +472,111 @@
                                 },
 
                                 isSellerLegalReady(item) {
-                                    // SELLER가 아닌 경우는 애초에 승인 대상이 아님
                                     if (item.userRole !== "SELLER") return false;
 
-                                    // 판매자 유형 필수
-                                    if (!item.sellerType) {
-                                        alert("판매자 유형이 설정되지 않았습니다.");
-                                        return false;
-                                    }
+                                    if (!item.sellerType) { Swal.fire({ icon: 'warning', title: '⚠️', text: "판매자 유형이 설정되지 않았습니다.", ...swalOk }); return false; }
+                                    if (!item.teleSaleNo) { Swal.fire({ icon: 'warning', title: '⚠️', text: "통신판매업 신고번호가 없습니다.", ...swalOk }); return false; }
+                                    if (!this.hasAnySaleCategory(item)) { Swal.fire({ icon: 'warning', title: '⚠️', text: "판매 품목이 설정되지 않았습니다.", ...swalOk }); return false; }
 
-                                    // 통신판매업 신고번호 필수
-                                    if (!item.teleSaleNo) {
-                                        alert("통신판매업 신고번호가 없습니다.");
-                                        return false;
-                                    }
-
-                                    // 판매 품목 최소 1개 이상
-                                    if (!this.hasAnySaleCategory(item)) {
-                                        alert("판매 품목이 설정되지 않았습니다.");
-                                        return false;
-                                    }
-
-                                    // 가공식품 선택 시 영업유형/번호 필수
                                     if (item.saleProcessed === "Y") {
-                                        if (!item.foodBizType || !item.foodBizNo) {
-                                            alert("가공식품 판매 시 식품 영업유형/신고번호가 필요합니다.");
-                                            return false;
-                                        }
+                                        if (!item.foodBizType || !item.foodBizNo) { Swal.fire({ icon: 'warning', title: '⚠️', text: "가공식품 판매 시 식품 영업유형/신고번호가 필요합니다.", ...swalOk }); return false; }
                                     }
-
-                                    // 축산물 선택 시 영업유형/번호 필수
                                     if (item.saleLivestock === "Y") {
-                                        if (!item.livestockBizType || !item.livestockBizNo) {
-                                            alert("축산물 판매 시 축산물 영업유형/신고번호가 필요합니다.");
-                                            return false;
-                                        }
+                                        if (!item.livestockBizType || !item.livestockBizNo) { Swal.fire({ icon: 'warning', title: '⚠️', text: "축산물 판매 시 축산물 영업유형/신고번호가 필요합니다.", ...swalOk }); return false; }
                                     }
-
-                                    // 수산물 선택 시 영업유형/번호 필수
                                     if (item.saleSeafood === "Y") {
-                                        if (!item.seafoodBizType || !item.seafoodBizNo) {
-                                            alert("수산물 판매 시 수산물 영업유형/신고번호가 필요합니다.");
-                                            return false;
-                                        }
+                                        if (!item.seafoodBizType || !item.seafoodBizNo) { Swal.fire({ icon: 'warning', title: '⚠️', text: "수산물 판매 시 수산물 영업유형/신고번호가 필요합니다.", ...swalOk }); return false; }
                                     }
 
-                                    // 여기까지 통과하면 OK
                                     return true;
                                 },
 
                                 fnApprove(item) {
-                                    // 1) 법적 요건 체크
-                                    if (!this.isSellerLegalReady(item)) {
-                                        // 조건 미충족이면 여기서 막고 return
-                                        return;
-                                    }
-
-                                    if (!confirm(item.userId + " 판매자를 승인하시겠습니까?")) return;
+                                    if (!this.isSellerLegalReady(item)) return;
 
                                     const self = this;
-                                    const param = {
-                                        userId: item.userId
-                                    };
+                                    swalConfirm(item.userId + " 판매자를 승인하시겠습니까?", "승인", "취소")
+                                        .then((r) => {
+                                            if (!r.isConfirmed) return;
 
-                                    $.ajax({
-                                        url: "/approveSeller.dox",
-                                        dataType: "json",
-                                        type: "POST",
-                                        data: param,
-                                        success: function (data) {
-                                            if (data.result === "success") {
-                                                alert("승인 완료");
-                                                self.fnUserList();
-                                            } else {
-                                                alert(data.msg || "승인 처리에 실패했습니다.");
-                                            }
-                                        },
-                                        error: function () {
-                                            alert("승인 처리 중 오류가 발생했습니다.");
-                                        },
-                                    });
+                                            $.ajax({
+                                                url: "/approveSeller.dox",
+                                                dataType: "json",
+                                                type: "POST",
+                                                data: { userId: item.userId },
+                                                success: function (data) {
+                                                    if (data.result === "success") {
+                                                        Swal.fire({ icon: 'success', title: '✅', text: "승인 완료", ...swalOk })
+                                                            .then(() => self.fnUserList());
+                                                    } else {
+                                                        Swal.fire({ icon: 'error', title: '❌', text: (data.msg || "승인 처리에 실패했습니다."), ...swalOk });
+                                                    }
+                                                },
+                                                error: function () {
+                                                    Swal.fire({ icon: 'error', title: '❌', text: "승인 처리 중 오류가 발생했습니다.", ...swalOk });
+                                                },
+                                            });
+                                        });
                                 },
 
                                 fnReject(item) {
-                                    if (!confirm(item.userId + " 판매자 승인을 취소하시겠습니까?")) return;
-
                                     const self = this;
-                                    const param = {
-                                        userId: item.userId
-                                    };
+                                    swalConfirm(item.userId + " 판매자 승인을 취소하시겠습니까?", "승인취소", "취소")
+                                        .then((r) => {
+                                            if (!r.isConfirmed) return;
 
-                                    $.ajax({
-                                        url: "/rejectSeller.dox",
-                                        dataType: "json",
-                                        type: "POST",
-                                        data: param,
-                                        success: function (data) {
-                                            if (data.result === "success") {
-                                                alert("승인 취소 완료");
-                                                self.fnUserList();
-                                            } else {
-                                                alert(data.msg || "취소 처리에 실패했습니다.");
-                                            }
-                                        },
-                                        error: function () {
-                                            alert("취소 처리 중 오류가 발생했습니다.");
-                                        },
-                                    });
+                                            $.ajax({
+                                                url: "/rejectSeller.dox",
+                                                dataType: "json",
+                                                type: "POST",
+                                                data: { userId: item.userId },
+                                                success: function (data) {
+                                                    if (data.result === "success") {
+                                                        Swal.fire({ icon: 'success', title: '✅', text: "승인 취소 완료", ...swalOk })
+                                                            .then(() => self.fnUserList());
+                                                    } else {
+                                                        Swal.fire({ icon: 'error', title: '❌', text: (data.msg || "취소 처리에 실패했습니다."), ...swalOk });
+                                                    }
+                                                },
+                                                error: function () {
+                                                    Swal.fire({ icon: 'error', title: '❌', text: "취소 처리 중 오류가 발생했습니다.", ...swalOk });
+                                                },
+                                            });
+                                        });
                                 },
 
                                 fnSaveStatus(item) {
-                                    if (!confirm(item.userId + " 회원 상태를 '" + item.status + "'로 변경하시겠습니까?")) {
-                                        return;
-                                    }
-                                    let self = this;
-                                    let param = {
-                                        userId: item.userId,
-                                        userStatus: item.status
-                                    };
-                                    $.ajax({
-                                        url: "/updateUserStatus.dox",
-                                        dataType: "json",
-                                        type: "POST",
-                                        data: param,
-                                        success: function (data) {
-                                            if (data.result === "success") {
-                                                alert("회원 상태가 변경되었습니다.");
-                                                self.fnUserList();
-                                            } else {
-                                                alert("상태 변경에 실패했습니다.");
-                                            }
-                                        },
-                                        error: function () {
-                                            alert("처리 중 오류가 발생했습니다.");
-                                        },
-                                    });
+                                    const self = this;
+                                    swalConfirm(item.userId + " 회원 상태를 '" + item.status + "'로 변경하시겠습니까?", "변경", "취소")
+                                        .then((r) => {
+                                            if (!r.isConfirmed) return;
+
+                                            $.ajax({
+                                                url: "/updateUserStatus.dox",
+                                                dataType: "json",
+                                                type: "POST",
+                                                data: {
+                                                    userId: item.userId,
+                                                    userStatus: item.status
+                                                },
+                                                success: function (data) {
+                                                    if (data.result === "success") {
+                                                        Swal.fire({ icon: 'success', title: '✅', text: "회원 상태가 변경되었습니다.", ...swalOk })
+                                                            .then(() => self.fnUserList());
+                                                    } else {
+                                                        Swal.fire({ icon: 'error', title: '❌', text: "상태 변경에 실패했습니다.", ...swalOk });
+                                                    }
+                                                },
+                                                error: function () {
+                                                    Swal.fire({ icon: 'error', title: '❌', text: "처리 중 오류가 발생했습니다.", ...swalOk });
+                                                },
+                                            });
+                                        });
                                 },
 
                             },
                             mounted() {
-                                let self = this;
-                                self.fnUserList();
+                                this.fnUserList();
                             },
                         });
 

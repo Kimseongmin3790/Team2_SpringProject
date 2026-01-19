@@ -441,6 +441,7 @@
                                     _userOverlay: null,
                                     isLoggedIn: false,
                                     prevUserPin: null,
+                                    userLabelText: "내 주소",
                                 };
                             },
                             computed: {
@@ -671,20 +672,19 @@
                                         this._circles.push(c);
                                     });
                                 },
+
                                 // 중심을 바꾸기 전에 반드시 이전 중심 저장
                                 _setCenter(lat, lng, { level = null, rememberPrev = true } = {}) {
                                     if (rememberPrev) {
                                         this.prevCenter = { ...this.center };
-                                        this.prevUserPin = this._userOverlay
-                                            ? {
-                                                lat: this._userOverlay.getPosition().getLat(),
-                                                lng: this._userOverlay.getPosition().getLng(),
-                                                label: this.followMe ? "현재 위치" : "내 주소"
-                                            }
-                                            : {
-                                                lat: this.center.lat, lng: this.center.lng,
-                                                label: this.followMe ? "현재 위치" : "내 주소"
-                                            };
+
+                                        const pos = this._userOverlay ? this._userOverlay.getPosition() : null;
+
+                                        this.prevUserPin = {
+                                            lat: pos ? pos.getLat() : this.center.lat,
+                                            lng: pos ? pos.getLng() : this.center.lng,
+                                            label: this.userLabelText || (!this.isLoggedIn ? "서울시청" : (this.followMe ? "현재 위치" : "내 주소")),
+                                        };
                                     }
 
                                     this.center = { lat, lng };
@@ -701,15 +701,11 @@
                                 goPrevCenter() {
                                     if (!this.prevCenter) return alert("이전 위치가 아직 없어요. 먼저 위치를 한 번 이동해보세요.");
 
-                                    // 지도/목록 이동
                                     this._setCenter(this.prevCenter.lat, this.prevCenter.lng, { rememberPrev: false });
 
-                                    // ✅ 내 핀도 같이 이동
                                     const pin = this.prevUserPin;
                                     if (pin && Number.isFinite(pin.lat) && Number.isFinite(pin.lng)) {
-                                        this._updateUserMarker(pin.lat, pin.lng, pin.label || "내 위치");
-                                    } else {
-                                        this._updateUserMarker(this.prevCenter.lat, this.prevCenter.lng, "내 위치");
+                                        this._updateUserMarker(pin.lat, pin.lng, pin.label || "내 위치"); // ✅ 저장된 라벨 사용
                                     }
                                 },
 
@@ -790,6 +786,7 @@
                                 },
 
                                 _updateUserMarker(lat, lng, labelText = "내 위치") {
+                                    this.userLabelText = labelText;
                                     if (!this.map) return;
 
                                     const pos = new kakao.maps.LatLng(lat, lng);
