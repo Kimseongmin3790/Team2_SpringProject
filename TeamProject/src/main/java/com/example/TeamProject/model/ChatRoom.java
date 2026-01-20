@@ -21,4 +21,5 @@ public class ChatRoom {
 	 private java.sql.Timestamp cdatetime;
 	 private java.sql.Timestamp udatetime;
 	 private Long productNo;
+	 private String sellerProfileImg;
 }

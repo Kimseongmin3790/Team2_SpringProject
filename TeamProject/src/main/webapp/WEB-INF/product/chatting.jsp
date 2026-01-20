@@ -41,35 +41,24 @@
                 body {
                     height: 100%;
                     margin: 0;
-                    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
-                    color: var(--text);
-                    background: var(--bg);
+                    overflow: hidden;
                 }
 
                 #app {
                     min-height: 100vh;
-                    display: flex;
-                    flex-direction: column;
                 }
 
                 .content {
-                    padding-bottom: 0 !important;
-                    /* 아래 여백 완전 제거 */
-                    padding-top: 0;
-                    padding-left: 0;
-                    padding-right: 0;
+                    min-height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: stretch;
+                    padding: 0;
                 }
 
-                /* 카드(채팅 전체) */
                 .chat-wrap {
                     width: 100%;
-                    max-width: 820px;
-                    height: min(76vh, 760px);
-                    background: var(--card);
-                    border: 1px solid var(--line);
-                    border-radius: var(--radius);
-                    box-shadow: var(--shadow);
-                    overflow: hidden;
+                    height: 100vh;
                     display: flex;
                     flex-direction: column;
                 }
@@ -133,57 +122,147 @@
                 /* 메시지 */
                 .msg {
                     display: flex;
-                    margin: 10px 0;
-                    align-items: flex-end;
+                    margin: 14px 0;
                     gap: 10px;
-                }
-
-                .msg.me {
-                    justify-content: flex-end;
+                    align-items: flex-end;
+                    /* 아바타/말풍선 아래 맞춤 */
                 }
 
                 .msg.you {
                     justify-content: flex-start;
                 }
 
-                /* 말풍선 */
-                .bubble {
+                .msg.me {
+                    justify-content: flex-end;
+                }
+
+                .msg-col {
+                    display: flex;
+                    flex-direction: column;
                     max-width: min(72%, 560px);
-                    padding: 10px 12px;
-                    border-radius: 16px;
-                    border: 1px solid #eee;
+                }
+
+                .msg.me .msg-col {
+                    align-items: flex-end;
+                }
+
+                /* 이름(상대만) - 좀 더 또렷하게 */
+                .name {
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: #3f5a3f;
+                    margin: 0 0 6px 6px;
+                }
+
+                /* 아바타 - 확실하게 보이게 */
+                .avatar {
+                    width: 44px;
+                    height: 44px;
+                    border-radius: 999px;
+                    display: grid;
+                    place-items: center;
+
+                    font-weight: 900;
+                    font-size: 12px;
+                    letter-spacing: .2px;
+                    color: #fff;
+
+                    background: #1a5d1a;
+                    /* 기본 진한색 */
+                    border: 2px solid #ffffff;
+                    /* 흰 테두리 */
+                    box-shadow: 0 10px 22px rgba(0, 0, 0, .22);
+                    /* 그림자 더 진하게 */
+                }
+
+
+                /* 상대/나 아바타 위치 살짝 조정 */
+                .msg.you .avatar {
+                    margin-left: 2px;
+                }
+
+                .msg.me .avatar {
+                    margin-right: 2px;
+                }
+
+                /* 말풍선 - 더 도톰하게 + 대비 */
+                .bubble {
                     background: #fff;
-                    box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
-                }
-
-                .bubble .text {
-                    font-size: 14px;
-                    line-height: 1.5;
-                    white-space: pre-wrap;
-                    word-break: break-word;
-                }
-
-                .msg.you .bubble {
-                    background: #ffffff;
-                    border-color: #eef2ee;
-                    border-top-left-radius: 6px;
+                    border: 1px solid #e7eee7;
+                    border-radius: 18px;
+                    padding: 10px 12px;
+                    box-shadow: 0 6px 16px rgba(0, 0, 0, .06);
                 }
 
                 .msg.me .bubble {
                     background: #e8f5e9;
-                    border-color: #d9edd9;
-                    border-top-right-radius: 6px;
+                    border-color: #d5ead5;
                 }
 
-                /* 시간 */
+                /* 말풍선 꼬리 느낌(아주 약하게) */
+                .msg.you .bubble {
+                    border-top-left-radius: 10px;
+                    position: relative;
+                }
+
+                .msg.you .bubble::before {
+                    content: "";
+                    position: absolute;
+                    left: -6px;
+                    bottom: 10px;
+                    width: 12px;
+                    height: 12px;
+                    background: #fff;
+                    border-left: 1px solid #e7eee7;
+                    border-bottom: 1px solid #e7eee7;
+                    transform: rotate(45deg);
+                    border-bottom-left-radius: 3px;
+                }
+
+                .msg.me .bubble {
+                    border-top-right-radius: 10px;
+                    position: relative;
+                }
+
+                .msg.me .bubble::before {
+                    content: "";
+                    position: absolute;
+                    right: -6px;
+                    bottom: 10px;
+                    width: 12px;
+                    height: 12px;
+                    background: #e8f5e9;
+                    border-right: 1px solid #d5ead5;
+                    border-bottom: 1px solid #d5ead5;
+                    transform: rotate(-45deg);
+                    border-bottom-right-radius: 3px;
+                }
+
+                /* 시간 - 더 작고 깔끔하게 */
                 .time {
                     margin-top: 6px;
-                    font-size: 12px;
+                    font-size: 11px;
                     color: #7a8a7a;
-                    text-align: right;
                 }
 
-                /* 입력 영역 */
+                .msg.you .time {
+                    text-align: left;
+                    margin-left: 6px;
+                }
+
+                .msg.me .time {
+                    text-align: right;
+                    margin-right: 6px;
+                }
+
+                /* 모바일 */
+                @media (max-width: 520px) {
+                    .msg-col {
+                        max-width: 80%;
+                    }
+                }
+
+                /* 입력 영역 복구 */
                 .chat-input {
                     display: flex;
                     gap: 10px;
@@ -220,9 +299,8 @@
                     border-radius: 12px;
                     background: var(--green-400);
                     color: #fff;
-                    font-weight: 700;
+                    font-weight: 800;
                     cursor: pointer;
-                    transition: transform .06s ease, background .2s ease, box-shadow .2s ease;
                     box-shadow: var(--shadow-sm);
                 }
 
@@ -234,28 +312,12 @@
                     transform: translateY(1px);
                 }
 
-                .chat-input button:focus {
-                    outline: none;
-                    box-shadow: 0 0 0 4px rgba(93, 187, 99, .18), var(--shadow-sm);
-                }
-
-                /* 반응형 */
-                @media (max-width: 520px) {
-                    .content {
-                        padding: 18px 12px 60px;
-                    }
-
-                    .chat-wrap {
-                        margin: 0 auto;
-                        height: calc(100vh - 60px);
-                        /* 헤더가 있다면 보정 */
-                        border-radius: 0;
-                        /* 아래 모서리 둥근 거 제거 */
-                    }
-
-                    .bubble {
-                        max-width: 86%;
-                    }
+                .avatar-img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    border-radius: 999px;
+                    display: block;
                 }
             </style>
         </head>
@@ -266,21 +328,57 @@
                     <div class="chat-wrap">
                         <div class="chat-header">
                             <h3>주문 채팅</h3>
-                            <div class="meta">
-                                제품명 : {{ pName }}
+                            <div class="product-chip" :title="pName">
+                                <div class="product-text">
+                                    <div class="product-name">제품명 : {{ pName || '상품 정보 없음' }}</div>
+                                </div>
                             </div>
+
+
                         </div>
 
                         <div class="chat-body" ref="chatBody">
                             <div v-for="m in messages" :key="m.messageId"
                                 :class="['msg', m.senderId === sessionId ? 'me' : 'you']">
-                                <div class="bubble">
-                                    <div>{{ m.senderId }}</div>
-                                    <div class="text">{{ m.content }}</div>
-                                    <div class="time">{{ formatChatTime(m.cdatetime) }}</div>
-                                </div>
+
+                                <!-- 상대(you): 아바타 -> 컨텐츠 -->
+                                <template v-if="m.senderId !== sessionId">
+                                    <!-- 상대(you): 아바타 -->
+                                    <div class="avatar">
+                                        <img v-if="profileUrl(m.senderId)" class="avatar-img"
+                                            :src="profileUrl(m.senderId)" alt="" />
+                                        <span v-else>{{ avatarText(m.senderId) }}</span>
+                                    </div>
+
+                                    <div class="msg-col">
+                                        <div class="name">{{ m.senderId }}</div>
+                                        <div class="bubble">
+                                            <div class="text">{{ m.content }}</div>
+                                        </div>
+                                        <div class="time">{{ formatChatTime(m.cdatetime) }}</div>
+                                    </div>
+                                </template>
+
+                                <!-- 나(me): 컨텐츠 -> 아바타(옵션) -->
+                                <template v-else>
+                                    <div class="msg-col me-col">
+                                        <div class="bubble">
+                                            <div class="text">{{ m.content }}</div>
+                                        </div>
+                                        <div class="time">{{ formatChatTime(m.cdatetime) }}</div>
+                                    </div>
+
+                                    <!-- 내 아바타도 쓰고 싶으면 주석 해제 -->
+
+                                    <!-- <div class="avatar me-avatar" :style="avatarStyle(m.senderId)">
+                                        {{ avatarText(m.senderId) }}
+                                    </div> -->
+
+                                </template>
+
                             </div>
                         </div>
+
 
                         <div class="chat-input">
                             <input type="text" v-model="newMsg" @keyup.enter="fnSend" placeholder="메시지 입력..." />
@@ -299,7 +397,7 @@
                 data() {
                     const params = new URLSearchParams(location.search);
 
-                    const roomIdFromUrl = params.get("roomId");    // ✅ 추가
+                    const roomIdFromUrl = params.get("roomId");    // 추가
                     const productNoFromUrl = params.get("productNo");
                     const sellerIdFromUrl = params.get("sellerId");
                     const orderIdFromUrl = params.get("orderId");
@@ -308,10 +406,10 @@
                     return {
                         sessionId: "${sessionScope.sessionId}",
 
-                        // ✅ 1) roomId로 들어오는 케이스 (판매자 채팅함)
+                        // 1) roomId로 들어오는 케이스 (판매자 채팅함)
                         roomId: roomIdFromUrl ? Number(roomIdFromUrl) : null,
 
-                        // ✅ 2) 상품상세에서 들어오는 케이스
+                        // 2) 상품상세에서 들어오는 케이스
                         productNo: productNoFromUrl || "${productNo}",
                         sellerId: sellerIdFromUrl || "",
                         orderId: orderIdFromUrl || "",
@@ -320,11 +418,12 @@
                         newMsg: "",
                         stompClient: null,
                         pName: pNameFromUrl ? decodeURIComponent(pNameFromUrl) : "",
+                        sellerProfileUrl: "",
                     };
                 },
 
                 methods: {
-                    // ✅ roomId가 있을 때: 방 조회/생성 스킵하고 바로 로드
+                    // roomId가 있을 때: 방 조회/생성 스킵하고 바로 로드
                     fnStartByRoomId() {
                         if (!this.roomId) return;
                         this.fnLoadMessages();
@@ -353,7 +452,8 @@
                             success(data) {
                                 if (data.result === "success") {
                                     self.roomId = data.room ? data.room.roomId : null;
-                                    self.pName = (data.room && data.room.pName) ? data.room.pName : "";
+                                    self.pName = data.room?.pName || "";
+                                    self.sellerProfileUrl = data.room?.sellerProfileImg || "";
 
                                     if (self.roomId) {
                                         self.fnLoadMessages();
@@ -505,6 +605,47 @@
                             return d.toLocaleTimeString("ko-KR", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hour12: false });
                         }
                         return dateStr;
+                    },
+
+                    avatarText(id) {
+                        if (!id) return "?";
+                        // 영문/숫자면 앞 2글자, 한글이면 1글자
+                        const s = String(id).trim();
+                        const isKorean = /[가-힣]/.test(s);
+                        return isKorean ? s.slice(0, 1) : s.slice(0, 2).toUpperCase();
+                    },
+
+                    avatarStyle(id) {
+                        const colors = ["#1a5d1a", "#1565C0", "#6A1B9A", "#C62828", "#EF6C00", "#00838F"];
+
+                        const s = String(id || "");
+                        let hash = 0;
+                        for (let i = 0; i < s.length; i++) hash = (hash * 31 + s.charCodeAt(i)) >>> 0;
+
+                        return { background: colors[hash % colors.length] };
+                    },
+                    fnFetchRoomByRoomId() {
+                        const self = this;
+                        $.ajax({
+                            url: "/chat/room/byRoomId.dox",
+                            dataType: "json",
+                            type: "POST",
+                            data: { roomId: self.roomId },
+                            success(data) {
+                                if (data.result === "success") {
+                                    self.sellerId = data.room?.sellerId || self.sellerId;
+                                    self.pName = data.room?.pName || self.pName;
+                                    self.sellerProfileUrl = data.room?.sellerProfileImg || "";
+                                    self.fnLoadMessages();
+                                    self.fnConnectWs();
+                                }
+                            }
+                        });
+                    },
+
+                    profileUrl(senderId) {
+                        if (senderId === this.sellerId && this.sellerProfileUrl) return this.sellerProfileUrl;
+                        return "";
                     }
 
                 },
@@ -518,8 +659,7 @@
 
                     // roomId로 들어오면: room header 조회 + 메시지로드 + ws
                     if (this.roomId) {
-                        this.fnLoadMessages();
-                        this.fnConnectWs();
+                        this.fnFetchRoomByRoomId();
                         return;
                     }
 
