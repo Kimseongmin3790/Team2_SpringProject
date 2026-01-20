@@ -9,6 +9,7 @@
             <title>알림 타임라인 - FRESH FARM</title>
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
 
@@ -314,7 +315,8 @@
                                 </div>
                             </div>
                             <div class="action-bar" v-if="list.length > 0">
-                                <button class="clear-all-btn" @click="fnReadAll" style="margin-right: 15px;">모든 알림 읽음 처리</button>
+                                <button class="clear-all-btn" @click="fnReadAll" style="margin-right: 15px;">모든 알림 읽음
+                                    처리</button>
                                 <button class="clear-all-btn" @click="fnRemoveRead">읽은 알림 모두 삭제</button>
                             </div>
 
@@ -393,6 +395,39 @@
                                 }
                             },
                             methods: {
+                                // ✅ SweetAlert2 helper (성공만 confirm 버튼 색상 적용)
+                                swWarn(msg) {
+                                    return Swal.fire('⚠️', msg, 'warning');
+                                },
+                                swInfo(msg) {
+                                    return Swal.fire('ℹ️', msg, 'info');
+                                },
+                                swError(title, msg) {
+                                    return Swal.fire({
+                                        icon: 'error',
+                                        title: title || '오류',
+                                        text: msg || ''
+                                    });
+                                },
+                                swSuccess(title, msg) {
+                                    return Swal.fire({
+                                        icon: 'success',
+                                        title: title || '성공',
+                                        text: msg || '',
+                                        confirmButtonColor: '#5dbb63'
+                                    });
+                                },
+                                swConfirm(title, text, confirmText = '확인', cancelText = '취소') {
+                                    return Swal.fire({
+                                        icon: 'question',
+                                        title,
+                                        text,
+                                        showCancelButton: true,
+                                        confirmButtonText: confirmText,
+                                        cancelButtonText: cancelText
+                                    });
+                                },
+
                                 fnList(page) {
                                     let self = this;
                                     if (page) self.currentPage = page;
@@ -413,6 +448,7 @@
                                         }
                                     });
                                 },
+
                                 fnRead(item) {
                                     let self = this;
 
@@ -435,11 +471,9 @@
                                         }
                                     });
                                 },
-                                openChatFromNoti(item) {
-                                    // 1) link_url에서 roomId/productNo/sellerId/buyerId/pName 뽑기(있으면)
-                                    const parsed = this.parseLink(item.LINK_URL);
 
-                                    // 2) chat.do로 넘길 파라미터 구성
+                                openChatFromNoti(item) {
+                                    const parsed = this.parseLink(item.LINK_URL);
                                     const params = new URLSearchParams();
 
                                     if (parsed.roomId) params.set("roomId", parsed.roomId);
@@ -448,11 +482,10 @@
                                     if (parsed.buyerId) params.set("buyerId", parsed.buyerId);
                                     if (parsed.pName) params.set("pName", parsed.pName);
 
-                                    // 👉 roomId만 있더라도 OK (채팅창에서 pName을 조회하게 만들면 됨)
                                     const url = "/chat.do?" + params.toString();
-
                                     window.open(url, "chatPopup", "width=520,height=720,resizable=yes,scrollbars=yes");
                                 },
+
                                 parseLink(linkUrl) {
                                     if (!linkUrl) return {};
                                     try {
@@ -465,7 +498,6 @@
                                             pName: url.searchParams.get("pName")
                                         };
                                     } catch (e) {
-                                        // 상대경로 대응
                                         const get = (k) => {
                                             const m = linkUrl.match(new RegExp(`[?&]${k}=([^&]+)`));
                                             return m ? decodeURIComponent(m[1]) : null;
@@ -486,7 +518,6 @@
                                         const url = new URL(linkUrl, location.origin);
                                         return url.searchParams.get("roomId");
                                     } catch (e) {
-                                        // linkUrl이 상대경로일 때도 처리
                                         const m = linkUrl.match(/roomId=([^&]+)/);
                                         return m ? m[1] : null;
                                     }
@@ -496,12 +527,16 @@
                                     const icons = { 'ORDER': '📦', 'CHAT': '💬', 'NOTICE': '🔔', 'MARKETING': '🎁' };
                                     return icons[type] || '📌';
                                 },
+
                                 getTitle(type) {
                                     const titles = { 'ORDER': '주문 소식', 'CHAT': '채팅 메시지', 'NOTICE': '시스템 알림', 'MARKETING': '이벤트 소식' };
                                     return titles[type] || '알림';
                                 },
-                                fnRemove(notiNo) {
-                                    if (!confirm("이 알림을 삭제하시겠습니까?")) return;
+
+                                async fnRemove(notiNo) {
+                                    const ok = await this.swConfirm("알림 삭제", "이 알림을 삭제하시겠습니까?", "삭제", "취소");
+                                    if (!ok.isConfirmed) return;
+
                                     let self = this;
                                     $.ajax({
                                         url: "/notification/remove.dox",
@@ -510,13 +545,16 @@
                                         data: { notiNo: notiNo },
                                         success: function (data) {
                                             if (data.result === "success") {
-                                                self.fnList(); // 목록 새로고침
+                                                self.fnList();
                                             }
                                         }
                                     });
                                 },
-                                fnRemoveRead() {
-                                    if (!confirm("읽은 알림을 모두 삭제하시겠습니까?")) return;
+
+                                async fnRemoveRead() {
+                                    const ok = await this.swConfirm("읽은 알림 삭제", "읽은 알림을 모두 삭제하시겠습니까?", "삭제", "취소");
+                                    if (!ok.isConfirmed) return;
+
                                     let self = this;
                                     $.ajax({
                                         url: "/notification/removeRead.dox",
@@ -524,7 +562,7 @@
                                         dataType: "json",
                                         success: function (data) {
                                             if (data.result === "success") {
-                                                self.fnList(); // 목록 새로고침
+                                                self.fnList();
                                             }
                                         }
                                     });
@@ -533,7 +571,6 @@
                                 formatNotiTime(ts) {
                                     if (!ts) return "";
 
-                                    // "YYYY-MM-DD HH:mm"
                                     if (typeof ts === "string") {
                                         const [datePart, timePart] = ts.split(" ");
                                         if (!datePart || !timePart) return ts;
@@ -541,7 +578,6 @@
                                         const [y, m, d] = datePart.split("-").map(Number);
                                         const [hh, mm] = timePart.split(":").map(Number);
 
-                                        // ts가 UTC처럼 들어온다고 가정하고 +9시간 보정
                                         const kst = new Date(Date.UTC(y, m - 1, d, hh, mm, 0));
                                         kst.setHours(kst.getHours());
 
@@ -553,7 +589,6 @@
                                         });
                                     }
 
-                                    // Date/number fallback
                                     const d = new Date(ts);
                                     if (isNaN(d.getTime())) return "";
                                     return d.toLocaleTimeString("ko-KR", {
@@ -563,33 +598,41 @@
                                         hour12: false
                                     });
                                 },
-                                fnReadAll() {
-                                    if (!confirm("모든 알림을 읽음 처리하시겠습니까?")) return;
+
+                                async fnReadAll() {
+                                    const ok = await this.swConfirm("읽음 처리", "모든 알림을 읽음 처리하시겠습니까?", "처리", "취소");
+                                    if (!ok.isConfirmed) return;
+
                                     let self = this;
                                     $.ajax({
                                         url: "/notification/read.dox",
                                         type: "POST",
                                         dataType: "json",
-                                        data: {}, 
-                                        success: function (data) {
-                                            alert("모든 알림이 읽음 처리되었습니다.");
-                                            self.fnList(); 
-                                            $("#notiBadge").hide().text("0");
+                                        data: {},
+                                        success: function () {
+                                            self.swSuccess("완료", "모든 알림이 읽음 처리되었습니다.").then(() => {
+                                                self.fnList();
+                                                $("#notiBadge").hide().text("0");
+                                            });
                                         }
                                     });
                                 }
                             },
+
                             mounted() {
                                 if (!this.userId) {
-                                    alert("로그인이 필요한 페이지입니다.");
-                                    location.href = "/login.do";
+                                    this.swWarn("로그인이 필요한 페이지입니다.").then(() => {
+                                        location.href = "/login.do";
+                                    });
                                     return;
                                 }
                                 this.fnList();
                             }
                         });
+
                         app.mount('#app');
                     </script>
+
         </body>
 
         </html>

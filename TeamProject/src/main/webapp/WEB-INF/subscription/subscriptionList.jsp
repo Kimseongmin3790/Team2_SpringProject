@@ -13,6 +13,9 @@
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
+            <!-- ✅ SweetAlert2 추가 -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css" />
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css" />
 
@@ -233,9 +236,7 @@
                             },
                             computed: {
                                 filteredPlans() {
-                                    if (!this.periodFilter) {
-                                        return this.plans;
-                                    }
+                                    if (!this.periodFilter) return this.plans;
                                     return this.plans.filter(p => p.periodType === this.periodFilter);
                                 }
                             },
@@ -273,11 +274,11 @@
                                             if (res.result === "success") {
                                                 self.plans = res.list || [];
                                             } else {
-                                                alert("정기배송 목록 조회 중 오류가 발생했습니다.");
+                                                Swal.fire('⚠️', '정기배송 목록 조회 중 오류가 발생했습니다.', 'warning');
                                             }
                                         },
                                         error() {
-                                            alert("서버 통신 중 오류가 발생했습니다.");
+                                            Swal.fire('⚠️', '서버 통신 중 오류가 발생했습니다.', 'warning');
                                         }
                                     });
                                 },

@@ -12,6 +12,7 @@
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
             <style>
                 /* ===== Agricola Chat UI ===== */
@@ -361,7 +362,7 @@
                                         self.fnCreateRoom();
                                     }
                                 } else {
-                                    alert("채팅방 조회 실패: " + (data.message || ""));
+                                    Swal.fire('❌', "채팅방 조회 실패: " + (data.message || ""), 'error');
                                 }
                             }
                         });
@@ -392,7 +393,7 @@
                                     self.fnLoadMessages();
                                     self.fnConnectWs();
                                 } else {
-                                    alert("채팅방 생성 실패: " + (data.message || ""));
+                                    Swal.fire('❌', "채팅방 생성 실패: " + (data.message || ""), 'error');
                                 }
                             }
                         });
@@ -412,7 +413,7 @@
                                     self.$nextTick(() => self.fnScrollBottom());
                                     console.log("first message:", self.messages[0]);
                                 } else {
-                                    alert("메시지 조회 실패");
+                                    Swal.fire('❌', '메시지 조회 실패', 'error');
                                 }
                             }
                         });
@@ -471,7 +472,7 @@
                         if (typeof ts === "string" && ts.includes("T")) {
                             const [datePart, timePartRaw] = ts.split("T");
                             const hh = Number(timePartRaw.slice(0, 2));
-                            const mm = timePartRaw.slice(3, 5);
+                            const mm = Number(timePartRaw.slice(3, 5));
 
                             // KST 보정
                             const d = new Date(Date.UTC(
@@ -510,7 +511,7 @@
 
                 mounted() {
                     if (!this.sessionId || !String(this.sessionId).trim()) {
-                        alert("로그인 후 이용 가능합니다.");
+                        Swal.fire('⚠️', '로그인 후 이용 가능합니다.', 'warning');
                         location.href = "/login.do";
                         return;
                     }
@@ -525,7 +526,7 @@
                     // productNo/sellerId로 들어오면: 방 조회/생성 -> roomId 확정 후 ws
                     if (!this.productNo || !String(this.productNo).trim() ||
                         !this.sellerId || !String(this.sellerId).trim()) {
-                        alert("채팅에 필요한 값(roomId 또는 productNo/sellerId)이 없습니다.");
+                        Swal.fire('⚠️', '채팅에 필요한 값(roomId 또는 productNo/sellerId)이 없습니다.', 'warning');
                         return;
                     }
 

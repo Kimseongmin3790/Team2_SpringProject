@@ -13,6 +13,8 @@
             <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
             <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+            <!-- ✅ SweetAlert2 (alert/confirm 대체용) -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
             <link rel="stylesheet" href="${path}/resources/css/header.css">
             <link rel="stylesheet" href="${path}/resources/css/footer.css">
@@ -334,7 +336,6 @@
                     data-plan-id="<c:out value='${param.planId}'/>"
                     data-shipping-fee="<c:out value='${param.shippingFee}'/>">
 
-
                     <main class="content">
                         <!-- 좌측 -->
                         <section class="left-section">
@@ -388,7 +389,6 @@
                                 <input v-if="requestValue==='direct'" type="text" v-model="requestDirect"
                                     placeholder="직접입력" />
                             </div>
-
                         </section>
 
                         <!-- 우측 -->
@@ -409,7 +409,7 @@
                                             -{{ couponDiscountAmount.toLocaleString() }}원 할인 적용
                                             <small
                                                 v-if="selectedCoupon.DISCOUNT_TYPE === 'R' &&
-                                                        totalPrice * (selectedCoupon.DISCOUNT_AMOUNT/100) > selectedCoupon.MAX_DISCOUNT_PRICE"
+                                        totalPrice * (selectedCoupon.DISCOUNT_AMOUNT/100) > selectedCoupon.MAX_DISCOUNT_PRICE"
                                                 class="max-applied-info">
                                                 (최대 한도 적용됨)
                                             </small>
@@ -436,8 +436,11 @@
                             <!-- 결제 버튼 -->
                             <button class="btn-pay" @click="fnPay">결제하기</button>
                             <button class="btn-pay" style="background-color: #666; margin-top: 10px;"
-                                @click="fnTestPay">테스트 결제 (알림확인용)</button>
+                                @click="fnTestPay">
+                                테스트 결제 (알림확인용)
+                            </button>
                         </section>
+
                         <!-- 쿠폰 선택 모달 -->
                         <div v-if="showCouponModal" class="modal-mask" @click.self="showCouponModal = false">
                             <div class="modal-container">
@@ -483,6 +486,7 @@
         </body>
 
         </html>
+
         <script>
             const root = document.getElementById('app');
 
@@ -592,16 +596,16 @@
                                     this.couponList = res.list;
                                     this.showCouponModal = true;
                                 } else {
-                                    alert("쿠폰 정보를 불러오지 못했습니다.");
+                                    Swal.fire('⚠️', '쿠폰 정보를 불러오지 못했습니다.', 'warning');
                                 }
                             },
-                            error: () => alert("서버 통신 오류")
+                            error: () => Swal.fire('❌', '서버 통신 오류', 'error')
                         });
                     },
                     // 쿠폰 선택 시
                     fnSelectCoupon(c) {
                         if (this.totalPrice < Number(c.MIN_ORDER_PRICE)) {
-                            alert(Number(c.MIN_ORDER_PRICE).toLocaleString() + "원 이상 구매 시 사용 가능합니다.");
+                            Swal.fire('⚠️', Number(c.MIN_ORDER_PRICE).toLocaleString() + "원 이상 구매 시 사용 가능합니다.", 'warning');
                             return;
                         }
                         this.selectedCoupon = c;
@@ -614,64 +618,78 @@
                     },
 
                     fnTestPay() {
-                        if (!confirm("PG 연동 없이 바로 결제 완료 처리하시겠습니까? (알림 테스트용)")) return;
+                        Swal.fire({
+                            icon: 'question',
+                            title: '확인',
+                            text: 'PG 연동 없이 바로 결제 완료 처리하시겠습니까? (알림 테스트용)',
+                            showCancelButton: true,
+                            confirmButtonText: '확인',
+                            cancelButtonText: '취소'
+                        }).then((r) => {
+                            if (!r.isConfirmed) return;
 
-                        const memo = this.requestValue === 'direct'
-                            ? (this.requestDirect || '').trim()
-                            : (this.requestLabel || '').trim();
+                            const memo = this.requestValue === 'direct'
+                                ? (this.requestDirect || '').trim()
+                                : (this.requestLabel || '').trim();
 
-                        const line = this.products[0] || {};
-                        const amount = Math.max(0, Math.floor(Number(this.finalPrice) || 0));
+                            const line = this.products[0] || {};
+                            const amount = Math.max(0, Math.floor(Number(this.finalPrice) || 0));
 
-                        // 테스트용 가짜 데이터
-                        const fakeImpUid = "TEST_IMP_" + new Date().getTime();
-                        const fakeMerchantUid = "TEST_ORD_" + new Date().getTime();
+                            // 테스트용 가짜 데이터
+                            const fakeImpUid = "TEST_IMP_" + new Date().getTime();
+                            const fakeMerchantUid = "TEST_ORD_" + new Date().getTime();
 
-                        let url = "${path}/payment/testVerify.dox";
-                        let data = {
-                            impUid: fakeImpUid,
-                            merchantUid: fakeMerchantUid,
-                            amount: amount,
+                            let url = "${path}/payment/testVerify.dox";
+                            let data = {
+                                impUid: fakeImpUid,
+                                merchantUid: fakeMerchantUid,
+                                amount: amount,
 
-                            buyerId: this.buyer.userId,
-                            receivName: this.buyer.name,
-                            receivPhone: this.buyer.phone,
-                            deliverAddr: this.buyer.address,
-                            memo: memo,
-                            usedPoint: this.usedPoint,
-                            ucId: this.selectedCoupon ? this.selectedCoupon.ISSUE_NO : null
-                        };
+                                buyerId: this.buyer.userId,
+                                receivName: this.buyer.name,
+                                receivPhone: this.buyer.phone,
+                                deliverAddr: this.buyer.address,
+                                memo: memo,
+                                usedPoint: this.usedPoint,
+                                ucId: this.selectedCoupon ? this.selectedCoupon.ISSUE_NO : null
+                            };
 
-                        if (IS_SUBSCRIPTION_MODE) {
-                            alert("구독 테스트 결제는 아직 지원하지 않습니다.");
-                            return;
-                        } else if (IS_CART_MODE) {
-                            data.cartNos = CART_CSV;
-                        } else {
-                            data.productNo = line.productNo;
-                            data.optionNo = line.optionNo;
-                            data.quantity = line.quantity;
-                            data.fulfillment = line.fulfillment || this.fulfillment;
-                        }
-
-                        $.ajax({
-                            url: url,
-                            type: "POST",
-                            dataType: "json",
-                            data: data,
-                            success: (res) => {
-                                if (res.result === "success") {
-                                    alert("[테스트] 결제 완료! 주문번호: " + res.orderNo + "\n알림이 발송되었습니다.");
-                                    location.href = "${path}/buyerMyPage.do?activeTab=orders";
-                                } else {
-                                    alert("[테스트] 실패: " + res.message);
-                                }
-                            },
-                            error: (xhr) => {
-                                alert("서버 오류: " + xhr.status);
+                            if (IS_SUBSCRIPTION_MODE) {
+                                Swal.fire('⚠️', '구독 테스트 결제는 아직 지원하지 않습니다.', 'warning');
+                                return;
+                            } else if (IS_CART_MODE) {
+                                data.cartNos = CART_CSV;
+                            } else {
+                                data.productNo = line.productNo;
+                                data.optionNo = line.optionNo;
+                                data.quantity = line.quantity;
+                                data.fulfillment = line.fulfillment || this.fulfillment;
                             }
+
+                            $.ajax({
+                                url: url,
+                                type: "POST",
+                                dataType: "json",
+                                data: data,
+                                success: (res) => {
+                                    if (res.result === "success") {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: '✅',
+                                            text: "[테스트] 결제 완료! 주문번호: " + res.orderNo + "\n알림이 발송되었습니다.",
+                                            confirmButtonColor: '#5dbb63'
+                                        }).then(() => location.href = "${path}/buyerMyPage.do?activeTab=orders");
+                                    } else {
+                                        Swal.fire('❌', "[테스트] 실패: " + res.message, 'error');
+                                    }
+                                },
+                                error: (xhr) => {
+                                    Swal.fire('❌', "서버 오류: " + xhr.status, 'error');
+                                }
+                            });
                         });
                     },
+
                     fnProduct() {
                         if (IS_SUBSCRIPTION_MODE && this.subscriptionPlanId) {
                             // ✅ 정기배송 전용 플로우
@@ -696,11 +714,11 @@
                                             periodType: plan.periodType
                                         }];
                                     } else {
-                                        alert(res.message || "정기배송 플랜 정보를 불러오지 못했습니다.");
+                                        Swal.fire('⚠️', res.message || "정기배송 플랜 정보를 불러오지 못했습니다.", 'warning');
                                     }
                                 },
                                 error: () => {
-                                    alert("정기배송 플랜 조회 중 오류가 발생했습니다.");
+                                    Swal.fire('❌', "정기배송 플랜 조회 중 오류가 발생했습니다.", 'error');
                                 }
                             });
 
@@ -726,14 +744,15 @@
                                         console.log("[products mapped] shippingFeeC =", this.shippingFeeC);
 
                                     } else {
-                                        alert(res.message || '결제 대상 불러오기 실패');
+                                        Swal.fire('⚠️', res.message || '결제 대상 불러오기 실패', 'warning');
                                     }
                                 }
                             });
                         } else {
                             // ✅ 기존 단건(상품 상세) 로직 그대로
                             if (!SINGLE.productNo || !SINGLE.qty) {
-                                alert('결제 대상이 없습니다.'); location.href = CTX + '/'; return;
+                                Swal.fire('⚠️', '결제 대상이 없습니다.', 'warning').then(() => location.href = CTX + '/');
+                                return;
                             }
                             $.ajax({
                                 url: CTX + "/payment/list.dox",
@@ -762,7 +781,7 @@
                                         console.log("[products mapped] shippingFeeC =", this.shippingFeeC);
 
                                     } else {
-                                        alert(res.message || '결제 대상 불러오기 실패');
+                                        Swal.fire('⚠️', res.message || '결제 대상 불러오기 실패', 'warning');
                                     }
                                 }
                             });
@@ -785,10 +804,10 @@
                                 if (data.result == 'success') {
                                     self.buyer = data.info || [];
                                 } else {
-                                    alert('불러오기 실패');
+                                    Swal.fire('⚠️', '불러오기 실패', 'warning');
                                 }
                             },
-                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                            error: function (xhr) { Swal.fire('❌', '서버오류: ' + xhr.status, 'error'); }
                         });
                     },
 
@@ -797,11 +816,11 @@
                     },
 
                     searchAddress() {
-                        alert("주소찾기 기능은 추후 연결 예정입니다.");
+                        Swal.fire('ℹ️', "주소찾기 기능은 추후 연결 예정입니다.", 'info');
                     },
 
                     editBuyer() {
-                        alert("주문자 정보 수정 기능은 추후 연결 예정입니다.");
+                        Swal.fire('ℹ️', "주문자 정보 수정 기능은 추후 연결 예정입니다.", 'info');
                     },
 
                     updateRequestLabel() {
@@ -811,7 +830,7 @@
 
                     fnPay() {
                         if (!this.agree) {
-                            alert("약관에 동의해주세요.");
+                            Swal.fire('⚠️', "약관에 동의해주세요.", 'warning');
                             return;
                         }
 
@@ -830,21 +849,13 @@
                             orderName = line.pName;
                         }
 
-                        // 총 결제 금액 = finalPrice (정수/0원 이상으로 보정)
-                        // const amount = Math.max(0, Math.floor(Number(this.finalPrice) || 0));
                         const expectedAmount = Math.max(0, Math.floor(Number(this.finalPrice) || 0));
                         const payAmount = TEST_PAY ? 1 : expectedAmount;
 
                         if (payAmount === 0) {
-                            alert("결제 금액이 0원입니다.");
+                            Swal.fire('⚠️', "결제 금액이 0원입니다.", 'warning');
                             return;
                         }
-
-                        // 0원 결제는 PG에서 막힐 수 있으니 처리 분기
-                        // if (amount === 0) {
-                        //     alert("결제 금액이 0원입니다. 포인트 전액 결제 처리 로직으로 분기하세요.");
-                        //     return;
-                        // }
 
                         // PortOne 객체 생성
                         const IMP = window.IMP;
@@ -888,14 +899,18 @@
                                         },
                                         success: function (data) {
                                             if (data.result == "success") {
-                                                alert("정기배송 신청이 완료되었습니다. 구독번호 " + data.subscriptionId);
-                                                location.href = "${path}/buyerMyPage.do?tab=subscriptions";
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: '✅',
+                                                    text: "정기배송 신청이 완료되었습니다. 구독번호 " + data.subscriptionId,
+                                                    confirmButtonColor: '#5dbb63'
+                                                }).then(() => location.href = "${path}/buyerMyPage.do?tab=subscriptions");
                                             } else {
-                                                alert("정기배송 저장 실패: " + (data.message || ''));
+                                                Swal.fire('❌', "정기배송 저장 실패: " + (data.message || ''), 'error');
                                             }
                                         },
                                         error: function () {
-                                            alert("서버 통신 오류");
+                                            Swal.fire('❌', "서버 통신 오류", 'error');
                                         }
                                     });
                                     return;
@@ -929,14 +944,18 @@
                                         },
                                         success: function (data) {
                                             if (data.result == "success") {
-                                                alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
-                                                location.href = "${path}/buyerMyPage.do?activeTab=orders";
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: '✅',
+                                                    text: "주문번호 " + data.orderNo + " 결제가 완료되었습니다!",
+                                                    confirmButtonColor: '#5dbb63'
+                                                }).then(() => location.href = "${path}/buyerMyPage.do?activeTab=orders");
                                             } else {
-                                                alert("결제 저장 실패: " + (data.message || ""));
+                                                Swal.fire('❌', "결제 저장 실패: " + (data.message || ""), 'error');
                                             }
                                         },
                                         error: function () {
-                                            alert("서버 통신 오류");
+                                            Swal.fire('❌', "서버 통신 오류", 'error');
                                         }
                                     });
                                     return;
@@ -967,18 +986,22 @@
                                     },
                                     success: function (data) {
                                         if (data.result == "success") {
-                                            alert("주문번호 " + data.orderNo + " 결제가 완료되었습니다!");
-                                            location.href = "${path}/buyerMyPage.do?activeTab=orders";
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: '✅',
+                                                text: "주문번호 " + data.orderNo + " 결제가 완료되었습니다!",
+                                                confirmButtonColor: '#5dbb63'
+                                            }).then(() => location.href = "${path}/buyerMyPage.do?activeTab=orders");
                                         } else {
-                                            alert("결제 저장 실패:" + (data.message || ""));
+                                            Swal.fire('❌', "결제 저장 실패:" + (data.message || ""), 'error');
                                         }
                                     },
                                     error: function () {
-                                        alert("서버 통신 오류");
+                                        Swal.fire('❌', "서버 통신 오류", 'error');
                                     }
                                 });
                             } else {
-                                alert("결제 실패: " + rsp.error_msg);
+                                Swal.fire('❌', "결제 실패: " + rsp.error_msg, 'error');
                             }
                         });
                     }

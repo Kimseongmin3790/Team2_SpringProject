@@ -13,6 +13,9 @@
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
+            <!-- ✅ SweetAlert2 추가 -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css" />
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css" />
 
@@ -276,7 +279,7 @@
 
                         <h2 class="section-title">정기배송 안내</h2>
                         <div class="guide-list">
-                            <ul>                                                
+                            <ul>
                                 <li>서울/수도권 외 지역은 배송 일정이 1~2일 추가 소요될 수 있습니다.</li>
                                 <li>기상 상황, 산지 수급 상황 등에 따라 일부 구성품이 동급 품목으로 변경될 수 있습니다.</li>
                             </ul>
@@ -335,11 +338,11 @@
                                             if (res.result === "success") {
                                                 self.detail = res.detail;
                                             } else {
-                                                alert("정기배송 상세 조회 중 오류가 발생했습니다.");
+                                                Swal.fire('⚠️', '정기배송 상세 조회 중 오류가 발생했습니다.', 'warning');
                                             }
                                         },
                                         error() {
-                                            alert("서버 통신 중 오류가 발생했습니다.");
+                                            Swal.fire('⚠️', '서버 통신 중 오류가 발생했습니다.', 'warning');
                                         }
                                     });
                                 },
@@ -352,7 +355,7 @@
                                 },
                                 goSubscribe() {
                                     if (!this.userId) {
-                                        alert("로그인이 필요합니다.");
+                                        Swal.fire('⚠️', '로그인이 필요합니다.', 'warning');
                                         location.href = this.path + "/login.do";
                                         return;
                                     }
@@ -363,12 +366,12 @@
                                     location.href = this.path + "/subscription/list.do";
                                 },
                                 alertNotReady() {
-                                    alert("정기배송 결제/신청 기능은 추후 구현 예정입니다.");
+                                    Swal.fire('⚠️', '정기배송 결제/신청 기능은 추후 구현 예정입니다.', 'warning');
                                 }
                             },
                             mounted() {
                                 if (!this.userId) {
-                                    alert("로그인이 필요한 페이지입니다.");
+                                    Swal.fire('⚠️', '로그인이 필요한 페이지입니다.', 'warning');
                                     location.href = this.path + "/login.do";
                                     return;
                                 }

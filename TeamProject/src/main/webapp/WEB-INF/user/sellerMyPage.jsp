@@ -10,6 +10,7 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <style>
@@ -1089,6 +1090,47 @@
         </html>
 
         <script>
+            /* ✅ SweetAlert2 helper (성공만 #5dbb63) */
+            const swWarn = (msg) => Swal.fire('⚠️', msg, 'warning');
+            const swInfo = (msg) => Swal.fire('ℹ️', msg, 'info');
+
+            const swSuccess = (title, msg) => Swal.fire({
+                icon: 'success',
+                title: title || '성공',
+                text: msg || '',
+                confirmButtonColor: '#5dbb63' // ✅ 성공만 컬러
+            });
+
+            const swError = (title, msg) => Swal.fire({
+                icon: 'error',
+                title: title || '오류',
+                text: msg || ''
+            });
+
+            const swConfirm = (title, text, confirmText = '확인', cancelText = '취소') => {
+                return Swal.fire({
+                    icon: 'question',
+                    title,
+                    text,
+                    showCancelButton: true,
+                    confirmButtonText: confirmText,
+                    cancelButtonText: cancelText
+                });
+            };
+
+            const swPrompt = (title, inputType = 'text', placeholder = '') => {
+                return Swal.fire({
+                    title,
+                    input: inputType,
+                    inputPlaceholder: placeholder,
+                    showCancelButton: true,
+                    confirmButtonText: '확인',
+                    cancelButtonText: '취소',
+                    inputAttributes: inputType === 'password' ? { autocomplete: 'current-password' } : {},
+                    inputValidator: () => null
+                });
+            };
+
             const app = Vue.createApp({
                 data() {
                     return {
@@ -1141,212 +1183,206 @@
                         const currentYear = new Date().getFullYear();
                         const startYear = 2024;
                         const years = [];
-                        for (let i = currentYear; i >= startYear; i--) {
-                            years.push(i);
-                        }
+                        for (let i = currentYear; i >= startYear; i--) years.push(i);
                         return years;
                     },
-                    salesSummary: function () {
-                        let self = this;
+                    salesSummary() {
                         let totalSalesSum = 0;
                         let totalPlatformFeeSum = 0;
                         let totalOrderCountSum = 0;
-                        self.salesHistory.forEach(record => {
+                        this.salesHistory.forEach(record => {
                             totalSalesSum += record.totalSales || 0;
                             totalPlatformFeeSum += record.platformFee || 0;
                             totalOrderCountSum += record.orderCount || 0;
                         });
-                        return {
-                            totalSalesSum: totalSalesSum,
-                            totalPlatformFeeSum: totalPlatformFeeSum,
-                            totalOrderCountSum: totalOrderCountSum
-                        };
+                        return { totalSalesSum, totalPlatformFeeSum, totalOrderCountSum };
                     },
-                    totalPages: function () {
+                    totalPages() {
                         return Math.ceil(this.salesHistory.length / this.salesPagination.rowsPerPage);
                     },
-
-                    paginatedSalesHistory: function () {
-                        if (this.salesPeriod.type !== 'monthly' || this.totalPages <= 1) {
-                            return this.salesHistory;
-                        }
+                    paginatedSalesHistory() {
+                        if (this.salesPeriod.type !== 'monthly' || this.totalPages <= 1) return this.salesHistory;
                         const start = (this.salesPagination.currentPage - 1) * this.salesPagination.rowsPerPage;
                         const end = start + this.salesPagination.rowsPerPage;
                         return this.salesHistory.slice(start, end);
                     }
                 },
                 methods: {
-                    formatPrice: function (price) {
-                        if (price === undefined || price === null) {
-                            return '0';
-                        }
+                    formatPrice(price) {
+                        if (price === undefined || price === null) return '0';
                         const numericPrice = Number(price);
-                        if (isNaN(numericPrice)) {
-                            return String(price);
-                        }
+                        if (isNaN(numericPrice)) return String(price);
                         return numericPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                     },
-                    getStatusClass: function (status) {
+                    getStatusClass(status) {
                         if (status === '주문확인') return 'status-pending';
                         if (status === '배송중') return 'status-shipping';
                         if (status === '배송완료') return 'status-completed';
                         return '';
                     },
-                    goToPage: function (page) {
+
+                    goToPage(page) {
                         let path = '';
-                        if (page === 'product-register') {
-                            path = '${pageContext.request.contextPath}/product/add.do';
-                        } else if (page === 'order-manage') {
-                            path = '${pageContext.request.contextPath}/order/sellerList.do';
-                        } else if (page === 'product-manage') {
-                            path = '${pageContext.request.contextPath}/sellerProductList.do';
-                        }
+                        if (page === 'product-register') path = '${pageContext.request.contextPath}/product/add.do';
+                        else if (page === 'order-manage') path = '${pageContext.request.contextPath}/order/sellerList.do';
+                        else if (page === 'product-manage') path = '${pageContext.request.contextPath}/sellerProductList.do';
 
-                        if (path) {
-                            window.location.href = path;
-                        } else {
-                            alert(page + ' 페이지는 아직 경로가 정의되지 않았습니다.');
-                        }
+                        if (path) window.location.href = path;
+                        else swWarn(page + ' 페이지는 아직 경로가 정의되지 않았습니다.');
                     },
-                    updateFarmInfo: function () {
-                        if (confirm('농가 정보를 수정하시겠습니까?')) {
-                            let self = this;
-                            let param = {
-                                businessName: self.farmInfo.name,
-                                "user.name": self.farmInfo.owner,
-                                "user.address": self.farmInfo.location
-                            };
 
-                            $.ajax({
-                                url: "${pageContext.request.contextPath}/seller/farm/update.dox",
-                                dataType: "json",
-                                type: "POST",
-                                data: param,
-                                success: function (response) {
-                                    if (response.result === 'success') {
-                                        alert('농가 정보가 성공적으로 수정되었습니다.');
-                                    } else {
-                                        alert('농가 정보 수정에 실패했습니다: ' + response.message);
-                                    }
-                                },
-                                error: function (xhr, status, error) {
-                                    alert('농가 정보 수정 중 오류가 발생했습니다.');
-                                }
-                            });
-                        }
-                    },
-                    replyToReview: function (reviewNo) {
-                        let reply = prompt('답글을 입력하세요:');
-                        if (reply && reply.trim() !== '') {
-                            let self = this;
-                            let param = {
-                                reviewNo: reviewNo,
-                                contents: reply
-                            };
-                            $.ajax({
-                                url: "${pageContext.request.contextPath}/seller/review/addComment.dox",
-                                dataType: "json",
-                                type: "POST",
-                                data: param,
-                                success: function (response) {
-                                    if (response.result === 'success') {
-                                        alert('답글이 등록되었습니다.');
-                                        self.loadReviews();
-                                    } else {
-                                        alert('답글 등록에 실패했습니다: ' + response.message);
-                                    }
-                                },
-                                error: function () {
-                                    alert('답글 등록 중 오류가 발생했습니다.');
-                                }
-                            });
-                        }
-                    },
-                    updateProfile: function () {
-                        if (confirm('회원정보를 수정하시겠습니까?')) {
-                            let self = this;
-                            let param = {
-                                "user.phone": self.profile.phone,
-                                account: self.profile.accountNumber,
-                                bankName: self.profile.bankName
-                            };
-                            $.ajax({
-                                url: "${pageContext.request.contextPath}/seller/profile/update.dox",
-                                dataType: "json",
-                                type: "POST",
-                                data: param,
-                                success: function (data) {
-                                    if (data.result === 'success') {
-                                        alert('회원정보가 수정되었습니다.');
-                                    } else {
-                                        alert('회원정보 수정 중 오류가 발생했습니다: ' + data.message);
-                                    }
-                                },
-                                error: function () {
-                                    alert('회원정보 수정 중 오류가 발생했습니다.');
-                                }
-                            });
-                        }
-                    },
-                    confirmWithdrawal: function () {
+                    async updateFarmInfo() {
+                        const { isConfirmed } = await swConfirm('농가 정보 수정', '농가 정보를 수정하시겠습니까?');
+                        if (!isConfirmed) return;
+
                         let self = this;
-                        if (confirm('정말로 판매자 계정을 탈퇴하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 상품이 숨김 처리되고, 계정 상태가 변경됩니다.')) {
+                        let param = {
+                            businessName: self.farmInfo.name,
+                            "user.name": self.farmInfo.owner,
+                            "user.address": self.farmInfo.location
+                        };
 
-                            let withdrawalData = {};
-                            let proceedWithdrawal = false;
-
-                            if (self.loginType === 'NORMAL') {
-                                let passwordConfirm = prompt('탈퇴를 진행하려면 현재 비밀번호를 입력하세요:');
-                                if (passwordConfirm) {
-                                    withdrawalData.password = passwordConfirm;
-                                    proceedWithdrawal = true;
-                                } else if (passwordConfirm === null) {
-                                    alert('탈퇴가 취소되었습니다.');
-                                    return;
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/seller/farm/update.dox",
+                            dataType: "json",
+                            type: "POST",
+                            data: param,
+                            success: function (response) {
+                                if (response.result === 'success') {
+                                    swSuccess('성공', '농가 정보가 성공적으로 수정되었습니다.');
                                 } else {
-                                    alert('비밀번호를 입력해야 탈퇴할 수 있습니다.');
-                                    return;
+                                    swError('실패', '농가 정보 수정에 실패했습니다: ' + (response.message || ''));
                                 }
+                            },
+                            error: function () {
+                                swError('오류', '농가 정보 수정 중 오류가 발생했습니다.');
+                            }
+                        });
+                    },
 
-                            } else if (self.loginType === 'SOCIAL') {
-                                let finalConfirm = prompt('소셜 로그인 계정입니다. 탈퇴를 진행하려면 "탈퇴"를 입력하세요:');
-                                if (finalConfirm === '탈퇴') {
-                                    proceedWithdrawal = true;
-                                } else if (finalConfirm === null) {
-                                    alert('탈퇴가 취소되었습니다.');
-                                    return;
+                    async replyToReview(reviewNo) {
+                        const { isConfirmed, value } = await swPrompt('답글을 입력하세요:', 'text', '답글 내용을 입력');
+                        if (!isConfirmed) return;
+
+                        const reply = (value || '').trim();
+                        if (!reply) return;
+
+                        let self = this;
+                        let param = { reviewNo, contents: reply };
+
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/seller/review/addComment.dox",
+                            dataType: "json",
+                            type: "POST",
+                            data: param,
+                            success: function (response) {
+                                if (response.result === 'success') {
+                                    swSuccess('성공', '답글이 등록되었습니다.');
+                                    self.loadReviews();
                                 } else {
-                                    alert('정확히 "탈퇴"를 입력해야 합니다.');
-                                    return;
+                                    swError('실패', '답글 등록에 실패했습니다: ' + (response.message || ''));
                                 }
-                            } else {
-                                alert('로그인 유형을 알 수 없어 탈퇴를 진행할 수 없습니다.');
+                            },
+                            error: function () {
+                                swError('오류', '답글 등록 중 오류가 발생했습니다.');
+                            }
+                        });
+                    },
+
+                    async updateProfile() {
+                        const { isConfirmed } = await swConfirm('회원정보 수정', '회원정보를 수정하시겠습니까?');
+                        if (!isConfirmed) return;
+
+                        let self = this;
+                        let param = {
+                            "user.phone": self.profile.phone,
+                            account: self.profile.accountNumber,
+                            bankName: self.profile.bankName
+                        };
+
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/seller/profile/update.dox",
+                            dataType: "json",
+                            type: "POST",
+                            data: param,
+                            success: function (data) {
+                                if (data.result === 'success') swSuccess('성공', '회원정보가 수정되었습니다.');
+                                else swError('실패', '회원정보 수정 중 오류가 발생했습니다: ' + (data.message || ''));
+                            },
+                            error: function () {
+                                swError('오류', '회원정보 수정 중 오류가 발생했습니다.');
+                            }
+                        });
+                    },
+
+                    async confirmWithdrawal() {
+                        let self = this;
+
+                        const { isConfirmed } = await swConfirm(
+                            '판매자 계정 탈퇴',
+                            '정말로 판매자 계정을 탈퇴하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 상품이 숨김 처리되고, 계정 상태가 변경됩니다.'
+                        );
+                        if (!isConfirmed) return;
+
+                        let withdrawalData = {};
+                        let proceedWithdrawal = false;
+
+                        if (self.loginType === 'NORMAL') {
+                            const r = await swPrompt('탈퇴를 진행하려면 현재 비밀번호를 입력하세요:', 'password', '비밀번호 입력');
+                            if (!r.isConfirmed) {
+                                swInfo('탈퇴가 취소되었습니다.');
                                 return;
                             }
-
-                            if (proceedWithdrawal) {
-                                $.ajax({
-                                    url: "${pageContext.request.contextPath}/seller/withdrawal.dox",
-                                    dataType: "json",
-                                    type: "POST",
-                                    contentType: "application/json; charset=utf-8",
-                                    data: JSON.stringify(withdrawalData),
-                                    success: function (response) {
-                                        if (response.result === 'success') {
-                                            alert('판매자 계정이 성공적으로 탈퇴되었습니다.');
-                                            location.href = '${pageContext.request.contextPath}/login.do';
-                                        } else {
-                                            alert(response.message || '계정 탈퇴 중 오류가 발생했습니다.');
-                                        }
-                                    },
-                                    error: function () {
-                                        alert('서버와 통신 중 오류가 발생했습니다.');
-                                    }
-                                });
+                            const passwordConfirm = (r.value || '').trim();
+                            if (!passwordConfirm) {
+                                swWarn('비밀번호를 입력해야 탈퇴할 수 있습니다.');
+                                return;
                             }
+                            withdrawalData.password = passwordConfirm;
+                            proceedWithdrawal = true;
+
+                        } else if (self.loginType === 'SOCIAL') {
+                            const r = await swPrompt('소셜 로그인 계정입니다. 탈퇴를 진행하려면 "탈퇴"를 입력하세요:', 'text', '탈퇴');
+                            if (!r.isConfirmed) {
+                                swInfo('탈퇴가 취소되었습니다.');
+                                return;
+                            }
+                            const finalConfirm = (r.value || '').trim();
+                            if (finalConfirm !== '탈퇴') {
+                                swWarn('정확히 "탈퇴"를 입력해야 합니다.');
+                                return;
+                            }
+                            proceedWithdrawal = true;
+
+                        } else {
+                            swError('오류', '로그인 유형을 알 수 없어 탈퇴를 진행할 수 없습니다.');
+                            return;
                         }
+
+                        if (!proceedWithdrawal) return;
+
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/seller/withdrawal.dox",
+                            dataType: "json",
+                            type: "POST",
+                            contentType: "application/json; charset=utf-8",
+                            data: JSON.stringify(withdrawalData),
+                            success: function (response) {
+                                if (response.result === 'success') {
+                                    swSuccess('완료', '판매자 계정이 성공적으로 탈퇴되었습니다.').then(() => {
+                                        location.href = '${pageContext.request.contextPath}/login.do';
+                                    });
+                                } else {
+                                    swError('오류', response.message || '계정 탈퇴 중 오류가 발생했습니다.');
+                                }
+                            },
+                            error: function () {
+                                swError('오류', '서버와 통신 중 오류가 발생했습니다.');
+                            }
+                        });
                     },
-                    loadFarmInfo: function () {
+
+                    loadFarmInfo() {
                         let self = this;
                         $.ajax({
                             url: "${pageContext.request.contextPath}/seller/info.dox",
@@ -1354,7 +1390,6 @@
                             type: "GET",
                             success: function (response) {
                                 if (response.result === 'success') {
-
                                     let sellerData = response.sellerInfo;
                                     self.farmInfo.name = sellerData.businessName;
 
@@ -1362,17 +1397,17 @@
                                         self.farmInfo.owner = sellerData.user.name;
                                         self.farmInfo.location = sellerData.user.address;
                                     }
-
                                 } else {
-                                    alert('판매자 정보를 불러오는데 실패했습니다: ' + response.message);
+                                    swError('실패', '판매자 정보를 불러오는데 실패했습니다: ' + (response.message || ''));
                                 }
                             },
-                            error: function (xhr, status, error) {
-                                alert('판매자 정보를 불러오는 중 오류가 발생했습니다.');
+                            error: function () {
+                                swError('오류', '판매자 정보를 불러오는 중 오류가 발생했습니다.');
                             }
                         });
                     },
-                    loadProfileData: function () {
+
+                    loadProfileData() {
                         let self = this;
                         $.ajax({
                             url: "${pageContext.request.contextPath}/seller/info.dox",
@@ -1390,15 +1425,16 @@
                                         self.profile.phone = sellerData.user.phone;
                                     }
                                 } else {
-                                    alert("회원정보를 불러오는데 실패했습니다");
+                                    swError('실패', response.message || '회원정보를 불러오는데 실패했습니다');
                                 }
                             },
-                            error: function (xhr, status, error) {
-                                alert("회원정보를 불러오는 중 오류가 발생했습니다.")
+                            error: function () {
+                                swError('오류', '회원정보를 불러오는 중 오류가 발생했습니다.');
                             }
                         });
                     },
-                    loadReviews: function () {
+
+                    loadReviews() {
                         let self = this;
                         $.ajax({
                             url: "${pageContext.request.contextPath}/seller/reviews.dox",
@@ -1407,51 +1443,50 @@
                             success: function (response) {
                                 self.reviews = response;
                             },
-                            error: function (xhr, status, error) {
-                                alert('리뷰를 불러오는 중 오류가 발생했습니다.');
+                            error: function () {
+                                swError('오류', '리뷰를 불러오는 중 오류가 발생했습니다.');
                             }
                         });
                     },
-                    deleteComment: function (commentNo) {
-                        if (confirm('정말로 이 답글을 삭제하시겠습니까?')) {
-                            let self = this;
-                            $.ajax({
-                                url: "${pageContext.request.contextPath}/seller/review/deleteComment.dox",
-                                dataType: "json",
-                                type: "POST",
-                                data: {
-                                    commentNo: commentNo
-                                },
-                                success: function (response) {
-                                    if (response.result === 'success') {
-                                        alert('답글이 삭제되었습니다.');
-                                        self.loadReviews();
-                                    } else {
-                                        alert('답글 삭제에 실패했습니다: ' + response.message);
-                                    }
-                                },
-                                error: function () {
-                                    alert('답글 삭제 중 오류가 발생했습니다.');
+
+                    async deleteComment(commentNo) {
+                        const { isConfirmed } = await swConfirm('답글 삭제', '정말로 이 답글을 삭제하시겠습니까?');
+                        if (!isConfirmed) return;
+
+                        let self = this;
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/seller/review/deleteComment.dox",
+                            dataType: "json",
+                            type: "POST",
+                            data: { commentNo },
+                            success: function (response) {
+                                if (response.result === 'success') {
+                                    swSuccess('성공', '답글이 삭제되었습니다.');
+                                    self.loadReviews();
+                                } else {
+                                    swError('실패', '답글 삭제에 실패했습니다: ' + (response.message || ''));
                                 }
-                            });
-                        }
-                    },
-                    editComment: function (commentNo) {
-                        let self = this;
-                        self.editingCommentNo = commentNo;
-                    },
-
-                    cancelEdit: function () {
-                        let self = this;
-                        self.editingCommentNo = null;
-                        self.loadReviews();
+                            },
+                            error: function () {
+                                swError('오류', '답글 삭제 중 오류가 발생했습니다.');
+                            }
+                        });
                     },
 
-                    saveEditedComment: function (comment) {
+                    editComment(commentNo) {
+                        this.editingCommentNo = commentNo;
+                    },
+
+                    cancelEdit() {
+                        this.editingCommentNo = null;
+                        this.loadReviews();
+                    },
+
+                    saveEditedComment(comment) {
                         let self = this;
 
-                        if (comment.contents.trim() === '') {
-                            alert('답글 내용을 입력해주세요.');
+                        if (!comment.contents || comment.contents.trim() === '') {
+                            swWarn('답글 내용을 입력해주세요.');
                             return;
                         }
 
@@ -1465,19 +1500,20 @@
                             },
                             success: function (response) {
                                 if (response.result === 'success') {
-                                    alert('답글이 수정되었습니다.');
+                                    swSuccess('성공', '답글이 수정되었습니다.');
                                     self.editingCommentNo = null;
                                     self.loadReviews();
                                 } else {
-                                    alert('답글 수정에 실패했습니다: ' + response.message);
+                                    swError('실패', '답글 수정에 실패했습니다: ' + (response.message || ''));
                                 }
                             },
                             error: function () {
-                                alert('답글 수정 중 오류가 발생했습니다.');
+                                swError('오류', '답글 수정 중 오류가 발생했습니다.');
                             }
                         });
                     },
-                    loadDashboardData: function () {
+
+                    loadDashboardData() {
                         let self = this;
                         $.ajax({
                             url: "${pageContext.request.contextPath}/seller/dashboard.dox",
@@ -1491,31 +1527,27 @@
                                     self.stats.avgRating = response.avgRating;
                                     self.recentOrders = response.recentOrders;
                                 } else {
-                                    alert('대시보드 데이터를 불러오는데 실패했습니다: ' + response.message);
+                                    swError('실패', '대시보드 데이터를 불러오는데 실패했습니다: ' + (response.message || ''));
                                 }
                             },
-                            error: function (xhr, status, error) {
-                                alert('대시보드 데이터를 불러오는 중 오류가 발생했습니다.');
+                            error: function () {
+                                swError('오류', '대시보드 데이터를 불러오는 중 오류가 발생했습니다.');
                             }
                         });
                     },
-                    loadSalesHistory: function () {
-                        let self = this;
 
+                    loadSalesHistory() {
+                        let self = this;
                         self.salesPagination.currentPage = 1;
 
-                        let params = {
-                            type: self.salesPeriod.type
-                        };
+                        let params = { type: self.salesPeriod.type };
 
                         if (self.salesPeriod.type === 'daily') {
                             if (self.salesPeriod.year && self.salesPeriod.month) {
                                 params.month = self.salesPeriod.year + '-' + String(self.salesPeriod.month).padStart(2, '0');
                             }
                         } else if (self.salesPeriod.type === 'monthly') {
-                            if (self.salesPeriod.year) {
-                                params.year = self.salesPeriod.year;
-                            }
+                            if (self.salesPeriod.year) params.year = self.salesPeriod.year;
                         } else if (self.salesPeriod.type === 'yearly') {
                             if (self.salesPeriod.startYear && self.salesPeriod.endYear) {
                                 params.startYear = self.salesPeriod.startYear;
@@ -1532,22 +1564,21 @@
                                 if (response.result === 'success') {
                                     self.salesHistory = response.history;
                                 } else {
-                                    alert('매출 내역을 불러오는데 실패했습니다: ' + response.message);
+                                    swError('실패', '매출 내역을 불러오는데 실패했습니다: ' + (response.message || ''));
                                     self.salesHistory = [];
                                 }
                             },
                             error: function () {
-                                alert('매출 내역을 불러오는 중 오류가 발생했습니다.');
+                                swError('오류', '매출 내역을 불러오는 중 오류가 발생했습니다.');
                                 self.salesHistory = [];
                             }
                         });
                     },
-                    changePage: function (page) {
-                        let self = this;
-                        if (page > 0 && page <= self.totalPages) {
-                            self.salesPagination.currentPage = page;
-                        }
+
+                    changePage(page) {
+                        if (page > 0 && page <= this.totalPages) this.salesPagination.currentPage = page;
                     },
+
                     getRefundStatusBadgeClass(status) {
                         const classes = {
                             '대기': 'badge badge-refund-request',
@@ -1557,7 +1588,7 @@
                         return classes[status] || 'badge';
                     },
 
-                    loadChatRooms: function () {
+                    loadChatRooms() {
                         const self = this;
 
                         $.ajax({
@@ -1565,30 +1596,26 @@
                             dataType: "json",
                             type: "POST",
                             success: function (data) {
-                                console.log("chat rooms response:", data);
-
                                 if (data.result === "success") {
                                     self.chatRooms = data.list || [];
                                     self.chatRoomsLoaded = true;
-                                    console.log("ROOM[0] lastMessageAt =", self.chatRooms[0].lastMessageAt);
                                 } else {
-                                    alert("채팅 목록 조회 실패: " + (data.message || ""));
+                                    swError('실패', "채팅 목록 조회 실패: " + (data.message || ""));
                                 }
                             },
-                            error: function (xhr) {
-                                console.log("chat rooms error:", xhr.responseText);
-                                alert("채팅 목록 조회 중 오류가 발생했습니다.");
+                            error: function () {
+                                swError('오류', "채팅 목록 조회 중 오류가 발생했습니다.");
                             }
                         });
                     },
 
                     openChat(r) {
                         const params = new URLSearchParams({
-                            roomId: r.roomId,          // 있어도 되고
+                            roomId: r.roomId,
                             productNo: r.productNo,
                             sellerId: r.sellerId,
-                            buyerId: r.buyerId,        // 채팅창이 buyerId 필요하면
-                            pName: r.pName             // 그냥 바로 표시용(선택)
+                            buyerId: r.buyerId,
+                            pName: r.pName
                         });
 
                         window.open(
@@ -1599,21 +1626,14 @@
                     },
 
                     formatChatTime(ts) {
-                        console.log("formatChatTime input =", ts, typeof ts);
-
                         if (!ts) return "";
 
-                        // 1) 일단 JS Date로 만든다
                         let d = new Date(ts);
-
-                        // 혹시 파싱 실패하면 그냥 빈칸
                         if (isNaN(d.getTime())) return "";
 
-                        // 2) ⭐ 핵심: 무조건 +9시간만 보정 (KST)
                         d.setHours(d.getHours() + 9);
 
-                        // 3) 오늘이면 시간만, 아니면 날짜만 (기존 로직 유지)
-                        const todayStr = new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD (로컬 기준)
+                        const todayStr = new Date().toLocaleDateString("sv-SE");
                         const dateStr = d.toLocaleDateString("sv-SE");
 
                         if (dateStr === todayStr) {
@@ -1624,17 +1644,16 @@
                             });
                         }
 
-                        return dateStr; // 오늘 아니면 날짜만
+                        return dateStr;
                     }
-
                 },
+
                 mounted() {
-                    let self = this;
-                    self.loadDashboardData();
-                    self.loadFarmInfo();
-                    self.loadReviews();
-                    self.loadSalesHistory();
-                    self.loadProfileData();
+                    this.loadDashboardData();
+                    this.loadFarmInfo();
+                    this.loadReviews();
+                    this.loadSalesHistory();
+                    this.loadProfileData();
                 }
             });
 

@@ -12,6 +12,9 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
+            <!-- ✅ SweetAlert2 추가 -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
             <link rel="stylesheet" href="${path}/resources/css/header.css" />
             <link rel="stylesheet" href="${path}/resources/css/footer.css" />
 
@@ -185,7 +188,6 @@
                     border-radius: 6px;
                     outline: none;
                     box-sizing: border-box;
-                    /* 혹시 몰라 한 번 더 */
                 }
 
                 .form-control:focus {
@@ -226,6 +228,7 @@
                                     <h4>{{ p.pname }}</h4>
                                     <p>{{ p.pinfo }}</p>
                                     <div class="origin">원산지: {{ p.origin }}</div>
+
                                     <!-- ✅ 옵션 선택 -->
                                     <div style="margin-top:8px;">
                                         <select v-model.number="p.selectedOptionNo" class="form-control">
@@ -237,7 +240,7 @@
                                         </select>
                                     </div>
 
-                                    <!-- ✅ 수량(기본 1, 박스 구성이라면 보통 고정 1로 둬도 됨) -->
+                                    <!-- ✅ 수량 -->
                                     <div style="margin-top:8px;">
                                         <input type="number" min="1" v-model.number="p.qty" class="form-control">
                                     </div>
@@ -259,7 +262,7 @@
                             data() {
                                 return {
                                     path: "${path}",
-                                    regionId: "${regionId}",  // Controller에서 model에 넣어준 값
+                                    regionId: "${regionId}",
                                     header: null,
                                     products: []
                                 };
@@ -291,12 +294,12 @@
                                     const add = Number(op?.addPrice || 0);
                                     return base + add;
                                 },
-
                                 calcSelectedPrice(p) {
                                     const ops = p.options || [];
                                     const op = ops.find(o => Number(o.optionNo) === Number(p.selectedOptionNo));
                                     return this.calcUnitPrice(p, op);
                                 },
+
                                 loadDetail() {
                                     const self = this;
                                     $.ajax({
@@ -317,28 +320,29 @@
                                                     };
                                                 });
                                             } else {
-                                                alert(data.message || "상세 조회에 실패했습니다.");
+                                                Swal.fire('⚠️', (data.message || "상세 조회에 실패했습니다."), 'warning');
                                             }
                                         },
                                         error: function () {
-                                            alert("서버 오류가 발생했습니다.");
+                                            Swal.fire('⚠️', '서버 오류가 발생했습니다.', 'warning');
                                         }
                                     });
                                 },
-                                buyBox() {
-                                    // ✅ 비로그인 방어(세션 기반이면 JSP에서 sessionId 내려받아도 OK)
-                                    // 여기선 간단히 서버에서 막고 메시지 받는 구조로 갈 거라 바로 호출
 
-                                    // 옵션 선택 검증
+                                buyBox() {
                                     const items = (this.products || []).map(p => ({
                                         productNo: Number(p.productNo),
                                         optionNo: Number(p.selectedOptionNo || 0) || null,
                                         quantity: Math.max(1, Number(p.qty || 1))
                                     }));
 
-                                    if (!items.length) { alert("구성 상품이 없습니다."); return; }
+                                    if (!items.length) {
+                                        Swal.fire('⚠️', '구성 상품이 없습니다.', 'warning');
+                                        return;
+                                    }
+
                                     if (items.some(i => !i.productNo || !i.optionNo)) {
-                                        alert("옵션을 선택해야 합니다.");
+                                        Swal.fire('⚠️', '옵션을 선택해야 합니다.', 'warning');
                                         return;
                                     }
 
@@ -349,16 +353,21 @@
                                         data: { itemsJson: JSON.stringify(items) },
                                         success: (res) => {
                                             if (res.result === "success") {
-                                                // ✅ payment.jsp는 cartNos 파라미터 있으면 “장바구니 모드”로 동작함
-                                                location.href = this.path + "/product/payment.do?cartNos=" + encodeURIComponent(res.cartNos) + "&test=1";
+                                                // ✅ 기존 로직 그대로 (성공 시 알림 없이 바로 이동)
+                                                location.href =
+                                                    this.path
+                                                    + "/product/payment.do?cartNos="
+                                                    + encodeURIComponent(res.cartNos)
+                                                    + "&test=1";
                                             } else {
-                                                alert(res.message || "박스 담기에 실패했습니다.");
+                                                Swal.fire('⚠️', (res.message || "박스 담기에 실패했습니다."), 'warning');
                                                 if (res.code === "LOGIN_REQUIRED") location.href = this.path + "/login.do";
                                             }
                                         },
-                                        error: () => alert("서버 통신 오류")
+                                        error: () => Swal.fire('⚠️', '서버 통신 오류', 'warning')
                                     });
                                 },
+
                                 goProduct(productNo) {
                                     location.href = this.path + "/productInfo.do?productNo=" + productNo;
                                 }

@@ -908,8 +908,11 @@
                                     });
                                 },
 
-                                fnSearchInquiry() {
-                                    if (!this.inquiryKeyword.trim()) return alert("검색어를 입력하세요.");
+                                ffnSearchInquiry() {
+                                    if (!this.inquiryKeyword.trim()) {
+                                        Swal.fire("검색어 입력", "검색어를 입력하세요.", "warning");
+                                        return;
+                                    }
                                     this.inquiryPage = 1;
                                     this.fnLoadInquiry(this.inquiryKeyword, this.inquirySearchType, 1);
                                 },
@@ -1046,7 +1049,7 @@
                                 const urlParams = new URLSearchParams(window.location.search);
                                 const tabParam = urlParams.get('tab');
                                 if (tabParam) {
-                                    this.activeTab = tabParam; 
+                                    this.activeTab = tabParam;
                                 }
 
                                 switch (currentTab) {
