@@ -7,10 +7,16 @@
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>내 상품 목록 | AGRICOLA</title>
+
             <script src="https://code.jquery.com/jquery-3.7.1.js" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+            <!-- ✅ SweetAlert2 -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
+
             <style>
                 html,
                 body {
@@ -93,10 +99,8 @@
                 table {
                     width: 100%;
                     border-collapse: separate;
-                    /* 둥근 모서리/섀도 가능 */
                     border-spacing: 0;
                     table-layout: fixed;
-                    /* 상품명 칸 줄바꿈 제어 */
                     background: #fff;
                     border: 1px solid #e6efe6;
                     border-radius: 12px;
@@ -117,7 +121,6 @@
                     border-bottom: 1px solid #e6efe6;
                 }
 
-                /* 컬럼 폭: 2번째(상품) 넓게, 숫자들은 우측 정렬/줄바꿈 방지 */
                 tbody td:nth-child(2),
                 thead th:nth-child(2) {
                     width: 38%;
@@ -131,7 +134,6 @@
                     white-space: nowrap;
                 }
 
-                /* 상품명 셀: 썸네일 + 제목(2줄 말줄임) */
                 .prod-cell {
                     display: flex;
                     align-items: center;
@@ -159,7 +161,6 @@
                     color: #1a1a1a;
                 }
 
-                /* 상태 뱃지 유지 + 행 hover/지브라 */
                 .status {
                     padding: 2px 8px;
                     border-radius: 999px;
@@ -182,18 +183,16 @@
         <body>
             <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-
                 <div id="app">
                     <main class="content">
                         <h3>{{ sessionId }} 상품 목록</h3>
-
 
                         <table>
                             <thead>
                                 <tr>
                                     <th style="width:10%">번호</th>
                                     <th>상품명</th>
-                                    <th style="width:15%">기본가</th>                                    
+                                    <th style="width:15%">기본가</th>
                                     <th style="width:15%">단위</th>
                                     <th style="width:15%">재고</th>
                                     <th style="width:15%">상태</th>
@@ -209,9 +208,9 @@
                                             <div class="prod-title">{{ row.pName }}</div>
                                         </div>
                                     </td>
-                                    <td>{{(row.price + row.addPrice||0).toLocaleString()}}원</td>
+                                    <td>{{ (Number(row.price||0) + Number(row.addPrice||0)).toLocaleString() }}원</td>
                                     <td>{{ row.unit }}</td>
-                                    <td>{{row.stockQty||0}}</td>
+                                    <td>{{ row.stockQty || 0 }}</td>
                                     <td><span class="status">{{row.productStatus}}</span></td>
                                     <td>
                                         <button class="btn btn-primary" @click="goEdit(row.productNo)">수정</button>
@@ -226,11 +225,21 @@
                     </main>
                 </div>
 
-
                 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
-
                     <script>
+                        const CP = "${pageContext.request.contextPath}";
+
+                        // ✅ Swal helper: 성공만 초록 버튼
+                        const swWarn = (msg) => Swal.fire('⚠️', msg, 'warning');
+                        const swError = (msg) => Swal.fire('❌', msg, 'error');
+                        const swSuccess = (msg) => Swal.fire({
+                            icon: 'success',
+                            title: '성공',
+                            text: msg,
+                            confirmButtonColor: '#5dbb63'
+                        });
+
                         const app = Vue.createApp({
                             data() {
                                 return {
@@ -240,52 +249,55 @@
                             },
                             methods: {
                                 load() {
-                                    const param = {
-                                        sellerId: this.sessionId
-                                    };
                                     $.ajax({
-                                        url: "${pageContext.request.contextPath}/myPage/list.dox",
-                                        type: "POST",
-                                        contentType: "application/json; charset=UTF-8", // ★ JSON으로 보냄
-                                        dataType: "json",
-                                        data: JSON.stringify({
-                                            sellerId: this.sessionId
-                                        }),
-                                        success: (data) => {            // ★ 화살표 함수로 this 유지
-                                            this.list = data.list || [];
-                                        },
-                                        error: (xhr) => {
-                                            alert('오류가 발생했습니다.');
-                                        }
-                                    });
-                                },
-                                goEdit(pno) { location.href = `${pageContext.request.contextPath}/sellerProductEdit.do?productNo=\${pno}`; },
-                                del(pno) {
-                                    if (!confirm('정말 삭제할까요? 주문 이력 있으면 숨김 처리될 수 있어요.')) return;
-                                    let self = this;
-                                    let param = {
-                                        productNo: pno
-                                    }
-                                    $.ajax({
-                                        url: "${pageContext.request.contextPath}/myPage/delete.dox",
+                                        url: CP + "/myPage/list.dox",
                                         type: "POST",
                                         contentType: "application/json; charset=UTF-8",
                                         dataType: "json",
-                                        data: JSON.stringify({
-                                            productNo: pno
-                                        }),
-                                        success: function (data) {
-                                            alert('처리되었습니다.');
-                                            self.load();
+                                        data: JSON.stringify({ sellerId: this.sessionId }),
+                                        success: (data) => {
+                                            this.list = data.list || [];
                                         },
-                                        error: () => alert('삭제 실패')
+                                        error: () => {
+                                            swError("오류가 발생했습니다.");
+                                        }
+                                    });
+                                },
+                                goEdit(pno) {
+                                    location.href = CP + "/sellerProductEdit.do?productNo=" + pno;
+                                },
+                                del(pno) {
+                                    Swal.fire({
+                                        title: '⚠️',
+                                        text: '정말 삭제할까요? 주문 이력 있으면 숨김 처리될 수 있어요.',
+                                        icon: 'warning',
+                                        showCancelButton: true,
+                                        confirmButtonText: '삭제',
+                                        cancelButtonText: '취소',
+                                        reverseButtons: true
+                                    }).then((result) => {
+                                        if (!result.isConfirmed) return;
+
+                                        $.ajax({
+                                            url: CP + "/myPage/delete.dox",
+                                            type: "POST",
+                                            contentType: "application/json; charset=UTF-8",
+                                            dataType: "json",
+                                            data: JSON.stringify({ productNo: pno }),
+                                            success: async (data) => {
+                                                await swSuccess("처리되었습니다.");
+                                                this.load();
+                                            },
+                                            error: () => swError("삭제 실패")
+                                        });
                                     });
                                 }
                             },
                             mounted() {
-                                this.load(1);
+                                this.load();
                             }
                         });
+
                         app.mount('#app');
                     </script>
         </body>

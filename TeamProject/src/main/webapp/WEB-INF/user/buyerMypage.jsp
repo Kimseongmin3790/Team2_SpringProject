@@ -11,6 +11,7 @@
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
             <script src="/resources/js/page-change.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <style>
@@ -1203,7 +1204,7 @@
                                             errors.confirmPassword }}</div>
                                     </div>
                                     <div class="form-actions">
-                                        <button  class="btn btn-primary" @click="saveProfile">저장하기</button>
+                                        <button class="btn btn-primary" @click="saveProfile">저장하기</button>
                                         <button class="btn btn-outline">취소</button>
                                     </div>
                                 </div>
@@ -1278,6 +1279,49 @@
             const CTX = zap(root?.dataset?.ctx);
             const USER = zap(root?.dataset?.userId);
             const TAB = zap(root?.dataset?.activeTab) || 'cart';
+
+            // ✅ SweetAlert2 helper
+            const swWarn = (msg) => Swal.fire('⚠️', msg, 'warning');
+            const swInfo = (msg) => Swal.fire('ℹ️', msg, 'info');
+
+            const swSuccess = (title, msg) => Swal.fire({
+                icon: 'success',
+                title: title || '성공',
+                text: msg || '',
+                confirmButtonColor: '#5dbb63' // ✅ 성공만 컬러 적용
+            });
+
+            const swError = (title, msg) => Swal.fire({
+                icon: 'error',
+                title: title || '오류',
+                text: msg || ''
+            });
+
+            // ✅ confirm 대체
+            const swConfirm = (title, text, confirmText = '확인', cancelText = '취소') => {
+                return Swal.fire({
+                    icon: 'question',
+                    title,
+                    text,
+                    showCancelButton: true,
+                    confirmButtonText: confirmText,
+                    cancelButtonText: cancelText
+                });
+            };
+
+            // ✅ prompt 대체
+            const swPrompt = (title, inputType = 'text', placeholder = '') => {
+                return Swal.fire({
+                    title,
+                    input: inputType,
+                    inputPlaceholder: placeholder,
+                    showCancelButton: true,
+                    confirmButtonText: '확인',
+                    cancelButtonText: '취소',
+                    inputAttributes: inputType === 'password' ? { autocomplete: 'current-password' } : {},
+                    inputValidator: () => null
+                });
+            };
 
             const app = Vue.createApp({
                 data() {
@@ -1361,29 +1405,32 @@
                 },
 
                 methods: {
-                    cancelRefund(item) {
-                        if (!confirm('"' + item.productName + '" 상품에 대한 환불 요청을 취소하시겠습니까?')) {
-                            return;
-                        }
+                    async cancelRefund(item) {
+                        const result = await swConfirm(
+                            '환불 요청 취소',
+                            `"${item.productName}" 상품에 대한 환불 요청을 취소하시겠습니까?`,
+                            '취소하기',
+                            '닫기'
+                        );
+                        if (!result.isConfirmed) return;
 
                         const self = this;
                         $.ajax({
                             url: "${pageContext.request.contextPath}/refund/cancel.dox",
                             type: "POST",
                             dataType: "json",
-                            data: {
-                                orderItemNo: item.orderItemNo
-                            },
+                            data: { orderItemNo: item.orderItemNo },
                             success: function (response) {
                                 if (response.result === 'success') {
-                                    alert('환불 요청이 취소되었습니다.');
-                                    self.fnLoadOrders();
+                                    swSuccess('완료', '환불 요청이 취소되었습니다.').then(() => {
+                                        self.fnLoadOrders();
+                                    });
                                 } else {
-                                    alert(response.message || '환불 요청 취소에 실패했습니다.');
+                                    swError('실패', response.message || '환불 요청 취소에 실패했습니다.');
                                 }
                             },
                             error: function () {
-                                alert('서버와 통신 중 오류가 발생했습니다.');
+                                swError('서버 오류', '서버와 통신 중 오류가 발생했습니다.');
                             }
                         });
                     },
@@ -1408,11 +1455,10 @@
                     },
                     trackDelivery(order) {
                         if (!order.courier || !order.trackingNo) {
-                            alert('배송 정보가 없습니다.');
+                            swWarn('배송 정보가 없습니다.');
                             return;
                         }
 
-                        // 택배사별 조회 URL 맵
                         const courierUrls = {
                             'CJ대한통운': 'https://www.cjlogistics.com/ko/tool/parcel/tracking?gnbInvcNo=',
                             '우체국택배': 'https://service.epost.go.kr/trace.RetrieveDomRmgTrace.comm?sid1=',
@@ -1422,17 +1468,13 @@
                         };
 
                         const baseUrl = courierUrls[order.courier];
-
                         if (!baseUrl) {
-                            alert('지원하지 않는 택배사입니다: ' + order.courier);
+                            swWarn('지원하지 않는 택배사입니다: ' + order.courier);
                             return;
                         }
 
-                        // 운송장 번호에서 숫자 외 문자 제거 (필요시)
                         const trackingNumber = order.trackingNo.replace(/[^0-9]/g, '');
                         const trackingUrl = baseUrl + trackingNumber;
-
-                        // 새 창에서 배송조회 페이지 열기
                         window.open(trackingUrl, '_blank', 'noopener,noreferrer');
                     },
                     openRefundModal(item) {
@@ -1454,7 +1496,7 @@
                         const self = this;
 
                         if (!self.refundRequest.reason.trim()) {
-                            alert('환불 사유를 입력해주세요.');
+                            swWarn('환불 사유를 입력해주세요.');
                             return;
                         }
 
@@ -1469,15 +1511,16 @@
                             },
                             success: function (response) {
                                 if (response.result === 'success') {
-                                    alert('환불 요청이 정상적으로 접수되었습니다.');
-                                    self.closeRefundModal();
-                                    self.fnLoadOrders();
+                                    swSuccess('접수 완료', '환불 요청이 정상적으로 접수되었습니다.').then(() => {
+                                        self.closeRefundModal();
+                                        self.fnLoadOrders();
+                                    });
                                 } else {
-                                    alert(response.message || '환불 요청 접수에 실패했습니다.');
+                                    swError('접수 실패', response.message || '환불 요청 접수에 실패했습니다.');
                                 }
                             },
                             error: function () {
-                                alert('서버와 통신 중 오류가 발생했습니다.');
+                                swError('서버 오류', '서버와 통신 중 오류가 발생했습니다.');
                             }
                         });
                     },
@@ -1517,8 +1560,8 @@
                                 self.userName = data.name;
                                 self.userEmail = data.email;
                             },
-                            error: function (xhr, status, error) {
-                                alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
+                            error: function () {
+                                swError('오류', '사용자 정보를 불러오는 중 오류가 발생했습니다.');
                             }
                         });
                     },
@@ -1529,14 +1572,13 @@
                             : this.cartItems.map(i => i.cartNo);
 
                         if (cartNos.length === 0) {
-                            alert('구매할 상품을 선택하세요.');
+                            swWarn('구매할 상품을 선택하세요.');
                             return;
                         }
 
-                        // 결제 페이지로 이동 (장바구니 다건 결제)
                         pageChange(CTX + '/product/payment.do', {
                             userId: this.userId,
-                            cartNos: cartNos.join(',')   // payment.jsp에서 분해해서 /payment/list.dox 호출
+                            cartNos: cartNos.join(',')
                         });
                     },
 
@@ -1572,9 +1614,7 @@
                             }
                         }
 
-                        if (!isValid) {
-                            return;
-                        }
+                        if (!isValid) return;
 
                         const profileData = {
                             userId: self.userId,
@@ -1598,16 +1638,17 @@
                             data: JSON.stringify(profileData),
                             success: function (response) {
                                 if (response.result === 'success') {
-                                    alert('회원정보가 성공적으로 수정되었습니다.');
+                                    swSuccess('완료', '회원정보가 성공적으로 수정되었습니다.');
                                 } else {
-                                    alert('정보 수정에 실패했습니다.');
+                                    swError('실패', '정보 수정에 실패했습니다.');
                                 }
                             },
                             error: function () {
-                                alert('회원정보 수정 중 오류가 발생했습니다.');
+                                swError('오류', '회원정보 수정 중 오류가 발생했습니다.');
                             }
                         });
                     },
+
                     fnAddr() {
                         window.open(CTX + "/addr.do", "addr", "width=500, height=500");
                     },
@@ -1617,71 +1658,78 @@
                     },
 
                     // 계정 탈퇴 로직
-                    confirmWithdrawal: function () {
-                        let self = this;
-                        if (confirm('정말로 계정을 탈퇴하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 상품과 주문 정보가 삭제됩니다.')) {
+                    async confirmWithdrawal() {
+                        const self = this;
 
-                            let withdrawalData = {};
-                            let proceedWithdrawal = false;
+                        const first = await swConfirm(
+                            '계정 탈퇴',
+                            '정말로 계정을 탈퇴하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 상품과 주문 정보가 삭제됩니다.',
+                            '탈퇴 진행',
+                            '취소'
+                        );
+                        if (!first.isConfirmed) return;
 
-                            if (self.loginType === 'NORMAL') {
-                                let passwordConfirm = prompt('탈퇴를 진행하려면 현재 비밀번호를 입력하세요:');
-                                if (passwordConfirm) {
-                                    withdrawalData.password = passwordConfirm;
-                                    proceedWithdrawal = true;
-                                } else if (passwordConfirm === null) {
-                                    alert('탈퇴가 취소되었습니다.');
-                                    return;
-                                } else {
-                                    alert('비밀번호를 입력해야 탈퇴할 수 있습니다.');
-                                    return;
-                                }
+                        let withdrawalData = {};
+                        let proceedWithdrawal = false;
 
-                            } else if (self.loginType === 'SOCIAL') {
-                                let finalConfirm = prompt('소셜 로그인 계정입니다. 탈퇴를 진행하려면 "탈퇴"를 입력하세요:');
-                                if (finalConfirm === '탈퇴') {
-                                    proceedWithdrawal = true;
-                                } else if (finalConfirm === null) {
-                                    alert('탈퇴가 취소되었습니다.');
-                                    return;
-                                } else {
-                                    alert('정확히 "탈퇴"를 입력해야 합니다.');
-                                    return;
-                                }
-                            } else { // 로그인 유형을 알 수 없는 경우 (예외 처리)
-                                alert('로그인 유형을 알 수 없어 탈퇴를 진행할 수 없습니다.');
+                        if (self.loginType === 'NORMAL') {
+                            const pw = await swPrompt('탈퇴를 진행하려면 현재 비밀번호를 입력하세요:', 'password', '현재 비밀번호');
+                            if (pw.isDismissed) {
+                                swInfo('탈퇴가 취소되었습니다.');
                                 return;
                             }
-
-                            if (proceedWithdrawal) {
-                                $.ajax({
-                                    url: "${pageContext.request.contextPath}/user/withdrawal.dox",
-                                    dataType: "json",
-                                    type: "POST",
-                                    contentType: "application/json; charset=utf-8",
-                                    data: JSON.stringify(withdrawalData),
-                                    success: function (response) {
-                                        if (response.result === 'success') {
-                                            alert('회원 계정이 성공적으로 탈퇴되었습니다.');
-                                            location.href = '/main.do';
-                                        } else {
-                                            alert(response.message || '계정 탈퇴 중 오류가 발생했습니다.');
-                                        }
-                                    },
-                                    error: function () {
-                                        alert('서버와 통신 중 오류가 발생했습니다.');
-                                    }
-                                });
+                            if (!pw.value) {
+                                swWarn('비밀번호를 입력해야 탈퇴할 수 있습니다.');
+                                return;
                             }
+                            withdrawalData.password = pw.value;
+                            proceedWithdrawal = true;
+
+                        } else if (self.loginType === 'SOCIAL') {
+                            const finalConfirm = await swPrompt('소셜 로그인 계정입니다.\n탈퇴를 진행하려면 "탈퇴"를 입력하세요:', 'text', '탈퇴');
+                            if (finalConfirm.isDismissed) {
+                                swInfo('탈퇴가 취소되었습니다.');
+                                return;
+                            }
+                            if (finalConfirm.value !== '탈퇴') {
+                                swWarn('정확히 "탈퇴"를 입력해야 합니다.');
+                                return;
+                            }
+                            proceedWithdrawal = true;
+
+                        } else {
+                            swError('오류', '로그인 유형을 알 수 없어 탈퇴를 진행할 수 없습니다.');
+                            return;
                         }
+
+                        if (!proceedWithdrawal) return;
+
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/user/withdrawal.dox",
+                            dataType: "json",
+                            type: "POST",
+                            contentType: "application/json; charset=utf-8",
+                            data: JSON.stringify(withdrawalData),
+                            success: function (response) {
+                                if (response.result === 'success') {
+                                    swSuccess('탈퇴 완료', '회원 계정이 성공적으로 탈퇴되었습니다.').then(() => {
+                                        location.href = '/main.do';
+                                    });
+                                } else {
+                                    swError('탈퇴 실패', response.message || '계정 탈퇴 중 오류가 발생했습니다.');
+                                }
+                            },
+                            error: function () {
+                                swError('서버 오류', '서버와 통신 중 오류가 발생했습니다.');
+                            }
+                        });
                     },
 
                     /* 장바구니 목록 불러오기 */
                     fnLoadCart: function () {
                         let self = this;
-                        let param = {
-                            userId: self.userId
-                        };
+                        let param = { userId: self.userId };
+
                         $.ajax({
                             url: CTX + "/cart/list.dox",
                             type: "POST",
@@ -1693,10 +1741,12 @@
                                     self.cartItems = data.list || [];
                                     self.selectedIds = self.cartItems.map(i => i.cartNo);
                                 } else {
-                                    alert('장바구니 불러오기 실패');
+                                    swError('실패', '장바구니 불러오기 실패');
                                 }
                             },
-                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                            error: function (xhr) {
+                                swError('서버 오류', '서버오류: ' + xhr.status);
+                            }
                         });
                     },
 
@@ -1711,19 +1761,20 @@
                                 if (data.result === 'success') {
                                     self.coupons = data.list || [];
                                 } else {
-                                    console.error('쿠폰 불러오기 실패');
+                                    swError('실패', data.message || '쿠폰 불러오기 실패');
                                 }
                             },
-                            error: function (xhr) { console.error('서버오류: ' + xhr.status); }
+                            error: function (xhr) {
+                                swError('서버 오류', '서버오류: ' + xhr.status);
+                            }
                         });
                     },
 
                     /* 수량 변경(+/-1) */
                     changeQty: function (item, diff) {
                         const next = Number(item.quantity || 0) + diff;
-                        if (next < 1) {
-                            return;
-                        }
+                        if (next < 1) return;
+
                         let self = this;
                         $.ajax({
                             url: CTX + "/cart/qty.dox",
@@ -1732,25 +1783,22 @@
                             data: { cartNo: item.cartNo, userId: self.userId, quantity: next },
                             success: function (res) {
                                 if (res.result === 'success') {
-                                    item.quantity = next; // 화면 즉시 반영
+                                    item.quantity = next;
                                 } else {
-                                    alert('수량 변경 실패');
+                                    swError('실패', '수량 변경 실패');
                                 }
                             },
-                            error: function (xhr) { alert('서버오류: ' + xhr.status); }
+                            error: function (xhr) {
+                                swError('서버 오류', '서버오류: ' + xhr.status);
+                            }
                         });
                     },
 
                     /* 항목 삭제 */
-                    removeFromCart(item) {
-                        if (!confirm('삭제하시겠습니까?')) {
-                            return;
-                        }
-                        let self = this;
-                        let param = {
-                            cartNo: item.cartNo,
-                            userId: self.userId
-                        };
+                    removeFromCart: async function (item) {
+                        const ok = await swConfirm('삭제', '삭제하시겠습니까?', '삭제', '취소');
+                        if (!ok.isConfirmed) return;
+
                         $.ajax({
                             url: CTX + "/cart/remove.dox",
                             type: "POST",
@@ -1759,12 +1807,13 @@
                             success: (data) => {
                                 if (data.result == 'success') {
                                     this.cartItems = this.cartItems.filter(x => x.cartNo !== item.cartNo);
-                                    this.selectedIds = this.selectedIds.filter(id => id !== item.cartNo); // ✅ 선택에서도 제거
+                                    this.selectedIds = this.selectedIds.filter(id => id !== item.cartNo);
+                                    swSuccess('삭제 완료', '장바구니에서 삭제되었습니다.');
                                 } else {
-                                    alert('삭제 실패');
+                                    swError('실패', '삭제 실패');
                                 }
                             },
-                            error: (xhr) => alert('서버오류: ' + xhr.status)
+                            error: (xhr) => swError('서버 오류', '서버오류: ' + xhr.status)
                         });
                     },
 
@@ -1776,20 +1825,20 @@
                             type: "GET",
                             success: function (data) {
                                 if (data.result === "success") {
-                                    self.orders = data.list.map(order => ({
+                                    self.orders = (data.list || []).map(order => ({
                                         ...order,
                                         isDetailsVisible: false
                                     }));
                                 } else {
-                                    alert("주문 내역을 불러오는 데 실패했습니다: " + data.message);
+                                    swError('실패', "주문 내역을 불러오는 데 실패했습니다: " + (data.message || ''));
                                 }
                             },
-                            error: function (xhr, status, error) {
-                                alert("서버와의 통신 중 오류가 발생했습니다. 주문 내역을 불러올 수 없습니다.");
-
+                            error: function () {
+                                swError('서버 오류', "서버와의 통신 중 오류가 발생했습니다. 주문 내역을 불러올 수 없습니다.");
                             }
                         });
                     },
+
                     toggleDetails(order) {
                         order.isDetailsVisible = !order.isDetailsVisible;
                     },
@@ -1808,40 +1857,43 @@
                             dataType: "json",
                             success: function (response) {
                                 if (response.result === "success") {
-                                    self.reviews = response.list;
+                                    self.reviews = response.list || [];
                                 } else {
-                                    alert("리뷰 목록을 불러오는 데 실패했습니다.");
+                                    swError('실패', "리뷰 목록을 불러오는 데 실패했습니다.");
                                 }
                             },
                             error: function () {
-                                alert("리뷰 목록 조회 중 오류가 발생했습니다.");
+                                swError('서버 오류', "리뷰 목록 조회 중 오류가 발생했습니다.");
                             }
                         });
                     },
+
                     fnUpdateReview(reviewNo) {
                         window.location.href = CTX + '/reviewUpdate.do?reviewNo=' + reviewNo;
                     },
-                    fnDeleteReview(reviewNo) {
-                        if (confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
-                            const self = this;
-                            $.ajax({
-                                url: "${pageContext.request.contextPath}/review/delete.dox",
-                                type: "POST",
-                                data: { reviewNo: reviewNo },
-                                dataType: "json",
-                                success: function (response) {
-                                    if (response.result === "success") {
-                                        alert('리뷰가 삭제되었습니다.');
+                    fnDeleteReview: async function (reviewNo) {
+                        const ok = await swConfirm('리뷰 삭제', '정말로 이 리뷰를 삭제하시겠습니까?', '삭제', '취소');
+                        if (!ok.isConfirmed) return;
+
+                        const self = this;
+                        $.ajax({
+                            url: "${pageContext.request.contextPath}/review/delete.dox",
+                            type: "POST",
+                            data: { reviewNo: reviewNo },
+                            dataType: "json",
+                            success: function (response) {
+                                if (response.result === "success") {
+                                    swSuccess('삭제 완료', '리뷰가 삭제되었습니다.').then(() => {
                                         self.fnLoadReviews();
-                                    } else {
-                                        alert('리뷰 삭제에 실패했습니다: ' + response.message);
-                                    }
-                                },
-                                error: function () {
-                                    alert('리뷰 삭제 중 오류가 발생했습니다.');
+                                    });
+                                } else {
+                                    swError('삭제 실패', '리뷰 삭제에 실패했습니다: ' + (response.message || ''));
                                 }
-                            });
-                        }
+                            },
+                            error: function () {
+                                swError('서버 오류', '리뷰 삭제 중 오류가 발생했습니다.');
+                            }
+                        });
                     },
 
                     // ✅ 판매자 마커 표시
@@ -1933,10 +1985,10 @@
                                 if (res.result === "success") {
                                     this.subscriptions = res.list || [];
                                 } else {
-                                    alert(res.message || "정기배송 내역 조회 실패");
+                                    swError('실패', res.message || "정기배송 내역 조회 실패");
                                 }
                             },
-                            error: () => alert("서버 통신 오류")
+                            error: () => swError('서버 오류', "서버 통신 오류")
                         });
                     },
 

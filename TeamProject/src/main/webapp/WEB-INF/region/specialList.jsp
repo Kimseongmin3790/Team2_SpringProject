@@ -13,6 +13,9 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
+            <!-- ✅ SweetAlert2 추가 -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
             <link rel="stylesheet" href="${path}/resources/css/header.css" />
             <link rel="stylesheet" href="${path}/resources/css/footer.css" />
 
@@ -161,19 +164,24 @@
                                     return isNaN(n) ? (v || "0") : n.toLocaleString();
                                 },
                                 imgError(e) { e.target.src = this.noImg; },
+
                                 load() {
                                     $.ajax({
                                         url: this.path + "/data/regionList.dox",
                                         type: "GET",
                                         dataType: "json",
                                         success: (res) => {
-                                            if (res.result === "success") this.list = res.list || [];
-                                            else alert(res.message || "리스트 조회 실패");
+                                            if (res.result === "success") {
+                                                this.list = res.list || [];
+                                            } else {
+                                                Swal.fire('⚠️', (res.message || "리스트 조회 실패"), 'warning');
+                                            }
                                         },
-                                        error: () => alert("서버 오류"),
+                                        error: () => Swal.fire('⚠️', '서버 오류', 'warning'),
                                         complete: () => this.loading = false
                                     });
                                 },
+
                                 goDetail(regionId) {
                                     location.href = this.path + "/region/specialDetail.do?regionId=" + regionId;
                                 }

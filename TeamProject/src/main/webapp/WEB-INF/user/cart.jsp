@@ -13,6 +13,9 @@
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
+            <!-- ✅ SweetAlert2 -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
             <!-- ✅ 공통 헤더/푸터 스타일 -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
@@ -218,6 +221,34 @@
 
         <!-- ✅ Vue 로직 -->
         <script>
+            // ✅ SweetAlert2 helper (성공만 #5dbb63)
+            const swWarn = (msg) => Swal.fire('⚠️', msg, 'warning');
+            const swInfo = (msg) => Swal.fire('ℹ️', msg, 'info');
+
+            const swSuccess = (title, msg) => Swal.fire({
+                icon: 'success',
+                title: title || '성공',
+                text: msg || '',
+                confirmButtonColor: '#5dbb63'
+            });
+
+            const swError = (title, msg) => Swal.fire({
+                icon: 'error',
+                title: title || '오류',
+                text: msg || ''
+            });
+
+            const swConfirm = (title, text, confirmText = '확인', cancelText = '취소') => {
+                return Swal.fire({
+                    icon: 'question',
+                    title,
+                    text,
+                    showCancelButton: true,
+                    confirmButtonText: confirmText,
+                    cancelButtonText: cancelText
+                });
+            };
+
             const app = Vue.createApp({
                 data() {
                     return {
@@ -226,7 +257,8 @@
                             { name: "사과 3kg", price: 15000, qty: 1, image: "/resources/img/sample1.jpg", checked: true },
                             { name: "감귤 5kg", price: 22000, qty: 2, image: "/resources/img/sample2.jpg", checked: false },
                         ],
-                        productNo: "${productNo}"
+                        productNo: "${productNo}",
+                        info: null
                     };
                 },
                 computed: {
@@ -237,9 +269,7 @@
                 methods: {
                     fnInfo: function () {
                         let self = this;
-                        const param = {
-                            productNo: self.productNo
-                        };
+                        const param = { productNo: self.productNo };
 
                         $.ajax({
                             url: "product-view.dox",
@@ -248,6 +278,10 @@
                             data: param,
                             success: function (data) {
                                 self.info = data.info;
+                            },
+                            error: function () {
+                                // 필요하면 메시지
+                                // swError('오류', '상품 정보를 불러오지 못했습니다.');
                             }
                         });
                     },
@@ -258,30 +292,51 @@
                     fnDecrease(idx) {
                         if (this.cartList[idx].qty > 1) this.cartList[idx].qty--;
                     },
-                    fnRemove(idx) {
-                        if (confirm("상품을 삭제하시겠습니까?")) {
-                            this.cartList.splice(idx, 1);
-                        }
+
+                    // ✅ 삭제: confirm -> Swal
+                    fnRemove: async function (idx) {
+                        const ok = await swConfirm('삭제', '상품을 삭제하시겠습니까?', '삭제', '취소');
+                        if (!ok.isConfirmed) return;
+
+                        this.cartList.splice(idx, 1);
+                        swSuccess('삭제 완료', '상품이 삭제되었습니다.');
                     },
-                    fnClear() {
-                        if (confirm("장바구니를 비우시겠습니까?")) {
-                            this.cartList = [];
-                        }
-                    },
-                    fnOrder() {
-                        const selected = this.cartList.filter(item => item.checked);
-                        if (selected.length === 0) {
-                            alert("주문할 상품을 선택하세요!");
+
+                    // ✅ 전체삭제: confirm -> Swal
+                    fnClear: async function () {
+                        if (this.cartList.length === 0) {
+                            swInfo('이미 장바구니가 비어있습니다.');
                             return;
                         }
-                        alert("주문 페이지로 이동합니다 (TODO: 연동 예정)");
+
+                        const ok = await swConfirm('전체삭제', '장바구니를 비우시겠습니까?', '전체삭제', '취소');
+                        if (!ok.isConfirmed) return;
+
+                        this.cartList = [];
+                        swSuccess('완료', '장바구니를 비웠습니다.');
+                    },
+
+                    // ✅ 주문하기: alert -> Swal
+                    fnOrder: function () {
+                        if (this.cartList.length === 0) {
+                            swWarn('장바구니에 담긴 상품이 없습니다.');
+                            return;
+                        }
+
+                        const selected = this.cartList.filter(item => item.checked);
+                        if (selected.length === 0) {
+                            swWarn('주문할 상품을 선택하세요!');
+                            return;
+                        }
+
+                        swInfo('주문 페이지로 이동합니다 (TODO: 연동 예정)');
+                        // TODO: 실제 이동 로직 연결 시 여기에 location.href 또는 pageChange 사용
                     }
                 },
                 mounted() {
-                    let self = this;
-                    self.fnInfo();
+                    this.fnInfo();
                 }
-
             });
+
             app.mount("#app");
         </script>

@@ -3,14 +3,30 @@
 
         <% String sessionId=(String) session.getAttribute("sessionId"); String sessionStatus=(String)
             session.getAttribute("sessionStatus"); if (sessionId==null || sessionId.equals("")) { %>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script>
-                alert("로그인이 필요합니다.");
-                location.href = "<%= request.getContextPath() %>/login.do";
+                Swal.fire({
+                    icon: 'warning',
+                    title: '⚠️',
+                    text: '로그인이 필요합니다.',
+                    confirmButtonText: '확인',
+                    confirmButtonColor: '#5dbb63'
+                }).then(() => {
+                    location.href = "<%= request.getContextPath() %>/login.do";
+                });
             </script>
             <% return; } else if (sessionStatus==null || !sessionStatus.equals("SELLER")) { %>
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                 <script>
-                    alert("판매자 전용 페이지입니다.");
-                    location.href = "<%= request.getContextPath() %>/main.do";
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '⚠️',
+                        text: '판매자 전용 페이지입니다.',
+                        confirmButtonText: '확인',
+                        confirmButtonColor: '#5dbb63'
+                    }).then(() => {
+                        location.href = "<%= request.getContextPath() %>/main.do";
+                    });
                 </script>
                 <% return; } %>
 
@@ -28,11 +44,15 @@
                             crossorigin="anonymous"></script>
                         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
+                        <!-- ✅ SweetAlert2 추가 -->
+                        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
                         <!-- 공통 헤더/푸터 CSS -->
                         <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
                         <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
                         <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
                         <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
                         <style>
                             html,
                             body {
@@ -65,7 +85,6 @@
                                 font-weight: 600;
                             }
 
-                            /* ========= 폼 컨트롤 공통 ========= */
                             :root {
                                 --green-700: #1a5d1a;
                                 --green-500: #5dbb63;
@@ -111,29 +130,24 @@
                                 box-shadow: 0 0 0 3px rgba(93, 187, 99, .2);
                             }
 
-                            /* placeholder 톤 다운 */
                             form ::placeholder {
                                 color: #9aa4b2;
                             }
 
-                            /* ========= Textarea ========= */
                             form textarea {
                                 min-height: 120px;
                                 padding: 12px 14px;
                                 resize: vertical;
                             }
 
-                            /* ========= Select (드롭다운 화살표 커스텀) ========= */
                             form select {
                                 padding-right: 40px;
-                                /* 화살표 공간 */
                                 background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' fill='%231a5d1a' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 7.5l4.5 4.5 4.5-4.5'/%3E%3C/svg%3E");
                                 background-repeat: no-repeat;
                                 background-position: right 12px center;
                                 background-size: 16px 16px;
                             }
 
-                            /* ========= Number (스핀 버튼 제거 & 높이 통일) ========= */
                             form input[type="number"] {
                                 height: 44px;
                             }
@@ -148,7 +162,6 @@
                                 -moz-appearance: textfield;
                             }
 
-                            /* ========= File input (버튼만 세련되게) ========= */
                             form input[type="file"] {
                                 padding: 6px 10px;
                             }
@@ -170,7 +183,6 @@
                                 border-color: #4caf50;
                             }
 
-                            /* ========= 옵션 테이블 안 인풋도 동일 스타일 적용 ========= */
                             .option-table input[type="text"],
                             .option-table input[type="number"] {
                                 height: 42px;
@@ -187,7 +199,6 @@
                                 box-shadow: 0 0 0 3px rgba(93, 187, 99, .2);
                             }
 
-                            /* ========= 비활성/읽기전용 ========= */
                             form input[disabled],
                             form select[disabled],
                             form textarea[disabled],
@@ -198,21 +209,10 @@
                                 cursor: not-allowed;
                             }
 
-                            /* (선택) 필수값 미입력 시 약한 하이라이트 – 기본 HTML5 검증 시점에만 표시 */
                             form input:invalid,
                             form select:invalid,
                             form textarea:invalid {
                                 border-color: #f0b429;
-                            }
-
-                            form select {
-                                background-color: #fff;
-                                /* 단축 속성 대신 명시 */
-                                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 20 20' fill='%231a5d1a' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 7.5l4.5 4.5 4.5-4.5'/%3E%3C/svg%3E");
-                                background-repeat: no-repeat;
-                                background-position: right 12px center;
-                                background-size: 16px 16px;
-                                padding-right: 40px;
                             }
 
                             button {
@@ -268,7 +268,6 @@
                                 word-wrap: break-word;
                             }
 
-                            /* 넣어두면 보기 좋아요 */
                             .ql-editor img {
                                 max-width: 100%;
                                 height: auto;
@@ -297,7 +296,6 @@
                     </head>
 
                     <body>
-                        <!-- 공통 헤더 -->
                         <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
                             <div id="app">
@@ -312,16 +310,19 @@
                                             <option :value="item.categoryNo" v-for="item in topList">
                                                 {{item.categoryName}}</option>
                                         </select>
+
                                         <select v-model="mid" @change="fnLeafList">
                                             <option value="">중분류</option>
                                             <option :value="item.categoryNo" v-for="item in midList">
                                                 {{item.categoryName}}</option>
                                         </select>
+
                                         <select v-model="leaf" name="categoryNo">
                                             <option value="">소분류</option>
                                             <option :value="item.categoryNo" v-for="item in leafList">
                                                 {{item.categoryName}}</option>
                                         </select>
+
                                         <label>상품명</label>
                                         <input type="text" name="pname" placeholder="상품명을 입력하세요" required>
 
@@ -329,7 +330,6 @@
                                         <textarea name="pinfo" rows="4" placeholder="상품 상세 설명을 입력하세요"
                                             required></textarea>
 
-                                        <!-- 기본 가격 -->
                                         <label>기본 가격</label>
                                         <input type="number" name="price" v-model.number="basePrice"
                                             placeholder="예) 5000" min="0" required>
@@ -344,8 +344,6 @@
                                             신선도 유지를 위한 배송 타입을 선택하세요. (냉장/냉동은 배송비가 달라질 수 있어요)
                                         </p>
 
-
-                                        <!-- 옵션 빌더 -->
                                         <h4>옵션 (단위/추가금/재고)</h4>
                                         <table class="option-table">
                                             <thead>
@@ -381,9 +379,11 @@
                                                 </tr>
                                             </tbody>
                                         </table>
+
                                         <button type="button" @click="addOption" style="margin-top:8px">+ 옵션 추가</button>
-                                        <p style="margin-top:6px;color:#777">예시) 기본가격 5,000원, 500G(추가금 0원), 1KG(추가금
-                                            5,000원)</p>
+                                        <p style="margin-top:6px;color:#777">
+                                            예시) 기본가격 5,000원, 500G(추가금 0원), 1KG(추가금 5,000원)
+                                        </p>
 
                                         <label>원산지</label>
                                         <input type="text" name="origin" placeholder="원산지를 입력하세요 ex)국산(구룡포)" required>
@@ -395,7 +395,6 @@
                                         <input type="file" name="galleryImages" accept="image/*" multiple>
 
                                         <h4>상세 이미지 (여러 장 가능)</h4>
-                                        <!-- <input type="file" name="detailImages" accept="image/*" multiple> -->
                                         <div id="editor"></div>
                                         <input id="detailPicker" type="file" accept="image/*" multiple hidden>
 
@@ -404,7 +403,6 @@
                                 </main>
                             </div>
 
-                            <!-- 공통 푸터 -->
                             <%@ include file="/WEB-INF/views/common/footer.jsp" %>
                     </body>
 
@@ -434,6 +432,7 @@
                                 contentType: false,
                                 dataType: "json"
                             });
+
                             const productNo = firstRes.productNo;
                             if (!productNo) throw new Error("productNo 없음 (첫 요청 응답 확인)");
 
@@ -473,25 +472,42 @@
                                         { label: '500G', addPrice: 0, stock: 10 },
                                         { label: '1KG', addPrice: 5000, stock: 20 }
                                     ],
-                                    // 에디터 이미지
                                     detailFiles: [],
-                                    // 카테고리
                                     top: "", mid: "", leaf: "",
-                                    shippingType : "ROOM"
+                                    shippingType: "ROOM"
                                 };
                             },
                             methods: {
-                                // ★ async로 변경, 단 한 번만 호출
                                 async fnSubmit() {
-                                    if (!this.leaf) return alert("카테고리를 선택하세요.");
-
-                                    if (!this.options.length) return alert("옵션을 1개 이상 추가하세요.");
-                                    for (const o of this.options) {
-                                        if (!o.label?.trim()) return alert("옵션명(예: 500G, 1KG)을 입력하세요.");
-                                        if (isNaN(o.addPrice) || o.addPrice < 0) return alert("추가금은 0 이상의 숫자여야 합니다.");
-                                        if (!Number.isInteger(o.stock) || o.stock < 0) return alert("재고는 0 이상의 정수여야 합니다.");
+                                    if (!this.leaf) {
+                                        Swal.fire('⚠️', '카테고리를 선택하세요.', 'warning');
+                                        return;
                                     }
-                                    if (isNaN(this.basePrice) || this.basePrice < 0) return alert("기본 가격을 올바르게 입력하세요.");
+
+                                    if (!this.options.length) {
+                                        Swal.fire('⚠️', '옵션을 1개 이상 추가하세요.', 'warning');
+                                        return;
+                                    }
+
+                                    for (const o of this.options) {
+                                        if (!o.label?.trim()) {
+                                            Swal.fire('⚠️', '옵션명(예: 500G, 1KG)을 입력하세요.', 'warning');
+                                            return;
+                                        }
+                                        if (isNaN(o.addPrice) || o.addPrice < 0) {
+                                            Swal.fire('⚠️', '추가금은 0 이상의 숫자여야 합니다.', 'warning');
+                                            return;
+                                        }
+                                        if (!Number.isInteger(o.stock) || o.stock < 0) {
+                                            Swal.fire('⚠️', '재고는 0 이상의 정수여야 합니다.', 'warning');
+                                            return;
+                                        }
+                                    }
+
+                                    if (isNaN(this.basePrice) || this.basePrice < 0) {
+                                        Swal.fire('⚠️', '기본 가격을 올바르게 입력하세요.', 'warning');
+                                        return;
+                                    }
 
                                     const productMeta = {
                                         sellerId: this.sessionId,
@@ -505,9 +521,9 @@
                                         shippingType: this.shippingType,
 
                                         optionsJson: JSON.stringify(this.options.map(o => ({
-                                            optionName: o.label.trim(),                  // 예: "500G", "1KG"
-                                            addPrice: Number(o.addPrice || 0),           // 예: 0, 5000
-                                            stock: Number(o.stock || 0)                  // 예: 10, 20
+                                            optionName: o.label.trim(),
+                                            addPrice: Number(o.addPrice || 0),
+                                            stock: Number(o.stock || 0)
                                         })))
                                     };
 
@@ -517,15 +533,23 @@
 
                                     try {
                                         const pno = await uploadInBatches(productMeta, thumbs, gallery, details);
-                                        alert("✅ 등록 완료! productNo = " + pno);
-                                        document.getElementById('productForm').reset();
-                                        this.detailFiles = [];
-                                        this.basePrice = 0;
-                                        this.options = [{ label: '500G', addPrice: 0, stock: 0 }];
-                                        location.href = "<%= request.getContextPath() %>/main.do";
+
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: '✅',
+                                            text: '등록 완료! productNo = ' + pno,
+                                            confirmButtonColor: '#5dbb63'
+                                        }).then(() => {
+                                            document.getElementById('productForm').reset();
+                                            this.detailFiles = [];
+                                            this.basePrice = 0;
+                                            this.options = [{ label: '500G', addPrice: 0, stock: 0 }];
+                                            location.href = "<%= request.getContextPath() %>/main.do";
+                                        });
+
                                     } catch (e) {
                                         console.error(e);
-                                        alert("❌ 업로드 실패");
+                                        Swal.fire('❌', '업로드 실패', 'error');
                                     }
                                 },
 
@@ -580,15 +604,10 @@
                                     });
                                 },
 
-                                addOption() {
-                                    this.options.push({ label: '', addPrice: 0, stock: 0 });
-                                },
-                                removeOption(idx) {
-                                    this.options.splice(idx, 1);
-                                },
+                                addOption() { this.options.push({ label: '', addPrice: 0, stock: 0 }); },
+                                removeOption(idx) { this.options.splice(idx, 1); },
                             },
                             mounted() {
-                                // 제출 이벤트
                                 $("#productForm").on("submit", (e) => {
                                     e.preventDefault();
                                     this.fnSubmit();
@@ -597,7 +616,6 @@
                                 this.fnProductList();
                                 this.fnTopList();
 
-                                // Quill 설정
                                 const quill = new Quill('#editor', {
                                     theme: 'snow',
                                     modules: { toolbar: [['bold', 'italic', 'underline'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'image']] }
@@ -611,7 +629,10 @@
                                     const files = e.target.files || [];
                                     for (let i = 0; i < files.length; i++) {
                                         const f = files[i];
-                                        if (!f.type?.startsWith('image/')) { alert('이미지 파일만 올릴 수 있어요.'); continue; }
+                                        if (!f.type?.startsWith('image/')) {
+                                            Swal.fire('⚠️', '이미지 파일만 올릴 수 있어요.', 'warning');
+                                            continue;
+                                        }
                                         const reader = new FileReader();
                                         reader.onload = (evt) => {
                                             const dataUrl = evt.target.result;
@@ -622,7 +643,7 @@
                                         reader.readAsDataURL(f);
                                         this.detailFiles.push(f);
                                     }
-                                    e.target.value = ''; // 같은 파일 재선택 허용
+                                    e.target.value = '';
                                 });
                             }
                         });

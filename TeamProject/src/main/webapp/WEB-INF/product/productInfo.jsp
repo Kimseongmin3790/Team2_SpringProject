@@ -21,6 +21,7 @@
                 }
             </script>
             <script src="/resources/js/page-change.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
             <!-- 공통 헤더/푸터 CSS -->
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
@@ -1821,7 +1822,10 @@
                         const url = this.normalizedShareUrl();
                         const title = (this.shareTitle || document.title || '').trim();
 
-                        if (!url || !title) { alert('공유할 URL/제목이 비었습니다.'); return; }
+                        if (!url || !title) {
+                            Swal.fire('⚠️', '공유할 URL/제목이 비었습니다.', 'warning');
+                            return;
+                        }
 
                         // ✅ 단일 인코딩만 적용
                         const encUrl = encodeURIComponent(url);
@@ -1836,7 +1840,7 @@
                     },
                     shareKakao() {
                         if (!(window.Kakao && window.Kakao.isInitialized && window.Kakao.isInitialized())) {
-                            alert('카카오 SDK가 초기화되지 않았습니다.');
+                            Swal.fire('⚠️', '카카오 SDK가 초기화되지 않았습니다.', 'warning');
                             return;
                         }
                         const url = this.normalizedShareUrl();
@@ -1869,7 +1873,14 @@
                                 ta.select(); document.execCommand('copy');
                                 document.body.removeChild(ta); res();
                             })
-                        ).then(() => alert('링크가 복사되었습니다.'));
+                        ).then(() => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '✅',
+                                text: '링크가 복사되었습니다.',
+                                confirmButtonColor: '#5dbb63'
+                            });
+                        });
                         this.shareOpen = false;
                     },
 
@@ -1926,19 +1937,21 @@
 
                     // CTA
                     fnPurchase(productNo, qty) {
-                        if (this.isHidden) { alert('판매 중지된 상품입니다.'); return; }
-                        if (this.isSoldOut) { alert('품절된 상품입니다.'); return; }
+                        if (this.isHidden) { Swal.fire('⚠️', '판매 중지된 상품입니다.', 'warning'); return; }
+                        if (this.isSoldOut) { Swal.fire('⚠️', '품절된 상품입니다.', 'warning'); return; }
+
                         if (!this.userId) {
-                            alert("로그인 후 이용바랍니다.");
-                            location.href = "http://localhost:8082/login.do";
+                            Swal.fire('⚠️', '로그인 후 이용바랍니다.', 'warning').then(() => {
+                                location.href = "http://localhost:8082/login.do";
+                            });
                             return;
                         }
                         if (!this.selected || (this.qty | 0) <= 0) {
-                            alert("옵션 선택 후 수량을 확인해 주세요.");
+                            Swal.fire('⚠️', '옵션 선택 후 수량을 확인해 주세요.', 'warning');
                             return;
                         }
                         if (!this.selectedOption) {
-                            alert("옵션을 선택해 주세요.");
+                            Swal.fire('⚠️', '옵션을 선택해 주세요.', 'warning');
                             return;
                         }
 
@@ -1967,19 +1980,21 @@
                     },
 
                     fnBasket(productNo, qty) {
-                        if (this.isHidden) { alert('판매 중지된 상품입니다.'); return; }
-                        if (this.isSoldOut) { alert('품절된 상품입니다.'); return; }
+                        if (this.isHidden) { Swal.fire('⚠️', '판매 중지된 상품입니다.', 'warning'); return; }
+                        if (this.isSoldOut) { Swal.fire('⚠️', '품절된 상품입니다.', 'warning'); return; }
+
                         if (!this.userId) {
-                            alert("로그인 후 이용바랍니다.");
-                            location.href = "http://localhost:8082/login.do";
+                            Swal.fire('⚠️', '로그인 후 이용바랍니다.', 'warning').then(() => {
+                                location.href = "http://localhost:8082/login.do";
+                            });
                             return;
                         }
                         if (!this.selected || (this.qty | 0) <= 0) {
-                            alert("옵션 선택 후 수량을 확인해 주세요.");
+                            Swal.fire('⚠️', '옵션 선택 후 수량을 확인해 주세요.', 'warning');
                             return;
                         }
                         if (!this.selectedOption) {
-                            alert("옵션을 선택해 주세요.");
+                            Swal.fire('⚠️', '옵션을 선택해 주세요.', 'warning');
                             return;
                         }
 
@@ -2011,24 +2026,38 @@
                             data: param,
                             success: (data) => {
                                 if (data.result === 'success') {
-                                    console.log(this.shippingTypeKey, this.shippingFee)
-                                    if (confirm("장바구니에 담겼습니다. 장바구니로 이동하시겠습니까?")) {
-                                        pageChange('/buyerMyPage.do', { productNo });
-                                    } else {
-                                        this.fnInfo(); // 화면 갱신
-                                    }
+                                    console.log(this.shippingTypeKey, this.shippingFee);
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: '✅',
+                                        text: '장바구니에 담겼습니다. 장바구니로 이동하시겠습니까?',
+                                        showCancelButton: true,
+                                        confirmButtonText: '이동',
+                                        cancelButtonText: '계속 쇼핑',
+                                        confirmButtonColor: '#5dbb63'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            pageChange('/buyerMyPage.do', { productNo });
+                                        } else {
+                                            this.fnInfo(); // 화면 갱신
+                                        }
+                                    });
                                 } else {
-                                    alert('장바구니 담기 실패');
+                                    Swal.fire('❌', '장바구니 담기 실패', 'error');
                                 }
                             },
-                            error: (xhr) => { alert('서버오류: ' + xhr.status); }
+                            error: (xhr) => {
+                                Swal.fire('❌', '서버오류: ' + xhr.status, 'error');
+                            }
                         });
                     },
 
                     fnChat() {
                         if (!this.userId) {
-                            alert("로그인 후 이용 가능합니다.");
-                            location.href = "/login.do";
+                            Swal.fire('⚠️', '로그인 후 이용 가능합니다.', 'warning').then(() => {
+                                location.href = "/login.do";
+                            });
                             return;
                         }
 
@@ -2111,13 +2140,13 @@
                                     self.reviews.push(...reviewsWithState);
                                     self.totalReviewCount = response.totalCount || 0;
                                 } else {
-                                    alert("리뷰 데이터를 불러오는 데 실패했습니다.");
+                                    Swal.fire('❌', '리뷰 데이터를 불러오는 데 실패했습니다.', 'error');
                                     self.currentPage--; // 실패 시 페이지 번호 되돌리기
                                 }
                             },
                             error: function (xhr, status, error) {
                                 console.error("리뷰 목록 조회 중 오류 발생:", status, error, xhr.responseText);
-                                alert("리뷰 목록 조회 중 오류가 발생했습니다.");
+                                Swal.fire('❌', '리뷰 목록 조회 중 오류가 발생했습니다.', 'error');
                                 self.currentPage--; // 오류 시 페이지 번호 되돌리기
                             }
                         });
@@ -2176,12 +2205,12 @@
                                     self.totalReviews = response.totalReviews || 0;
                                     self.ratingDistribution = response.ratingDistribution || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
                                 } else {
-                                    alert("리뷰 데이터를 불러오는 데 실패했습니다.");
+                                    Swal.fire('❌', '리뷰 데이터를 불러오는 데 실패했습니다.', 'error');
                                 }
                             },
                             error: function (xhr, status, error) {
                                 console.error("리뷰 목록 조회 중 오류 발생:", status, error, xhr.responseText);
-                                alert("리뷰 목록 조회 중 오류가 발생했습니다.");
+                                Swal.fire('❌', '리뷰 목록 조회 중 오류가 발생했습니다.', 'error');
                             }
                         });
                     },
@@ -2209,12 +2238,12 @@
                                             targetReview.isRecommended = true;
                                         }
                                     }
-                                    alert("추천 처리 실패: " + data.message);
+                                    Swal.fire('❌', "추천 처리 실패: " + data.message, 'error');
                                 }
                             },
                             error: function (xhr, status, error) {
                                 console.error("추천 처리 AJAX 오류:", status, error, xhr.responseText);
-                                alert("서버 통신 오류가 발생했습니다.");
+                                Swal.fire('❌', '서버 통신 오류가 발생했습니다.', 'error');
                                 const targetReview = self.reviews.find(r => r.reviewNo === reviewNo);
                                 if (targetReview) {
                                     if (action === "increment") {
@@ -2247,7 +2276,7 @@
                         let self = this;
 
                         if (comment.contents.trim() === '') {
-                            alert('답글 내용을 입력해주세요.');
+                            Swal.fire('⚠️', '답글 내용을 입력해주세요.', 'warning');
                             return;
                         }
 
@@ -2261,21 +2290,37 @@
                             },
                             success: function (response) {
                                 if (response.result === 'success') {
-                                    alert('답글이 수정되었습니다.');
-                                    self.editingCommentNo = null;
-                                    self.fnLoadReviews();
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: '✅',
+                                        text: '답글이 수정되었습니다.',
+                                        confirmButtonColor: '#5dbb63'
+                                    }).then(() => {
+                                        self.editingCommentNo = null;
+                                        self.fnLoadReviews();
+                                    });
                                 } else {
-                                    alert('답글 수정에 실패했습니다: ' + response.message);
+                                    Swal.fire('❌', '답글 수정에 실패했습니다: ' + response.message, 'error');
                                 }
                             },
                             error: function () {
-                                alert('답글 수정 중 오류가 발생했습니다.');
+                                Swal.fire('❌', '답글 수정 중 오류가 발생했습니다.', 'error');
                             }
                         });
                     },
 
                     deleteComment: function (commentNo) {
-                        if (confirm('정말로 이 답글을 삭제하시겠습니까?')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '⚠️',
+                            text: '정말로 이 답글을 삭제하시겠습니까?',
+                            showCancelButton: true,
+                            confirmButtonText: '삭제',
+                            cancelButtonText: '취소',
+                            confirmButtonColor: '#5dbb63'
+                        }).then((result) => {
+                            if (!result.isConfirmed) return;
+
                             let self = this;
                             $.ajax({
                                 url: "${pageContext.request.contextPath}/seller/review/deleteComment.dox",
@@ -2286,17 +2331,23 @@
                                 },
                                 success: function (response) {
                                     if (response.result === 'success') {
-                                        alert('답글이 삭제되었습니다.');
-                                        self.fnLoadReviews();
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: '✅',
+                                            text: '답글이 삭제되었습니다.',
+                                            confirmButtonColor: '#5dbb63'
+                                        }).then(() => {
+                                            self.fnLoadReviews();
+                                        });
                                     } else {
-                                        alert('답글 삭제에 실패했습니다: ' + response.message);
+                                        Swal.fire('❌', '답글 삭제에 실패했습니다: ' + response.message, 'error');
                                     }
                                 },
                                 error: function () {
-                                    alert('답글 삭제 중 오류가 발생했습니다.');
+                                    Swal.fire('❌', '답글 삭제 중 오류가 발생했습니다.', 'error');
                                 }
                             });
-                        }
+                        });
                     },
 
                     fnLoadQA() {
@@ -2312,22 +2363,23 @@
                                 if (data.result === "success") {
                                     self.qaList = data.list.map(q => ({ ...q, showAnswer: false }));
                                 } else {
-                                    alert("상품문의 데이터를 불러오는데 실패했습니다");
+                                    Swal.fire('❌', '상품문의 데이터를 불러오는데 실패했습니다', 'error');
                                 }
                             }
                         });
                     },
                     toggleAnswer(q) {
                         if (q.isSecret === 'Y' && !this.canViewQuestion(q)) {
-                            alert("비밀글은 작성자 또는 판매자만 확인할 수 있습니다.");
+                            Swal.fire('⚠️', '비밀글은 작성자 또는 판매자만 확인할 수 있습니다.', 'warning');
                             return;
                         }
                         q.showAnswer = !q.showAnswer;
                     },
                     fnWriteQuestion() {
                         if (!this.userId) {
-                            alert("로그인 후 이용 가능합니다.");
-                            pageChange('/login.do');
+                            Swal.fire('⚠️', '로그인 후 이용 가능합니다.', 'warning').then(() => {
+                                pageChange('/login.do');
+                            });
                             return;
                         }
                         pageChange('/productQna/write.do', { productNo: this.productNo, productName: this.info.pName });
@@ -2363,9 +2415,19 @@
                     fnToggleWish() {
                         let self = this;
                         if (!self.userId) {
-                            if (confirm("로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?")) {
-                                location.href = "/login.do";
-                            }
+                            Swal.fire({
+                                icon: 'warning',
+                                title: '⚠️',
+                                text: '로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?',
+                                showCancelButton: true,
+                                confirmButtonText: '이동',
+                                cancelButtonText: '취소',
+                                confirmButtonColor: '#5dbb63'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.href = "/login.do";
+                                }
+                            });
                             return;
                         }
                         $.ajax({

@@ -10,6 +10,7 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
             <script src="/resources/js/page-change.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -256,7 +257,7 @@
                     overflow: hidden;
                 }
 
-                .grid-item.product .info .meta-bottom {                    
+                .grid-item.product .info .meta-bottom {
                     display: flex;
                     flex-direction: column;
                     gap: 6px;
@@ -1773,7 +1774,7 @@
                     onProductClick(p) {
                         const s = this.getStatus(p);
                         if (s === 'HIDDEN') {
-                            alert('판매 중지된 상품입니다.');
+                            Swal.fire('⚠️', '판매 중지된 상품입니다.', 'warning');
                             return;
                         }
                         location.href = "/productInfo.do?productNo=" + p.productNo;

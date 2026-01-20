@@ -245,7 +245,7 @@
                                             }
                                         },
                                         error: function () {
-                                            alert("서버 오류가 발생했습니다.");
+                                            Swal.fire("오류", "서버 오류가 발생했습니다.", "error");
                                         }
                                     });
                                 },
@@ -270,8 +270,8 @@
                                                 url: "/inquiryDelete.dox",
                                                 type: "POST",
                                                 dataType: "json",
-                                                data: { 
-                                                    inquiryNo: this.inquiryNo 
+                                                data: {
+                                                    inquiryNo: this.inquiryNo
                                                 },
                                                 success: (res) => {
                                                     if (res.result === "success") {
@@ -317,7 +317,7 @@
                                     const self = this;
 
                                     if (!self.newAnswer.trim()) {
-                                        alert("답변 내용을 입력하세요.");
+                                        Swal.fire("입력 필요", "답변 내용을 입력하세요.", "warning");
                                         return;
                                     }
 
@@ -334,15 +334,15 @@
                                         data: param,
                                         success: function (res) {
                                             if (res.result === "success") {
-                                                alert("답변이 등록되었습니다.");
+                                                Swal.fire("등록 완료", "답변이 등록되었습니다.", "success");
                                                 self.fnLoadAnswer();
                                                 self.newAnswer = "";
                                             } else {
-                                                alert("등록에 실패했습니다.");
+                                                Swal.fire("등록 실패", "등록에 실패했습니다.", "error");
                                             }
                                         },
                                         error: function () {
-                                            alert("서버 오류가 발생했습니다.");
+                                            Swal.fire("오류", "서버 오류가 발생했습니다.", "error");
                                         }
                                     });
                                 }

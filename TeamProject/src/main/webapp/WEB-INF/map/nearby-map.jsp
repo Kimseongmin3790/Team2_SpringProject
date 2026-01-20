@@ -12,6 +12,7 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script
                 src="//dapi.kakao.com/v2/maps/sdk.js?appkey=78c3fbd5be4327cf3319a04cf0a379c4&libraries=services"></script>
             <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" crossorigin="anonymous"></script>
@@ -699,7 +700,7 @@
                                 },
 
                                 goPrevCenter() {
-                                    if (!this.prevCenter) return alert("이전 위치가 아직 없어요. 먼저 위치를 한 번 이동해보세요.");
+                                    if (!this.prevCenter) return Swal.fire('ℹ️', '이전 위치가 아직 없어요. 먼저 위치를 한 번 이동해보세요.', 'info');
 
                                     this._setCenter(this.prevCenter.lat, this.prevCenter.lng, { rememberPrev: false });
 
@@ -739,12 +740,11 @@
                                         });
 
                                         if (!ok) {
-                                            alert("현재 위치를 가져오지 못했어요. 위치 권한/HTTPS를 확인해 주세요.");
-                                            // GPS 실패하면 추적 ON 유지할지/끄고 내주소로 돌릴지 선택인데,
-                                            // UX상 보통 '끄고 내주소'가 낫다:
+                                            Swal.fire('⚠️', '현재 위치를 가져오지 못했어요. 위치 권한/HTTPS를 확인해 주세요.', 'warning');
                                             this.followMe = false;
                                             await this.applyFollowState();
                                         }
+
                                         return;
                                     }
 
@@ -944,7 +944,7 @@
 
                                 shareKakao() {
                                     if (!window.Kakao || !window.Kakao.isInitialized()) {
-                                        alert("카카오 SDK 초기화에 실패했어요. 도메인 등록을 확인해주세요.");
+                                        Swal.fire('⚠️', '카카오 SDK 초기화에 실패했어요. 도메인 등록을 확인해주세요.', 'warning');
                                         return;
                                     }
 
@@ -978,13 +978,14 @@
 
                                 shareSellerKakaoById(userId) {
                                     const p = (this.producers || []).find(x => x.userId === userId);
-                                    if (!p) return alert("판매자 정보를 찾을 수 없습니다.");
+                                    if (!p) return Swal.fire('❌', '판매자 정보를 찾을 수 없습니다.', 'error');
+
                                     this.shareSellerKakao(p);
                                 },
 
                                 shareSellerKakao(p) {
                                     if (!window.Kakao || !window.Kakao.isInitialized()) {
-                                        alert("카카오 SDK가 초기화되지 않았습니다. 도메인 등록을 확인해주세요.");
+                                        Swal.fire('⚠️', '카카오 SDK가 초기화되지 않았습니다. 도메인 등록을 확인해주세요.', 'warning');
                                         return;
                                     }
                                     // 공유 링크: 해당 판매자 상세 및 현재 지도로 열기

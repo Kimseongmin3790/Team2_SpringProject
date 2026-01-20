@@ -11,6 +11,7 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3"></script>
             <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css">
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css">
@@ -134,7 +135,7 @@
                                             self.renderCharts();
                                         },
                                         error() {
-                                            alert("통계 데이터를 불러오지 못했습니다.");
+                                            Swal.fire('❌', '통계 데이터를 불러오지 못했습니다.', 'error');
                                         }
                                     });
                                 },
