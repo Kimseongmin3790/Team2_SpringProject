@@ -17,13 +17,16 @@
  	    <select id="findByParticipants" parameterType="hashmap" resultType="com.example.TeamProject.model.ChatRoom">
 		  SELECT
 		    R.*,
-		    P.PNAME AS pName
+		    P.PNAME AS pName,
+		    SI.PROFILE_IMG AS sellerProfileImg
 		  FROM P_CHAT_ROOM R
 		  JOIN PRODUCT P ON P.PRODUCT_NO = R.PRODUCT_NO
+		  LEFT JOIN SELLER_INFO SI ON SI.USER_ID = R.SELLER_ID
 		  WHERE R.PRODUCT_NO = #{productNo}
 		    AND R.BUYER_ID = #{buyerId}
 		    AND R.SELLER_ID = #{sellerId}
 		</select>
+
 	    
 	    <!-- 3) 방 생성 -->
 	  <insert id="insertRoom" parameterType="hashmap">
@@ -44,9 +47,11 @@
 	  <select id="findByRoomId" parameterType="hashmap" resultType="com.example.TeamProject.model.ChatRoom">
 		  SELECT
 		    R.*,
-		    P.PNAME AS pName
+		    P.PNAME AS pName,
+		    SI.PROFILE_IMG AS sellerProfileImg
 		  FROM P_CHAT_ROOM R
 		  JOIN PRODUCT P ON P.PRODUCT_NO = R.PRODUCT_NO
+		  LEFT JOIN SELLER_INFO SI ON SI.USER_ID = R.SELLER_ID
 		  WHERE R.ROOM_ID = #{roomId}
 		</select>
 

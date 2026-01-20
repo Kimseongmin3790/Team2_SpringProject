@@ -93,4 +93,12 @@ public class ChatTestController {
 		return gson.toJson(resultMap);
 	}
 
+	@RequestMapping(value = "/chat/room/byRoomId.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+	@ResponseBody
+	public String getRoomByRoomId(@RequestParam HashMap<String, Object> map) {
+		HashMap<String, Object> result = chatService.getChatRoomByRoomId(map);
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(result);
+	}
+
 }
