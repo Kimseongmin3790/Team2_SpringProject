@@ -21,6 +21,13 @@ public class ChatTestController {
 	@Autowired
 	ChatService chatService;
 
+	private Gson gson() {
+		return new GsonBuilder().registerTypeAdapter(java.time.LocalDateTime.class,
+				(com.google.gson.JsonSerializer<java.time.LocalDateTime>) (src, typeOfSrc,
+						context) -> new com.google.gson.JsonPrimitive(src.toString()))
+				.create();
+	}
+
 	@RequestMapping("/chat.do")
 	public String chatPage() {
 		return "product/chatting";
@@ -97,8 +104,7 @@ public class ChatTestController {
 	@ResponseBody
 	public String getRoomByRoomId(@RequestParam HashMap<String, Object> map) {
 		HashMap<String, Object> result = chatService.getChatRoomByRoomId(map);
-		Gson gson = new GsonBuilder().create();
-		return gson.toJson(result);
+		return gson().toJson(result);
 	}
 
 }
