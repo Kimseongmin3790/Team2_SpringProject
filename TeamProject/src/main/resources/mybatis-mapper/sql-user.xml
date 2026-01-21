@@ -5,13 +5,66 @@
 <mapper namespace="com.example.TeamProject.mapper.UserMapper">
 	<insert id="insertUser" parameterType="hashmap">
 		INSERT INTO USERS
-		VALUES(#{userId}, #{userEmail}, #{hashPwd}, #{userName}, #{userPhone}, #{userRole}, #{userAddr}, SYSDATE, SYSDATE, #{lat}, #{lng}, 'ACTIVE', #{userBirth}, #{userGender})
+		VALUES(#{userId}, #{userEmail}, #{hashPwd}, #{userName}, #{userPhone}, #{userRole}, #{userAddr}, SYSDATE, SYSDATE, #{lat}, #{lng}, 'ACTIVE', #{userBirth}, #{userGender}, 0)
 	</insert>
 	
 	<insert id="insertSeller" parameterType="hashmap">
-		INSERT INTO SELLER_INFO
-		VALUES(#{userId}, #{businessName}, #{businessLi}, 'N', #{businessNumber}, #{account}, #{bankName}, #{lat}, #{lng}, #{profileImg})
+	    INSERT INTO SELLER_INFO (
+	        USER_ID,
+	        BUSINESS_NAME,
+	        BUSINESS_LI,
+	        VERIFIED,
+	        BUSINESS_NUMBER,
+	        ACCOUNT,
+	        BANKNAME,
+	        LAT,
+	        LNG,
+	        PROFILE_IMG,
+	
+	        SELLER_TYPE,
+	        TELE_SALE_NO,
+	        TELE_SALE_FILE,
+	        SALE_RAW_AGRI,
+	        SALE_PROCESSED,
+	        SALE_LIVESTOCK,
+	        SALE_SEAFOOD,
+	        SALE_OTHER,
+	        FOOD_BIZ_TYPE,
+	        FOOD_BIZ_NO,
+	        LIVESTOCK_BIZ_TYPE,
+	        LIVESTOCK_BIZ_NO,
+	        SEAFOOD_BIZ_TYPE,
+	        SEAFOOD_BIZ_NO
+	    )
+	    VALUES (
+	        #{userId},
+	        #{businessName},
+	        #{businessLi},
+	        #{verified},
+	        #{businessNumber},
+	        #{account},
+	        #{bankName},
+	        #{lat},
+	        #{lng},
+	        #{profileImg},
+	
+	        #{sellerType},
+	        #{teleSaleNo},
+	        #{teleSaleFile},
+	        #{saleRawAgri},
+	        #{saleProcessed},
+	        #{saleLivestock},
+	        #{saleSeafood},
+	        #{saleOther},
+	        #{foodBizType},
+	        #{foodBizNo},
+	        #{livestockBizType},
+	        #{livestockBizNo},
+	        #{seafoodBizType},
+	        #{seafoodBizNo}
+	    )
 	</insert>
+
 	
 	<select id="idCheck" parameterType="hashmap" resultType="com.example.TeamProject.model.User">
 		SELECT *
@@ -97,18 +150,30 @@
 	
 	<!--유저 프로필 업데이트 -->
 	<update id="updateProfile" parameterType="hashmap">
-	    UPDATE USERS
-	    <set>
-	    	EMAIL = #{email},
-	        PHONE = #{phone},
-	        ADDRESS = #{address},
-	        UDATETIME = SYSDATE
-	        <if test="hashPwd != null and hashPwd != ''">
-	            , PASSWORD = #{hashPwd}
-	        </if>
-	    </set>
-	    WHERE USER_ID = #{userId}
+	  UPDATE USERS
+	  <set>
+	    <if test="email != null and email != ''">
+	      EMAIL = #{email},
+	    </if>
+	    <if test="phone != null and phone != ''">
+	      PHONE = #{phone},
+	    </if>
+	
+	    <if test="address != null and address != ''">
+	      ADDRESS = #{address, jdbcType=VARCHAR},
+	      LAT = #{lat, jdbcType=NUMERIC},
+	      LNG = #{lng, jdbcType=NUMERIC},
+	    </if>
+	
+	    UDATETIME = SYSDATE
+	
+	    <if test="hashPwd != null and hashPwd != ''">
+	      , PASSWORD = #{hashPwd, jdbcType=VARCHAR}
+	    </if>
+	  </set>
+	  WHERE USER_ID = #{userId, jdbcType=VARCHAR}
 	</update>
+
 	
 	<!--계정 삭제 -->
 	<update id="updateUserStatus" parameterType="map">
@@ -120,13 +185,15 @@
 	
 	 <!-- 이미 담은 상품이면 수량만 + N -->
     <update id="updateCartQty" parameterType="hashmap">
-        UPDATE CART
-        SET
-            QUANTITY   = NVL(QUANTITY, 0) + #{quantity},
-            ADDED_AT  = SYSDATE
-        WHERE USER_ID    = #{userId}
-          AND PRODUCT_NO = #{productNo}
-    </update>
+	  UPDATE CART
+	  SET QUANTITY = NVL(QUANTITY, 0) + #{quantity},
+	      SHIPPING_FEE = #{shippingFee},
+	      FULFILLMENT = #{fulfillment},
+	      ADDED_AT = SYSDATE
+	  WHERE USER_ID = #{userId}
+	    AND PRODUCT_NO = #{productNo}
+	</update>
+
     
     <!-- 없으면 새로 한 줄 추가 -->
     <insert id="insertCart" parameterType="hashmap">

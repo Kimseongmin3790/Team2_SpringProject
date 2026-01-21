@@ -3,15 +3,21 @@
 
         <% String sessionId=(String) session.getAttribute("sessionId"); String sessionStatus=(String)
             session.getAttribute("sessionStatus"); if (sessionId==null || sessionId.equals("")) { %>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script>
-                alert("로그인이 필요합니다.");
-                location.href = "<%= request.getContextPath() %>/login.do";
+                Swal.fire('⚠️', '로그인이 필요합니다.', 'warning').then(() => {
+                    location.href = "<%= request.getContextPath() %>/login.do";
+                });
             </script>
+
             <% return; } else if (sessionStatus==null || !sessionStatus.equals("SELLER")) { %>
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                 <script>
-                    alert("판매자 전용 페이지입니다.");
-                    location.href = "<%= request.getContextPath() %>/main.do";
+                    Swal.fire('⚠️', '판매자 전용 페이지입니다.', 'warning').then(() => {
+                        location.href = "<%= request.getContextPath() %>/main.do";
+                    });
                 </script>
+
                 <% return; } %>
 
                     <!DOCTYPE html>
@@ -425,27 +431,49 @@
                                     const PNO = Number(new URLSearchParams(location.search).get('productNo')) || null;
 
                                     if (!PNO) {
-                                        alert('잘못된 접근입니다. 상품 번호가 없습니다.');
-                                        location.href = CP + '/seller/products.do';
+                                        Swal.fire('⚠️', '잘못된 접근입니다. 상품 번호가 없습니다.', 'warning').then(() => {
+                                            location.href = CP + '/seller/products.do';
+                                        });
                                     }
 
                                     const toArr = (x) => (x ? Array.from(x) : []);
+
+                                    // SweetAlert2 helper (성공만 초록색)
+                                    const swWarn = (msg) => Swal.fire('⚠️', msg, 'warning');
+                                    const swInfo = (msg) => Swal.fire('ℹ️', msg, 'info');
+                                    const swError = (msg) => Swal.fire('❌', msg, 'error');
+                                    const swSuccess = (msg) =>
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: '성공',
+                                            text: msg,
+                                            confirmButtonColor: '#5dbb63'
+                                        });
 
                                     const app = Vue.createApp({
                                         data() {
                                             return {
                                                 // 카테고리
                                                 initLoading: true,
-                                                topList: [], midList: [], leafList: [],
-                                                top: "", mid: "", leaf: "",
+                                                topList: [],
+                                                midList: [],
+                                                leafList: [],
+                                                top: "",
+                                                mid: "",
+                                                leaf: "",
+
                                                 // 폼/옵션
                                                 form: { pname: "", pinfo: "", origin: "", productStatus: "" },
                                                 basePrice: 0,
                                                 options: [],
                                                 deletedOptionNos: [],
+
                                                 // 이미지
-                                                thumb: null, gallery: [], details: [],
+                                                thumb: null,
+                                                gallery: [],
+                                                details: [],
                                                 deletedImageNos: [],
+
                                                 // 에디터 신규 상세이미지 업로드용
                                                 detailFiles: []
                                             };
@@ -455,7 +483,7 @@
                                             loadProduct() {
                                                 const safeNum = (v, d = 0) => {
                                                     if (v === null || v === undefined) return d;
-                                                    const n = Number(String(v).replace(/,/g, '').trim());
+                                                    const n = Number(String(v).replace(/,/g, "").trim());
                                                     return Number.isFinite(n) ? n : d;
                                                 };
 
@@ -463,116 +491,117 @@
                                                     url: CP + "/seller/product/detail.dox",
                                                     type: "POST",
                                                     dataType: "json",
-
-                                                    // ✔ 둘 중 하나만 사용
-                                                    // 1) JSON 방식 (@RequestBody로 받는 경우)
                                                     contentType: "application/json; charset=UTF-8",
                                                     data: JSON.stringify({ productNo: PNO }),
-
-                                                    // 2) 폼 방식 (@RequestParam으로 받는 경우)
-                                                    // contentType 생략하고 ↓만 사용
-                                                    // data: { productNo: PNO },
-
                                                     success: async (res) => {
-                                                        // ---------- 기본 상품 ----------
                                                         const p = res.detail || res.product || {};
+
                                                         this.form.pname = p.pName ?? p.pname ?? "";
                                                         this.form.pinfo = p.pInfo ?? p.pinfo ?? "";
                                                         this.form.origin = p.origin ?? "";
                                                         this.basePrice = safeNum(p.price, 0);
-                                                        this.form.productStatus = (p.productStatus || 'SELLING').toString().toUpperCase();
-                                                        // (선택) 상태값 통일 (hidden → HIDDEN)
-                                                        if (p.productStatus) {
-                                                            this.form.productStatus = String(p.productStatus).toUpperCase();
-                                                        }
 
-                                                        // ---------- 옵션(UNIT / STOCK_QTY / ADD_PRICE → label/stock/addPrice) ----------
+                                                        this.form.productStatus = (p.productStatus || "SELLING").toString().toUpperCase();
+
+                                                        // 옵션
                                                         const rawOpts = res.option || res.options || [];
-                                                        this.options = rawOpts.map(o => ({
+                                                        this.options = rawOpts.map((o) => ({
                                                             optionNo: safeNum(o.optionNo, null),
                                                             label: o.unit ?? o.optionName ?? "",
                                                             addPrice: safeNum(o.addPrice, 0),
                                                             stock: safeNum(o.stockQty ?? o.stock, 0)
                                                         }));
 
-                                                        // 옵션이 하나도 없으면 기본 한 줄 넣고 싶으면:
                                                         if (this.options.length === 0) {
                                                             this.options = [{ optionNo: null, label: "", addPrice: 0, stock: 0 }];
                                                         }
 
-                                                        // ---------- 이미지 (imageId/isThumbnail → imageNo/imageType) ----------
+                                                        // 이미지
                                                         const rawImgs = res.image || res.images || [];
-                                                        const images = rawImgs.map(i => ({
+                                                        const images = rawImgs.map((i) => ({
                                                             imageNo: safeNum(i.imageId ?? i.imageNo, 0),
                                                             imageUrl: i.imageUrl,
-                                                            imageType: (i.isThumbnail ?? i.imageType ?? 'N') // 'Y' | 'A' | 'N'
+                                                            imageType: i.isThumbnail ?? i.imageType ?? "N"
                                                         }));
 
-                                                        this.thumb = images.find(x => x.imageType === 'Y') || null;
-                                                        this.gallery = images.filter(x => x.imageType === 'A');
-                                                        this.details = images.filter(x => x.imageType === 'N');
+                                                        this.thumb = images.find((x) => x.imageType === "Y") || null;
+                                                        this.gallery = images.filter((x) => x.imageType === "A");
+                                                        this.details = images.filter((x) => x.imageType === "N");
 
-                                                        // ---------- 카테고리 경로 ----------
-                                                        // 우선 category 객체(top/mid/leaf), 없으면 detail.categoryNo(leaf)로 대체
+                                                        // 카테고리 경로
                                                         const path = res.category || res.categoryPath || {};
                                                         const topNo = path.topNo ?? null;
                                                         const midNo = path.midNo ?? null;
                                                         const leafNo = path.leafNo ?? p.categoryNo ?? null;
 
-
                                                         this.initLoading = true;
 
-                                                        await this.fetchTop(); await this.$nextTick();
+                                                        await this.fetchTop();
+                                                        await this.$nextTick();
                                                         this.top = topNo != null ? String(topNo) : "";
 
-                                                        await this.fetchMid(false); await this.$nextTick();
+                                                        await this.fetchMid(false);
+                                                        await this.$nextTick();
                                                         this.mid = midNo != null ? String(midNo) : "";
 
-                                                        await this.fetchLeaf(); await this.$nextTick();
+                                                        await this.fetchLeaf();
+                                                        await this.$nextTick();
                                                         this.leaf = leafNo != null ? String(leafNo) : "";
 
-
-                                                        // ⑥ 초기화 종료: change 핸들러 다시 활성화
                                                         this.initLoading = false;
                                                     },
-                                                    error: () => alert('상품 정보를 불러오지 못했습니다.')
+                                                    error: () => swError("상품 정보를 불러오지 못했습니다.")
                                                 });
                                             },
 
-
                                             // 저장(수정 전용)
                                             async fnSubmit() {
-                                                if (!this.leaf) return alert("카테고리를 선택하세요.");
-                                                if (!this.form.pname.trim()) return alert("상품명을 입력하세요.");
-                                                if (isNaN(this.basePrice) || this.basePrice < 0) return alert("기본 가격을 올바르게 입력하세요.");
-                                                if (!this.options.length) return alert("옵션을 1개 이상 추가하세요.");
+                                                if (!this.leaf) return swWarn("카테고리를 선택하세요.");
+                                                if (!this.form.pname.trim()) return swWarn("상품명을 입력하세요.");
+                                                if (isNaN(this.basePrice) || this.basePrice < 0) return swWarn("기본 가격을 올바르게 입력하세요.");
+                                                if (!this.options.length) return swWarn("옵션을 1개 이상 추가하세요.");
+
                                                 for (const o of this.options) {
-                                                    if (!o.label?.trim()) return alert("옵션명(예: 500G, 1KG)을 입력하세요.");
-                                                    if (isNaN(o.addPrice) || o.addPrice < 0) return alert("추가금은 0 이상의 숫자여야 합니다.");
-                                                    if (!Number.isInteger(o.stock) || o.stock < 0) return alert("재고는 0 이상의 정수여야 합니다.");
+                                                    if (!o.label || !o.label.trim()) return swWarn("옵션명(예: 500G, 1KG)을 입력하세요.");
+                                                    if (isNaN(o.addPrice) || o.addPrice < 0) return swWarn("추가금은 0 이상의 숫자여야 합니다.");
+                                                    if (!Number.isInteger(o.stock) || o.stock < 0) return swWarn("재고는 0 이상의 정수여야 합니다.");
                                                 }
 
                                                 const fd = new FormData();
-                                                fd.append('productNo', PNO);
-                                                fd.append('categoryNo', Number(this.leaf));
-                                                fd.append('pname', this.form.pname.trim());
-                                                fd.append('pinfo', this.form.pinfo.trim());
-                                                fd.append('price', Number(this.basePrice));
-                                                fd.append('origin', this.form.origin.trim());
-                                                fd.append('productStatus', this.form.productStatus);
+                                                fd.append("productNo", PNO);
+                                                fd.append("categoryNo", Number(this.leaf));
+                                                fd.append("pname", this.form.pname.trim());
+                                                fd.append("pinfo", this.form.pinfo.trim());
+                                                fd.append("price", Number(this.basePrice));
+                                                fd.append("origin", this.form.origin.trim());
+                                                fd.append("productStatus", this.form.productStatus);
 
-                                                fd.append('optionsJson', JSON.stringify(this.options.map(o => ({
-                                                    optionNo: o.optionNo || null,
-                                                    optionName: o.label.trim(),
-                                                    addPrice: Number(o.addPrice || 0),
-                                                    stock: Number(o.stock || 0)
-                                                }))));
-                                                fd.append('deletedOptionNosJson', JSON.stringify(this.deletedOptionNos));
-                                                fd.append('deletedImageNosJson', JSON.stringify(this.deletedImageNos));
+                                                fd.append(
+                                                    "optionsJson",
+                                                    JSON.stringify(
+                                                        this.options.map((o) => ({
+                                                            optionNo: o.optionNo || null,
+                                                            optionName: o.label.trim(),
+                                                            addPrice: Number(o.addPrice || 0),
+                                                            stock: Number(o.stock || 0)
+                                                        }))
+                                                    )
+                                                );
 
-                                                if (this.$refs.thumbFile?.files[0]) fd.append('thumbnail', this.$refs.thumbFile.files[0]);
-                                                for (const f of toArr(this.$refs.galleryFiles?.files)) fd.append('galleryImages', f);
-                                                for (const f of toArr(this.$refs.detailFiles?.files)) fd.append('detailImages', f);
+                                                fd.append("deletedOptionNosJson", JSON.stringify(this.deletedOptionNos));
+                                                fd.append("deletedImageNosJson", JSON.stringify(this.deletedImageNos));
+
+                                                if (this.$refs.thumbFile && this.$refs.thumbFile.files && this.$refs.thumbFile.files[0]) {
+                                                    fd.append("thumbnail", this.$refs.thumbFile.files[0]);
+                                                }
+
+                                                for (const f of toArr(this.$refs.galleryFiles && this.$refs.galleryFiles.files)) {
+                                                    fd.append("galleryImages", f);
+                                                }
+
+                                                for (const f of toArr(this.$refs.detailFiles && this.$refs.detailFiles.files)) {
+                                                    fd.append("detailImages", f);
+                                                }
 
                                                 $.ajax({
                                                     url: CP + "/seller/product/update.dox",
@@ -581,29 +610,38 @@
                                                     processData: false,
                                                     contentType: false,
                                                     dataType: "json",
-                                                    success: () => {
-                                                        alert("✅ 수정되었습니다.");
+                                                    success: async () => {
+                                                        await swSuccess("수정되었습니다.");
                                                         location.href = CP + "/sellerProductList.do";
                                                     },
-                                                    error: () => { alert("❌ 저장 실패"); }
+                                                    error: () => swError("저장 실패")
                                                 });
                                             },
 
                                             // 옵션 조작
-                                            addOption() { this.options.push({ optionNo: null, label: '', addPrice: 0, stock: 0 }); },
-                                            removeOption(idx, opt) { if (opt.optionNo) this.deletedOptionNos.push(opt.optionNo); this.options.splice(idx, 1); },
+                                            addOption() {
+                                                this.options.push({ optionNo: null, label: "", addPrice: 0, stock: 0 });
+                                            },
+                                            removeOption(idx, opt) {
+                                                if (opt.optionNo) this.deletedOptionNos.push(opt.optionNo);
+                                                this.options.splice(idx, 1);
+                                            },
 
                                             // 카테고리
-                                            onTopChange() { if (this.initLoading) return; this.fetchMid(/*clearLeaf=*/true); },
-                                            onMidChange() { if (this.initLoading) return; this.fetchLeaf(); },
+                                            onTopChange() {
+                                                if (this.initLoading) return;
+                                                this.fetchMid(true);
+                                            },
+                                            onMidChange() {
+                                                if (this.initLoading) return;
+                                                this.fetchLeaf();
+                                            },
                                             fetchTop() {
                                                 return $.ajax({
                                                     url: CP + "/CategoryTopList.dox",
                                                     type: "POST",
                                                     dataType: "json",
-                                                    data: {
-                                                        topNo: this.top
-                                                    },
+                                                    data: { topNo: this.top },
                                                     success: (data) => {
                                                         this.topList = data.list || [];
                                                     }
@@ -611,7 +649,9 @@
                                             },
                                             fetchMid(clearLeaf = false) {
                                                 return $.ajax({
-                                                    url: CP + "/CategoryMidList.dox", type: "POST", dataType: "json",
+                                                    url: CP + "/CategoryMidList.dox",
+                                                    type: "POST",
+                                                    dataType: "json",
                                                     data: { topNo: this.top, midNo: this.mid },
                                                     success: (data) => {
                                                         this.midList = data.list || [];
@@ -621,51 +661,61 @@
                                             },
                                             fetchLeaf() {
                                                 return $.ajax({
-                                                    url: CP + "/CategoryLeafList.dox", type: "POST", dataType: "json",
+                                                    url: CP + "/CategoryLeafList.dox",
+                                                    type: "POST",
+                                                    dataType: "json",
                                                     data: { topNo: this.top, midNo: this.mid, leafNo: this.leaf },
-                                                    success: (data) => { this.leafList = data.list || []; }
+                                                    success: (data) => {
+                                                        this.leafList = data.list || [];
+                                                    }
                                                 });
-                                            },
-                                            fnTopList() { this.fetchTop(); },
-                                            fnMidList() { this.fetchMid(); },
-                                            fnLeafList() { this.fetchLeaf(); }
+                                            }
                                         },
                                         mounted() {
                                             // 제출 이벤트
-                                            $("#productForm").on("submit", (e) => { e.preventDefault(); this.fnSubmit(); });
+                                            $("#productForm").on("submit", (e) => {
+                                                e.preventDefault();
+                                                this.fnSubmit();
+                                            });
 
                                             this.loadProduct();
 
                                             // Quill (상세 이미지 업로드용)
-                                            const quill = new Quill('#editor', {
-                                                theme: 'snow',
-                                                modules: { toolbar: [['bold', 'italic', 'underline'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'image']] }
+                                            const quill = new Quill("#editor", {
+                                                theme: "snow",
+                                                modules: { toolbar: [["bold", "italic", "underline"], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"]] }
                                             });
                                             this._quill = quill;
-                                            const toolbar = quill.getModule('toolbar');
-                                            toolbar.addHandler('image', () => $('#detailPicker').click());
 
-                                            $('#detailPicker').on('change', (e) => {
+                                            const toolbar = quill.getModule("toolbar");
+                                            toolbar.addHandler("image", () => $("#detailPicker").click());
+
+                                            $("#detailPicker").on("change", (e) => {
                                                 const files = e.target.files || [];
                                                 for (let i = 0; i < files.length; i++) {
                                                     const f = files[i];
-                                                    if (!f.type?.startsWith('image/')) { alert('이미지 파일만 올릴 수 있어요.'); continue; }
+                                                    if (!f.type || !f.type.startsWith("image/")) {
+                                                        swWarn("이미지 파일만 올릴 수 있어요.");
+                                                        continue;
+                                                    }
                                                     const reader = new FileReader();
                                                     reader.onload = (evt) => {
                                                         const dataUrl = evt.target.result;
                                                         const range = quill.getSelection(true) || { index: quill.getLength() };
-                                                        quill.insertEmbed(range.index, 'image', dataUrl, 'user');
+                                                        quill.insertEmbed(range.index, "image", dataUrl, "user");
                                                         quill.setSelection(range.index + 1);
                                                     };
                                                     reader.readAsDataURL(f);
                                                     this.detailFiles.push(f);
                                                 }
-                                                e.target.value = '';
+                                                e.target.value = "";
                                             });
                                         }
                                     });
-                                    app.mount('#app');
+
+                                    app.mount("#app");
                                 </script>
+
                     </body>
 
                     </html>

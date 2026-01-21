@@ -31,4 +31,10 @@ public class Order {
 	private int processedRefundItemCount; 
 	private int pendingRefundItemCount; 
 	
+	private Integer issueNo;       
+	private String couponName;     
+	private Integer couponDiscount;
+	
+	private Integer deliveryFee;
+	
 }

@@ -150,6 +150,11 @@
                         <h2 class="admin-title">관리자 대시보드</h2>
 
                         <div class="admin-grid">
+                            <div class="admin-card" @click="goPage('coupon.do')">
+                                <i class="fa-solid fa-ticket"></i>
+                                <h3>쿠폰 관리</h3>
+                                <p>쿠폰 생성 / 발급 / <br>알림 설정</p>
+                            </div>
                             <div class="admin-card" @click="goPage('memberManage.do')">
                                 <i class="fa-solid fa-users"></i>
                                 <h3>회원관리</h3>
@@ -206,7 +211,8 @@
                             },
                             methods: {
                                 goPage(page) {
-                                    const path = "${pageContext.request.contextPath}";
+                                    let path = "${pageContext.request.contextPath}";
+                                    if (path === "/") path = "";
                                     location.href = path + "/admin/" + page;
                                 },
                                 fnLoadStats() {                                   

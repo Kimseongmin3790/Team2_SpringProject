@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.TeamProject.mapper.ProductMapper;
 import com.example.TeamProject.mapper.ReviewMapper;
 import com.example.TeamProject.model.Product;
 import com.example.TeamProject.model.Review;
@@ -25,6 +26,12 @@ public class ReviewService {
 
     @Autowired
     private ReviewMapper reviewMapper;
+    
+    @Autowired
+    private NotificationService notificationService;
+    
+    @Autowired
+    ProductMapper productMapper;
 
     // 리뷰 등록
     @Transactional(rollbackFor = Exception.class)
@@ -61,6 +68,19 @@ public class ReviewService {
 
                     reviewMapper.insertReviewImage(reviewImage);
                 }
+            }
+            
+            try {
+                HashMap<String, Object> pMap = new HashMap<>();
+                pMap.put("productNo", review.getProductNo());
+                com.example.TeamProject.model.Product product = productMapper.selectProduct(pMap);
+                if (product != null) {
+                    String msg = "[신규리뷰] '" + product.getPName() + "' 상품에 새로운 리뷰가 등록되었습니다.";
+                    
+                    notificationService.sendNotification(product.getSellerId(), "NOTICE", msg, "/sellerMyPage.do?tab=reviews");
+                }
+            } catch (Exception ne) {
+                System.err.println("리뷰 알림 전송 실패: " + ne.getMessage());
             }
 
             resultMap.put("result", "success");
@@ -122,6 +142,11 @@ public class ReviewService {
                 throw new Exception("로그인이 필요합니다.");
             }
             List<Review> reviewList = reviewMapper.selectReviewsByUserId(userId);
+            
+            for (Review review : reviewList) {
+                List<ReviewComment> comments = reviewMapper.selectCommentsByReviewNo(review.getReviewNo());
+                review.setComments(comments);
+            }
 
             resultMap.put("result", "success");
             resultMap.put("list", reviewList);
@@ -392,15 +417,22 @@ public class ReviewService {
     public HashMap<String, Object> addCommentToReview(ReviewComment reviewComment) {
         HashMap<String, Object> resultMap = new HashMap<>();
         try {
-            // DB에 답글을 삽입합니다.
             reviewMapper.insertReviewComment(reviewComment);
+            try {
+                Review originalReview = reviewMapper.selectReviewDetailByReviewNo(reviewComment.getReviewNo());
+                if (originalReview != null) {
+                    String msg = "[리뷰답변] '" + originalReview.getProductName() + "' 리뷰에 판매자의 답글이 등록되었습니다.";         
+                    notificationService.sendNotification(originalReview.getUserId(), "NOTICE", msg, "/buyerMyPage.do?tab=reviews");
+                }
+            } catch (Exception ne) {
+                System.err.println("리뷰 답글 알림 전송 실패: " + ne.getMessage());
+            }
             resultMap.put("result", "success");
 
         } catch (Exception e) {
             resultMap.put("result", "fail");
             resultMap.put("message", "답글 등록 중 오류가 발생했습니다: " + e.getMessage());
             e.printStackTrace();
-            // 트랜잭션 롤백을 위해 예외를 다시 던져줍니다.
             throw new RuntimeException(e);
         }
         return resultMap;

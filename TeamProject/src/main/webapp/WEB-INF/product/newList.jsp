@@ -12,7 +12,7 @@
 
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <link rel="stylesheet" href="${path}/resources/css/header.css">
             <link rel="stylesheet" href="${path}/resources/css/footer.css">
 
@@ -197,7 +197,7 @@
                                             self.list = data.list;
                                         },
                                         error: function () {
-                                            alert("신상품을 불러오는 중 오류가 발생했습니다.");
+                                            Swal.fire('❌', '신상품을 불러오는 중 오류가 발생했습니다.', 'error');
                                         }
                                     });
                                 },

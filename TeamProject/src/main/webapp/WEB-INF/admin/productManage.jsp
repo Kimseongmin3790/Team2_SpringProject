@@ -12,6 +12,8 @@
             <script src="https://code.jquery.com/jquery-3.7.1.js"
                 integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
             <script src="https://unpkg.com/vue@3"></script>
+            <!-- ✅ SweetAlert2 추가 -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/header.css" />
             <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/footer.css" />
@@ -24,7 +26,7 @@
                 }
 
                 .admin-container {
-                    max-width: 1200px;
+                    max-width: 1700px;
                     margin: 60px auto;
                     padding: 0 15px 60px;
                     box-sizing: border-box;
@@ -85,7 +87,8 @@
 
                 .product-table {
                     width: 100%;
-                    min-width: 1000px;
+                    min-width: 0;
+                    table-layout: fixed;
                     border-collapse: collapse;
                     background: white;
                     border-radius: 10px;
@@ -161,29 +164,6 @@
 
                 .btn-back:hover {
                     background: #4ba954;
-                }
-
-                .btn-recommend {
-                    background: #5dbb63;
-                    color: white;
-                    border: none;
-                    border-radius: 6px;
-                    padding: 5px 10px;
-                    cursor: pointer;
-                    font-size: 13px;
-                    transition: 0.3s;
-                }
-
-                .btn-recommend:hover {
-                    background: #4ba954;
-                }
-
-                .btn-recommend.active {
-                    background: #c94c4c;
-                }
-
-                .btn-recommend.active:hover {
-                    background: #a83e3e;
                 }
 
                 .status-badge {
@@ -281,7 +261,6 @@
                                         <th>단위</th>
                                         <th>재고</th>
                                         <th>등록일</th>
-                                        <th>추천</th>
                                         <th>상태</th>
                                         <th>상태 설정</th>
                                     </tr>
@@ -296,12 +275,6 @@
                                         <td>{{ item.unit }}</td>
                                         <td>{{ item.stock }}</td>
                                         <td>{{ item.cdate }}</td>
-                                        <td>
-                                            <button class="btn-recommend" :class="{ active: item.recommend === 'Y' }"
-                                                @click="fnToggleRecommend(item)">
-                                                {{ item.recommend === 'Y' ? '추천안하기' : '추천하기' }}
-                                            </button>
-                                        </td>
 
                                         <td>
                                             <span :class="['status-badge', statusClass(item.productStatus)]">
@@ -336,7 +309,6 @@
                 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
                     <script>
-
                         const app = Vue.createApp({
                             data() {
                                 return {
@@ -431,10 +403,12 @@
                                                     _saving: false
                                                 }));
                                             } else {
-                                                alert("데이터 로딩 실패");
+                                                Swal.fire('❌', '데이터 로딩 실패', 'error');
                                             }
                                         },
-                                        error() { alert("서버 오류로 데이터를 가져오지 못했습니다."); }
+                                        error() {
+                                            Swal.fire('❌', '서버 오류로 데이터를 가져오지 못했습니다.', 'error');
+                                        }
                                     });
                                 },
 
@@ -443,7 +417,6 @@
                                 },
 
                                 fnToggleRecommend(item) {
-                                    const self = this;
                                     const newStatus = item.recommend === "Y" ? "N" : "Y";
 
                                     $.ajax({
@@ -458,10 +431,12 @@
                                             if (res.result === "success") {
                                                 item.recommend = newStatus;
                                             } else {
-                                                alert("변경 실패");
+                                                Swal.fire('❌', '변경 실패', 'error');
                                             }
                                         },
-                                        error() { alert("서버 오류로 변경할 수 없습니다."); },
+                                        error() {
+                                            Swal.fire('❌', '서버 오류로 변경할 수 없습니다.', 'error');
+                                        },
                                     });
                                 },
 
@@ -487,11 +462,11 @@
 
                                     const next = (item.newStatus || "").toUpperCase();
                                     if (!["SELLING", "SOLDOUT", "HIDDEN"].includes(next)) {
-                                        alert("유효하지 않은 상태값입니다.");
+                                        Swal.fire('⚠️', '유효하지 않은 상태값입니다.', 'warning');
                                         return;
                                     }
                                     if (next === item.productStatus) {
-                                        alert("현재 상태와 동일합니다.");
+                                        Swal.fire('⚠️', '현재 상태와 동일합니다.', 'warning');
                                         return;
                                     }
 
@@ -507,14 +482,14 @@
                                         success: (res) => {
                                             if (res.result === "success") {
                                                 item.productStatus = next;
-                                                alert("상품 상태가 변경되었습니다.");
+                                                Swal.fire('✅', '상품 상태가 변경되었습니다.', 'success');
                                             } else {
-                                                alert(res.message || "상태 변경에 실패했습니다.");
+                                                Swal.fire('❌', res.message || '상태 변경에 실패했습니다.', 'error');
                                                 item.newStatus = item.productStatus;
                                             }
                                         },
                                         error: () => {
-                                            alert("서버 오류로 상태를 변경할 수 없습니다.");
+                                            Swal.fire('❌', '서버 오류로 상태를 변경할 수 없습니다.', 'error');
                                             item.newStatus = item.productStatus;
                                         },
                                         complete: () => { item._saving = false; }

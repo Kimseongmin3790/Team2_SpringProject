@@ -23,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.TeamProject.dao.OrderService;
 import com.example.TeamProject.dao.SellerService;
+import com.example.TeamProject.dao.SubscriptionService;
 import com.example.TeamProject.dao.UserService;
 import com.example.TeamProject.mapper.UserMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -43,7 +44,10 @@ public class UserController {
 
 	@Autowired
 	private SellerService sellerService;
-	
+
+	@Autowired
+	SubscriptionService subscriptionService;
+
 	@RequestMapping("/login.do")
 	public String login(Model model) throws Exception {
 
@@ -93,34 +97,34 @@ public class UserController {
 		return "user/buyerMypage";
 	}
 
-    @RequestMapping("/sellerMyPage.do")
-    public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes)
-    throws Exception {
-        String userId = (String) session.getAttribute("sessionId");
+	@RequestMapping("/sellerMyPage.do")
+	public String sellerMyPage(Model model, HttpSession session, RedirectAttributes redirectAttributes)
+			throws Exception {
+		String userId = (String) session.getAttribute("sessionId");
 
-        // userId가 null인지 먼저 확인
-        if (userId == null || userId.isEmpty()) {
-            redirectAttributes.addFlashAttribute("redirectMessage", "로그인이 필요합니다.");
-            return "redirect:/login.do"; // 로그인 페이지로 리다이렉트
-        }
+		// userId가 null인지 먼저 확인
+		if (userId == null || userId.isEmpty()) {
+			redirectAttributes.addFlashAttribute("redirectMessage", "로그인이 필요합니다.");
+			return "redirect:/login.do"; // 로그인 페이지로 리다이렉트
+		}
 
-        HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
-        String resultStatus = (String) serviceResult.get("result");
-        String message = (String) serviceResult.get("message");
+		HashMap<String, Object> serviceResult = sellerService.getSellerInfoForMyPage(userId);
+		String resultStatus = (String) serviceResult.get("result");
+		String message = (String) serviceResult.get("message");
 
-        if ("success".equals(resultStatus)) {
-            String loginType = (String) session.getAttribute("loginType");
-            if (loginType == null) { // 혹시 세션에 없는 경우를 대비한 기본값
-                loginType = "NORMAL"; // 또는 "UNKNOWN" 등 적절한 기본값
-            }
-            model.addAttribute("loginType", loginType); // 모델에 loginType 추가
+		if ("success".equals(resultStatus)) {
+			String loginType = (String) session.getAttribute("loginType");
+			if (loginType == null) { // 혹시 세션에 없는 경우를 대비한 기본값
+				loginType = "NORMAL"; // 또는 "UNKNOWN" 등 적절한 기본값
+			}
+			model.addAttribute("loginType", loginType); // 모델에 loginType 추가
 
-            return "user/sellerMyPage";
-        } else {
-            redirectAttributes.addFlashAttribute("redirectMessage", message);
-            return "redirect:/main.do";
-        }
-    }
+			return "user/sellerMyPage";
+		} else {
+			redirectAttributes.addFlashAttribute("redirectMessage", message);
+			return "redirect:/main.do";
+		}
+	}
 
 	@RequestMapping("/cart.do")
 	public String cart(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
@@ -130,17 +134,18 @@ public class UserController {
 
 		return "user/cart";
 	}
-	
+
 	@RequestMapping("/sellerProductList.do")
 	public String sellerProductList(Model model) throws Exception {
 
 		return "user/sellerProductList";
 	}
-	
+
 	@RequestMapping("/sellerProductEdit.do")
-	public String sellerProductEdit(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+	public String sellerProductEdit(HttpServletRequest request, Model model, @RequestParam HashMap<String, Object> map)
+			throws Exception {
 		request.setAttribute("productNo", map.get("productNo"));
-		
+
 		return "user/sellerProductEdit";
 	}
 
@@ -154,6 +159,7 @@ public class UserController {
 		double[] coords = userService.getCoordinatesFromAddress(addr);
 		double lat = coords[0];
 		double lng = coords[1];
+		System.out.println(lat + ", " + lng);
 
 		map.put("lat", lat);
 		map.put("lng", lng);
@@ -166,76 +172,85 @@ public class UserController {
 	// 장바구니 추가
 	@RequestMapping(value = "/cart/add.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public String addCart(Model model, @RequestParam HashMap<String, Object> map, HttpSession session) throws Exception {
+	public String addCart(Model model, @RequestParam HashMap<String, Object> map, HttpSession session)
+			throws Exception {
 
-	    HashMap<String, Object> res = new HashMap<>();
+		HashMap<String, Object> res = new HashMap<>();
 
-	    try {
-	        // 세션 사용자 우선 사용 (보안)
-	        String sessionUser = (String) session.getAttribute("sessionId");
-	        String userId = (sessionUser != null && !sessionUser.isBlank())
-	                ? sessionUser
-	                : String.valueOf(map.get("userId"));
+		try {
+			// 세션 사용자 우선 사용 (보안)
+			String sessionUser = (String) session.getAttribute("sessionId");
+			String userId = (sessionUser != null && !sessionUser.isBlank()) ? sessionUser
+					: String.valueOf(map.get("userId"));
 
-	        if (userId == null || userId.isBlank()) {
-	            res.put("result", "fail");
-	            res.put("message", "로그인이 필요합니다.");
-	            return new com.google.gson.Gson().toJson(res);
-	        }
+			if (userId == null || userId.isBlank()) {
+				res.put("result", "fail");
+				res.put("message", "로그인이 필요합니다.");
+				return new com.google.gson.Gson().toJson(res);
+			}
 
-	        // 숫자/문자 정규화
-	        Integer productNo  = toInt(map.get("productNo"), null);
-	        Integer optionNo   = toInt(map.get("optionNo"), null);   // CART.OPTION_NO 존재 가정 (nullable)
-	        Integer quantity   = Math.max(1, toInt(map.get("quantity"), 1));
+			// 숫자/문자 정규화
+			Integer productNo = toInt(map.get("productNo"), null);
+			Integer optionNo = toInt(map.get("optionNo"), null); // CART.OPTION_NO 존재 가정 (nullable)
+			Integer quantity = Math.max(1, toInt(map.get("quantity"), 1));
 
-	        // 수령 방법 & 배송비는 서버에서 결정 (클라 shippingFee 무시)
-	        String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
-	        fulfillment = "pickup".equalsIgnoreCase(fulfillment) ? "pickup" : "delivery";
-	        int shippingFee = "delivery".equals(fulfillment) ? 3000 : 0;
+			// 수령 방법 & 배송비는 서버에서 결정 (클라 shippingFee 무시)
+			String fulfillment = String.valueOf(map.getOrDefault("fulfillment", "delivery"));
+			fulfillment = "pickup".equalsIgnoreCase(fulfillment) ? "pickup" : "delivery";
+			int shippingFee = toInt(map.get("shippingFee"), 3000);
+			if (!"delivery".equals(fulfillment))
+				shippingFee = 0;
 
-	        // 필수값 검증
-	        if (productNo == null) {
-	            res.put("result", "fail");
-	            res.put("message", "productNo가 없습니다.");
-	            return new com.google.gson.Gson().toJson(res);
-	        }
+			// 필수값 검증
+			if (productNo == null) {
+				res.put("result", "fail");
+				res.put("message", "productNo가 없습니다.");
+				return new com.google.gson.Gson().toJson(res);
+			}
 
-	        // 서비스에 넘길 '클린 파라미터' 구성 (불신 필드 제거: unitPrice/totalPrice/optionUnit 등)
-	        HashMap<String, Object> clean = new HashMap<>();
-	        clean.put("userId", userId);
-	        clean.put("productNo", productNo);
-	        clean.put("optionNo", optionNo);
-	        clean.put("quantity", quantity);
-	        clean.put("fulfillment", fulfillment);
-	        clean.put("shippingFee", shippingFee);
+			System.out.println("raw request map=" + map);
+			System.out.println("raw shippingFee=" + map.get("shippingFee"));
 
-	        // 장바구니 저장 (MERGE or INSERT) -> cartNo 반환 기대
-	        HashMap<String, Object> resultMap = userService.addCart(clean);
+			// 서비스에 넘길 '클린 파라미터' 구성 (불신 필드 제거: unitPrice/totalPrice/optionUnit 등)
+			HashMap<String, Object> clean = new HashMap<>();
+			clean.put("userId", userId);
+			clean.put("productNo", productNo);
+			clean.put("optionNo", optionNo);
+			clean.put("quantity", quantity);
+			clean.put("fulfillment", fulfillment);
+			clean.put("shippingFee", shippingFee);
 
-	        // cartNo 세션 보조 저장 (선택)
-	        Long cartNo = toLong(resultMap.get("cartNo"));
-	        if (cartNo != null) {
-	            @SuppressWarnings("unchecked")
-	            Map<Long, String> fMap = (Map<Long, String>) session.getAttribute("cartFulfillment");
-	            if (fMap == null) {
-	                fMap = new HashMap<>();
-	                session.setAttribute("cartFulfillment", fMap);
-	            }
-	            fMap.put(cartNo, fulfillment);
-	        }
+			System.out.println("clean before service=" + clean);
 
-	        // 응답
-	        if (!resultMap.containsKey("result")) {
-	            resultMap.put("result", "success");
-	        }
-	        return new com.google.gson.Gson().toJson(resultMap);
+			// 장바구니 저장 (MERGE or INSERT) -> cartNo 반환 기대
+			HashMap<String, Object> resultMap = userService.addCart(clean);
+			System.out.println("service before mapper=" + map);
+			System.out.println("service shippingFee=" + map.get("shippingFee"));
 
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        res.put("result", "fail");
-	        res.put("message", e.getMessage());
-	        return new com.google.gson.Gson().toJson(res);
-	    }
+			// cartNo 세션 보조 저장 (선택)
+			Long cartNo = toLong(resultMap.get("cartNo"));
+			if (cartNo != null) {
+				@SuppressWarnings("unchecked")
+				Map<Long, String> fMap = (Map<Long, String>) session.getAttribute("cartFulfillment");
+				if (fMap == null) {
+					fMap = new HashMap<>();
+					session.setAttribute("cartFulfillment", fMap);
+				}
+				fMap.put(cartNo, fulfillment);
+			}
+
+			// 응답
+			if (!resultMap.containsKey("result")) {
+				resultMap.put("result", "success");
+			}
+			return new com.google.gson.Gson().toJson(resultMap);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			res.put("result", "fail");
+			res.put("message", e.getMessage());
+			return new com.google.gson.Gson().toJson(res);
+		}
 	}
 
 	// 장바구니 목록
@@ -282,102 +297,178 @@ public class UserController {
 
 	@RequestMapping(value = "/sellerJoin.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> sellerJoin(
-	    @RequestParam("farmName") String farmName,
-	    @RequestParam("bizNo") String bizNo,
-	    @RequestParam("bankName") String bankName,
-	    @RequestParam("account") String account,
-	    @RequestParam("userAddr") String userAddr,
-	    @RequestParam("bizLicense") MultipartFile bizLicense,
-	    @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
-	    @RequestParam("userId") String userId,
-	    HttpServletRequest request) {
+	public ResponseEntity<Map<String, Object>> sellerJoin(@RequestParam("farmName") String farmName,
+			@RequestParam("bizNo") String bizNo, @RequestParam("bankName") String bankName,
+			@RequestParam("account") String account, @RequestParam("userAddr") String userAddr,
+			@RequestParam("bizLicense") MultipartFile bizLicense, // 사업자등록증 (필수)
+			@RequestParam(value = "profileImage", required = false) MultipartFile profileImage, // 프로필 (선택)
+			@RequestParam("userId") String userId,
 
-	    Map<String, Object> response = new HashMap<>();
+			// 🔹 새로 추가되는 파라미터들
+			@RequestParam(value = "sellerType", required = false) String sellerType, // INDIVIDUAL / CORP / FARMER 등
+			@RequestParam(value = "teleSaleNo", required = false) String teleSaleNo, // 통신판매업 신고번호
+			@RequestParam(value = "teleSaleCert", required = false) MultipartFile teleSaleCert, // 통신판매업 신고증 파일
 
-	    // 파일 업로드 처리
-	    String fileWebPath = null;
-	    if (bizLicense != null && !bizLicense.isEmpty()) {
-	        try {
-	            String uploadDir = request.getServletContext().getRealPath("/resources/uploads/licenses");
-	            File dir = new File(uploadDir);
-	            if (!dir.exists()) dir.mkdirs();
+			@RequestParam(value = "saleRawAgri", defaultValue = "N") String saleRawAgri,
+			@RequestParam(value = "saleProcessed", defaultValue = "N") String saleProcessed,
+			@RequestParam(value = "saleLivestock", defaultValue = "N") String saleLivestock,
+			@RequestParam(value = "saleSeafood", defaultValue = "N") String saleSeafood,
+			@RequestParam(value = "saleOther", defaultValue = "N") String saleOther,
 
-	            String originalFilename = bizLicense.getOriginalFilename();
-	            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
-	            String savedFileName = genSaveFileName(extName);
+			@RequestParam(value = "foodBizType", required = false) String foodBizType,
+			@RequestParam(value = "foodBizNo", required = false) String foodBizNo,
+			@RequestParam(value = "livestockBizType", required = false) String livestockBizType,
+			@RequestParam(value = "livestockBizNo", required = false) String livestockBizNo,
+			@RequestParam(value = "seafoodBizType", required = false) String seafoodBizType,
+			@RequestParam(value = "seafoodBizNo", required = false) String seafoodBizNo,
 
-	            File serverFile = new File(uploadDir, savedFileName);
-	            bizLicense.transferTo(serverFile);
+			HttpServletRequest request) {
 
-	            fileWebPath = "/resources/uploads/licenses/" + savedFileName;
-	        } catch (Exception e) {
-	            System.out.println("파일 업로드 중 오류 발생: " + e.getMessage());
-	            response.put("status", "error");
-	            response.put("message", "파일 업로드 중 오류가 발생했습니다.");
-	            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-	        }
-	    } else {
-	        response.put("status", "fail");
-	        response.put("message", "사업자 등록증 파일이 필요합니다.");
-	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-	    }
-	    
-	    // 프로필사진 업로드 처리 (선택사항)
-	    String profileWebPath = null;
-	    if (profileImage != null && !profileImage.isEmpty()) {
-	        try {
-	            String uploadDir = request.getServletContext().getRealPath("/resources/uploads/profile");
-	            File dir = new File(uploadDir);
-	            if (!dir.exists()) dir.mkdirs();
+		Map<String, Object> response = new HashMap<>();
 
-	            String originalFilename = profileImage.getOriginalFilename();
-	            String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
-	            String savedFileName = "profile_" + userId + "_" + genSaveFileName(extName);
+		// ======================
+		// 1) 사업자등록증 업로드
+		// ======================
+		String fileWebPath = null;
+		if (bizLicense != null && !bizLicense.isEmpty()) {
+			try {
+				String uploadDir = request.getServletContext().getRealPath("/resources/uploads/licenses");
+				File dir = new File(uploadDir);
+				if (!dir.exists())
+					dir.mkdirs();
 
-	            File serverFile = new File(uploadDir, savedFileName);
-	            profileImage.transferTo(serverFile);
+				String originalFilename = bizLicense.getOriginalFilename();
+				String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+				String savedFileName = genSaveFileName(extName);
 
-	            profileWebPath = "/resources/uploads/profile/" + savedFileName;
-	        } catch (Exception e) {
-	            System.out.println("프로필사진 업로드 오류: " + e.getMessage());
-	            // 프로필 업로드 실패해도 회원가입은 진행되게끔 처리
-	        }
-	    }
+				File serverFile = new File(uploadDir, savedFileName);
+				bizLicense.transferTo(serverFile);
 
-	    try {
-	        // 주소 -> 좌표 변환
-	        double[] coords = userService.getCoordinatesFromAddress(userAddr);
-	        double lat = coords[0];
-	        double lng = coords[1];
+				fileWebPath = "/resources/uploads/licenses/" + savedFileName;
+			} catch (Exception e) {
+				System.out.println("파일 업로드 중 오류 발생: " + e.getMessage());
+				response.put("status", "error");
+				response.put("message", "파일 업로드 중 오류가 발생했습니다.");
+				return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} else {
+			response.put("status", "fail");
+			response.put("message", "사업자 등록증 파일이 필요합니다.");
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}
 
-	        // DB 저장용 데이터 구성
-	        HashMap<String, Object> sellerData = new HashMap<>();
-	        sellerData.put("userId", userId);
-	        sellerData.put("businessName", farmName);
-	        sellerData.put("businessNumber", bizNo);
-	        sellerData.put("bankName", bankName);
-	        sellerData.put("account", account);
-	        sellerData.put("userAddr", userAddr);
-	        sellerData.put("lat", lat);
-	        sellerData.put("lng", lng);
-	        sellerData.put("businessLi", fileWebPath);
-	        sellerData.put("profileImg", profileWebPath);
-	        sellerData.put("verified", "N");
+		// =========================
+		// 2) 통신판매업 신고증 업로드
+		// =========================
+		String teleSaleWebPath = null;
+		if (teleSaleCert != null && !teleSaleCert.isEmpty()) {
+			try {
+				String uploadDir = request.getServletContext().getRealPath("/resources/uploads/teleSale");
+				File dir = new File(uploadDir);
+				if (!dir.exists())
+					dir.mkdirs();
 
-	        // DB insert 실행
-	        userService.addSeller(sellerData);
+				String originalFilename = teleSaleCert.getOriginalFilename();
+				String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+				String savedFileName = "tele_" + userId + "_" + genSaveFileName(extName);
 
-	        response.put("status", "success");
-	        response.put("message", "판매자 회원가입이 완료되었습니다!");
-	        return new ResponseEntity<>(response, HttpStatus.OK);
+				File serverFile = new File(uploadDir, savedFileName);
+				teleSaleCert.transferTo(serverFile);
 
-	    } catch (Exception e) {
-	        System.out.println("DB 저장 중 오류 발생: " + e.getMessage());
-	        response.put("status", "error");
-	        response.put("message", "데이터 저장 중 오류가 발생했습니다.");
-	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
+				teleSaleWebPath = "/resources/uploads/teleSale/" + savedFileName;
+			} catch (Exception e) {
+				System.out.println("통신판매업 신고증 업로드 오류: " + e.getMessage());
+				response.put("status", "error");
+				response.put("message", "통신판매업 신고증 업로드 중 오류가 발생했습니다.");
+				return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+		// 필요하다면 "통신판매업 신고증 필수" 검사 추가 가능:
+		// if (teleSaleNo != null && (teleSaleCert == null || teleSaleCert.isEmpty())) {
+		// ... }
+
+		// =====================
+		// 3) 프로필사진 업로드
+		// =====================
+		String profileWebPath = null;
+		if (profileImage != null && !profileImage.isEmpty()) {
+			try {
+				String uploadDir = request.getServletContext().getRealPath("/resources/uploads/profile");
+				File dir = new File(uploadDir);
+				if (!dir.exists())
+					dir.mkdirs();
+
+				String originalFilename = profileImage.getOriginalFilename();
+				String extName = originalFilename.substring(originalFilename.lastIndexOf("."));
+				String savedFileName = "profile_" + userId + "_" + genSaveFileName(extName);
+
+				File serverFile = new File(uploadDir, savedFileName);
+				profileImage.transferTo(serverFile);
+
+				profileWebPath = "/resources/uploads/profile/" + savedFileName;
+			} catch (Exception e) {
+				System.out.println("프로필사진 업로드 오류: " + e.getMessage());
+				// 프로필 업로드 실패해도 회원가입은 진행되게끔 처리
+			}
+		}
+
+		try {
+			// ==========================
+			// 4) 주소 -> 좌표 변환 (기존)
+			// ==========================
+			double[] coords = userService.getCoordinatesFromAddress(userAddr);
+			double lat = coords[0];
+			double lng = coords[1];
+
+			// ==========================
+			// 5) DB 저장용 데이터 구성
+			// ==========================
+			HashMap<String, Object> sellerData = new HashMap<>();
+			sellerData.put("userId", userId);
+			sellerData.put("businessName", farmName);
+			sellerData.put("businessNumber", bizNo);
+			sellerData.put("bankName", bankName);
+			sellerData.put("account", account);
+			sellerData.put("userAddr", userAddr);
+			sellerData.put("lat", lat);
+			sellerData.put("lng", lng);
+			sellerData.put("businessLi", fileWebPath);
+			sellerData.put("profileImg", profileWebPath);
+			sellerData.put("verified", "N");
+
+			// 🔹 새 정보들
+			sellerData.put("sellerType", sellerType);
+			sellerData.put("teleSaleNo", teleSaleNo);
+			sellerData.put("teleSaleFile", teleSaleWebPath);
+
+			sellerData.put("saleRawAgri", saleRawAgri); // 'Y' / 'N'
+			sellerData.put("saleProcessed", saleProcessed);
+			sellerData.put("saleLivestock", saleLivestock);
+			sellerData.put("saleSeafood", saleSeafood);
+			sellerData.put("saleOther", saleOther);
+
+			sellerData.put("foodBizType", foodBizType);
+			sellerData.put("foodBizNo", foodBizNo);
+			sellerData.put("livestockBizType", livestockBizType);
+			sellerData.put("livestockBizNo", livestockBizNo);
+			sellerData.put("seafoodBizType", seafoodBizType);
+			sellerData.put("seafoodBizNo", seafoodBizNo);
+
+			// ==========================
+			// 6) DB insert 실행
+			// ==========================
+			userService.addSeller(sellerData);
+
+			response.put("status", "success");
+			response.put("message", "판매자 회원가입이 완료되었습니다!");
+			return new ResponseEntity<>(response, HttpStatus.OK);
+
+		} catch (Exception e) {
+			System.out.println("DB 저장 중 오류 발생: " + e.getMessage());
+			response.put("status", "error");
+			response.put("message", "데이터 저장 중 오류가 발생했습니다.");
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	// 파일명 생성 메서드
@@ -400,14 +491,17 @@ public class UserController {
 	@RequestMapping(value = "/login.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String login(HttpSession session, Model model, @RequestParam HashMap<String, Object> map) throws Exception {
+		System.out.println("[login] JSESSION=" + session.getId()
+	    + " sessionIdAttr=" + session.getAttribute("sessionId"));
+
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap = userService.login(map, session);
 		if ("success".equals(String.valueOf(resultMap.get("result")))) {
 			String uId = (String) session.getAttribute("sessionId"); // Service가 넣은 userId
 			String uName = (String) session.getAttribute("sessionName"); // Service가 넣은 userName
-				if (uId != null && !uId.isEmpty()) {
-					session.setAttribute("userId", uId); // 채팅 아이디으로 사용할 값
-					session.setAttribute("userName", uName); // 채팅 이름으로 사용할 값
+			if (uId != null && !uId.isEmpty()) {
+				session.setAttribute("userId", uId); // 채팅 아이디으로 사용할 값
+				session.setAttribute("userName", uName); // 채팅 이름으로 사용할 값
 			}
 		}
 		return new Gson().toJson(resultMap);
@@ -416,8 +510,8 @@ public class UserController {
 	@RequestMapping(value = "/logout.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String logout(Model model, @RequestParam HashMap<String, Object> map, HttpSession session) throws Exception {
-	    HashMap<String, Object> resultMap = userService.logout(map, session);
-	    return new Gson().toJson(resultMap);
+		HashMap<String, Object> resultMap = userService.logout(map, session);
+		return new Gson().toJson(resultMap);
 	}
 
 	@RequestMapping(value = "/findId.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
@@ -428,7 +522,7 @@ public class UserController {
 
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	@RequestMapping(value = "/findIdByPhone.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String findIdByPhone(Model model, @RequestParam HashMap<String, Object> map) throws Exception {
@@ -472,9 +566,25 @@ public class UserController {
 	@RequestMapping(value = "/updateProfile.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String updateProfile(@RequestBody HashMap<String, Object> map, HttpSession session) throws Exception {
+		System.out.println("[updateProfile] JSESSION=" + session.getId()
+		  + " sessionIdAttr=" + session.getAttribute("sessionId"));
 		String userId = (String) session.getAttribute("sessionId");
+		if (userId == null || userId.isBlank()) {
+			HashMap<String, Object> res = new HashMap<>();
+			res.put("result", "fail");
+			res.put("message", "로그인이 필요합니다(세션 없음).");
+			return new Gson().toJson(res);
+		}
 		map.put("userId", userId);
 		HashMap<String, Object> resultMap = userService.updateProfile(map);
+		if ("success".equals(String.valueOf(resultMap.get("result")))) {
+			Object lat = map.get("lat");
+			Object lng = map.get("lng");
+			if (lat != null && lng != null) {
+				session.setAttribute("sessionLat", lat);
+				session.setAttribute("sessionLng", lng);
+			}
+		}
 
 		return new Gson().toJson(resultMap);
 	}
@@ -507,110 +617,115 @@ public class UserController {
 
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	@RequestMapping(value = "/myPage/list.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String getSellerProductList(@RequestBody HashMap<String, Object> map) throws Exception {
-		
+
 		HashMap<String, Object> resultMap = userService.getSellerProductList(map);
 
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	@RequestMapping(value = "/myPage/delete.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String hiddenSellerProduct(@RequestBody HashMap<String, Object> map) throws Exception {
-		
+
 		HashMap<String, Object> resultMap = userService.hiddenSellerProduct(map);
 
 		return new Gson().toJson(resultMap);
 	}
-	
+
 	@RequestMapping(value = "/seller/product/detail.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public String sellerProductDetail(@RequestBody HashMap<String, Object> map) throws Exception {
-		
+
 		HashMap<String, Object> resultMap = userService.getSellerProductDetail(map);
 
 		return new Gson().toJson(resultMap);
 	}
-	
-	@PostMapping(
-	  value = "/seller/product/update.dox",
-	  consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-	  produces = MediaType.APPLICATION_JSON_VALUE
-	)
+
+	@RequestMapping(value = "/myPage/subscriptions.dox", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
 	@ResponseBody
-	public ResponseEntity<Map<String,Object>> updateProduct(
-	    @RequestParam Integer productNo,
-	    @RequestParam Integer categoryNo,
-	    @RequestParam String pname,
-	    @RequestParam String pinfo,
-	    @RequestParam Integer price,
-	    @RequestParam String origin,
-	    @RequestParam(defaultValue = "SELLING") String productStatus,
+	public String getSubscriptionHistory(HttpSession session) throws Exception {
+		String userId = (String) session.getAttribute("sessionId");
 
-	    @RequestParam(required = false) String optionsJson,
-	    @RequestParam(required = false) String deletedOptionNosJson,
-	    @RequestParam(required = false) String deletedImageNosJson,
+		HashMap<String, Object> resultMap = subscriptionService.getSubscriptionHistory(userId);
 
-	    @RequestParam(required = false) MultipartFile thumbnail,
-	    @RequestParam(required = false) List<MultipartFile> galleryImages,
-	    @RequestParam(required = false) List<MultipartFile> detailImages,
-
-	    HttpServletRequest request
-	) throws Exception {
-
-	    String uploadDir = request.getServletContext()
-	                    .getRealPath("/resources/uploads/productImage");
-
-	    Map<String,Object> res = userService.updateProductAll(
-	        productNo, categoryNo, pname, pinfo, price, origin, productStatus,
-	        optionsJson, deletedOptionNosJson, deletedImageNosJson,
-	        thumbnail, galleryImages, detailImages,
-	        uploadDir
-	    );
-	    return ResponseEntity.ok(res);
+		return new Gson().toJson(resultMap);
 	}
 
+	@PostMapping(value = "/seller/product/update.dox", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> updateProduct(@RequestParam Integer productNo,
+			@RequestParam Integer categoryNo, @RequestParam String pname, @RequestParam String pinfo,
+			@RequestParam Integer price, @RequestParam String origin,
+			@RequestParam(defaultValue = "SELLING") String productStatus,
+
+			@RequestParam(required = false) String optionsJson,
+			@RequestParam(required = false) String deletedOptionNosJson,
+			@RequestParam(required = false) String deletedImageNosJson,
+
+			@RequestParam(required = false) MultipartFile thumbnail,
+			@RequestParam(required = false) List<MultipartFile> galleryImages,
+			@RequestParam(required = false) List<MultipartFile> detailImages,
+
+			HttpServletRequest request) throws Exception {
+
+		String uploadDir = request.getServletContext().getRealPath("/resources/uploads/productImage");
+
+		Map<String, Object> res = userService.updateProductAll(productNo, categoryNo, pname, pinfo, price, origin,
+				productStatus, optionsJson, deletedOptionNosJson, deletedImageNosJson, thumbnail, galleryImages,
+				detailImages, uploadDir);
+		return ResponseEntity.ok(res);
+	}
 
 	// ---- 유틸 ----
 	private String saveFile(MultipartFile mf, String dir) throws Exception {
-	  String ext = "";
-	  String name = mf.getOriginalFilename();
-	  if (name != null && name.lastIndexOf(".") > -1) ext = name.substring(name.lastIndexOf("."));
-	  String saved = java.util.UUID.randomUUID().toString() + ext;
-	  mf.transferTo(new File(dir, saved));
-	  return "/resources/uploads/productImage/" + saved;
+		String ext = "";
+		String name = mf.getOriginalFilename();
+		if (name != null && name.lastIndexOf(".") > -1)
+			ext = name.substring(name.lastIndexOf("."));
+		String saved = java.util.UUID.randomUUID().toString() + ext;
+		mf.transferTo(new File(dir, saved));
+		return "/resources/uploads/productImage/" + saved;
 	}
 
-	private Map<String,Object> mapImg(int productNo, String url, String type){
-	  Map<String,Object> m = new HashMap<>();
-	  m.put("productNo", productNo);
-	  m.put("imageUrl", url);
-	  m.put("imageType", type); // 'Y','A','N'
-	  return m;
+	private Map<String, Object> mapImg(int productNo, String url, String type) {
+		Map<String, Object> m = new HashMap<>();
+		m.put("productNo", productNo);
+		m.put("imageUrl", url);
+		m.put("imageType", type); // 'Y','A','N'
+		return m;
 	}
-	
+
 	/* ===== 유틸 ===== */
 	private Integer toInt(Object v, Integer def) {
-	    if (v == null) return def;
-	    if (v instanceof Number) return ((Number) v).intValue();
-	    try {
-	        String s = v.toString().trim();
-	        if (s.isEmpty() || "null".equalsIgnoreCase(s) || "undefined".equalsIgnoreCase(s)) return def;
-	        s = s.replaceAll(",", "");
-	        return new java.math.BigDecimal(s).intValue();
-	    } catch (Exception e) {
-	        return def;
-	    }
+		if (v == null)
+			return def;
+		if (v instanceof Number)
+			return ((Number) v).intValue();
+		try {
+			String s = v.toString().trim();
+			if (s.isEmpty() || "null".equalsIgnoreCase(s) || "undefined".equalsIgnoreCase(s))
+				return def;
+			s = s.replaceAll(",", "");
+			return new java.math.BigDecimal(s).intValue();
+		} catch (Exception e) {
+			return def;
+		}
 	}
 
 	private Long toLong(Object v) {
-	    if (v == null) return null;
-	    if (v instanceof Number) return ((Number) v).longValue();
-	    try { return new java.math.BigDecimal(v.toString().trim()).longValue(); }
-	    catch (Exception e) { return null; }
+		if (v == null)
+			return null;
+		if (v instanceof Number)
+			return ((Number) v).longValue();
+		try {
+			return new java.math.BigDecimal(v.toString().trim()).longValue();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 }

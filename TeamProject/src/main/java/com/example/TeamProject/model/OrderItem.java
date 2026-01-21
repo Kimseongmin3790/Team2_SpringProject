@@ -19,5 +19,6 @@ public class OrderItem {
 	private String refundReason;
 	private int refundQuantity;
 	
+	private Integer optionNo; 
 	
 }

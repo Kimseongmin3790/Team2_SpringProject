@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.TeamProject.mapper.BoardMapper;
+import com.example.TeamProject.mapper.ProductMapper;
 import com.example.TeamProject.model.Answer;
 import com.example.TeamProject.model.Board;
 
@@ -19,6 +20,12 @@ public class BoardService {
 	
 	@Autowired
 	BoardMapper boardMapper;
+	
+	@Autowired
+	private NotificationService notificationService;
+
+	@Autowired
+	ProductMapper productMapper;
 	
 	public HashMap<String, Object> getInquiryList(HashMap<String, Object> map) {
 		// TODO Auto-generated method stub
@@ -107,6 +114,11 @@ public class BoardService {
 	        // 문의 상태 '답변완료'로 업데이트
 	        int inquiryNo = Integer.parseInt(map.getOrDefault("inquiryNo", "1").toString());
 	        boardMapper.updateInquiryStatusAnswered(inquiryNo);
+	        // 소비자에게 답변 알림 발송
+	        Board inquiry = boardMapper.selectInquiryDetail(inquiryNo);
+	        if (inquiry != null) {
+	            notificationService.sendNotification(inquiry.getUserId(), "NOTICE", "[문의답변] 남겨주신 1:1 문의에 대한 답변이 등록되었습니다.", "/customerCenter.do");
+	        }
 
 	        System.out.println("답변 등록 및 상태 업데이트 완료");
 	    } catch (Exception e) {
@@ -115,14 +127,12 @@ public class BoardService {
 	}
 	
 	public HashMap<String, Object> addInquiry(HashMap<String, Object> map) {
-		// TODO Auto-generated method stub
 		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
 		try {
-	        boardMapper.insertInquiry(map);
-	        
-	        resultMap.put("result", "success");
+	        boardMapper.insertInquiry(map);   
+	        notificationService.sendNotification("admin", "NOTICE", "[고객문의] 새로운 1:1 문의가 등록되었습니다.","/admin/inquiryList.do");
+	        resultMap.put("result", "success");   
 		} catch (Exception e) {
-			// TODO: handle exception
 			resultMap.put("result", "fail");
 			System.out.println(e.getMessage());
 		}
@@ -199,7 +209,6 @@ public class BoardService {
 			resultMap.put("info", info);
 	        resultMap.put("result", "success");
 		} catch (Exception e) {
-			// TODO: handle exception
 			resultMap.put("result", "fail");
 			System.out.println(e.getMessage());
 		}
@@ -222,38 +231,47 @@ public class BoardService {
 		return resultMap;
 	}
 	
+	// 상품 문의 등록 시 (판매자 알림)
 	public HashMap<String, Object> productQnaInsert(HashMap<String, Object> map) {
-		// TODO Auto-generated method stub
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
-		try {
+	    HashMap<String, Object> resultMap = new HashMap<String, Object>();
+	    try {
 	        boardMapper.productQnaInsert(map);
-	        
+
+	     
+	        com.example.TeamProject.model.Product p = productMapper.selectProduct(map);
+
+	        if (p != null) {
+	            String msg = "[상품문의] '" + p.getPName() + "' 상품에 새로운 문의가 접수되었습니다.";
+	            notificationService.sendNotification(p.getSellerId(), "NOTICE", msg, "/board.do?tab=qna");
+	        }
+
 	        resultMap.put("result", "success");
-		} catch (Exception e) {
-			// TODO: handle exception
-			resultMap.put("result", "fail");
-			System.out.println(e.getMessage());
-		}
-		return resultMap;
+	    } catch (Exception e) {
+	        resultMap.put("result", "fail");
+	        System.out.println(e.getMessage());
+	    }
+	    return resultMap;
 	}
 	
+	// 문의 답변 등록 시 (소비자 알림)
 	public HashMap<String, Object> productQnaAnswerInsert(HashMap<String, Object> map) {
-		// TODO Auto-generated method stub
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();		
-		try {
-			Board idCheck = boardMapper.qnaIdCheck(map);
-			if (idCheck != null) {
-				boardMapper.productQnaAnswerInsert(map);	        
-		        resultMap.put("result", "success");
-			} else {
-				resultMap.put("result", "notSeller");
-			}	        
-		} catch (Exception e) {
-			// TODO: handle exception
-			resultMap.put("result", "fail");
-			System.out.println(e.getMessage());
-		}
-		return resultMap;
+	    HashMap<String, Object> resultMap = new HashMap<String, Object>();
+	    try {
+	        Board idCheck = boardMapper.qnaIdCheck(map);
+	        if (idCheck != null) {
+	            boardMapper.productQnaAnswerInsert(map);
+
+	            String msg = "[문의답변] '" + idCheck.getPname() + "' 문의에 대한 판매자의 답변이 등록되었습니다.";
+	            notificationService.sendNotification(idCheck.getUserId(), "NOTICE", msg, "/board.do?tab=qna");
+	            resultMap.put("result", "success");
+	        } else {
+	            resultMap.put("result", "notSeller");
+	        }
+	    } catch (Exception e) {
+	        resultMap.put("result", "fail");
+	        System.out.println(e.getMessage());
+	    }
+	    return resultMap;
 	}
 	
 	public boolean inquiryCheckPassword(Integer inquiryNo, String pw) {		

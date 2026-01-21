@@ -11,6 +11,9 @@
             <title>추천 상품 | AGRICOLA</title>
             <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
             <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+            <!-- ✅ SweetAlert2 (alert/confirm 대체용) -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
             <link rel="stylesheet" href="${path}/resources/css/header.css">
             <link rel="stylesheet" href="${path}/resources/css/footer.css">
 
@@ -67,7 +70,7 @@
                     object-fit: cover;
                     border-radius: 8px;
                 }
-                
+
                 .info {
                     padding: 12px;
                     text-align: left;
@@ -76,11 +79,11 @@
                 .product-name {
                     font-weight: 600;
                     margin-top: -10px;
-                    color:#2e7d32;
+                    color: #2e7d32;
                 }
 
-                .product-desc{
-                    color:blue;
+                .product-desc {
+                    color: blue;
                 }
 
                 .product-price {
@@ -89,16 +92,16 @@
                     margin-top: 5px;
                 }
 
-                .date{
-                    color:black
+                .date {
+                    color: black
                 }
 
-                .region{
-                    color:cornflowerblue;
+                .region {
+                    color: cornflowerblue;
                 }
 
-                .seller{
-                    color:green;
+                .seller {
+                    color: green;
                     margin-bottom: -20px;
                 }
 
@@ -214,7 +217,7 @@
                                             self.list = data.list;
                                         },
                                         error: function () {
-                                            alert("추천 상품을 불러오는 중 오류가 발생했습니다.");
+                                            Swal.fire('❌', '추천 상품을 불러오는 중 오류가 발생했습니다.', 'error');
                                         }
                                     });
                                 },

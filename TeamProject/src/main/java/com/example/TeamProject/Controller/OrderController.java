@@ -118,11 +118,13 @@ public class OrderController {
     		    return new Gson().toJson(resultMap);
     		}
     
-    @RequestMapping(value = "/refund/process.dox", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "/refund/process.dox", method = RequestMethod.POST, produces ="application/json;charset=UTF-8")
     		@ResponseBody
-    		public String processRefund(@RequestParam HashMap<String, Object> paramMap) throws Exception {	   
-    		    HashMap<String, Object> resultMap = orderService.processRefund(paramMap);
+    		public String processRefund(@RequestParam HashMap<String, Object> paramMap, HttpSession session) throws Exception {
+    		    String sellerId = (String) session.getAttribute("sessionId");
+    		    paramMap.put("sellerId", sellerId); 
 
+    		    HashMap<String, Object> resultMap = orderService.processRefund(paramMap);
     		    return new Gson().toJson(resultMap);
     		}
     

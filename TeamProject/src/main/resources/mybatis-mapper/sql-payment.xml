@@ -18,7 +18,9 @@
 	        MEMO,
 	        ORDERDATE,
 	        UDATETIME,
-	        BUYER_ID
+	        BUYER_ID,
+	        ISSUE_NO,
+	        DELIVERY_FEE
 	    ) VALUES (
 	        #{orderNo},
 	        #{totalPrice},
@@ -29,7 +31,9 @@
 	        #{memo},
 	        SYSDATE,
 	        SYSDATE,
-	        #{buyerId}
+	        #{buyerId},
+	        #{issueNo, jdbcType=INTEGER},
+	        #{deliveryFee, jdbcType=INTEGER}
 	    )
 	</insert>
 	
@@ -206,6 +210,23 @@
 	           THEN 'SELLING' ELSE 'SOLDOUT' END,
 	         UDATETIME = SYSDATE
 	   WHERE P.PRODUCT_NO = #{productNo}
+	</update>
+	
+	<delete id="deleteCartByNos" parameterType="map">
+	  DELETE FROM CART
+	  WHERE USER_ID = #{userId}
+	    AND CART_NO IN
+	    <foreach item="no" collection="cartNoList" open="(" separator="," close=")">
+	      #{no}
+	    </foreach>
+	</delete>
+	
+	<!-- 환불 시 재고 복구 -->
+	<update id="increaseOptionStock" parameterType="map">
+	  UPDATE PRODUCT_OPTION
+	     SET STOCK_QTY = STOCK_QTY + #{qty},
+	         UDATETIME = SYSDATE
+	   WHERE OPTION_NO = #{optionNo}
 	</update>
 	
 </mapper>

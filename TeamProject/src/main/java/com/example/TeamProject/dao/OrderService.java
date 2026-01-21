@@ -7,15 +7,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.TeamProject.mapper.CouponMapper;
 import com.example.TeamProject.mapper.OrderMapper;
+import com.example.TeamProject.mapper.PaymentMapper;
 import com.example.TeamProject.model.Order;
+import com.example.TeamProject.model.OrderItem;
 
 @Service
 public class OrderService {
 
     @Autowired
     private OrderMapper orderMapper;
-
+    
+    @Autowired
+    NotificationService notificationService;
+    
+    @Autowired 
+    private CouponMapper couponMapper;
+    
+    @Autowired
+    private PaymentMapper paymentMapper;
+     
     public HashMap<String, Object> getOrderHistory(String userId) {
         HashMap<String, Object> resultMap = new HashMap<>();
         try {
@@ -158,6 +170,7 @@ public class OrderService {
 
             if (updatedRows > 0) {
                 resultMap.put("result", "success");
+                sendStatusNotification(Integer.parseInt(orderNoStr), newStatus);
             } else {
                 resultMap.put("result", "fail");
                 resultMap.put("message", "주문 상태 업데이트에 실패했습니다. 데이터베이스 오류일 수 있습니다.");
@@ -212,6 +225,7 @@ public class OrderService {
 
                 if (statusUpdated > 0) {
                     resultMap.put("result", "success");
+                    sendStatusNotification(Integer.parseInt(orderNoStr), "배송중");
                 } else {
                     throw new Exception("주문 상태를 '배송중'으로 변경하는데 실패했습니다.");
                 }
@@ -291,6 +305,9 @@ public class OrderService {
             if (updatedRows > 0) {
                 resultMap.put("result", "success");
                 resultMap.put("message", updatedRows + "건의 주문 상태가 변경되었습니다.");
+                for (String orderNo : orderNoList) {
+                    sendStatusNotification(Integer.parseInt(orderNo), newStatus);
+                }
             } else {
                 throw new Exception("주문 상태 변경에 실패했습니다.");
             }
@@ -334,6 +351,13 @@ public class OrderService {
  	     try {
  	    	 int result = orderMapper.insertRefundRequest(paramMap);
  	         if (result > 0) {
+ 	        	 int orderItemNo = Integer.parseInt(paramMap.get("orderItemNo").toString());
+ 	        	 String sellerId = orderMapper.selectSellerIdByOrderItemNo(orderItemNo);
+ 	        	 String productName = orderMapper.selectProductNameByOrderItemNo(orderItemNo);
+ 	        	 if (sellerId != null) {
+ 	        	     String msg = "[환불요청] '" + productName + "' 상품에 대한 환불 신청이 접수되었습니다."; 	     
+ 	        	     notificationService.sendNotification(sellerId, "ORDER", msg, "/order/sellerList.do");
+ 	        	 }        	 
  	        	 resultMap.put("result", "success");
  	         } else {
  	             resultMap.put("result", "fail");
@@ -371,19 +395,76 @@ public class OrderService {
  	    HashMap<String, Object> resultMap = new HashMap<>();
  	    try {
  	        int result = orderMapper.updateRefundStatus(paramMap);
+
  	        if (result > 0) {
  	            resultMap.put("result", "success");
- 	           
- 	        } else {
- 	            resultMap.put("result", "fail");
- 	            resultMap.put("message", "이미 처리되었거나 존재하지 않는 환불 요청입니다.");
+
+ 	            if ("승인".equals(paramMap.get("status"))) {
+ 	                Order order = orderMapper.selectOrderDetail(paramMap);
+
+ 	                if (order == null) {
+ 	                } else {
+ 	                    
+ 	                    if (order.getIssueNo() != null && order.getIssueNo() != 0) {
+ 	                        couponMapper.restoreCoupon(order.getIssueNo());
+ 	                    }
+
+ 	                    if (order.getItems() != null) {
+ 	                        String targetItemNo = String.valueOf(paramMap.get("orderItemNo"));
+
+ 	                        for (OrderItem item : order.getItems()) {
+ 	                            if (String.valueOf(item.getOrderItemNo()).equals(targetItemNo)) {
+
+ 	                                if (item.getOptionNo() != null && item.getOptionNo() != 0) {
+ 	                                    HashMap<String, Object> stockMap = new HashMap<>();
+ 	                                    stockMap.put("optionNo", item.getOptionNo());
+ 	                                    stockMap.put("qty", item.getRefundQuantity());
+
+ 	                                    int stockResult = paymentMapper.increaseOptionStock(stockMap);
+ 	                                    paymentMapper.refreshProductStatusByProductNo(item.getProductNo());
+ 	                                } else {
+ 	                                }
+ 	                            }
+ 	                        }
+ 	                    }
+ 	                }
+ 	            }
+
+ 	            // 알림 발송 (안전하게 감싸기)
+ 	            try {
+ 	                int orderNo = Integer.parseInt(paramMap.get("orderNo").toString());
+ 	                sendStatusNotification(orderNo, "환불" + paramMap.get("status").toString());
+ 	                System.out.println("[완료] 알림 전송 완료");
+ 	            } catch (Exception e) {
+ 	                System.out.println("[에러] 알림 전송 중 실패: " + e.getMessage());
+ 	            }
  	        }
+ 	        System.out.println("====== [환불 디버그 종료] ======");
  	    } catch (Exception e) {
+ 	        System.out.println("!!! [치명적 에러 발생] !!!");
  	        e.printStackTrace();
  	        resultMap.put("result", "fail");
  	        resultMap.put("message", "환불 처리 중 오류가 발생했습니다.");
  	    }
  	    return resultMap;
  	}
+ 	
+ 	// 알림 기능
+ 	private void sendStatusNotification(int orderNo, String status) {
+ 	    try {
+ 	        String buyerId = orderMapper.selectBuyerIdByOrderNo(orderNo);
+ 	        if (buyerId != null) {          
+ 	           String productName = orderMapper.selectOrderProductName(orderNo);
+
+ 	            String msg = "[" + status + "] '" + productName + "' 주문의 상태가 변경되었습니다.";
+
+ 	            notificationService.sendNotification(buyerId, "ORDER", msg, "/buyerMyPage.do?tab=orders");
+ 	        }
+ 	    } catch (Exception e) {
+ 	        System.err.println("주문 상태 알림 전송 실패: " + e.getMessage());
+ 	    }
+ 	}
+ 	
+ 	
     
 }

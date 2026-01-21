@@ -26,6 +26,7 @@ public class Product {
 	private String categoryName;
 	private String filePath;
 	private String imagePath;
+	private String shippingType;
 	
 	private String sellerName;
 	private String orderdate;
@@ -45,5 +46,6 @@ public class Product {
 	
 	private String region;
 	private int productCount;
+	private String cdatetimeRaw;
 	
 }
