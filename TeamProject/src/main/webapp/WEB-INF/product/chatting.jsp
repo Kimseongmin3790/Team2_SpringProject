@@ -627,18 +627,28 @@
                     fnFetchRoomByRoomId() {
                         const self = this;
                         $.ajax({
-                            url: "/chat/room/byRoomId.dox",
+                            url: (this.ctx || "") + "/chat/room/byRoomId.dox",
                             dataType: "json",
                             type: "POST",
                             data: { roomId: self.roomId },
                             success(data) {
-                                if (data.result === "success") {
-                                    self.sellerId = data.room?.sellerId || self.sellerId;
-                                    self.pName = data.room?.pName || self.pName;
-                                    self.sellerProfileUrl = data.room?.sellerProfileImg || "";
-                                    self.fnLoadMessages();
-                                    self.fnConnectWs();
+                                console.log("byRoomId:", data);
+
+                                if (data.result !== "success") {
+                                    Swal.fire("❌", data.message || "byRoomId 실패", "error");
+                                    return;
                                 }
+
+                                self.sellerId = data.room?.sellerId || self.sellerId;
+                                self.pName = data.room?.pName || self.pName;
+                                self.sellerProfileUrl = data.room?.sellerProfileImg || "";
+
+                                self.fnLoadMessages();
+                                self.fnConnectWs();
+                            },
+                            error(xhr) {
+                                console.error("byRoomId error:", xhr.status, xhr.responseText);
+                                Swal.fire("❌", "byRoomId 통신 실패: " + xhr.status, "error");
                             }
                         });
                     },
