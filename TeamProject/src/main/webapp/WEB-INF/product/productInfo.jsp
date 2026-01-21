@@ -1144,6 +1144,24 @@
                     opacity: .6;
                     cursor: not-allowed;
                 }
+
+                .sel-head {
+                    display: flex;
+                    align-items: center;
+                    width: 100%;
+                }
+
+                .btn-remove {
+                    margin-left: auto;
+                    background: none;
+                    border: none;
+                    color: #888;
+                    cursor: pointer;
+                }
+
+                .btn-remove:hover {
+                    color: #d32f2f;
+                }
             </style>
         </head>
 
@@ -1287,10 +1305,10 @@
 
                                     <div class="selection-summary" v-if="selected" style="margin-top:12px">
                                         <div style="padding:8px 0;border-top:1px solid #eee">
-                                            <div>
+                                            <div class="sel-head">
                                                 {{ info.pName }} <span style="color:#666">/ {{ selectedOption?.unit
                                                     }}</span>
-                                                <button @click="removeProduct" style="margin-left:85px">삭제</button>
+                                                <button type="button" @click="removeProduct" class="btn-remove">삭제</button>
                                             </div>
                                             <hr
                                                 style="border-width:1px 0 0 0; border-style:dashed; border-color:#9d9d9d; width:480px; margin: 10px 0px;">
