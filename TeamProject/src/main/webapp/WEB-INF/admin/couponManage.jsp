@@ -121,6 +121,7 @@
                     align-items: center;
                     justify-content: center;
                     transition: opacity 0.3s ease;
+                    z-index: 20000 !important;
                 }
 
                 .modal-container {
@@ -164,6 +165,10 @@
 
                 .modal-footer {
                     text-align: right;
+                }
+
+                .swal2-container {
+                    z-index: 20000 !important;
                 }
             </style>
         </head>
