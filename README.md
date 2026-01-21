@@ -1,4 +1,4 @@
-# AGRICOLA
+### AGRICOLA
 
 <!-- 간단한 한 줄 소개 -->
 
@@ -11,7 +11,7 @@
 
 <!-- 프로젝트 대표 스크린샷 또는 배너 (예: /docs/images/cover.png) -->
 
-<p align="center"><img src="TeamProject/src/main/webapp/resources/img/logo.png" width="100%" alt="프로젝트 대표 이미지" /></p>
+<p align="center"><img src="TeamProject/src/main/webapp/resources/img/logo.png" width=250 alt="프로젝트 대표 이미지" /></p>
 
 ---
 
@@ -30,7 +30,7 @@
 | 이름    | 역할     | 깃허브 | 이메일 
 | ----- | ------ | -------------------------- | ------ |
 | 김성민 | 팀장/프론트엔드/백엔드 | https://github.com/Kimseongmin3790 | sungmin3790@gmail.com 
-| 권혁준 | 프론트엔드/백엔드    | https://github.com/hyeokjun96 |  hyeokjun96@gmail.com
+| 권혁준 | 프론트엔드/백엔드    | https://github.com/hyeokjun9035 |  hyeokjun96@gmail.com
 | 이민형 | 프론트엔드/백엔드  | https://github.com/sinso5281532 | sinso5281532@gmail.com
 | 문병서 | 인프라    | https://github.com/bsmoonbs |  bsmoonbs@gmail.com
 
@@ -164,11 +164,11 @@ Team2_SpringProject/
 ### 이민형
 - **작업 페이지:**
 
-    사용자 인증/마이페이지, 주문·결제·환불, 판매자 센터, 고객센터 
+    사용자 인증/마이페이지, 주문·결제·환불, 판매자 센터, 고객센터, 좋아요/찜, 알람타임라인 
   
 - **구현 기능:**
 
-    소셜 로그인, 주문·환불 관리, 리뷰·댓글 시스템, DB 설계 및 ERD 작성
+    소셜 로그인, 주문·환불 관리, 리뷰·댓글 시스템, 알람 기능, 쿠폰, DB 설계 및 ERD 작성 
 
 ### 권혁준
 - **작업 페이지:**

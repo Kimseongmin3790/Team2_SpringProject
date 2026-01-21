@@ -33,7 +33,7 @@
 	        SYSDATE,
 	        #{buyerId},
 	        #{issueNo, jdbcType=INTEGER},
-	        #{deliveryFee}
+	        #{deliveryFee, jdbcType=INTEGER}
 	    )
 	</insert>
 	
